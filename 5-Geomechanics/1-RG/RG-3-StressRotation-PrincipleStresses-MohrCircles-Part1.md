@@ -56,8 +56,8 @@ ax.add_patch(Rectangle((2.25, 0.25), 0.5, 0.5, fc='goldenrod', ec=None, angle=0)
 
 ax.set_xlim(-2, 7)
 ax.set_ylim(-5, 5)
-ax.xaxis.set_visible(False)
-ax.yaxis.set_visible(False)
+ax.axis('off')
+fig.patch.set_visible(False)
 
 fig.tight_layout()
 ```
@@ -90,8 +90,8 @@ ax.add_patch(Rectangle((-2, -2), 4, 4, fc='goldenrod', ec=None))
 
 ax.set_xlim(-5, 5)
 ax.set_ylim(-5, 5)
-ax.xaxis.set_visible(False)
-ax.yaxis.set_visible(False)
+ax.axis('off')
+fig.patch.set_visible(False)
 
 fig.tight_layout()
 ```
@@ -124,8 +124,8 @@ ax.add_patch(Rectangle((-2, -2), 4, 4, fc='goldenrod', ec=None))
 
 ax.set_xlim(-5, 5)
 ax.set_ylim(-5, 5)
-ax.xaxis.set_visible(False)
-ax.yaxis.set_visible(False)
+ax.axis('off')
+fig.patch.set_visible(False)
 
 fig.tight_layout()
 ```
@@ -157,8 +157,8 @@ ax.add_patch(Rectangle((2.5, 0.141), 0.5, 0.5, fc='goldenrod', ec=None, angle=45
 
 ax.set_xlim(-2, 7)
 ax.set_ylim(-5, 5)
-ax.xaxis.set_visible(False)
-ax.yaxis.set_visible(False)
+ax.axis('off')
+fig.patch.set_visible(False)
 
 fig.tight_layout()
 ```
@@ -200,8 +200,8 @@ ax.add_patch(Rectangle((0, -1.414*2), 4, 4, fc='goldenrod', ec=None, angle=45))
 
 ax.set_xlim(-5, 5)
 ax.set_ylim(-5, 5)
-ax.xaxis.set_visible(False)
-ax.yaxis.set_visible(False)
+ax.axis('off')
+fig.patch.set_visible(False)
 
 fig.tight_layout()
 ```
@@ -247,8 +247,8 @@ plot_angle_arc(ax, -2, 2, -90, -45, 2.0, 1, color='r')
 
 ax.set_xlim(-5, 5)
 ax.set_ylim(-5, 5)
-ax.xaxis.set_visible(False)
-ax.yaxis.set_visible(False)
+ax.axis('off')
+fig.patch.set_visible(False)
 
 fig.tight_layout()
 ```

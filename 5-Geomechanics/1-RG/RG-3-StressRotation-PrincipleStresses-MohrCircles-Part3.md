@@ -278,7 +278,7 @@ $$\left(y - y_0 \right)^2 + \left(x - x_0 \right)^2 = R^2$$
 ```{code-cell} ipython3
 :tags: [hide-input]
 
-fig, ax = plt.subplots(figsize=(6, 4))
+fig, ax = plt.subplots(figsize=(5, 4.5))
 fig.canvas.header_visible = False
 ax.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
 ax.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
@@ -302,20 +302,13 @@ fig.tight_layout()
 
 ```{code-cell} ipython3
 :tags: [hide-input]
-
-f = plt.figure(figsize=(8, 4))
+f = plt.figure(figsize=(5, 8))
 f.canvas.header_visible = False
-
 S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
-
 [[s11, s12, s13], [s21, s22, s23], [s31, s32, s33]] = S
-
-ax1 = f.add_subplot(1, 2, 1, projection='3d')
-
+ax1 = f.add_subplot(2, 1, 1, projection='3d')
 normal = np.array([1, 0, 0])
-
 unit_cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
-
 ax1.set_xlim(unit_cube.xlim)
 ax1.set_ylim(unit_cube.ylim)
 ax1.set_zlim(unit_cube.zlim)
@@ -327,16 +320,13 @@ ax1.invert_xaxis()
 ax1.set_xlabel('X')
 ax1.set_ylabel('Y')
 ax1.set_zlabel('Z')
-
 s11_arr = Arrow3D([0.5, 0.5+s11], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4)
 s22_arr = Arrow3D([0, 0], [0.5, 0.5+s22], [0, 0], color='k', lw=1, mutation_scale=4)
 s33_arr = Arrow3D([0, 0], [0, 0], [0.5, 0.5+s33], color='k', lw=1, mutation_scale=4)
 s12_arr = Arrow3D([0.5, 0.5], [0, s12], [0, 0], color='k', lw=1, mutation_scale=4)
 s23_arr = Arrow3D([0, 0], [0.5, 0.5], [0, s23], color='k', lw=1, mutation_scale=4)
 s31_arr = Arrow3D([0, s31], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4)
-
-ax2 = f.add_subplot(1, 2, 2)
-
+ax2 = f.add_subplot(2, 1, 2)
 ax2.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
 ax2.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
 ax2.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
@@ -345,14 +335,9 @@ ax2.set_ylim(-(s1-s3)/2, (s1-s3)/2)
 ax2.set_xlabel('$T_n$')
 ax2.set_ylabel('$T_s$')
 ax2.grid()
-
 f.tight_layout()
-
 removing2 = [Text3D, Poly3DCollection, Arrow3D, mpl.collections.PathCollection]
-
-@interact(alpha=widgets.IntSlider(min=0, max=360, step=1, value=0),
-          beta=widgets.IntSlider(min=0, max=360, step=1, value=0),
-          gamma=widgets.IntSlider(min=0, max=360, step=1, value=0))
+@interact(alpha=widgets.IntSlider(min=0, max=360, step=1, value=0), beta=widgets.IntSlider(min=0, max=360, step=1, value=0), gamma=widgets.IntSlider(min=0, max=360, step=1, value=0))
 def plane_intersection_3d(alpha, beta, gamma):
     for dax in [ax1, ax2]:
         for child in dax.get_children():
@@ -392,3 +377,13 @@ def plane_intersection_3d(alpha, beta, gamma):
     ax2.scatter(tn, ts, c='k', alpha=0.3)
     pass
 ```
+
++++
+
+Таким образом, круги Мора являются инструментом для отображения напряженного состояния. Они часто используются при проверке теории прочности системы, которые будут рассмотрены следующих разделах.
+
++++
+
+После изложения понятия напряженного состояния и его изменения в зависимости от выбранного базиса перейдем к рассмотрению [напряженного состояния в земной коре](RG-4-StressesInEarthsCrust.md).
+
++++

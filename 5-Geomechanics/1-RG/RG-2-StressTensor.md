@@ -263,22 +263,17 @@ $$S = \begin{bmatrix} \sigma_{1} & \tau_{12} & \tau_{13} \\ \tau_{21} & \sigma_{
 
 ```{code-cell} ipython3
 :tags: [hide-input]
-
 fig = plt.figure(figsize=(6, 4))
 fig.canvas.header_visible = False
 ax = plt.gca(projection='3d')
-
 ax.set_xlabel('$x_1$')
 ax.set_ylabel('$x_2$')
 ax.set_zlabel('$x_3$')
-
 unit_cube = cube(1, 1, 1, facecolors='goldenrod', edgecolors='goldenrod', scale_mult=0.5)
 ax.add_collection3d(unit_cube.collection())
-
 ax.set_xlim(unit_cube.xlim)
 ax.set_ylim(unit_cube.ylim)
 ax.set_zlim(unit_cube.zlim)
-
 ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4))
 ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1, mutation_scale=4))
 ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1, mutation_scale=4))
@@ -288,7 +283,6 @@ ax.add_artist(Arrow3D([0, 0.5], [0.5, 0.5], [0, 0], color='k', lw=1, mutation_sc
 ax.add_artist(Arrow3D([0, 0], [0.5, 0.5], [0, 0.5], color='k', lw=1, mutation_scale=4))
 ax.add_artist(Arrow3D([0, 0.5], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
 ax.add_artist(Arrow3D([0, 0], [0, 0.5], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
-
 ax.text(1.5, 0, 0, '$\overrightarrow{\sigma_1}$')
 ax.text(0, 1.5, 0, '$\overrightarrow{\sigma_2}$')
 ax.text(0, 0, 1.5, '$\overrightarrow{\sigma_3}$')
@@ -298,13 +292,11 @@ ax.text(0.45, 0.5, -0.2, '$\overrightarrow{\\tau_{21}}$')
 ax.text(0, 0.55, 0.35, '$\overrightarrow{\\tau_{23}}$')
 ax.text(0.5, 0.0, 0.6, '$\overrightarrow{\\tau_{31}}$')
 ax.text(0, 0.5, 0.6, '$\overrightarrow{\\tau_{32}}$')
-
 ax.grid(None)
 ax.xaxis.set_ticks([])
 ax.yaxis.set_ticks([])
 ax.zaxis.set_ticks([])
-
 ax.view_init(20, 55)
-
 fig.tight_layout()
 ```
++++
