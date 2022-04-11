@@ -1,0 +1,99 @@
+format: jb-book
+root: Introduction
+parts:
+  - caption: "Основы вычислительной математики"
+    chapters:
+      - file: 0-Math/Math-Introduction
+      - file: 0-Math/1-LAB/LAB-0-Introduction
+        sections:
+          - file: 0-Math/1-LAB/LAB-1-Vectors
+          - file: 0-Math/1-LAB/LAB-2-VectorOperations
+          - file: 0-Math/1-LAB/LAB-3-RotationAngles
+          - file: 0-Math/1-LAB/LAB-4-Matrices
+          - file: 0-Math/1-LAB/LAB-5-Determinant-InverseMatrix
+          - file: 0-Math/1-LAB/LAB-6-MatrixEquation
+          - file: 0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors
+          - file: 0-Math/1-LAB/LAB-8-LinearTransformations
+      - file: 0-Math/2-Limits/Limits-0-Introduction
+      - file: 0-Math/3-DIB/DIB-0-Introduction
+      - file: 0-Math/4-DE/DE-0-Introduction
+      - file: 0-Math/5-OM/OM-0-Introduction
+        sections:
+          - file: 0-Math/5-OM/OM-1-Newton
+          - file: 0-Math/5-OM/OM-2-QNewton
+          - file: 0-Math/5-OM/OM-3-TR
+          - file: 0-Math/5-OM/OM-4-Tunneling
+  - caption: "PVT-моделирование"
+    chapters:
+      - file: 1-PVT/PVT-Introduction
+      - file: 1-PVT/1-TD/TD-0-Introduction
+        sections:
+          - file: 1-PVT/1-TD/TD-1-Basics
+          - file: 1-PVT/1-TD/TD-2-ThermalEquilibrium
+          - file: 1-PVT/1-TD/TD-3-Heat-Work
+          - file: 1-PVT/1-TD/TD-4-HeatCapacity
+          - file: 1-PVT/1-TD/TD-5-Enthalpy
+          - file: 1-PVT/1-TD/TD-6-Entropy
+          - file: 1-PVT/1-TD/TD-7-ChemicalPotential
+          - file: 1-PVT/1-TD/TD-8-Helmholtz-Gibbs
+          - file: 1-PVT/1-TD/TD-9-Observables
+          - file: 1-PVT/1-TD/TD-10-MixtureGibbsEnergy
+          - file: 1-PVT/1-TD/TD-11-GibbsPhaseRule
+          - file: 1-PVT/1-TD/TD-12-GibbsDuhemEquation
+          - file: 1-PVT/1-TD/TD-13-MaxwellRelations
+          - file: 1-PVT/1-TD/TD-14-PhaseEquilibrium
+          - file: 1-PVT/1-TD/TD-15-Fugacity
+      - file: 1-PVT/2-EOS/EOS-0-Introduction
+        sections:
+          - file: 1-PVT/2-EOS/EOS-1-VanDerWaals
+          - file: 1-PVT/2-EOS/EOS-2-SRK-PR
+          - file: 1-PVT/2-EOS/EOS-3-SW
+          - file: 1-PVT/2-EOS/EOS-4-SAFT
+          - file: 1-PVT/2-EOS/EOS-5-PCSAFT
+          - file: 1-PVT/2-EOS/EOS-6-CPA
+          - file: 1-PVT/2-EOS/EOS-Appendix-A-PD
+          - file: 1-PVT/2-EOS/EOS-Appendix-B-BIP
+      - file: 1-PVT/3-Parameters/Parameters-0-Introduction
+        sections:
+          - file: 1-PVT/3-Parameters/Parameters-1-InternalEnergy
+          - file: 1-PVT/3-Parameters/Parameters-2-Enthalpy
+          - file: 1-PVT/3-Parameters/Parameters-3-Entropy
+          - file: 1-PVT/3-Parameters/Parameters-4-HeatCapacity
+          - file: 1-PVT/3-Parameters/Parameters-5-ChemicalPotential
+          - file: 1-PVT/3-Parameters/Parameters-6-GibbsEnergy
+          - file: 1-PVT/3-Parameters/Parameters-7-HelmholtzEnergy
+          - file: 1-PVT/3-Parameters/Parameters-8-Compressibility-ThermalExpansion
+          - file: 1-PVT/3-Parameters/Parameters-9-JouleThomsonCoefficient
+          - file: 1-PVT/3-Parameters/Parameters-Appendix-A-PD
+      - file: 1-PVT/4-ESC/ESC-0-Introduction
+        sections:
+          - file: 1-PVT/4-ESC/ESC-1-Equilibrium
+          - file: 1-PVT/4-ESC/ESC-2-Stability
+          - file: 1-PVT/4-ESC/ESC-3-Criticality
+  - caption: Гидродинамика
+    chapters:
+      - file: 2-ReservoirHydrodynamics/RH-Introduction
+  - caption: Инициализация модели пласта
+    chapters:
+      - file: 3-ReservoirInitialization/RI-Introduction
+  - caption: Моделирование скважин
+    chapters:
+      - file: 4-WellModelling/WM-Introduction
+  - caption: Геомеханика
+    chapters:
+      - file: 5-Geomechanics/Geomech-Introduction
+      - file: 5-Geomechanics/1-RG/RG-0-Introduction
+        sections:
+        - file: 5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions
+        - file: 5-Geomechanics/1-RG/RG-2-StressTensor
+        - file: 5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1
+        - file: 5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2
+        - file: 5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3
+        - file: 5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust
+      - file: 5-Geomechanics/2-ARG/ARG-0-Introduction
+  - caption: Геохимия
+    chapters:
+      - file: 6-Geochemistry/Geochem-Introduction
+  - caption: Численные методы в гидродинамическом моделировании
+    chapters:
+      - file: 7-NumericalMethods/NM-Introduction

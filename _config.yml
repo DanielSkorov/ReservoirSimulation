@@ -1,0 +1,16 @@
+title: Basics of Modelling
+
+author: Daniel Skorov
+
+execute:
+  execute_notebooks: force
+
+sphinx:
+  extra_extensions:
+    - sphinx_proof
+
+# repository:
+#   path_to_book: "./"
+
+# launch_buttons:
+#   thebe: true
