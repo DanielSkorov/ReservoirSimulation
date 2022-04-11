@@ -1,1 +1,1 @@
-# Basics-of-Modelling
+# Basics of Modelling
