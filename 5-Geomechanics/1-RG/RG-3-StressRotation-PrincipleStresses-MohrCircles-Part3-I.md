@@ -13,17 +13,58 @@ kernelspec:
 
 ```{admonition} Внимание!
 :class: warning
-Данная страница инициализирована в статичном режиме – все графики неинтерактивны. При необходимости Вы можете посмотреть [интерактивную копию](RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3-I.md) данной страницы.
+Данная страница является интерактивной копией [страницы](RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.md). Интерактивность осуществляется путем инициализации [Binder](https://mybinder.org/) через [Thebe](https://github.com/executablebooks/thebe).
 ```
+
+<a id='geomech-rg-stress_rotation-3-i'></a>
+# Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+
+```{admonition} Важно!
+:class: important
+Для начала работы с данной страницей необходимо инициализировать кернель путем нажатия на кнопку `Activate`, расположенную ниже, и дождаться появления надписи "STATUS: <span style="color:green">READY</span>". После этого Вы можете проверить работу кернеля, нажав на кнопку `run`, расположенную под кодом `print("Hello World!")`. Иногда инициализация кернеля может пройти неудачно, что будет сопровождаться надписью "STATUS: <span style="color:red">FAILED</span>" или "STATUS: <span style="color:grey">WAITING</span>". Чаще всего это связано с перегрузкой сервера [Binder](https://mybinder.org/).
+```
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+
+<script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+
+<script type="text/x-thebe-config">
+  {
+      requestKernel: true,
+      mountActivateWidget: true,
+      mountStatusWidget: true,
+      binderOptions: {
+      repo: "https://github.com/DanielSkorov/Basics-of-Modelling",
+      ref: "main",
+    },
+  }
+</script>
+
+<div class="thebe-activate"></div>
+
+<div class="thebe-status"></div>
+
+<pre data-executable="true" data-readonly data-language="python">print("Hello World!")</pre>
 
 +++
 
+```{admonition} Важно!
+:class: important
+После инициализации и проверки кернеля под каждой ячейкой необходимо нажать кнопку `run` для ее запуска и отображения интерактивной диаграммы.
+```
+
 ```{code-cell} ipython3
+:tags: [hide-input]
+import sympy as smp
+```
+
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 import numpy as np
 import matplotlib as mpl
-import sympy as smp
 from ipywidgets import interact, widgets
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Text3D
@@ -31,10 +72,19 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Text3D
 import sys
 sys.path.append('../../SupportCode/')
 from Graphics import cube_plane, Arrow3D
-```
+``` -->
 
-<a id='geomech-rg-stress_rotation-3'></a>
-# Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+<pre data-executable="true" data-readonly data-language="python">
+import numpy as np
+import matplotlib as mpl
+from ipywidgets import interact, widgets
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Text3D
+%matplotlib widget
+import sys
+sys.path.append('./SupportCode/')
+from Graphics import cube_plane, Arrow3D
+</pre>
 
 +++
 
@@ -54,13 +104,21 @@ $$S = \begin{bmatrix}2 & 1 & 0 \\ 1 & 3 & -2 \\ 0 & -2 & 1 \end{bmatrix}$$
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
 Lambda, C_inv = np.linalg.eig(S)
 C = np.linalg.inv(C_inv)
 Sp = C.dot(S).dot(C_inv)
 Sp
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
+Lambda, C_inv = np.linalg.eig(S)
+C = np.linalg.inv(C_inv)
+Sp = C.dot(S).dot(C_inv)
+Sp
+</pre>
 
 +++
 
@@ -80,9 +138,13 @@ $$\sigma_1 > \sigma_2 > \sigma_3$$
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 s1, s2, s3 = Sp.diagonal()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+s1, s2, s3 = Sp.diagonal()
+</pre>
 
 +++
 
@@ -94,9 +156,13 @@ $$C^{-1} = \begin{bmatrix} \vert & \vert &  \\ \vec{v_1} & \vec{v_2} & \ldots \\
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 v1, v2, v3 = C_inv.T
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+v1, v2, v3 = C_inv.T
+</pre>
 
 +++
 
@@ -104,15 +170,23 @@ v1, v2, v3 = C_inv.T
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 np.inner(v1, v2), np.inner(v2, v3), np.inner(v3, v1)
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+np.inner(v1, v2), np.inner(v2, v3), np.inner(v3, v1)
+</pre>
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 v1[0]**2 + v1[1]**2 + v1[2]**2, v2[0]**2 + v2[1]**2 + v2[2]**2, v3[0]**2 + v3[1]**2 + v3[2]**2
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+v1[0]**2 + v1[1]**2 + v1[2]**2, v2[0]**2 + v2[1]**2 + v2[2]**2, v3[0]**2 + v3[1]**2 + v3[2]**2
+</pre>
 
 +++
 
@@ -132,7 +206,7 @@ $$n_1^2 + n_2^2 + n_3^2 = 1.$$
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 fig = plt.figure(figsize=(8, 4))
@@ -169,7 +243,44 @@ ax.set_yticks([])
 ax.set_zticks([])
 
 fig.tight_layout()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(8, 4))
+fig.canvas.header_visible = False
+
+ax = fig.add_subplot(1, 1, 1, projection='3d')
+cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
+n = np.array([1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)])
+ax.add_collection3d(cube.cube_collection())
+ax.add_collection3d(cube.inter_collection(normal=n))
+ax.set_xlim(cube.xlim)
+ax.set_ylim(cube.ylim)
+ax.set_zlim(cube.zlim)
+ax.add_artist(Arrow3D(*zip([0, 0, 0], n), color='r', lw=1))
+ax.text(*n, '$\overrightarrow{n}$', c='r')
+T = Sp.dot(n.T)
+ax.add_artist(Arrow3D(*zip([0, 0, 0], T), color='k', lw=1))
+ax.text(*T, '$\overrightarrow{T}$', c='k')
+Tn = T.dot(n.T) * n
+ax.add_artist(Arrow3D(*zip([0, 0, 0], Tn), color='g', lw=1))
+ax.text(*Tn, '$\overrightarrow{T_n}$', c='g')
+Ts = T - Tn
+ax.add_artist(Arrow3D(*zip([0, 0, 0], Ts), color='c', lw=1))
+s = Ts / np.linalg.norm(Ts)
+ax.text(*Ts, '$\overrightarrow{T_s}$', c='c')
+ax.add_artist(Arrow3D([0.5, 0.5+s1], [0, 0], [0, 0], color='b', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0.5, 0.5+s2], [0, 0], color='b', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 0.5+s3], color='b', lw=1))
+ax.text(0.5+s1, 0, 0, '$\sigma_{1}$')
+ax.text(0, 0.5+s2, 0, '$\sigma_{2}$')
+ax.text(0, 0, 0.5+s3, '$\sigma_{3}$')
+ax.set_xticks([])
+ax.set_yticks([])
+ax.set_zticks([])
+
+fig.tight_layout()
+</pre>
 
 +++
 
@@ -282,7 +393,7 @@ $$\left(y - y_0 \right)^2 + \left(x - x_0 \right)^2 = R^2$$
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 fig, ax = plt.subplots(figsize=(5, 4.5))
@@ -299,7 +410,24 @@ ax.scatter(T.dot(n.T), T.dot(s.T), c='k', alpha=0.3)
 ax.set_axisbelow(True)
 
 fig.tight_layout()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+fig, ax = plt.subplots(figsize=(5, 4.5))
+fig.canvas.header_visible = False
+ax.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
+ax.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
+ax.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
+ax.set_xlim(s3, s1)
+ax.set_ylim(-(s1-s3)/2, (s1-s3)/2)
+ax.set_xlabel('$T_n$')
+ax.set_ylabel('$T_s$')
+ax.grid()
+ax.scatter(T.dot(n.T), T.dot(s.T), c='k', alpha=0.3)
+ax.set_axisbelow(True)
+
+fig.tight_layout()
+</pre>
 
 +++
 
@@ -307,7 +435,7 @@ fig.tight_layout()
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 f = plt.figure(figsize=(5, 8))
 f.canvas.header_visible = False
@@ -383,7 +511,101 @@ def plane_intersection_3d(alpha, beta, gamma):
     ax1.text(*ts_vec, '$\\overrightarrow{T_s}$', c='c')
     ax2.scatter(tn, ts, c='k', alpha=0.3)
     pass
-```
+``` -->
+
+````{div} full-width
+<pre data-executable="true" data-readonly data-language="python">
+f = plt.figure(figsize=(9, 4))
+f.canvas.header_visible = False
+
+S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
+
+[[s11, s12, s13], [s21, s22, s23], [s31, s32, s33]] = S
+
+ax1 = f.add_subplot(1, 2, 1, projection='3d')
+
+normal = np.array([1, 0, 0])
+
+unit_cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
+
+ax1.set_xlim(unit_cube.xlim)
+ax1.set_ylim(unit_cube.ylim)
+ax1.set_zlim(unit_cube.zlim)
+ax1.set_xticks([])
+ax1.set_yticks([])
+ax1.set_zticks([])
+ax1.invert_zaxis()
+ax1.invert_xaxis()
+ax1.set_xlabel('X')
+ax1.set_ylabel('Y')
+ax1.set_zlabel('Z')
+
+s11_arr = Arrow3D([0.5, 0.5+s11], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4)
+s22_arr = Arrow3D([0, 0], [0.5, 0.5+s22], [0, 0], color='k', lw=1, mutation_scale=4)
+s33_arr = Arrow3D([0, 0], [0, 0], [0.5, 0.5+s33], color='k', lw=1, mutation_scale=4)
+s12_arr = Arrow3D([0.5, 0.5], [0, s12], [0, 0], color='k', lw=1, mutation_scale=4)
+s23_arr = Arrow3D([0, 0], [0.5, 0.5], [0, s23], color='k', lw=1, mutation_scale=4)
+s31_arr = Arrow3D([0, s31], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4)
+
+ax2 = f.add_subplot(1, 2, 2)
+
+ax2.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
+ax2.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
+ax2.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
+
+ax2.set_xlim(s3, s1)
+ax2.set_ylim(-(s1-s3)/2, (s1-s3)/2)
+ax2.set_xlabel('$T_n$')
+ax2.set_ylabel('$T_s$')
+ax2.grid()
+
+f.tight_layout()
+
+removing2 = [Text3D, Poly3DCollection, Arrow3D, mpl.collections.PathCollection]
+
+@interact(alpha=widgets.IntSlider(min=0, max=360, step=1, value=0),
+          beta=widgets.IntSlider(min=0, max=360, step=1, value=0),
+          gamma=widgets.IntSlider(min=0, max=360, step=1, value=0))
+def plane_intersection_3d(alpha, beta, gamma):
+    for dax in [ax1, ax2]:
+        for child in dax.get_children():
+            if type(child) in removing2:
+                try:
+                    child.remove()
+                except:
+                    break
+    alpha, beta, gamma = alpha * np.pi / 180, beta * np.pi / 180, gamma * np.pi / 180
+    for art in [s11_arr, s22_arr, s33_arr, s12_arr, s23_arr, s31_arr]:
+        ax1.add_artist(art)
+    arrow_n = Arrow3D(*zip([0, 0, 0], normal), color='r', rotation_angles=(alpha, beta, gamma), lw=1)
+    ax1.add_artist(arrow_n)
+    rot_m = arrow_n.rotation_matrix()
+    n = rot_m.dot(normal.T)
+    t_vec = S.dot(n)
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], t_vec), color='b', lw=1))
+    tn = t_vec.dot(n.T)
+    tn_vec = tn * n
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], tn_vec), color='g', lw=1))
+    ts_vec = t_vec - tn_vec
+    s = ts_vec / np.linalg.norm(ts_vec)
+    ts = t_vec.dot(s.T)
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], ts_vec), color='c', lw=1))
+    ax1.add_collection3d(unit_cube.cube_collection())
+    ax1.add_collection3d(unit_cube.inter_collection(normal=n))
+    ax1.text(*n, '$\\overrightarrow{n}$', c='r')
+    ax1.text(0.5+s11, 0, 0, '$\sigma_{11}$')
+    ax1.text(0, 0.5+s22, 0, '$\sigma_{22}$')
+    ax1.text(0, 0, 0.5+s33, '$\sigma_{33}$')
+    ax1.text(0.5, s12, 0, '$\\tau_{12}$')
+    ax1.text(0, 0.5, s23, '$\\tau_{23}$')
+    ax1.text(s31, 0, 0.5, '$\\tau_{31}$')
+    ax1.text(*t_vec, '$\\overrightarrow{T}$', c='b')
+    ax1.text(*tn_vec, '$\\overrightarrow{T_n}$', c='g')
+    ax1.text(*ts_vec, '$\\overrightarrow{T_s}$', c='c')
+    ax2.scatter(tn, ts, c='k', alpha=0.3)
+    pass
+</pre>
+````
 
 +++
 

@@ -13,12 +13,57 @@ kernelspec:
 
 ```{admonition} Внимание!
 :class: warning
-Данная страница инициализирована в статичном режиме – все графики неинтерактивны. При необходимости Вы можете посмотреть [интерактивную копию](RG-2-StressTensor-I.md) данной страницы.
+Данная страница является интерактивной копией [страницы](RG-2-StressTensor.md). Интерактивность осуществляется путем инициализации [Binder](https://mybinder.org/) через [Thebe](https://github.com/executablebooks/thebe).
 ```
 
 +++
 
-```{code-cell} ipython3
+<a id='geomech-rg-stress-i'></a>
+# Напряжение. Тензор напряжений
+
++++
+
+```{admonition} Важно!
+:class: important
+Для начала работы с данной страницей необходимо инициализировать кернель путем нажатия на кнопку `Activate`, расположенную ниже, и дождаться появления надписи "STATUS: <span style="color:green">READY</span>". После этого Вы можете проверить работу кернеля, нажав на кнопку `run`, расположенную под кодом `print("Hello World!")`. Иногда инициализация кернеля может пройти неудачно, что будет сопровождаться надписью "STATUS: <span style="color:red">FAILED</span>" или "STATUS: <span style="color:grey">WAITING</span>". Чаще всего это связано с перегрузкой сервера [Binder](https://mybinder.org/).
+```
+
++++
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+
+<script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+
+<script type="text/x-thebe-config">
+  {
+      requestKernel: true,
+      mountActivateWidget: true,
+      mountStatusWidget: true,
+      binderOptions: {
+      repo: "https://github.com/DanielSkorov/Basics-of-Modelling",
+      ref: "main",
+    },
+  }
+</script>
+
+<div class="thebe-activate"></div>
+
+<div class="thebe-status"></div>
+
+<pre data-executable="true" data-readonly data-language="python">print("Hello World!")</pre>
+
++++
+
+```{admonition} Важно!
+:class: important
+После инициализации и проверки кернеля под каждой ячейкой необходимо нажать кнопку `run` для ее запуска и отображения интерактивной диаграммы.
+```
+
++++
+
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 import numpy as np
@@ -31,12 +76,21 @@ warnings.filterwarnings('ignore')
 import sys
 sys.path.append('../../SupportCode/')
 from Graphics import cube, Arrow3D
-```
+``` -->
 
-+++
+<pre data-executable="true" data-readonly data-language="python">
+import numpy as np
+from matplotlib import pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': False})
+%matplotlib widget
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import warnings
+warnings.filterwarnings('ignore')
+import sys
+sys.path.append('./SupportCode/')
+from Graphics import cube, Arrow3D
+</pre>
 
-<a id='geomech-rg-stress'></a>
-# Напряжение. Тензор напряжений
 
 +++
 
@@ -52,7 +106,7 @@ $$\vec{T} = \frac{\vec{F}}{A}$$
 
 Пусть имеется некоторое тело, к которому приложены некоторые внешние силы, находящееся в равновесии. Выделим в данном теле элементарный объем.
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 fig = plt.figure(figsize=(6, 4))
@@ -85,7 +139,40 @@ unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g')
 ax.add_collection3d(unit_cube.collection())
 
 fig.tight_layout()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+body = cube(20, 40, 5, scale_mult=0.1, equal_scale=True)
+
+ax.add_collection3d(body.collection())
+
+ax.set_xlim(body.xlim)
+ax.set_ylim(body.ylim)
+ax.set_zlim(body.zlim)
+
+ax.add_artist(Arrow3D([10, 20], [0, 10], [0, 10], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([-10, -20], [0, -20], [0, -10], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([0, 0], [-10, -20], [2.5, 20], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([-5, 0], [10, 20], [-2.5, -20], color='r', mutation_scale=10, lw=1))
+
+ax.text(20, 10, 10, '$\overrightarrow{F_1}$')
+ax.text(-20, -20, -10, '$\overrightarrow{F_2}$')
+ax.text(0, -20, 20, '$\overrightarrow{F_3}$')
+ax.text(0, 20, -20, '$\overrightarrow{F_n}$')
+
+unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g')
+ax.add_collection3d(unit_cube.collection())
+
+fig.tight_layout()
+</pre>
 
 +++
 
@@ -93,7 +180,7 @@ fig.tight_layout()
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 fig = plt.figure(figsize=(6, 4))
@@ -136,7 +223,51 @@ ax.text(0, 0, 1.5, '$\overrightarrow{e_3}$')
 ax.view_init(20, 55)
 
 fig.tight_layout()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g', equal_scale=True)
+ax.add_collection3d(unit_cube.collection())
+
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.add_artist(Arrow3D([0.5, 2], [0, -0.5], [0, -0.5], color='r'))
+ax.add_artist(Arrow3D([-0.5, -2], [0, 0.5], [0, 0.5], color='b'))
+ax.add_artist(Arrow3D([0, -0.5], [0.5, 2], [0, -1.5], color='r'))
+ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
+ax.add_artist(Arrow3D([0, 0], [0, -1], [0.5, 2.5], color='r'))
+ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
+
+ax.text(2, -0.5, -0.5, '$\overrightarrow{T_1}$')
+ax.text(-0.5, 2, -1.5, '$\overrightarrow{T_2}$')
+ax.text(0, -1, 2.5, '$\overrightarrow{T_3}$')
+ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+
+ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1))
+
+ax.text(1.5, 0, 0, '$\overrightarrow{e_1}$')
+ax.text(0, 1.5, 0, '$\overrightarrow{e_2}$')
+ax.text(0, 0, 1.5, '$\overrightarrow{e_3}$')
+
+ax.view_init(20, 55)
+
+fig.tight_layout()
+</pre>
+
 
 +++
 
@@ -144,7 +275,7 @@ fig.tight_layout()
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 
 fig = plt.figure(figsize=(6, 4))
@@ -182,7 +313,45 @@ ax.text(0.5, 0.5, 0.5, '$\overrightarrow{n}$')
 ax.view_init(20, 110)
 
 fig.tight_layout()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+v = np.array([[0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5],  [-0.5, -0.5, 0.5]])
+
+verts = [[v[0],v[1],v[2]], [v[0],v[1],v[3]], [v[1],v[2],v[3]]]
+verts_s = [[v[0],v[2],v[3]]]
+
+ax.add_collection3d(Poly3DCollection(verts, facecolors='g', linewidths=1, edgecolors='g', alpha=.25))
+ax.add_collection3d(Poly3DCollection(verts_s, facecolors='r', linewidths=1, edgecolors='r', alpha=.25))
+
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+ax.add_artist(Arrow3D([-0.5, -2], [0, 0.5], [0, 0.5], color='b'))
+ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
+ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
+ax.add_artist(Arrow3D([-0.25, 1], [-0.25, 1], [0, 0.5], color='r'))
+ax.add_artist(Arrow3D([-0.25, 0.5], [-0.25, 0.5], [0, 0.75], color='k'))
+
+ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+ax.text(1, 1, 0.5, '$\overrightarrow{T}$')
+ax.text(0.5, 0.5, 0.5, '$\overrightarrow{n}$')
+
+ax.view_init(20, 110)
+
+fig.tight_layout()
+</pre>
 
 +++
 
@@ -270,7 +439,7 @@ $$S = \begin{bmatrix} \sigma_{1} & \tau_{12} & \tau_{13} \\ \tau_{21} & \sigma_{
 
 +++
 
-```{code-cell} ipython3
+<!-- ```{code-cell} ipython3
 :tags: [hide-input]
 fig = plt.figure(figsize=(6, 4))
 fig.canvas.header_visible = False
@@ -307,5 +476,53 @@ ax.yaxis.set_ticks([])
 ax.zaxis.set_ticks([])
 ax.view_init(20, 55)
 fig.tight_layout()
-```
+``` -->
+
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+unit_cube = cube(1, 1, 1, facecolors='goldenrod', edgecolors='goldenrod', scale_mult=0.5)
+ax.add_collection3d(unit_cube.collection())
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0.5, 0.5], [0, 0.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0.5, 0.5], [0, 0.0], [0, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0.5], [0.5, 0.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0.5, 0.5], [0, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0.5], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0, 0.5], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
+
+ax.text(1.5, 0, 0, '$\overrightarrow{\sigma_1}$')
+ax.text(0, 1.5, 0, '$\overrightarrow{\sigma_2}$')
+ax.text(0, 0, 1.5, '$\overrightarrow{\sigma_3}$')
+ax.text(0.5, 0.3, 0.05, '$\overrightarrow{\\tau_{12}}$')
+ax.text(0.5, 0.0, 0.3, '$\overrightarrow{\\tau_{13}}$')
+ax.text(0.45, 0.5, -0.2, '$\overrightarrow{\\tau_{21}}$')
+ax.text(0, 0.55, 0.35, '$\overrightarrow{\\tau_{23}}$')
+ax.text(0.5, 0.0, 0.6, '$\overrightarrow{\\tau_{31}}$')
+ax.text(0, 0.5, 0.6, '$\overrightarrow{\\tau_{32}}$')
+
+ax.grid(None)
+
+ax.xaxis.set_ticks([])
+ax.yaxis.set_ticks([])
+ax.zaxis.set_ticks([])
+
+ax.view_init(20, 55)
+
+fig.tight_layout()
+</pre>
+
 +++
