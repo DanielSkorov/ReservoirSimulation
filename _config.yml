@@ -1,16 +1,22 @@
-title: Basics of Modelling
+title: Основы моделирования пластовых систем
 
 author: Daniel Skorov
+copyright: "2022"
 
 execute:
   execute_notebooks: force
+
+# only_build_toc_files: true
+
+exclude_patterns: ["#TEST/*"]
 
 sphinx:
   extra_extensions:
     - sphinx_proof
 
 # repository:
-#   path_to_book: "./"
+#   url: "https://github.com/DanielSkorov/Basics-of-Modelling"
+#   branch: "main"
 
 # launch_buttons:
 #   thebe: true
