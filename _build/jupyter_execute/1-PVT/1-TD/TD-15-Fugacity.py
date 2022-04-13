@@ -13,6 +13,10 @@
 
 # $$dG = V dP.$$
 
+# ```{admonition} NB
+# Важно отметить, что, принимая температуру постоянной, мы предполагаем, что в системе температура всех фаз одинакова.
+# ```
+
 # Для идеального газа с учетом [уравнения состояния](./TD-1-Basics.html#pvt-td-basics-ideal_gas_eos):
 
 # $$dG = \frac{N k T}{P} dP = N k T d \ln P = \frac{N}{N_A} \left(k N_A \right) T d \ln P = n R T d \ln P.$$
