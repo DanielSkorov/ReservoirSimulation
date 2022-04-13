@@ -1,0 +1,1179 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Уравнение состояния Ван-дер-Ваальса &#8212; Основы моделирования пластовых систем</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона" href="EOS-2-SRK-PR.html" />
+    <link rel="prev" title="Уравнения состояния" href="EOS-0-Introduction.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../Introduction.html">
+   Основы моделирования пластовых систем
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Основы вычислительной математики
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
+   Основы линейной алгебры
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
+     Вектор. Координаты вектора
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
+     Операции с векторами
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
+     Направляющие косинусы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
+     Матрицы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
+     Определитель матрицы. Обратная матрица
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
+     Матричные уравнения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
+     Собственные векторы и значения матриц
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
+     Линейные преобразования
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
+   Пределы
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
+   Основы дифференциальных и интегральных исчислений
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
+   Дифференциальные уравнения
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
+   Методы оптимизации функций
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-1-Newton.html">
+     Нахождение стационарной точки функции методом Ньютона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-2-QNewton.html">
+     Квази-ньютоновские методы поиска стационарной точки функции
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-3-TR.html">
+     Метод доверительной области
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-4-Tunneling.html">
+     Туннельный метод оптимизации функции
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  PVT-моделирование
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../PVT-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../1-TD/TD-0-Introduction.html">
+   Основы термодинамики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-1-Basics.html">
+     Введение в термодинамику
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">
+     Термическое равновесие. Температура. Нулевое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">
+     Количество теплоты и работа. Первое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-6-Entropy.html">
+     Энтропия. Второе и третье начала термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">
+     Энергия Гельмгольца. Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-9-Observables.html">
+     Интенсивные и экстенсивные параметры
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">
+     Энергия Гиббса многокомпонентной системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">
+     Правило фаз Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">
+     Уравнение Гиббса-Дюгема
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">
+     Соотношения Максвелла
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">
+     Свободная энергия и фазовое равновесие
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-15-Fugacity.html">
+     Летучесть
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="EOS-0-Introduction.html">
+   Уравнения состояния
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Уравнение состояния Ван-дер-Ваальса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-2-SRK-PR.html">
+     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-3-SW.html">
+     Уравнение состояния Сорейде-Уитсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-4-SAFT.html">
+     Теория SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-5-PCSAFT.html">
+     Уравнение состояния PC-SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-6-CPA.html">
+     Кубическое уравнение состояние с учетом ассоциации молекул
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-Appendix-A-PD.html">
+     Частные производные летучести компонентов
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-Appendix-B-BIP.html">
+     Универсальный расчет коэффициентов попарного взаимодействия
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../3-Parameters/Parameters-0-Introduction.html">
+   Определение параметров систем с использованием уравнений состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-1-InternalEnergy.html">
+     Внутренняя энергия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-2-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-3-Entropy.html">
+     Энтропия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-5-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-6-GibbsEnergy.html">
+     Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-7-HelmholtzEnergy.html">
+     Энергия Гельмгольца
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
+     Коэффициент сжимаемости. Коэффициент термического расширения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
+     Коэффициент Джоуля-Томсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-Appendix-A-PD.html">
+     Частные производные термодинамических параметров
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../4-ESC/ESC-0-Introduction.html">
+   Равновесие. Стабильность. Критическое состояние
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-1-Equilibrium.html">
+     Определение равновесного состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-2-Stability.html">
+     Определение стабильности фазового состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-3-Criticality.html">
+     Определение критического состояния системы
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Гидродинамика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Инициализация модели пласта
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Моделирование скважин
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геомеханика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/Geomech-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-0-Introduction.html">
+   Основы геомеханики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions.html">
+     Напряженно-деформированное состояние. Допущения и условия теории упругости
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-2-StressTensor.html">
+     Напряжение. Тензор напряжений
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust.html">
+     Напряженное состояние в земной коре
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/2-ARG/ARG-0-Introduction.html">
+   Основные вопросы геомеханического моделирования
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геохимия
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Численные методы в гидродинамическом моделировании
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="../../_sources/1-PVT/2-EOS/EOS-1-VanDerWaals.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/1-PVT/2-EOS/EOS-1-VanDerWaals.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/1-PVT/2-EOS/EOS-1-VanDerWaals.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Уравнение состояния Ван-дер-Ваальса</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <p><a id='pvt-eos-van_der_waals'></a></p>
+<div class="section" id="id1">
+<h1>Уравнение состояния Ван-дер-Ваальса<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>В 1873 году Ван-дер-Ваальс предложил использовать уравнение состояние:</p>
+<div class="math notranslate nohighlight">
+\[ \left( P + \frac{a_m}{v^2} \right) \left( v - b_m \right) = R T.\]</div>
+<p>В данном уравнении <span class="math notranslate nohighlight">\(v = \frac{V}{n}\)</span> – молярный объем. Параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> являются коэффициентами, со следующими физическими смыслами. Параметр <span class="math notranslate nohighlight">\(b_m\)</span> определяет объем полностью сжатой системы при бесконечно большом давлении. Поэтому условием применения уравнения состояния Ван-дер-Ваальса является <span class="math notranslate nohighlight">\(v &gt; b_m\)</span>. Параметр <span class="math notranslate nohighlight">\(a_m\)</span> характеризует межмолекулярное взаимодействие. При рассмотрении системы, состоящей из нескольких компонентов, (смеси) параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> будут зависеть от видов молекул системы (свойств компонентов), а также ее компонентного состава.</p>
+<p>Выразим из уравнения состояния Ван-дер-Ваальса давление:</p>
+<div class="math notranslate nohighlight">
+\[P = \frac{n R T}{V - n b_m} - \frac{n^2 a_m}{V^2}.\]</div>
+<p>Для того чтобы определить летучесть компонента, необходимо получить частную производную давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента при постоянных давлении, температуре и количествах вещества остальных компонентов.  Стоит сразу отметить, что эта производная будет представлять собой вектор из <span class="math notranslate nohighlight">\(N_c\)</span> значений, где <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе. При этом, от количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента будут зависеть параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span>, а также общее количество вещества <span class="math notranslate nohighlight">\(n\)</span>. С учетом этого, частная производная давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}}
+&amp;= \frac{\partial}{\partial n_i} \left( \frac{n R T}{V - n b_m} - \frac{n^2 a_m}{V^2} \right)_{V, T, n_{j \neq i}} \\
+&amp;= \frac{\partial}{\partial n_i} \left( \frac{n R T}{V - n b_m} \right)_{V, T, n_{j \neq i}} - \frac{\partial}{\partial n_i} \left( \frac{n^2 a_m}{V^2} \right)_{V, T, n_{j \neq i}} \\
+&amp;= \frac{RT}{V - n b_m} \frac{\partial n}{\partial n_i} + n \frac{\partial}{\partial n_i} \left( \frac{R T}{V - n b_m} \right) - \frac{1}{V^2} \frac{\partial \left( n^2 a_m \right)}{\partial n_i}. \end{align} \end{split}\]</div>
+<p><a id='pvt-eos-van_der_waals-partials'></a>
+Распишем подробнее производную количества вещества <span class="math notranslate nohighlight">\(n\)</span> по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial n}{\partial n_i} = \frac{\partial}{\partial n_i} \left( \sum_{j=1}^{N_c} n_j \right) = \sum_{j=1}^{N_c} \frac{\partial n_j}{\partial n_i} .\]</div>
+<p>Частная производная количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента по количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \frac{\partial n_j}{\partial n_i} = \begin{bmatrix} \frac{\partial n_1}{\partial n_1} &amp; \frac{\partial n_2}{\partial n_1} &amp; \dots &amp; \frac{\partial n_{N_c}}{\partial n_1} \\ \frac{\partial n_1}{\partial n_2} &amp; \frac{\partial n_2}{\partial n_2} &amp; \dots &amp; \frac{\partial n_{N_c}}{\partial n_2} \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ \frac{\partial n_1}{\partial n_{N_c}} &amp; \frac{\partial n_2}{\partial n_{N_c}} &amp; \dots &amp; \frac{\partial n_{N_c}}{\partial n_{N_c}} \end{bmatrix} = \begin{bmatrix} 1 &amp; 0 &amp; \dots &amp; 0 \\ 0 &amp; 1 &amp; \dots &amp; 0 \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ 0 &amp; 0 &amp; \dots &amp; 1 \end{bmatrix} = I_{ij}. \end{split}\]</div>
+<p>Следовательно, в результате суммы столбцов (по <span class="math notranslate nohighlight">\(j\)</span>) матрицы <span class="math notranslate nohighlight">\(I_{ij}\)</span> получится вектор размерностью <span class="math notranslate nohighlight">\(\left(N_c \times 1 \right)\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\sum_{j=1}^{N_c} I_{ij} = \begin{bmatrix} 1 \\ 1 \\ \vdots \\ 1 \end{bmatrix} = \vec{e}.\end{split}\]</div>
+<p>Таким образом, умножение числа на вектор <span class="math notranslate nohighlight">\(\vec{e}\)</span> будет означать, что это число одинаково для всех компонентов. Поэтому умножение на <span class="math notranslate nohighlight">\(\vec{e}\)</span> можно опустить.</p>
+<p>С учетом этого частная производная давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V - n b_m} + \frac{n R T}{\left( V - n b_m \right)^2} \frac{\partial \left( n b_m \right)}{\partial n_i} - \frac{1}{V^2} \frac{\partial \left( n^2 a_m \right)}{\partial n_i}.\]</div>
+<p>Подставим полученное выражение в уравнение для логарифма коэффициента летучести:</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi_i = \int_V^\infty \left( \frac{1}{V - n b_m} + \frac{n}{\left( V - n b_m \right)^2} \frac{\partial \left( n b_m \right)}{\partial n_i} - \frac{1}{R T V^2} \frac{\partial \left( n^2 a_m \right)}{\partial n_i} - \frac{1}{V} \right) dV - \ln Z.\]</div>
+<p>Найдем первообразную подынтегральной функции:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+F \left( V \right)
+&amp;= \int f \left( V \right) dV \\
+&amp;= \int \left( \frac{1}{V - n b_m} + \frac{n}{\left( V - n b_m \right)^2} \frac{\partial \left( n b_m \right)}{\partial n_i} - \frac{1}{R T V^2} \frac{\partial \left( n^2 a_m \right)}{\partial n_i} - \frac{1}{V} \right) dV \\
+&amp;= \int \frac{dV}{V - n b_m} + n \frac{\partial \left( n b_m \right)}{\partial n_i} \int \frac{dV}{\left( V - n b_m \right)^2} - \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{RT} \int \frac{dV}{V^2} - \int \frac{dV}{V} \\
+&amp;= \int \frac{d \left(V - n b_m \right)}{V - n b_m} + n \frac{\partial \left( n b_m \right)}{\partial n_i} \int \frac{d \left( V - n b_m \right)}{\left( V - n b_m \right)^2} - \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{RT} \int \frac{dV}{V^2} - \int \frac{dV}{V} \\
+&amp;= \ln \lvert V - n b_m \rvert - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T} \frac{1}{V} - \ln \lvert V \rvert \\
+&amp;= \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V}.
+\end{align} \end{split}\]</div>
+<p>Формула <a class="reference external" href="https://en.wikipedia.org/wiki/Leibniz_integral_rule">Ньютона-Лейбница</a> для <a class="reference external" href="https://en.wikipedia.org/wiki/Improper_integral">несобственных интегралов</a>:</p>
+<div class="math notranslate nohighlight">
+\[ \int_a^\infty f \left( x \right) dx = \lim_{b \rightarrow \infty} \int_a^b f \left( x \right) dx = \lim_{b \rightarrow \infty} F \left( x \right) \bigg\rvert_a^b = \lim_{b \rightarrow \infty} \left( F \left( b \right) - F \left( a \right)\right). \]</div>
+<p>С учетом данного выражения несобственный интеграл в выражении для логарифма коэффициента летучести:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{alignat}{1}
+\int_V^\infty f \left( V \right) dV
+&amp;= &amp;\lim_{V \rightarrow \infty} \left( \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V} \right) \\
+&amp;&amp; - \left( \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V} \right) \\
+&amp;= &amp;\ln \frac{V}{V - n b_m} + n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} - \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V}.
+\end{alignat} \end{split}\]</div>
+<p>При преобразовании данного выражения было учтено:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\lim_{V \rightarrow \infty} \left( \ln \frac{V - n b_m}{V} \right) &amp;= 0; \\
+\lim_{V \rightarrow \infty} \left( \frac{1}{V - n b_m} \right) &amp;= 0; \\
+\lim_{V \rightarrow \infty} \left( \frac{1}{V} \right) &amp;= 0.
+\end{align}\end{split}\]</div>
+<p>Тогда логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi_i = \ln \frac{V}{V - n b_m} + \frac{n}{V - n b_m} \frac{\partial \left( n b_m \right)}{\partial n_i} - \frac{1}{R T V} \frac{\partial \left( n^2 a_m \right)}{\partial n_i} - \ln Z. \]</div>
+<p><a id='pvt-eos-van_der_waals-mix_rules'></a></p>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>Для того чтобы преобразовать это выражение, то есть взять частные производные от параметров <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, необходимо ввести <em><strong>правила смешивания</strong></em> – допущения, позволяющие рассчитать параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> по компонентному составу системы и свойствам компонентов.</p>
+</div>
+<p>Одними из наиболее часто использующихся правил смешивания являются следующие соотношения:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align} a_m &amp;= \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} x_j x_k a_{jk}; \\ b_m &amp;= \sum_{j=1}^{N_c} x_j b_j. \end{align}\end{split}\]</div>
+<p>Здесь <span class="math notranslate nohighlight">\(x\)</span> – мольная доля компонента, <span class="math notranslate nohighlight">\(a_{jk}\)</span> – параметр, характеризующий степень взаимодействия молекул <span class="math notranslate nohighlight">\(j\)</span>-го и <span class="math notranslate nohighlight">\(k\)</span>-го компонентов. Если <span class="math notranslate nohighlight">\(j=k\)</span>, то параметр <span class="math notranslate nohighlight">\(a_{jk}\)</span> должен соответствовать параметру <span class="math notranslate nohighlight">\(a\)</span> по Ван-дер-Ваальсу, если же <span class="math notranslate nohighlight">\(j \neq k\)</span>, то параметр <span class="math notranslate nohighlight">\(a_{jk}\)</span> в отсутствие экспериментальных данных должен выражаться из известных значений <span class="math notranslate nohighlight">\(a_j\)</span> и <span class="math notranslate nohighlight">\(a_k\)</span>. Это является одной из основных проблем при использовании уравнения состояния и правил смешивания – правильно учесть взаимовлияние компонентов. Зная взаимодействие молекул чистых компонентов, каким образом выразить взаимодействие молекул разных компонентов между собой? Однозначного ответа на данный вопрос нет. Поэтому на практике используются различные правила смешивания в зависимости от поставленной задачи, а также в качестве инструмента адаптации на лабораторные исследования. Наиболее часто для расчета параметра <span class="math notranslate nohighlight">\(a_{jk}\)</span> используется следующее выражение:</p>
+<div class="math notranslate nohighlight">
+\[a_{jk} = \left( a_j a_k \right) ^ {0.5}.\]</div>
+<p>Также можно встретить дополнительный множитель в этом выражении:</p>
+<div class="math notranslate nohighlight">
+\[a_{jk} = \left( a_j a_k \right) ^ {0.5} \left(1 - \delta_{jk} \right).\]</div>
+<p><a id='pvt-eos-van_der_waals-bip'></a>
+В приведенном выше уравнении <span class="math notranslate nohighlight">\(\delta_{jk}\)</span> – коэффициент попарного взаимодействия. Данный коэффициент был введен авторами работы [<a class="reference external" href="https://doi.org/10.1002/aic.690130612">Chueh and Prausnitz, 1967</a>] с целью коррекции правил смешивания, основанных на геометрическом осреднении параметров компонентов при расчете параметра смеси. Одним из распространненных подходов к определению коэффициентов попарного взаимодействия является пренебрежние коэффициентами попарного взаимодействие между углеводородными компонентами, поскольку их можно рассматривать как неполярные компоненты, и использование табличных констант для задания коэффициентов попарного взаимодействия между углеводородными и неуглеводородными компонентами [<a class="reference external" href="https://doi.org/10.1021/i200024a027">Pedersen et al, 1984</a>; <a class="reference external" href="https://doi.org/10.2118/88364-PA">Pedersen et al, 2004</a>]. Однако использование данного подхода может быть недостаточно для адаптации PVT-модели к лабораторным данным. Так, авторами работы [<a class="reference external" href="https://doi.org/10.2118/6721-PA">Katz and Firoozabadi, 1978</a>] не удалось достичь удовлетворительной адаптации PVT-модели, пока не были изменены коэффициенты попарного взаимодействия между легкими и тяжелыми компонентами, оказывающиими зачастую наибольшее влияние на фазовое поведение системы. Одной из распространенных корреляций коэффициента попарного взаимодействия двух углеводородных компонентов является:</p>
+<div class="math notranslate nohighlight">
+\[\delta_{jk} = 1 - \left( \frac{2 {V_c}_j^{\frac{1}{6}} {V_c}_k^{\frac{1}{6}}}{{V_c}_j^{\frac{1}{3}} + {V_c}_k^{\frac{1}{3}}} \right)^c.\]</div>
+<p><span class="math notranslate nohighlight">\({V_c}_j\)</span> – критический объем <span class="math notranslate nohighlight">\(j\)</span>-го компонента, <span class="math notranslate nohighlight">\(c\)</span> – коэффициент, обычно принимающий значение <span class="math notranslate nohighlight">\(1.2\)</span> [<a class="reference external" href="https://api.semanticscholar.org/CorpusID:94056056">Oellrich et al, 1981</a>], но также выступающий в качестве инструмента адаптации на лабораторные данные. Для неуглеводородных компонентов коэффициент попарного взаимодействия можно найти в научных работах. Выбор корреляции для коэффициентов попарного взаимодействия зависит в том числе от используемых уравнения состояния и правил смешивания, поскольку зачастую коэффиициенты в корреляциях коэффициентов попарного взаимодействия подбираются путем регрессии расчетных значений PVT-свойств флюида к фактическим данным. Поэтому на практике на нулевой итерации начальные коэффициенты попарного взаимодействия определяются по корреляциям, которые будут представлены для уравнений состояния <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr">Суаве-Редлиха-Квонга и Пенга-Робинсона</a> в <a class="reference external" href="./EOS-Appendix-B-BIP.html#pvt-eos-appendix-bip">приложении B</a>, а затем варьируются в процессе адаптации модели к экспериментальным данным. Значения коэффициентов попарного взаимодействия могут быть как положительными, так и отрицательными. Однако в ряде случаев использование положительных и отрицательных коэффициентов попарного взаимодействия компонентов, близких по молекулярной массе, подобранных в результате адаптации модели к лабораторным данным, может приводить к появлению нефизичности в PVT-модели [<a class="reference external" href="http://dx.doi.org/10.15530/urtec-2019-551">Whitson et al, 2019</a>]. Стоит отметить, что коэффициенты попарного взаимодействия здесь и далее рассматриваются симметричными, то есть <span class="math notranslate nohighlight">\(\delta_{jk} \approx \delta_{kj}\)</span>, поскольку использование несимметричных коэффициентов попарного взаимодействия может приводить к нереалистному моделированию вблизи критической области [<a class="reference external" href="https://doi.org/10.1016/j.jare.2012.03.004">Fateen et al, 2013</a>].</p>
+<p><a id='pvt-eos-van_der_waals-am_bm_derivative'></a>
+Принимая данные правила смешивания, получим конечное выражение для логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента. Для этого необходимо получить производные от параметров <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial n b_m}{\partial n_i} = b_m \frac{\partial n}{\partial n_i} + n \frac{\partial b_m}{\partial n_i}.\]</div>
+<p>В свою очередь, частная производная параметра <span class="math notranslate nohighlight">\(b_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\frac{\partial b_m}{\partial n_i}
+&amp;= \frac{\partial}{\partial n_i} \left( \sum_{j=1}^{N_c} x_j b_j \right) \\
+&amp;= \sum_{j=1}^{N_c} b_j \frac{\partial}{\partial n_i} \left( \frac{n_j}{n} \right) \\
+&amp;= \sum_{j=1}^{N_c} b_j \frac{n \frac{\partial n_j}{\partial n_i} - n_j \frac{\partial n}{\partial n_i}}{n^2} \\
+&amp;= \frac{1}{n} \sum_{j=1}^{N_c} b_j I_{ij} - \frac{1}{n} \sum_{j=1}^{N_c} b_j x_j \\
+&amp;= \frac{b_i - b_m}{n}.
+\end{align} \end{split}\]</div>
+<p>При получении данного выражения было использовано следующее преобразование:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \sum_{j=1}^{N_c} b_j I_{ij} = \sum_{j=1}^{N_c} \begin{bmatrix} b_1 &amp; 0 &amp; \dots &amp; 0 \\ 0 &amp; b_2 &amp; \dots &amp; 0 \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ 0 &amp; 0 &amp; \dots &amp; b_{N_c} \end{bmatrix} = \begin{bmatrix} b_1 \\ b_2 \\ \vdots \\ b_{N_c} \end{bmatrix} = b_i. \end{split}\]</div>
+<p>Получим производную для параметра <span class="math notranslate nohighlight">\(a_m\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial \left( n^2 a_m \right)}{\partial n_i} = 2 n a_m + n^2 \frac{\partial a_m}{\partial n_i}.\]</div>
+<p>В свою очередь, частная производная параметра <span class="math notranslate nohighlight">\(a_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\frac{\partial a_m}{\partial n_i}
+&amp;= \frac{\partial}{\partial n_i} \left( \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} x_j x_k a_{jk} \right) \\
+&amp;= \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} \frac{\partial}{\partial n_i} \left( \frac{n_j n_k}{n^2} \right) \\
+&amp;= \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} \frac{n^2 \frac{\partial}{\partial n_i} \left( n_j n_k \right) - n_j n_k \frac{\partial n^2}{\partial n_i}}{n^4} \\
+&amp;= \frac{1}{n^2} \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} \left( n_k I_{ij} + n_j I_{ik} \right) - \frac{2}{n} \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} x_j x_k \\
+&amp;= \frac{1}{n^2} \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} n_k I_{ij} + \frac{1}{n^2} \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} n_j I_{ik} - \frac{2}{n} a_m.
+\end{align} \end{split}\]</div>
+<p>Для преобразования данного выражения рассмотрим следующий пример. Параметр <span class="math notranslate nohighlight">\(a_{jk}\)</span> представляет собой симметричную матрицу относительно главной диагонали.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../SupportCode/&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">PVT</span> <span class="kn">import</span> <span class="n">core</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ajk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+<span class="n">ajk</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[0.01, 0.02, 0.03],
+       [0.02, 0.04, 0.06],
+       [0.03, 0.06, 0.09]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>При умножении “разнонаправленных” матриц, например, <span class="math notranslate nohighlight">\(a_{jk} I_{ij}\)</span> получится трехмерная матрица. Для того чтобы правильно выполнить умножение можно использовать пользовательскую функцию <em>repeat</em>, которая предназначена для того, чтобы продублировать вектор или матрицу в заданном направлении.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Iij</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">Iik</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">nk</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">nj</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">ajk</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">ajk</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ajk</span> <span class="o">*</span> <span class="n">nk</span> <span class="o">*</span> <span class="n">Iij</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0.14, 0.28, 0.42])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ajk</span> <span class="o">*</span> <span class="n">nj</span> <span class="o">*</span> <span class="n">Iik</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0.14, 0.28, 0.42])
+</pre></div>
+</div>
+</div>
+</div>
+<p>В результате в обоих случаях получился один и тот же вектор (в направлении <span class="math notranslate nohighlight">\(i\)</span>, поскольку суммирование проиходило по направлениям <span class="math notranslate nohighlight">\(j\)</span> и <span class="math notranslate nohighlight">\(k\)</span>). Следовательно, можно записать следующее равенство:</p>
+<div class="math notranslate nohighlight">
+\[ \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} n_k I_{ij} = \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} a_{jk} n_j I_{ik}. \]</div>
+<p>Аналогичный результат получится, если взять <span class="math notranslate nohighlight">\(n_j\)</span> умножить на <span class="math notranslate nohighlight">\(a_{ij}\)</span> и просуммировать по <span class="math notranslate nohighlight">\(j\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+<span class="n">nj</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">nj</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[1., 2., 3.],
+       [1., 2., 3.],
+       [1., 2., 3.]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">aij</span> <span class="o">*</span> <span class="n">nj</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0.14, 0.28, 0.42])
+</pre></div>
+</div>
+</div>
+</div>
+<p>С учетом этого частная производная параметра <span class="math notranslate nohighlight">\(a_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial a_m}{\partial n_i} = \frac{2}{n} \left( \sum_{j=1}^{N_c} a_{ij} x_j - a_m \right).\]</div>
+<p><a id='pvt-eos-van_der_waals-fugacity_coeff-tv'></a>
+Тогда логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{alignat}{1}
+\ln \phi_i &amp;= \; &amp;\ln \frac{V}{V - n b_m} + \frac{n}{V - n b_m} \left(b_m + n \frac{b_i - b_m}{n} \right) - \frac{1}{R T V} \left( 2 n a_m + n^2 \frac{2}{n} \left( \sum_{j=1}^{N_c} a_{ij} x_j - a_m \right) \right) \\
+&amp; \; &amp; - \ln Z \\
+&amp;= \; &amp;\ln \frac{V}{V - n b_m} + \frac{n b_i}{V - n b_m} - \frac{2 n \sum_{j=1}^{N_c} a_{ij} x_j}{R T V} - \ln Z \\
+&amp;= \; &amp;\ln \frac{v}{v - b_m} + \frac{b_i}{v - b_m} - \frac{2 \sum_{j=1}^{N_c} a_{ij} x_j}{R T v} - \ln Z.
+\end{alignat}\end{split}\]</div>
+<p><a id='pvt-eos-van_der_waals-coefficients'></a>
+Каким образом могут быть определены параметры <span class="math notranslate nohighlight">\(a\)</span> и <span class="math notranslate nohighlight">\(b\)</span> для чистого компонента, по которым рассчитываются с использованием правил смешивания параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span>? Это можно сделать через экспериментально определенные критические давление и температуру. <a class="reference external" href="../1-TD/TD-14-PhaseEquilibrium.html#pvt-td-phase_equilibrium-critical_point">Ранее</a> было показано, что критическая точка характеризуется следующими соотношениями:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial P}{\partial v} \right)_{T_c} = \left( \frac{\partial^2 P}{\partial v^2} \right)_{T_c} = 0.\]</div>
+<p>Получим значения параметров <span class="math notranslate nohighlight">\(a\)</span> и <span class="math notranslate nohighlight">\(b\)</span>, выраженные через критические свойства компонентов, из уравнения Ван-дер-Ваальса. Частная производная давления по молярному объему при постоянной температуре:</p>
+<div class="math notranslate nohighlight">
+\[ \left(\frac{\partial P}{\partial v} \right)_T = \frac{\partial}{\partial v}\left( \frac{R T}{v - b} - \frac{a}{v^2} \right)_T = - \frac{RT}{\left( v - b \right)^2} + \frac{2 a}{v^3} = 0. \]</div>
+<div class="math notranslate nohighlight">
+\[ a = \frac{R T_с v_с^3}{2 \left( v_с - b \right)^2}.\]</div>
+<p>Вторая частная производная давления по молярному объему при постоянной температуре:</p>
+<div class="math notranslate nohighlight">
+\[ \left(\frac{\partial^2 P}{\partial v^2} \right)_T = \frac{\partial}{\partial v} \left( \frac{\partial P}{\partial v} \right)_T = \frac{\partial}{\partial v} \left( - \frac{RT}{\left( v - b \right)^2} + \frac{2 a}{v^3} \right)_T = \frac{2 R T}{\left( v - b \right)^3} - \frac{6 a}{v^4} = 0. \]</div>
+<div class="math notranslate nohighlight">
+\[ b = \frac{v_c}{3}. \]</div>
+<div class="math notranslate nohighlight">
+\[ a = \frac{9 R T_c v_c}{8}. \]</div>
+<p>Поскольку наиболее часто критическую точку характеризуют давлением и температурой, то выразим параметры <span class="math notranslate nohighlight">\(a\)</span> и <span class="math notranslate nohighlight">\(b\)</span> через критические давление и температуру компонента. Для этого запишем уравнение состояния Ван-дер-Ваальса для критической точки:</p>
+<div class="math notranslate nohighlight">
+\[ \left( P_c + \frac{a}{v_c^2} \right) \left( v_c - b \right) = R T_c.\]</div>
+<p>Подставив в данное уравнение полученные ранее значения параметров <span class="math notranslate nohighlight">\(a\)</span> и <span class="math notranslate nohighlight">\(b\)</span>, получим:</p>
+<div class="math notranslate nohighlight">
+\[ v_c = \frac{3 R T_c}{8 P_c}.\]</div>
+<p>С учетом этого, значения параметров <span class="math notranslate nohighlight">\(a\)</span> и <span class="math notranslate nohighlight">\(b\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+a &amp;= \frac{27}{64} \frac{R^2 T_c^2}{P_c}; \\
+b &amp;= \frac{1}{8} \frac{R T_c}{P_c}.
+\end{align} \end{split}\]</div>
+<p>Еще одной неизвестной для расчета логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента является коэффициент сверхсжимаемости <span class="math notranslate nohighlight">\(Z\)</span>, определяемый выражением:</p>
+<div class="math notranslate nohighlight">
+\[Z = \frac{P V}{n R T} = \frac{P v}{R T}.\]</div>
+<p>Если о системе известны молярный объем <span class="math notranslate nohighlight">\(v\)</span> и температура <span class="math notranslate nohighlight">\(T\)</span>, тогда коэффициент сверхсжимаемости по уравнению Ван-дер-Ваальса:</p>
+<div class="math notranslate nohighlight">
+\[ Z = \frac{v}{v - b} - \frac{a}{R T v}.\]</div>
+<p>Если о системе известны давление <span class="math notranslate nohighlight">\(P\)</span> и температура <span class="math notranslate nohighlight">\(T\)</span>, тогда уравнение Ван-дер-Ваальса можно записать в следующем виде:</p>
+<div class="math notranslate nohighlight">
+\[ Z^3 - \left( 1 + B \right) Z^2 + A Z - A B = 0. \]</div>
+<div class="math notranslate nohighlight">
+\[ A = \frac{a_m P}{R^2 T^2}. \]</div>
+<div class="math notranslate nohighlight">
+\[ B = \frac{b_m P}{R T}. \]</div>
+<p>Решая кубическое уравнение относительно <span class="math notranslate nohighlight">\(Z\)</span>, например, с использованием <a class="reference external" href="https://en.wikipedia.org/wiki/Cubic_equation#General_cubic_formula">формулы Кардано</a> или численными методами решения нелинейных уравнений, определяется значение коэффициента сверхсжимаемости по уравнению Ван-дер-Ваальса.</p>
+<p><a id='pvt-eos-van_der_waals-fugacity_coeff-pt'></a>
+С учетом этого выражение для логарифма коэффициента летучести можно преобразовать следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi_i = - \ln \left( Z - B \right) + \frac{b_i}{b_m} \frac{B}{Z - B} + \frac{2 A}{Z a_m} \sum_{j=1}^{N_c} a_{ij} x_j.\]</div>
+<p><a id='pvt-eos-van_der_waals-root_selection'></a>
+Решение кубического уравнения может привести к появлению более одного корня. Поскольку система должна характеризоваться одним значением параметра, то из нескольких значений необходимо выбрать тот, который имеет физический смысл. Это можно сделать, сравнивая между собой энергии Гиббса, рассчитываемые для данного коэффициента сверхсжимаемости. Тогда нужный корень будет характеризоваться наименьшим значением энергии Гиббса. <a class="reference external" href="../1-TD/TD-10-MixtureGibbsEnergy.html#pvt-td-mixture_gibbs_energy">Ранее</a> было показано, что энергия Гиббса многокомпонентной системы может быть рассчитана следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ G = \sum_{i=1}^{N_c} \mu_i x_i.\]</div>
+<p>Данное выражение применимо при постоянных давлении и температуре. <a class="reference external" href="../1-TD/TD-15-Fugacity.html#pvt-td-fugacity">Дифференциал химического потенциала компонента</a>:</p>
+<div class="math notranslate nohighlight">
+\[ d \mu_i = R T d \ln f_i.\]</div>
+<p>Проинтегрируем данное выражение, при этом, <span class="math notranslate nohighlight">\(\mu_0\)</span> будет соответствовать <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span>. Тогда:</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i - {\mu_0}_i = R T \ln f_i. \]</div>
+<p>Тогда энергия Гиббса:</p>
+<div class="math notranslate nohighlight">
+\[ G = \sum_{i=1}^{N_c} x_i {\mu_0}_i + R T \sum_{i=1}^{N_c} x_i \ln f_i. \]</div>
+<p>Пусть <span class="math notranslate nohighlight">\(Z_1\)</span> и <span class="math notranslate nohighlight">\(Z_2\)</span> – корни кубического уравнения состояния, которым соответствуют энергии Гиббса <span class="math notranslate nohighlight">\(G_1\)</span> и <span class="math notranslate nohighlight">\(G_2\)</span>. Тогда:</p>
+<div class="math notranslate nohighlight">
+\[ G_1 - G_2 = R T \left( \sum_{i=1}^{N_c} x_i \ln {f_1}_i - \sum_{i=1}^{N_c} x_i \ln {f_2}_i \right). \]</div>
+<p>Логарифм летучести можно получить из логарифма коэффициента летучести:</p>
+<div class="math notranslate nohighlight">
+\[ \ln f_i = \ln \phi_i + \ln x_i P.\]</div>
+<p>Преобразуем сумму произведений мольной доли компонента и логарифма летучести:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\sum_{i=1}^{N_c} x_i \ln f_i
+&amp;= \sum_{i=1}^{N_c} x_i \ln \phi_i + \sum_{i=1}^{N_c} x_i \ln x_i P \\
+&amp;= - \sum_{i=1}^{N_c} x_i \ln \left( Z - B \right) + \sum_{i=1}^{N_c} x_i \frac{b_i}{b_m} \frac{B}{Z - B} + \sum_{i=1}^{N_c} x_i \frac{2 A}{Z a_m} \sum_{j=1}^{N_c} a_{ij} x_j + \sum_{i=1}^{N_c} x_i \ln x_i P \\
+&amp;= - \ln \left( Z - B \right) \sum_{i=1}^{N_c} x_i + \frac{1}{b_m} \frac{B}{Z - B} \sum_{i=1}^{N_c} x_i b_i + \frac{2 A}{Z a_m} \sum_{i=1}^{N_c} \sum_{j=1}^{N_c} a_{ij} x_i x_j + \sum_{i=1}^{N_c} x_i \ln x_i P \\
+&amp;= - \ln \left( Z - B \right) + \frac{B}{Z - B} + \frac{2 A}{Z} + \sum_{i=1}^{N_c} x_i \ln x_i P.
+\end{align} \end{split}\]</div>
+<p>С учетом этого разность энергий Гиббса:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align} G_1 - G_2 &amp;= R T \left( - \ln \left( Z_1 - B \right) + \frac{B}{Z_1 - B} + \frac{2 A}{Z_1} + \ln \left( Z_2 - B \right) - \frac{B}{Z_2 - B} - \frac{2 A}{Z_2} \right) \\
+&amp;= R T \left(\ln \frac{Z_2 - B}{Z_1 - B} + B \frac{Z_2 - Z_1}{\left( Z_1 - B \right) \left( Z_2 - B \right)} + 2 A \frac{Z_2 - Z_1}{Z_1 Z_2} \right). \end{align}\end{split}\]</div>
+<p>Следовательно, если <span class="math notranslate nohighlight">\(G_1 - G_2 &gt; 0,\)</span> то коэффициент сверхсжимаемости системы равен <span class="math notranslate nohighlight">\(Z_2\)</span>.</p>
+<p><a id='pvt-eos-van_der_waals-exercise'></a>
+Теперь можно рассмотреть применение уравнения состояния Ван-дер-Ваальса, например, для нахождения летучестей компонентов в смеси метана и диоксида углерода с мольными долями <span class="math notranslate nohighlight">\(0.85\)</span> и <span class="math notranslate nohighlight">\(0.15\)</span> для давления <span class="math notranslate nohighlight">\(20 \; бар\)</span> и температуры <span class="math notranslate nohighlight">\(40 \; \unicode{xB0} C\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Pc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">7.37646</span><span class="p">,</span> <span class="mf">4.600155</span><span class="p">])</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
+<span class="n">Tc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">304.2</span><span class="p">,</span> <span class="mf">190.6</span><span class="p">])</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">])</span>
+<span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.025</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mf">8.314</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">mix_rules_vdw</span><span class="p">(</span><span class="n">core</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">Pc</span><span class="p">,</span> <span class="n">Tc</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dij</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">calc_der</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ai</span> <span class="o">=</span> <span class="mi">27</span> <span class="o">*</span> <span class="n">R</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">Tc</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="n">Pc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bi</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">Tc</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">Pc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ai</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ai</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dij</span> <span class="o">=</span> <span class="n">dij</span>
+        <span class="k">if</span> <span class="n">dij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aij</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aij</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dij</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">am</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aij</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">calc_der</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">damdn</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aij</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">am</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">damdn</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bi</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bm</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mr</span> <span class="o">=</span> <span class="n">mix_rules_vdw</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">Pc</span><span class="p">,</span> <span class="n">Tc</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">eos_vdw</span><span class="p">(</span><span class="n">core</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mr</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mr</span> <span class="o">=</span> <span class="n">mr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">T</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Z_V</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">v</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lnphi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fug_coef_V</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">P</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">P</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">mr</span><span class="o">.</span><span class="n">am</span> <span class="o">*</span> <span class="n">P</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">mr</span><span class="o">.</span><span class="n">bm</span> <span class="o">*</span> <span class="n">P</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Z_P</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">P</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lnphi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fug_coef_P</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lnf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnphi</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mr</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">calc_Z_V</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">bm</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">am</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calc_Z_P</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Zs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_cardano</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">)</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">Zs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Zs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_dG</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">Zs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">Z</span> <span class="o">=</span> <span class="n">Zs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Z</span>
+
+    <span class="k">def</span> <span class="nf">calc_fug_coef_V</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">bm</span><span class="p">))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">bi</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">bm</span><span class="p">)</span> <span class="o">-</span> \
+               <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">aij</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calc_fug_coef_P</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">bi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">bm</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">))</span> <span class="o">-</span> \
+               <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">aij</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">am</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calc_dG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">Z2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Z1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">*</span> <span class="p">(</span><span class="n">Z2</span> <span class="o">-</span> <span class="n">Z1</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">Z1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">Z2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">))</span> <span class="o">+</span> \
+               <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="n">Z2</span> <span class="o">-</span> <span class="n">Z1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Z1</span> <span class="o">*</span> <span class="n">Z2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Результаты расчета коэффициента сверхсжимаемости газа с использованием уравнения состояния Ван-дер-Ваальса:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eos</span> <span class="o">=</span> <span class="n">eos_vdw</span><span class="p">(</span><span class="n">mr</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">40</span><span class="o">+</span><span class="mf">273.15</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">20</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">eos</span><span class="o">.</span><span class="n">Z</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.9592105017186376
+</pre></div>
+</div>
+</div>
+</div>
+<p>Аналогичный результат может быть получен при расчете коэффициента сверхсжимаемости газа относительно известных температуры и молярного объема:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eosv</span> <span class="o">=</span> <span class="n">eos_vdw</span><span class="p">(</span><span class="n">mr</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">40</span><span class="o">+</span><span class="mf">273.15</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">eos</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+<span class="n">eosv</span><span class="o">.</span><span class="n">Z</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.9592105017186375
+</pre></div>
+</div>
+</div>
+</div>
+<p>Значения логарифма летучести компонентов, рассчитанные относительно известных давления и температуры:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eos</span><span class="o">.</span><span class="n">lnf</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([12.53825926, 14.31135689])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Значения логарифма летучести компонентов, рассчитанные относительно известных молярного объема и температуры:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eosv</span><span class="o">.</span><span class="n">lnf</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([12.53825926, 14.31135689])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Однако использование уравнения состояния Ван-дер-Ваальса может приводить к существенному расхождению с фактическими данными. Например, с учетом ранее полученных соотношений, согласно уравнению состояния Ван-дер-Ваальса коэффиицент сверхсжимаемости глюбого газа в сверхкритическом состоянии составляет <span class="math notranslate nohighlight">\(\frac{3}{8} = 0.375 .\)</span> При этом, для большинства реальных газов коэффициент сверхсжимаемости в критическом состоянии <a class="reference external" href="https://phys.libretexts.org/Bookshelves/Thermodynamics_and_Statistical_Mechanics/Book%3A_Heat_and_Thermodynamics_(Tatum)/06%3A_Properties_of_Gases/6.03%3A_Van_der_Waals_and_Other_Gases">составляет</a> около <span class="math notranslate nohighlight">\(0.28\)</span>. Таким образом, несмотря на свою простоту, уравнение состояния Ван-дер-Ваальса практически не используется, поэтому далее уравнение состояния Ван-дер-Ваальса не будет рассматриваться. Для повышения точности расчета параметров систем на практике используются уравнения состояния Пенга-Робинсона и Суаве-Редлиха-Квонга, которые также являются двухпараметрическими уравнениями состояния.</p>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./1-PVT\2-EOS"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="EOS-0-Introduction.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Уравнения состояния</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="EOS-2-SRK-PR.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Daniel Skorov<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

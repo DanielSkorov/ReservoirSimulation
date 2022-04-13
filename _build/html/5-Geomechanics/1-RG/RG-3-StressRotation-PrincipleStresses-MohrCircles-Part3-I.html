@@ -1,0 +1,1170 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3 &#8212; Основы моделирования пластовых систем</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../Introduction.html">
+   Основы моделирования пластовых систем
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Основы вычислительной математики
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
+   Основы линейной алгебры
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
+     Вектор. Координаты вектора
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
+     Операции с векторами
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
+     Направляющие косинусы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
+     Матрицы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
+     Определитель матрицы. Обратная матрица
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
+     Матричные уравнения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
+     Собственные векторы и значения матриц
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
+     Линейные преобразования
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
+   Пределы
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
+   Основы дифференциальных и интегральных исчислений
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
+   Дифференциальные уравнения
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
+   Методы оптимизации функций
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-1-Newton.html">
+     Нахождение стационарной точки функции методом Ньютона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-2-QNewton.html">
+     Квази-ньютоновские методы поиска стационарной точки функции
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-3-TR.html">
+     Метод доверительной области
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-4-Tunneling.html">
+     Туннельный метод оптимизации функции
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  PVT-моделирование
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../1-PVT/PVT-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/1-TD/TD-0-Introduction.html">
+   Основы термодинамики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-1-Basics.html">
+     Введение в термодинамику
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-2-ThermalEquilibrium.html">
+     Термическое равновесие. Температура. Нулевое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-3-Heat-Work.html">
+     Количество теплоты и работа. Первое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-5-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-6-Entropy.html">
+     Энтропия. Второе и третье начала термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-7-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-8-Helmholtz-Gibbs.html">
+     Энергия Гельмгольца. Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-9-Observables.html">
+     Интенсивные и экстенсивные параметры
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-10-MixtureGibbsEnergy.html">
+     Энергия Гиббса многокомпонентной системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-11-GibbsPhaseRule.html">
+     Правило фаз Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-12-GibbsDuhemEquation.html">
+     Уравнение Гиббса-Дюгема
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-13-MaxwellRelations.html">
+     Соотношения Максвелла
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-14-PhaseEquilibrium.html">
+     Свободная энергия и фазовое равновесие
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-15-Fugacity.html">
+     Летучесть
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/2-EOS/EOS-0-Introduction.html">
+   Уравнения состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-1-VanDerWaals.html">
+     Уравнение состояния Ван-дер-Ваальса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-2-SRK-PR.html">
+     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-3-SW.html">
+     Уравнение состояния Сорейде-Уитсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-4-SAFT.html">
+     Теория SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-5-PCSAFT.html">
+     Уравнение состояния PC-SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-6-CPA.html">
+     Кубическое уравнение состояние с учетом ассоциации молекул
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-A-PD.html">
+     Частные производные летучести компонентов
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-B-BIP.html">
+     Универсальный расчет коэффициентов попарного взаимодействия
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-0-Introduction.html">
+   Определение параметров систем с использованием уравнений состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-1-InternalEnergy.html">
+     Внутренняя энергия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-2-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-3-Entropy.html">
+     Энтропия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-5-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-6-GibbsEnergy.html">
+     Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-7-HelmholtzEnergy.html">
+     Энергия Гельмгольца
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
+     Коэффициент сжимаемости. Коэффициент термического расширения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
+     Коэффициент Джоуля-Томсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-Appendix-A-PD.html">
+     Частные производные термодинамических параметров
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/4-ESC/ESC-0-Introduction.html">
+   Равновесие. Стабильность. Критическое состояние
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/4-ESC/ESC-1-Equilibrium.html">
+     Определение равновесного состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/4-ESC/ESC-2-Stability.html">
+     Определение стабильности фазового состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/4-ESC/ESC-3-Criticality.html">
+     Определение критического состояния системы
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Гидродинамика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Инициализация модели пласта
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Моделирование скважин
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геомеханика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../Geomech-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="RG-0-Introduction.html">
+   Основы геомеханики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-1-LinearElasticityAssumptions.html">
+     Напряженно-деформированное состояние. Допущения и условия теории упругости
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-2-StressTensor.html">
+     Напряжение. Тензор напряжений
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-4-StressesInEarthsCrust.html">
+     Напряженное состояние в земной коре
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../2-ARG/ARG-0-Introduction.html">
+   Основные вопросы геомеханического моделирования
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геохимия
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Численные методы в гидродинамическом моделировании
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="../../_sources/5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3-I.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3-I.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3-I.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="warning admonition">
+<p class="admonition-title">Внимание!</p>
+<p>Данная страница является интерактивной копией <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html"><span class="doc std std-doc">страницы</span></a>. Интерактивность осуществляется путем инициализации <a class="reference external" href="https://mybinder.org/">Binder</a> через <a class="reference external" href="https://github.com/executablebooks/thebe">Thebe</a>.</p>
+</div>
+<p><a id='geomech-rg-stress_rotation-3-i'></a></p>
+<div class="section" id="id1">
+<h1>Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="important admonition">
+<p class="admonition-title">Важно!</p>
+<p>Для начала работы с данной страницей необходимо инициализировать кернель путем нажатия на кнопку <code class="docutils literal notranslate"><span class="pre">Activate</span></code>, расположенную ниже, и дождаться появления надписи “STATUS: <span style="color:green">READY</span>”. После этого Вы можете проверить работу кернеля, нажав на кнопку <code class="docutils literal notranslate"><span class="pre">run</span></code>, расположенную под кодом <code class="docutils literal notranslate"><span class="pre">print(&quot;Hello</span> <span class="pre">World!&quot;)</span></code>. Иногда инициализация кернеля может пройти неудачно, что будет сопровождаться надписью “STATUS: <span style="color:red">FAILED</span>” или “STATUS: <span style="color:grey">WAITING</span>”. Чаще всего это связано с перегрузкой сервера <a class="reference external" href="https://mybinder.org/">Binder</a>.</p>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+<script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+<script type="text/x-thebe-config">
+  {
+      requestKernel: true,
+      mountActivateWidget: true,
+      mountStatusWidget: true,
+      binderOptions: {
+      repo: "https://github.com/DanielSkorov/Basics-of-Modelling",
+      ref: "main",
+    },
+  }
+</script>
+<div class="thebe-activate"></div>
+<div class="thebe-status"></div>
+<pre data-executable="true" data-readonly data-language="python">print("Hello World!")</pre><div class="important admonition">
+<p class="admonition-title">Важно!</p>
+<p>После инициализации и проверки кернеля под каждой ячейкой необходимо нажать кнопку <code class="docutils literal notranslate"><span class="pre">run</span></code> для ее запуска и отображения интерактивной диаграммы.</p>
+</div>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">smp</span>
+</pre></div>
+</div>
+</div>
+</div>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+import numpy as np
+import matplotlib as mpl
+from ipywidgets import interact, widgets
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Text3D
+%matplotlib widget
+import sys
+sys.path.append('../../SupportCode/')
+from Graphics import cube_plane, Arrow3D
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+import numpy as np
+import matplotlib as mpl
+from ipywidgets import interact, widgets
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Text3D
+%matplotlib widget
+import sys
+sys.path.append('./SupportCode/')
+from Graphics import cube_plane, Arrow3D
+</pre><p>Другим подходом к изображению напряженного состояния в точке (по аналогии с 2D задачей) является построение кругов Мора. Представим, что имеется элементарный куб, который рассекается некоторой плоскостью. Отсеченная часть отбрасывается, а оставшаяся уравновешивается вектором напряжения, действующим на площадь сечения. Данный вектор напряжения имеет нормальную и касательую составляющие. Поскольку рассечь элементарный объем можно под любыми углами, то совокупность векторов напряжения, действующих на площадь сечения, характеризует напряженное состояние в данной точке. Рассмотрим вывод уравнений, описывающих круги Мора для трехмерного случая.</p>
+<p>При рассмотрении тем <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html"><span class="doc std std-doc">собственных векторов матриц</span></a> и их <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html"><span class="doc std std-doc">линейных преобразований</span></a> было показано, что любая квадратная матрица может быть представлена в диагонализированном виде при ее линейном преобразовании из стандартного базиса в базис, построенный на собственных векторах матрицы. Следовательно, трехмерный тензор напряжений также может быть диагонализирован. Рассмотрим пример. Пусть имеется тензор напряжений:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}S = \begin{bmatrix}2 &amp; 1 &amp; 0 \\ 1 &amp; 3 &amp; -2 \\ 0 &amp; -2 &amp; 1 \end{bmatrix}\end{split}\]</div>
+<p>Найдем его собственные векторы и преобразуем к диагональному виду:</p>
+<!-- ```{code-cell} ipython3
+S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
+Lambda, C_inv = np.linalg.eig(S)
+C = np.linalg.inv(C_inv)
+Sp = C.dot(S).dot(C_inv)
+Sp
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
+Lambda, C_inv = np.linalg.eig(S)
+C = np.linalg.inv(C_inv)
+Sp = C.dot(S).dot(C_inv)
+Sp
+</pre><p>Полученные напряжения называются главными и записываются в виде следующей матрицы:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}S_p = \begin{bmatrix} \sigma_1 &amp; 0 &amp; 0 \\ 0 &amp; \sigma_2 &amp; 0 \\ 0 &amp; 0 &amp; \sigma_3 \end{bmatrix}\end{split}\]</div>
+<p>При этом, для главных напряжений выполняется сдедующее неравенство:</p>
+<div class="math notranslate nohighlight">
+\[\sigma_1 &gt; \sigma_2 &gt; \sigma_3\]</div>
+<!-- ```{code-cell} ipython3
+s1, s2, s3 = Sp.diagonal()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+s1, s2, s3 = Sp.diagonal()
+</pre><p>Пусть матрица <span class="math notranslate nohighlight">\(C^{-1}\)</span> составлена из координат собственных векторов тензора напряжений, которые называются главными направляющими векторами:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}C^{-1} = \begin{bmatrix} \vert &amp; \vert &amp;  \\ \vec{v_1} &amp; \vec{v_2} &amp; \ldots \\ \vert &amp; \vert &amp;  \end{bmatrix}\end{split}\]</div>
+<!-- ```{code-cell} ipython3
+v1, v2, v3 = C_inv.T
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+v1, v2, v3 = C_inv.T
+</pre><p>Векторы <span class="math notranslate nohighlight">\(\vec{v_1}, \vec{v_2}, \vec{v_3}\)</span> являются единичными взаимоперпендикулярными и образуют новый базис, в котором рассматриваемое напряженное состояние в точке представлено исключительно нормальными напряжениями.</p>
+<!-- ```{code-cell} ipython3
+np.inner(v1, v2), np.inner(v2, v3), np.inner(v3, v1)
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+np.inner(v1, v2), np.inner(v2, v3), np.inner(v3, v1)
+</pre><!-- ```{code-cell} ipython3
+v1[0]**2 + v1[1]**2 + v1[2]**2, v2[0]**2 + v2[1]**2 + v2[2]**2, v3[0]**2 + v3[1]**2 + v3[2]**2
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+v1[0]**2 + v1[1]**2 + v1[2]**2, v2[0]**2 + v2[1]**2 + v2[2]**2, v3[0]**2 + v3[1]**2 + v3[2]**2
+</pre><p>Рассмотрим элементарный объем тела относительно базиса, представленного собственными векторами тензора напряжений. На данный элементарный объем действуют только нормальные напряжения. Рассечем данный объем плоскостью, нормаль к которой имеет координаты:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\vec{n} = \begin{bmatrix} n_1 \\ n_2 \\ n_3 \end{bmatrix}.\end{split}\]</div>
+<p>При этом, вектор нормали является единичным вектором, то есть:</p>
+<div class="math notranslate nohighlight">
+\[n_1^2 + n_2^2 + n_3^2 = 1.\]</div>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+fig = plt.figure(figsize=(8, 4))
+fig.canvas.header_visible = False
+
+ax = fig.add_subplot(1, 1, 1, projection='3d')
+cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
+n = np.array([1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)])
+ax.add_collection3d(cube.cube_collection())
+ax.add_collection3d(cube.inter_collection(normal=n))
+ax.set_xlim(cube.xlim)
+ax.set_ylim(cube.ylim)
+ax.set_zlim(cube.zlim)
+ax.add_artist(Arrow3D(*zip([0, 0, 0], n), color='r', lw=1))
+ax.text(*n, '$\overrightarrow{n}$', c='r')
+T = Sp.dot(n.T)
+ax.add_artist(Arrow3D(*zip([0, 0, 0], T), color='k', lw=1))
+ax.text(*T, '$\overrightarrow{T}$', c='k')
+Tn = T.dot(n.T) * n
+ax.add_artist(Arrow3D(*zip([0, 0, 0], Tn), color='g', lw=1))
+ax.text(*Tn, '$\overrightarrow{T_n}$', c='g')
+Ts = T - Tn
+ax.add_artist(Arrow3D(*zip([0, 0, 0], Ts), color='c', lw=1))
+s = Ts / np.linalg.norm(Ts)
+ax.text(*Ts, '$\overrightarrow{T_s}$', c='c')
+ax.add_artist(Arrow3D([0.5, 0.5+s1], [0, 0], [0, 0], color='b', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0.5, 0.5+s2], [0, 0], color='b', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 0.5+s3], color='b', lw=1))
+ax.text(0.5+s1, 0, 0, '$\sigma_{1}$')
+ax.text(0, 0.5+s2, 0, '$\sigma_{2}$')
+ax.text(0, 0, 0.5+s3, '$\sigma_{3}$')
+ax.set_xticks([])
+ax.set_yticks([])
+ax.set_zticks([])
+
+fig.tight_layout()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(8, 4))
+fig.canvas.header_visible = False
+
+ax = fig.add_subplot(1, 1, 1, projection='3d')
+cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
+n = np.array([1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)])
+ax.add_collection3d(cube.cube_collection())
+ax.add_collection3d(cube.inter_collection(normal=n))
+ax.set_xlim(cube.xlim)
+ax.set_ylim(cube.ylim)
+ax.set_zlim(cube.zlim)
+ax.add_artist(Arrow3D(*zip([0, 0, 0], n), color='r', lw=1))
+ax.text(*n, '$\overrightarrow{n}$', c='r')
+T = Sp.dot(n.T)
+ax.add_artist(Arrow3D(*zip([0, 0, 0], T), color='k', lw=1))
+ax.text(*T, '$\overrightarrow{T}$', c='k')
+Tn = T.dot(n.T) * n
+ax.add_artist(Arrow3D(*zip([0, 0, 0], Tn), color='g', lw=1))
+ax.text(*Tn, '$\overrightarrow{T_n}$', c='g')
+Ts = T - Tn
+ax.add_artist(Arrow3D(*zip([0, 0, 0], Ts), color='c', lw=1))
+s = Ts / np.linalg.norm(Ts)
+ax.text(*Ts, '$\overrightarrow{T_s}$', c='c')
+ax.add_artist(Arrow3D([0.5, 0.5+s1], [0, 0], [0, 0], color='b', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0.5, 0.5+s2], [0, 0], color='b', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 0.5+s3], color='b', lw=1))
+ax.text(0.5+s1, 0, 0, '$\sigma_{1}$')
+ax.text(0, 0.5+s2, 0, '$\sigma_{2}$')
+ax.text(0, 0, 0.5+s3, '$\sigma_{3}$')
+ax.set_xticks([])
+ax.set_yticks([])
+ax.set_zticks([])
+
+fig.tight_layout()
+</pre><p>Вектор напряжения, действующий на данную площадку:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\vec{T} = S_p \cdot \vec{n} = \begin{bmatrix} \sigma_1 &amp; 0 &amp; 0 \\ 0 &amp; \sigma_2 &amp; 0 \\ 0 &amp; 0 &amp; \sigma_3 \end{bmatrix} \cdot \begin{bmatrix} n_1 \\ n_2 \\ n_3 \end{bmatrix} = \begin{bmatrix} \sigma_1 \cdot n_1 \\ \sigma_2 \cdot n_2 \\ \sigma_3 \cdot n_3 \end{bmatrix}\end{split}\]</div>
+<p>Нормальная составляющая вектора напряжения (коллинеарная с нормалью):</p>
+<div class="math notranslate nohighlight">
+\[T_n = \vec{T} \cdot \vec{n} = S_p \cdot \vec{n} \cdot \vec{n} = \sigma_1 \cdot n^2_1 + \sigma_2 \cdot n^2_2 + \sigma_3 \cdot n^2_3\]</div>
+<p>Скалярный квадрат вектора напряжения:</p>
+<div class="math notranslate nohighlight">
+\[\vec{T}^2 = \vec{T_n}^2 + \vec{T_s}^2 = {\left(\sigma_1 \cdot n_1 \right)}^2 + {\left(\sigma_2 \cdot n_2 \right)}^2 + {\left(\sigma_3 \cdot n_3 \right)}^2\]</div>
+<p>Последнее равенство получается следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\vec{T}^2 = \vec{T} \cdot \vec{T} = \left(\vec{T_n} + \vec{T_s} \right) \cdot \left(\vec{T_n} + \vec{T_s} \right) = \vec{T_n}^2 + 2 \cdot \vec{T_n} \cdot \vec{T_s} + \vec{T_s}^2 = \vec{T_n}^2 + \vec{T_s}^2\]</div>
+<p>Таким образом, имеется система уравнений (в матричном виде):</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix} 1 &amp; 1 &amp; 1 \\ \sigma_1 &amp; \sigma_2 &amp; \sigma_3 \\ \sigma_1^2 &amp; \sigma_2^2 &amp; \sigma_3^2 \end{bmatrix} \cdot \begin{bmatrix} n_1^2 \\ n_2^2 \\ n_3^2 \end{bmatrix} = \begin{bmatrix} 1 \\ T_n \\ \vec{T_n}^2 + \vec{T_s}^2 \end{bmatrix}\end{split}\]</div>
+<p>Решением данной системы уравнений относительно <span class="math notranslate nohighlight">\(n_1^2, n_2^2, n_3^2\)</span> является:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">n3</span><span class="p">,</span> <span class="n">Tn</span><span class="p">,</span> <span class="n">Ts</span> <span class="o">=</span> <span class="n">smp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;c1, c2, c3, n1, n2, n3, Tn, Ts&#39;</span><span class="p">)</span>
+<span class="n">smp</span><span class="o">.</span><span class="n">solve</span><span class="p">([</span><span class="n">n1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">n2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">n3</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+           <span class="n">c1</span> <span class="o">*</span> <span class="n">n1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">n2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">n3</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">Tn</span><span class="p">,</span>
+           <span class="n">c1</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c2</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c3</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n3</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">Tn</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">Ts</span><span class="o">**</span><span class="mi">2</span><span class="p">],</span>
+          <span class="p">(</span><span class="n">n1</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">n2</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">n3</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{n1**2: (Tn**2 - Tn*c2 - Tn*c3 + Ts**2 + c2*c3)/(c1**2 - c1*c2 - c1*c3 + c2*c3),
+ n2**2: (-Tn**2 + Tn*c1 + Tn*c3 - Ts**2 - c1*c3)/(c1*c2 - c1*c3 - c2**2 + c2*c3),
+ n3**2: (Tn**2 - Tn*c1 - Tn*c2 + Ts**2 + c1*c2)/(c1*c2 - c1*c3 - c2*c3 + c3**2)}
+</pre></div>
+</div>
+</div>
+</div>
+<p>Перепишем полученное решение следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}n_1^2 = \frac{\vec{T_s}^2 + \left(T_n - \sigma_2 \right) \cdot \left(T_n - \sigma_3 \right)}{\left(\sigma_1 - \sigma_2 \right) \cdot \left(\sigma_1 - \sigma_3 \right)} \geq 0 \\ n_2^2 = \frac{\vec{T_s}^2 + \left(T_n - \sigma_1 \right) \cdot \left(T_n - \sigma_3 \right)}{\left(\sigma_2 - \sigma_1 \right) \cdot \left(\sigma_2 - \sigma_3 \right)} \geq 0 \\ n_3^2 = \frac{\vec{T_s}^2 + \left(T_n - \sigma_1 \right) \cdot \left(T_n - \sigma_2 \right)}{\left(\sigma_3 - \sigma_1 \right) \cdot \left(\sigma_3 - \sigma_2 \right)} \geq 0\end{split}\]</div>
+<p>С учетом соотношения главных напряжений, получим:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\vec{T_s}^2 + \left(T_n - \sigma_2 \right) \cdot \left(T_n - \sigma_3 \right) \geq 0 \\ \vec{T_s}^2 + \left(T_n - \sigma_1 \right) \cdot \left(T_n - \sigma_3 \right) \leq 0 \\ \vec{T_s}^2 + \left(T_n - \sigma_1 \right) \cdot \left(T_n - \sigma_2 \right) \geq 0\end{split}\]</div>
+<p>Раскроем скобки в неравенствах и применим следующее преобразование:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{alignat}{1}
+\left(T_n - \sigma_2 \right) \cdot \left(T_n - \sigma_3 \right)
+&amp;= &amp; \; \left(T_n^2 - T_n \cdot \sigma_3 - T_n \cdot \sigma_2 + \sigma_2 \cdot \sigma_3 \right) \\
+&amp;= &amp; \; T_n^2 - 2 \cdot \frac{1}{2} \cdot T_n \cdot \left(\sigma_2 + \sigma_3 \right) + \left(\frac{1}{2} \cdot \left(\sigma_2 + \sigma_3 \right) \right)^2 - \left(\frac{1}{2} \cdot \left(\sigma_2 + \sigma_3 \right) \right)^2 \\
+&amp;&amp; \; + \sigma_2 \cdot \sigma_3 \\
+&amp;= &amp; \; \left(T_n - \frac{1}{2} \cdot \left(\sigma_2 + \sigma_3 \right) \right)^2 - \left(\frac{1}{2} \cdot \left(\sigma_2 + \sigma_3 \right) \right)^2 + \sigma_2 \cdot \sigma_3 \\
+&amp;= &amp; \; \left(T_n - \frac{1}{2} \cdot \left(\sigma_2 + \sigma_3 \right) \right)^2 - \left(\frac{1}{2} \cdot \left(\sigma_2 - \sigma_3 \right) \right)^2
+\end{alignat} \end{split}\]</div>
+<p>С учетом этого получим:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\vec{T_s}^2 + \left(T_n - \frac{1}{2} \cdot \left(\sigma_2 + \sigma_3 \right) \right)^2 \geq \left(\frac{1}{2} \cdot \left(\sigma_2 - \sigma_3 \right) \right)^2 \\ \vec{T_s}^2 + \left(T_n - \frac{1}{2} \cdot \left(\sigma_1 + \sigma_3 \right) \right)^2 \leq \left(\frac{1}{2} \cdot \left(\sigma_1 - \sigma_3 \right) \right)^2 \\ \vec{T_s}^2 + \left(T_n - \frac{1}{2} \cdot \left(\sigma_1 + \sigma_2 \right) \right)^2 \geq \left(\frac{1}{2} \cdot \left(\sigma_1 - \sigma_2 \right) \right)^2\end{split}\]</div>
+<p>Уравнение окружности имеет вид:</p>
+<div class="math notranslate nohighlight">
+\[\left(y - y_0 \right)^2 + \left(x - x_0 \right)^2 = R^2\]</div>
+<p>с центром в точке <span class="math notranslate nohighlight">\(\left(x_0, y_0 \right)\)</span> и радиусом <span class="math notranslate nohighlight">\(R\)</span>.</p>
+<p>Полученная система неравенств характеризует множество всевозможных точек с координатами <span class="math notranslate nohighlight">\(\left(T_n, T_s \right)\)</span>. Построим данные окружности для рассматриваемого примера.</p>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+fig, ax = plt.subplots(figsize=(5, 4.5))
+fig.canvas.header_visible = False
+ax.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
+ax.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
+ax.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
+ax.set_xlim(s3, s1)
+ax.set_ylim(-(s1-s3)/2, (s1-s3)/2)
+ax.set_xlabel('$T_n$')
+ax.set_ylabel('$T_s$')
+ax.grid()
+ax.scatter(T.dot(n.T), T.dot(s.T), c='k', alpha=0.3)
+ax.set_axisbelow(True)
+
+fig.tight_layout()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+fig, ax = plt.subplots(figsize=(5, 4.5))
+fig.canvas.header_visible = False
+ax.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
+ax.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
+ax.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
+ax.set_xlim(s3, s1)
+ax.set_ylim(-(s1-s3)/2, (s1-s3)/2)
+ax.set_xlabel('$T_n$')
+ax.set_ylabel('$T_s$')
+ax.grid()
+ax.scatter(T.dot(n.T), T.dot(s.T), c='k', alpha=0.3)
+ax.set_axisbelow(True)
+
+fig.tight_layout()
+</pre><p>На рисунке выше точкой обозначены величины нормальной и касательной составляющих вектора напряжения, действующего на площадку, заданную нормалью <span class="math notranslate nohighlight">\(\vec{n}\)</span>. Ниже представлена интерактивная диаграмма, позволяющая отобразить значения <span class="math notranslate nohighlight">\(T_n, T_s\)</span> при любых значениях углов поворота нормали секущей плоскости.</p>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+f = plt.figure(figsize=(5, 8))
+f.canvas.header_visible = False
+S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
+[[s11, s12, s13], [s21, s22, s23], [s31, s32, s33]] = S
+ax1 = f.add_subplot(2, 1, 1, projection='3d')
+normal = np.array([1, 0, 0])
+unit_cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
+ax1.set_xlim(unit_cube.xlim)
+ax1.set_ylim(unit_cube.ylim)
+ax1.set_zlim(unit_cube.zlim)
+ax1.set_xticks([])
+ax1.set_yticks([])
+ax1.set_zticks([])
+ax1.invert_zaxis()
+ax1.invert_xaxis()
+ax1.set_xlabel('X')
+ax1.set_ylabel('Y')
+ax1.set_zlabel('Z')
+s11_arr = Arrow3D([0.5, 0.5+s11], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4)
+s22_arr = Arrow3D([0, 0], [0.5, 0.5+s22], [0, 0], color='k', lw=1, mutation_scale=4)
+s33_arr = Arrow3D([0, 0], [0, 0], [0.5, 0.5+s33], color='k', lw=1, mutation_scale=4)
+s12_arr = Arrow3D([0.5, 0.5], [0, s12], [0, 0], color='k', lw=1, mutation_scale=4)
+s23_arr = Arrow3D([0, 0], [0.5, 0.5], [0, s23], color='k', lw=1, mutation_scale=4)
+s31_arr = Arrow3D([0, s31], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4)
+ax2 = f.add_subplot(2, 1, 2)
+ax2.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
+ax2.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
+ax2.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
+ax2.set_xlim(s3, s1)
+ax2.set_ylim(-(s1-s3)/2, (s1-s3)/2)
+ax2.set_xlabel('$T_n$')
+ax2.set_ylabel('$T_s$')
+ax2.grid()
+f.tight_layout()
+removing2 = [Text3D, Poly3DCollection, Arrow3D, mpl.collections.PathCollection]
+@interact(alpha=widgets.IntSlider(min=0, max=360, step=1, value=0), beta=widgets.IntSlider(min=0, max=360, step=1, value=0), gamma=widgets.IntSlider(min=0, max=360, step=1, value=0))
+def plane_intersection_3d(alpha, beta, gamma):
+    for dax in [ax1, ax2]:
+        for child in dax.get_children():
+            if type(child) in removing2:
+                try:
+                    child.remove()
+                except:
+                    break
+    alpha, beta, gamma = alpha * np.pi / 180, beta * np.pi / 180, gamma * np.pi / 180
+    for art in [s11_arr, s22_arr, s33_arr, s12_arr, s23_arr, s31_arr]:
+        ax1.add_artist(art)
+    arrow_n = Arrow3D(*zip([0, 0, 0], normal), color='r', rotation_angles=(alpha, beta, gamma), lw=1)
+    ax1.add_artist(arrow_n)
+    rot_m = arrow_n.rotation_matrix()
+    n = rot_m.dot(normal.T)
+    t_vec = S.dot(n)
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], t_vec), color='b', lw=1))
+    tn = t_vec.dot(n.T)
+    tn_vec = tn * n
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], tn_vec), color='g', lw=1))
+    ts_vec = t_vec - tn_vec
+    s = ts_vec / np.linalg.norm(ts_vec)
+    ts = t_vec.dot(s.T)
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], ts_vec), color='c', lw=1))
+    ax1.add_collection3d(unit_cube.cube_collection())
+    ax1.add_collection3d(unit_cube.inter_collection(normal=n))
+    ax1.text(*n, '$\\overrightarrow{n}$', c='r')
+    ax1.text(0.5+s11, 0, 0, '$\sigma_{11}$')
+    ax1.text(0, 0.5+s22, 0, '$\sigma_{22}$')
+    ax1.text(0, 0, 0.5+s33, '$\sigma_{33}$')
+    ax1.text(0.5, s12, 0, '$\\tau_{12}$')
+    ax1.text(0, 0.5, s23, '$\\tau_{23}$')
+    ax1.text(s31, 0, 0.5, '$\\tau_{31}$')
+    ax1.text(*t_vec, '$\\overrightarrow{T}$', c='b')
+    ax1.text(*tn_vec, '$\\overrightarrow{T_n}$', c='g')
+    ax1.text(*ts_vec, '$\\overrightarrow{T_s}$', c='c')
+    ax2.scatter(tn, ts, c='k', alpha=0.3)
+    pass
+``` -->
+<div class="full-width docutils">
+<pre data-executable="true" data-readonly data-language="python">
+f = plt.figure(figsize=(9, 4))
+f.canvas.header_visible = False
+
+S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
+
+[[s11, s12, s13], [s21, s22, s23], [s31, s32, s33]] = S
+
+ax1 = f.add_subplot(1, 2, 1, projection='3d')
+
+normal = np.array([1, 0, 0])
+
+unit_cube = cube_plane(1, 1, 1, alpha=0.1, linewidths=0.4, equal_scale=True)
+
+ax1.set_xlim(unit_cube.xlim)
+ax1.set_ylim(unit_cube.ylim)
+ax1.set_zlim(unit_cube.zlim)
+ax1.set_xticks([])
+ax1.set_yticks([])
+ax1.set_zticks([])
+ax1.invert_zaxis()
+ax1.invert_xaxis()
+ax1.set_xlabel('X')
+ax1.set_ylabel('Y')
+ax1.set_zlabel('Z')
+
+s11_arr = Arrow3D([0.5, 0.5+s11], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4)
+s22_arr = Arrow3D([0, 0], [0.5, 0.5+s22], [0, 0], color='k', lw=1, mutation_scale=4)
+s33_arr = Arrow3D([0, 0], [0, 0], [0.5, 0.5+s33], color='k', lw=1, mutation_scale=4)
+s12_arr = Arrow3D([0.5, 0.5], [0, s12], [0, 0], color='k', lw=1, mutation_scale=4)
+s23_arr = Arrow3D([0, 0], [0.5, 0.5], [0, s23], color='k', lw=1, mutation_scale=4)
+s31_arr = Arrow3D([0, s31], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4)
+
+ax2 = f.add_subplot(1, 2, 2)
+
+ax2.add_patch(plt.Circle(((s1 + s2) / 2, 0), (s1 - s2) / 2, fill=False, ec='r', lw=2))
+ax2.add_patch(plt.Circle(((s2 + s3) / 2, 0), (s2 - s3) / 2, fill=False, ec='b', lw=2))
+ax2.add_patch(plt.Circle(((s1 + s3) / 2, 0), (s1 - s3) / 2, fill=False, ec='g', lw=2))
+
+ax2.set_xlim(s3, s1)
+ax2.set_ylim(-(s1-s3)/2, (s1-s3)/2)
+ax2.set_xlabel('$T_n$')
+ax2.set_ylabel('$T_s$')
+ax2.grid()
+
+f.tight_layout()
+
+removing2 = [Text3D, Poly3DCollection, Arrow3D, mpl.collections.PathCollection]
+
+@interact(alpha=widgets.IntSlider(min=0, max=360, step=1, value=0),
+          beta=widgets.IntSlider(min=0, max=360, step=1, value=0),
+          gamma=widgets.IntSlider(min=0, max=360, step=1, value=0))
+def plane_intersection_3d(alpha, beta, gamma):
+    for dax in [ax1, ax2]:
+        for child in dax.get_children():
+            if type(child) in removing2:
+                try:
+                    child.remove()
+                except:
+                    break
+    alpha, beta, gamma = alpha * np.pi / 180, beta * np.pi / 180, gamma * np.pi / 180
+    for art in [s11_arr, s22_arr, s33_arr, s12_arr, s23_arr, s31_arr]:
+        ax1.add_artist(art)
+    arrow_n = Arrow3D(*zip([0, 0, 0], normal), color='r', rotation_angles=(alpha, beta, gamma), lw=1)
+    ax1.add_artist(arrow_n)
+    rot_m = arrow_n.rotation_matrix()
+    n = rot_m.dot(normal.T)
+    t_vec = S.dot(n)
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], t_vec), color='b', lw=1))
+    tn = t_vec.dot(n.T)
+    tn_vec = tn * n
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], tn_vec), color='g', lw=1))
+    ts_vec = t_vec - tn_vec
+    s = ts_vec / np.linalg.norm(ts_vec)
+    ts = t_vec.dot(s.T)
+    ax1.add_artist(Arrow3D(*zip([0, 0, 0], ts_vec), color='c', lw=1))
+    ax1.add_collection3d(unit_cube.cube_collection())
+    ax1.add_collection3d(unit_cube.inter_collection(normal=n))
+    ax1.text(*n, '$\\overrightarrow{n}$', c='r')
+    ax1.text(0.5+s11, 0, 0, '$\sigma_{11}$')
+    ax1.text(0, 0.5+s22, 0, '$\sigma_{22}$')
+    ax1.text(0, 0, 0.5+s33, '$\sigma_{33}$')
+    ax1.text(0.5, s12, 0, '$\\tau_{12}$')
+    ax1.text(0, 0.5, s23, '$\\tau_{23}$')
+    ax1.text(s31, 0, 0.5, '$\\tau_{31}$')
+    ax1.text(*t_vec, '$\\overrightarrow{T}$', c='b')
+    ax1.text(*tn_vec, '$\\overrightarrow{T_n}$', c='g')
+    ax1.text(*ts_vec, '$\\overrightarrow{T_s}$', c='c')
+    ax2.scatter(tn, ts, c='k', alpha=0.3)
+    pass
+</pre>
+</div>
+<p>Таким образом, круги Мора являются инструментом для отображения напряженного состояния. Они часто используются при проверке теории прочности системы, которые будут рассмотрены следующих разделах.</p>
+<p>После изложения понятия напряженного состояния и его изменения в зависимости от выбранного базиса перейдем к рассмотрению <a class="reference internal" href="RG-4-StressesInEarthsCrust.html"><span class="doc std std-doc">напряженного состояния в земной коре</span></a>.</p>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./5-Geomechanics\1-RG"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Daniel Skorov<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

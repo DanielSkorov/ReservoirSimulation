@@ -1,0 +1,1025 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Летучесть &#8212; Основы моделирования пластовых систем</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Уравнения состояния" href="../2-EOS/EOS-0-Introduction.html" />
+    <link rel="prev" title="Свободная энергия и фазовое равновесие" href="TD-14-PhaseEquilibrium.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../Introduction.html">
+   Основы моделирования пластовых систем
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Основы вычислительной математики
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
+   Основы линейной алгебры
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
+     Вектор. Координаты вектора
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
+     Операции с векторами
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
+     Направляющие косинусы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
+     Матрицы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
+     Определитель матрицы. Обратная матрица
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
+     Матричные уравнения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
+     Собственные векторы и значения матриц
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
+     Линейные преобразования
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
+   Пределы
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
+   Основы дифференциальных и интегральных исчислений
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
+   Дифференциальные уравнения
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
+   Методы оптимизации функций
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-1-Newton.html">
+     Нахождение стационарной точки функции методом Ньютона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-2-QNewton.html">
+     Квази-ньютоновские методы поиска стационарной точки функции
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-3-TR.html">
+     Метод доверительной области
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-4-Tunneling.html">
+     Туннельный метод оптимизации функции
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  PVT-моделирование
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../PVT-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="TD-0-Introduction.html">
+   Основы термодинамики
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-1-Basics.html">
+     Введение в термодинамику
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-2-ThermalEquilibrium.html">
+     Термическое равновесие. Температура. Нулевое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-3-Heat-Work.html">
+     Количество теплоты и работа. Первое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-5-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-6-Entropy.html">
+     Энтропия. Второе и третье начала термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-7-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-8-Helmholtz-Gibbs.html">
+     Энергия Гельмгольца. Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-9-Observables.html">
+     Интенсивные и экстенсивные параметры
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-10-MixtureGibbsEnergy.html">
+     Энергия Гиббса многокомпонентной системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-11-GibbsPhaseRule.html">
+     Правило фаз Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-12-GibbsDuhemEquation.html">
+     Уравнение Гиббса-Дюгема
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-13-MaxwellRelations.html">
+     Соотношения Максвелла
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="TD-14-PhaseEquilibrium.html">
+     Свободная энергия и фазовое равновесие
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Летучесть
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html">
+   Уравнения состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-1-VanDerWaals.html">
+     Уравнение состояния Ван-дер-Ваальса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html">
+     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-3-SW.html">
+     Уравнение состояния Сорейде-Уитсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-4-SAFT.html">
+     Теория SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-5-PCSAFT.html">
+     Уравнение состояния PC-SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-6-CPA.html">
+     Кубическое уравнение состояние с учетом ассоциации молекул
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">
+     Частные производные летучести компонентов
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">
+     Универсальный расчет коэффициентов попарного взаимодействия
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../3-Parameters/Parameters-0-Introduction.html">
+   Определение параметров систем с использованием уравнений состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-1-InternalEnergy.html">
+     Внутренняя энергия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-2-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-3-Entropy.html">
+     Энтропия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-5-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-6-GibbsEnergy.html">
+     Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-7-HelmholtzEnergy.html">
+     Энергия Гельмгольца
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
+     Коэффициент сжимаемости. Коэффициент термического расширения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
+     Коэффициент Джоуля-Томсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-Appendix-A-PD.html">
+     Частные производные термодинамических параметров
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../4-ESC/ESC-0-Introduction.html">
+   Равновесие. Стабильность. Критическое состояние
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-1-Equilibrium.html">
+     Определение равновесного состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-2-Stability.html">
+     Определение стабильности фазового состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-3-Criticality.html">
+     Определение критического состояния системы
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Гидродинамика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Инициализация модели пласта
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Моделирование скважин
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геомеханика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/Geomech-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-0-Introduction.html">
+   Основы геомеханики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions.html">
+     Напряженно-деформированное состояние. Допущения и условия теории упругости
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-2-StressTensor.html">
+     Напряжение. Тензор напряжений
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust.html">
+     Напряженное состояние в земной коре
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/2-ARG/ARG-0-Introduction.html">
+   Основные вопросы геомеханического моделирования
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геохимия
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Численные методы в гидродинамическом моделировании
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="../../_sources/1-PVT/1-TD/TD-15-Fugacity.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/1-PVT/1-TD/TD-15-Fugacity.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/1-PVT/1-TD/TD-15-Fugacity.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
+   Определение летучести
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id3">
+   Летучесть идеального газа
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id4">
+   Летучесть смеси идеальных газов
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id5">
+   Летучесть смеси реальных газов
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Летучесть</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
+   Определение летучести
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id3">
+   Летучесть идеального газа
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id4">
+   Летучесть смеси идеальных газов
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id5">
+   Летучесть смеси реальных газов
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <p><a id='pvt-td-fugacity'></a></p>
+<div class="section" id="id1">
+<h1>Летучесть<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>Определение летучести<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>Выражение <a class="reference external" href="./TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-gibbs_partials">thermodynamic identity</a>, записанное через энергию Гиббса, при постоянном количестве частиц в системе записывается следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[dG = -S dT + V dP.\]</div>
+<p>Если рассматривать изотермический процесс, то данное выражение преобразуется следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[dG = V dP.\]</div>
+<p>Для идеального газа с учетом <a class="reference external" href="./TD-1-Basics.html#pvt-td-basics-ideal_gas_eos">уравнения состояния</a>:</p>
+<div class="math notranslate nohighlight">
+\[dG = \frac{N k T}{P} dP = N k T d \ln P = \frac{N}{N_A} \left(k N_A \right) T d \ln P = n R T d \ln P.\]</div>
+<p>Здесь <span class="math notranslate nohighlight">\(N_A = 6.022 \cdot 10^{23} \; \frac{1}{моль}\)</span> – число Авогадро, <span class="math notranslate nohighlight">\(R = k \cdot N_A = 8.314 \; \frac{Дж}{моль K}\)</span> – универсальная газовая постоянная, <span class="math notranslate nohighlight">\(n\)</span> – количество вещества (моль). Стоит отметить, что полученные равнее уравнения относительно количества частиц <span class="math notranslate nohighlight">\(N\)</span> справедливы и для количества вещества <span class="math notranslate nohighlight">\(n\)</span>.</p>
+<p>Полученное выражение дифференциала энергии Гиббса справедливо для идеального газа с постоянным количеством молекул в изотермическом квази-стационарном процессе. Для реального газа вместо давления используют такой параметр, как <em><strong>летучесть</strong></em>:</p>
+<div class="math notranslate nohighlight">
+\[dG = n R T d \ln f.\]</div>
+<div class="proof определение admonition" id="определение-0">
+<p class="admonition-title"><span>Определение </span></p>
+<div class="определение-content section" id="proof-content">
+<p><em><strong>Летучесть</strong></em> определяется следующим выражением:</p>
+<div class="math notranslate nohighlight">
+\[\lim_{P \rightarrow 0} \left( \frac{f}{P} \right) = 1. \]</div>
+</div>
+</div><p>При этом,</p>
+<div class="proof определение admonition" id="определение-1">
+<p class="admonition-title"><span>Определение </span></p>
+<div class="определение-content section" id="proof-content">
+<p>Отношение летучести к давлению называют <em><strong>коэффициентом летучести</strong></em>:</p>
+<div class="math notranslate nohighlight">
+\[\phi = \frac{f}{P}.\]</div>
+</div>
+</div><p>Для компонента <span class="math notranslate nohighlight">\(i\)</span>, находящегося в термодинамическом равновесии (или в квази-стационарном изотермическом процессе), летучесть определяется следующим выражением (единицы измерения химического потенциала – <span class="math notranslate nohighlight">\(\frac{Дж}{моль}\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[d \mu_i = R T d \ln f_i.\]</div>
+<p>Данное выражение справедливо для процесса с постоянным количеством молекул компонента <span class="math notranslate nohighlight">\(i\)</span> в системе. При этом, определение летучести дается на основании следующего выражения:</p>
+<div class="math notranslate nohighlight">
+\[\lim_{P \rightarrow 0} \left( \frac{f_i}{x_i P} \right) = 1. \]</div>
+<p>Здесь <span class="math notranslate nohighlight">\(x_i\)</span> – мольная доля компонента в фазе.</p>
+<p><a id='pvt-td-fugacity-component_fugacity'></a>
+Преобразуем уравнение, определяющее летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента, к следующему виду:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align} d \mu_i - R T d \ln \left( x_i P \right) &amp;= R T d \ln f_i - R T d \ln \left( x_i P \right); \\ d \mu_i - R T d \ln \left( x_i P \right) &amp;= R T d \ln \phi_i; \\ d \mu_i - R T \left( d \ln x_i + d \ln P \right) &amp;= R T d \ln \phi_i. \end{align}\end{split}\]</div>
+<p>Поскольку количество молекул <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе зафиксировано, то:</p>
+<div class="math notranslate nohighlight">
+\[d \mu_i - R T d \ln P = R T d \ln \phi_i.\]</div>
+<p>Пусть</p>
+<div class="proof определение admonition" id="определение-2">
+<p class="admonition-title"><span>Определение </span></p>
+<div class="определение-content section" id="proof-content">
+<p><em><strong>Коэффициент сверхсжимаемости</strong></em> – параметр, который определяется следующим выражением:</p>
+<div class="math notranslate nohighlight">
+\[Z = \frac{P V}{n R T}.\]</div>
+</div>
+</div><p>Получим дифференциал коэффициента сверхсжимаемости, рассматривая изотермический процесс с постоянным количеством молекул в системе:</p>
+<div class="math notranslate nohighlight">
+\[ dZ = \frac{d \left( P V \right)}{n R T} = \frac{V dP + P dV}{n R T}.\]</div>
+<p>Разделим левую и правую части уравнения на <span class="math notranslate nohighlight">\(Z\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\frac{dZ}{Z} = \frac{dP}{P} + \frac{dV}{V}.\]</div>
+<p>С учетом этого, <a class="reference external" href="#pvt-td-fugacity-component_fugacity">выражение</a> для определения летучести компонента будет иметь следующий вид:</p>
+<div class="math notranslate nohighlight">
+\[R T d \ln \phi_i = d \mu_i - R T \left( \frac{dZ}{Z} - \frac{dV}{V} \right).\]</div>
+<p><a id='pvt-td-fugacity-chemical_potential_relation'></a>
+Для многокомпонентной системы <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-helmholtz_partials">thermodynamic identity</a>, выраженное через энергию Гельмгольца, будет иметь следующий вид:</p>
+<div class="math notranslate nohighlight">
+\[dF = -P dV - S dT + \sum_i \mu_i dn_i.\]</div>
+<p>Отсюда следует, что:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align} \mu_i &amp;= \left( \frac{\partial F}{\partial n_i} \right)_{V, T, n_{j \neq i}}; \\ -P &amp;= \left( \frac{\partial F}{\partial V} \right)_{T, n_i}. \end{align}\end{split}\]</div>
+<p>Запишем вторую частную производную энергии Гельмгольца <span class="math notranslate nohighlight">\(F\)</span> по объему <span class="math notranslate nohighlight">\(V\)</span> и количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента <span class="math notranslate nohighlight">\(n_i\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 F}{\partial n_i \partial V} = \frac{\partial}{\partial n_i} \left( \frac{\partial F}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial F}{\partial n_i} \right). \]</div>
+<p>С учетом полученных частных производных энергиии Гельмгольца по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента и объему:</p>
+<div class="math notranslate nohighlight">
+\[ - \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \left( \frac{\partial \mu_i}{\partial V} \right)_{T, n_i}. \]</div>
+<p>Следовательно, расссматривая изотермический процесс с постоянным количеством молекул <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе можно записать:</p>
+<div class="math notranslate nohighlight">
+\[ d\mu_i = - \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} dV.\]</div>
+<p>С учетом дифференциала химического потенциала <span class="math notranslate nohighlight">\(i\)</span> компонента в изотермическом процессе с постоянным количеством вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе получим дифференциал логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[ d \ln \phi_i = \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - d \ln Z. \]</div>
+<p>Следовательно, интегрируя данное выражение, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \int_0^{\ln \phi_i} d \ln \phi_i = \int_\infty^V \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - \int_0^{\ln Z} d \ln Z.\]</div>
+<p>Или при замене пределов интегрирования:</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi_i = \int_\infty^V \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - \ln Z = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln Z .\]</div>
+<p><a id='pvt-td-fugacity-equilibrium'></a></p>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>Таким образом, если рассматривать квази-стационарный изотермический процесс с постоянным количеством вещества в системе, состоящей из нескольких фаз, то равновесное состояние каждого компонента вместо равенства химических потенциалов компонентов будет определяться равенством летучестей компонентов в каждой из фаз соответственно:</p>
+<div class="math notranslate nohighlight">
+\[{f_1}_i = {f_2}_i, \; i=1...N_c.\]</div>
+</div>
+<p>При этом, поскольку рассматривается равновесное состояние, то количество вещества каждого компонента постоянно, следовательно, летучесть компонента может быть рассчитана по коэффициенту летучести, определяемому следующим выражением:</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi_i = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln Z.\]</div>
+<p>Кроме того, полученное выражение также справедливо для систем, состояющих из одного компонента. В таком случае выражение для логарифма коэффициента летучести записывается следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n} \right)_{V, T} - \frac{1}{V} \right) dV - \ln Z.\]</div>
+<p><a id='pvt-td-fugacity-ideal_gas'></a></p>
+</div>
+<div class="section" id="id3">
+<h2>Летучесть идеального газа<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>Рассмотрим применение полученного выражения для идеального газа, описываемого уравнением состояния:</p>
+<div class="math notranslate nohighlight">
+\[PV = n R T.\]</div>
+<p>Для идеального газа частная производная давления по количеству вещества компонента:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial P}{\partial n} \right)_{V, T} = \frac{RT}{V}.\]</div>
+<p>Тогда логарифм коэффициента летучести:</p>
+<div class="math notranslate nohighlight">
+\[\ln \phi = \int_V^\infty \left( \frac{1}{R T} \frac{RT}{V} - \frac{1}{V} \right) dV - \ln Z = - \ln Z.\]</div>
+<p>Поскольку для идеального газа коэффициент сверхсжимаемости <span class="math notranslate nohighlight">\(Z = 1,\)</span> тогда</p>
+<div class="math notranslate nohighlight">
+\[ \ln \phi = 0.\]</div>
+<p>То есть коэффициент летучести:</p>
+<div class="math notranslate nohighlight">
+\[\phi = 1.\]</div>
+<p>Следовательно, летучесть:</p>
+<div class="math notranslate nohighlight">
+\[f = P.\]</div>
+<p><a id='pvt-td-fugacity-ideal_gas_mixture'></a></p>
+</div>
+<div class="section" id="id4">
+<h2>Летучесть смеси идеальных газов<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>Для смеси идеальных газов также выполняется уравнение состояния:</p>
+<div class="math notranslate nohighlight">
+\[ PV = n R T,\]</div>
+<p>где <span class="math notranslate nohighlight">\(n = \sum_{i=1}^{N_c} n_i.\)</span> В данном выражении <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе. Следовательно, частная производная давления по количеству вещества компонента <span class="math notranslate nohighlight">\(i\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} \sum_{i=1}^{N_c} \left( \frac{\partial n_i}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} .\]</div>
+<p>Тогда логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[\ln \phi_i = 0.\]</div>
+<p>Тогда летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[f_i = x_i P.\]</div>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>Полученное выражение является частным случаем соотношения, выполняемого для <em><strong>идеальных смесей</strong></em>:</p>
+<div class="math notranslate nohighlight">
+\[f_i \left( P, T, x_i \right) = x_i f \left( P, T \right).\]</div>
+</div>
+<p>Докажем данное утверждение. Для начала дадим определение идеальной смеси.</p>
+<div class="proof определение admonition" id="определение-3">
+<p class="admonition-title"><span>Определение </span></p>
+<div class="определение-content section" id="proof-content">
+<p>Смесь является <em><strong>идеальной</strong></em>, если для нее выполняется следующее соотношение:</p>
+<div class="math notranslate nohighlight">
+\[ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i v_i \left( P, T \right).\]</div>
+<p>Здесь <span class="math notranslate nohighlight">\(N_c\)</span> - количество компонентов в системе, <span class="math notranslate nohighlight">\(v_i \left( P, T \right)\)</span> - молярный (удельный) объем <span class="math notranslate nohighlight">\(i\)</span>-го компонента.</p>
+</div>
+</div><p>То есть объем для идеальных смесей является экстенсивным параметров.</p>
+<div class="proof admonition" id="proof">
+<p>Proof. <a class="reference external" href="TD-10-MixtureGibbsEnergy.html#pvt-td-mixture_gibbs_energy-partial_molar_observables">Ранее</a> для всех экстенсивных параметров было показано, что:</p>
+<div class="math notranslate nohighlight">
+\[ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i \bar{V_i}.\]</div>
+<p>Следовательно,</p>
+<div class="math notranslate nohighlight">
+\[ \bar{V_i} = v_i \left( P, T \right).\]</div>
+<p>Дифференциал логарфима коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента можно выразить из полученного <a class="reference external" href="#pvt-td-fugacity-component_fugacity">ранее</a> выражения:</p>
+<div class="math notranslate nohighlight">
+\[ RT d \ln \phi_i = d \mu_i - \frac{RT}{P} dP.\]</div>
+<p>С учетом соотношений частных производных химического потенциала и давления по объему и количеству вещества компонентов:</p>
+<div class="math notranslate nohighlight">
+\[ RT d \ln \phi_i = \left( \left( \frac{\partial V}{\partial n_i} \right)_{P, T, n_{j \neq i}} - \frac{RT}{P} \right) dP = \left( \bar{V_i} - \frac{RT}{P} \right) dP = \left( v_i \left( P, T \right) - \frac{RT}{P} \right) dP .\]</div>
+<p>Из данного выражения видно, что для идеальной смеси логарифм летучести не зависит от компонентного состава и определяется только термобарическими условиями и свойствами компонентов. Аналогичный результат получается, если рассматривать систему, состоящую из одного компонента. Следовательно, коэффициент летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента в идеальной смеси равен коэффициенту летучести этого же компонента при отсутствии других компонентов. Из определения коэффициента летучести и сформулированного вывода вытекает доказываемое равенство.</p>
+</div>
+<p><a id='pvt-td-fugacity-ideal_gas_mixture-chemical_potential'></a>
+Получим еще одно важное свойство смесей идеальных газов.</p>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>Пусть имеется идеальный однокомпонентный газ при давлении <span class="math notranslate nohighlight">\(P\)</span>. Если данный газ изобарно смешать с другими идеальными газами, то давление рассматриваемого газа в смеси в соответствии с полученным ранее выражением будет равняться <span class="math notranslate nohighlight">\(x_i P\)</span>. Поскольку для данного компонента произошло изменение давления (температура рассматривается постоянной), то дифференциал химического потенциала:</p>
+<div class="math notranslate nohighlight">
+\[d \mu^{ig}_i = \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP.\]</div>
+<p>Интегрируя данное выражение от однокомпонентного состояния к многокомпонентной смеси, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \mu^{ig}_i \left( P, T, n_i \right) - \mu^{ig}_i \left( P, T, \right) = \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP.\]</div>
+<p>Рассмотрим вторую частную производную энергии Гиббса по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента и давлению:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 G}{\partial n_i \partial P} = \frac{\partial}{\partial n_i} \left( \left( \frac{\partial G}{\partial P} \right)_{T,n_i} \right)_{P,T} = \frac{\partial}{\partial P} \left( \left( \frac{\partial G}{\partial n_i} \right)_{P,T} \right)_{T,n_i}.\]</div>
+<p>С учетом <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-gibbs_partials">частных производных энергии Гиббса</a> получим:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial V}{\partial n_i} \right)_{P,T} = \left( \frac{\partial \mu_i}{\partial P} \right)_{T,n_i}.\]</div>
+<p>Тогда рассматриваемая разница химических потенциалов может быть преобразована следующим образом, применяя уравнение состояния идеального газа:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\mu^{ig}_i \left( P, T, n_i \right) - \mu^{ig}_i \left( P, T \right)
+&amp;= \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP \\
+&amp;= \int_{P}^{x_i P} \left( \frac{\partial V}{\partial n_i} \right)_{P,T} dP \\
+&amp;= \int_{P}^{x_i P} \frac{\partial}{\partial n_i} \left( \frac{nRT}{P} \right)_{P,T} dP \\
+&amp;= RT \int_{P}^{x_i P} \frac{dP}{P} \\
+&amp;= RT \ln x_i .
+\end{align} \end{split}\]</div>
+<p>Следовательно,</p>
+<div class="math notranslate nohighlight">
+\[\mu^{ig}_i \left( P, T, n_i \right) = \mu^{ig}_i \left( P, T \right) + RT \ln x_i .\]</div>
+<p>Данное уравнение может быть использоваться для расчета химического потенциала компонента идеального газа в идеальной смеси, зная химический потенциал чистого компонента при тех же термобарических условиях и компонентный состав смеси.</p>
+</div>
+<p>При давлении <span class="math notranslate nohighlight">\(P_1\)</span> и компонентном составе <span class="math notranslate nohighlight">\({x_i}_1\)</span> химический потенциал <span class="math notranslate nohighlight">\(i\)</span>-го компонента в смеси:</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i \left(P_1, T, {x_i}_1 \right) = \mu_i \left( P_1, T \right) + RT \ln {x_i}_1.\]</div>
+<p>При давлении <span class="math notranslate nohighlight">\(P_2\)</span> и компонентном составе <span class="math notranslate nohighlight">\({x_i}_2\)</span> химический потенциал <span class="math notranslate nohighlight">\(i\)</span>-го компонента в смеси:</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i \left(P_2, T, {x_i}_2 \right) = \mu_i \left( P_2, T \right) + RT \ln {x_i}_2.\]</div>
+<p>Тогда разница данных выражений:</p>
+<div class="math notranslate nohighlight">
+\[\mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) + R T \ln \frac{{x_i}_2}{{x_i}_1}.\]</div>
+<p>При этом, разница химических потенциалов чистого компонента, являющегося идеальным газом,:</p>
+<div class="math notranslate nohighlight">
+\[\mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) = RT \ln \frac{P_2}{P_1}.\]</div>
+<p>Тогда:</p>
+<div class="math notranslate nohighlight">
+\[\mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = RT \ln \frac{P_2 {x_i}_2}{P_1 {x_i}_1}.\]</div>
+<p><a id='pvt-td-fugacity-real_gas_mixture'></a></p>
+</div>
+<div class="section" id="id5">
+<h2>Летучесть смеси реальных газов<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>По аналогии с идеальным газом, для реальных газов данное соотношение записывается следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = RT \ln \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{f_i \left( P_1, T, {x_i}_1 \right)}.\]</div>
+<p>Тогда разница химических потенциалов между реальным и идеальным газами:</p>
+<div class="math notranslate nohighlight">
+\[\mu_i^{rg} \left(P_2, T, {x_i}_2 \right) - \mu_i^{ig} \left(P_2, T, {x_i}_2 \right) = \mu_i^{rg} \left(P_1, T, {x_i}_1 \right) - \mu_i^{ig} \left(P_1, T, {x_i}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{f_i \left( P_1, T, {x_i}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right).\]</div>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>При этом, если давление <span class="math notranslate nohighlight">\(P_1\)</span> достаточно низкое настолько, что при нем рассматриваемая система ведет себя, как идеальный газ, то:</p>
+<div class="math notranslate nohighlight">
+\[\mu_i^{rg} \left(P_2, T, {x_i}_2 \right) - \mu_i^{ig} \left(P_2, T, {x_i}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, {x_i}_2 \right).\]</div>
+</div>
+<p>Данное соотношение между химическими потенциалами реального и идеального газов достаточно полезно, так как будет использоваться при определении других <a class="reference external" href="../3-Parameters/Parameters-0-Introduction.html#pvt-parameters">термодинамических параметров</a> реальных систем с использованием <a class="reference external" href="../2-EOS/EOS-0-Introduction.html#pvt-eos">уравнений состояния</a>.</p>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./1-PVT\1-TD"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="TD-14-PhaseEquilibrium.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Свободная энергия и фазовое равновесие</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../2-EOS/EOS-0-Introduction.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Уравнения состояния</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Daniel Skorov<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

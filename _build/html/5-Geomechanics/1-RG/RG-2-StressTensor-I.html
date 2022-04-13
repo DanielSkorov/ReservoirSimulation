@@ -1,0 +1,1127 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Напряжение. Тензор напряжений &#8212; Основы моделирования пластовых систем</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../Introduction.html">
+   Основы моделирования пластовых систем
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Основы вычислительной математики
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
+   Основы линейной алгебры
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
+     Вектор. Координаты вектора
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
+     Операции с векторами
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
+     Направляющие косинусы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
+     Матрицы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
+     Определитель матрицы. Обратная матрица
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
+     Матричные уравнения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
+     Собственные векторы и значения матриц
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
+     Линейные преобразования
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
+   Пределы
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
+   Основы дифференциальных и интегральных исчислений
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
+   Дифференциальные уравнения
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
+   Методы оптимизации функций
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-1-Newton.html">
+     Нахождение стационарной точки функции методом Ньютона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-2-QNewton.html">
+     Квази-ньютоновские методы поиска стационарной точки функции
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-3-TR.html">
+     Метод доверительной области
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-4-Tunneling.html">
+     Туннельный метод оптимизации функции
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  PVT-моделирование
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../1-PVT/PVT-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/1-TD/TD-0-Introduction.html">
+   Основы термодинамики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-1-Basics.html">
+     Введение в термодинамику
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-2-ThermalEquilibrium.html">
+     Термическое равновесие. Температура. Нулевое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-3-Heat-Work.html">
+     Количество теплоты и работа. Первое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-5-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-6-Entropy.html">
+     Энтропия. Второе и третье начала термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-7-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-8-Helmholtz-Gibbs.html">
+     Энергия Гельмгольца. Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-9-Observables.html">
+     Интенсивные и экстенсивные параметры
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-10-MixtureGibbsEnergy.html">
+     Энергия Гиббса многокомпонентной системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-11-GibbsPhaseRule.html">
+     Правило фаз Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-12-GibbsDuhemEquation.html">
+     Уравнение Гиббса-Дюгема
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-13-MaxwellRelations.html">
+     Соотношения Максвелла
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-14-PhaseEquilibrium.html">
+     Свободная энергия и фазовое равновесие
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/1-TD/TD-15-Fugacity.html">
+     Летучесть
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/2-EOS/EOS-0-Introduction.html">
+   Уравнения состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-1-VanDerWaals.html">
+     Уравнение состояния Ван-дер-Ваальса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-2-SRK-PR.html">
+     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-3-SW.html">
+     Уравнение состояния Сорейде-Уитсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-4-SAFT.html">
+     Теория SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-5-PCSAFT.html">
+     Уравнение состояния PC-SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-6-CPA.html">
+     Кубическое уравнение состояние с учетом ассоциации молекул
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-A-PD.html">
+     Частные производные летучести компонентов
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-B-BIP.html">
+     Универсальный расчет коэффициентов попарного взаимодействия
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-0-Introduction.html">
+   Определение параметров систем с использованием уравнений состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-1-InternalEnergy.html">
+     Внутренняя энергия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-2-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-3-Entropy.html">
+     Энтропия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-5-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-6-GibbsEnergy.html">
+     Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-7-HelmholtzEnergy.html">
+     Энергия Гельмгольца
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
+     Коэффициент сжимаемости. Коэффициент термического расширения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
+     Коэффициент Джоуля-Томсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/3-Parameters/Parameters-Appendix-A-PD.html">
+     Частные производные термодинамических параметров
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../1-PVT/4-ESC/ESC-0-Introduction.html">
+   Равновесие. Стабильность. Критическое состояние
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/4-ESC/ESC-1-Equilibrium.html">
+     Определение равновесного состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/4-ESC/ESC-2-Stability.html">
+     Определение стабильности фазового состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../1-PVT/4-ESC/ESC-3-Criticality.html">
+     Определение критического состояния системы
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Гидродинамика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Инициализация модели пласта
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Моделирование скважин
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геомеханика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../Geomech-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="RG-0-Introduction.html">
+   Основы геомеханики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-1-LinearElasticityAssumptions.html">
+     Напряженно-деформированное состояние. Допущения и условия теории упругости
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-2-StressTensor.html">
+     Напряжение. Тензор напряжений
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="RG-4-StressesInEarthsCrust.html">
+     Напряженное состояние в земной коре
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../2-ARG/ARG-0-Introduction.html">
+   Основные вопросы геомеханического моделирования
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геохимия
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Численные методы в гидродинамическом моделировании
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="../../_sources/5-Geomechanics/1-RG/RG-2-StressTensor-I.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/5-Geomechanics/1-RG/RG-2-StressTensor-I.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/5-Geomechanics/1-RG/RG-2-StressTensor-I.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Напряжение. Тензор напряжений</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="warning admonition">
+<p class="admonition-title">Внимание!</p>
+<p>Данная страница является интерактивной копией <a class="reference internal" href="RG-2-StressTensor.html"><span class="doc std std-doc">страницы</span></a>. Интерактивность осуществляется путем инициализации <a class="reference external" href="https://mybinder.org/">Binder</a> через <a class="reference external" href="https://github.com/executablebooks/thebe">Thebe</a>.</p>
+</div>
+<p><a id='geomech-rg-stress-i'></a></p>
+<div class="section" id="id1">
+<h1>Напряжение. Тензор напряжений<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="important admonition">
+<p class="admonition-title">Важно!</p>
+<p>Для начала работы с данной страницей необходимо инициализировать кернель путем нажатия на кнопку <code class="docutils literal notranslate"><span class="pre">Activate</span></code>, расположенную ниже, и дождаться появления надписи “STATUS: <span style="color:green">READY</span>”. После этого Вы можете проверить работу кернеля, нажав на кнопку <code class="docutils literal notranslate"><span class="pre">run</span></code>, расположенную под кодом <code class="docutils literal notranslate"><span class="pre">print(&quot;Hello</span> <span class="pre">World!&quot;)</span></code>. Иногда инициализация кернеля может пройти неудачно, что будет сопровождаться надписью “STATUS: <span style="color:red">FAILED</span>” или “STATUS: <span style="color:grey">WAITING</span>”. Чаще всего это связано с перегрузкой сервера <a class="reference external" href="https://mybinder.org/">Binder</a>.</p>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+<script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+<script type="text/x-thebe-config">
+  {
+      requestKernel: true,
+      mountActivateWidget: true,
+      mountStatusWidget: true,
+      binderOptions: {
+      repo: "https://github.com/DanielSkorov/Basics-of-Modelling",
+      ref: "main",
+    },
+  }
+</script>
+<div class="thebe-activate"></div>
+<div class="thebe-status"></div>
+<pre data-executable="true" data-readonly data-language="python">print("Hello World!")</pre><div class="important admonition">
+<p class="admonition-title">Важно!</p>
+<p>После инициализации и проверки кернеля под каждой ячейкой необходимо нажать кнопку <code class="docutils literal notranslate"><span class="pre">run</span></code> для ее запуска и отображения интерактивной диаграммы.</p>
+</div>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+import numpy as np
+from matplotlib import pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': False})
+%matplotlib widget
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import warnings
+warnings.filterwarnings('ignore')
+import sys
+sys.path.append('../../SupportCode/')
+from Graphics import cube, Arrow3D
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+import numpy as np
+from matplotlib import pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': False})
+%matplotlib widget
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import warnings
+warnings.filterwarnings('ignore')
+import sys
+sys.path.append('./SupportCode/')
+from Graphics import cube, Arrow3D
+</pre><div class="proof определение admonition" id="определение-0">
+<p class="admonition-title"><span>Определение </span></p>
+<div class="определение-content section" id="proof-content">
+<p>Отношение силы, к площади поверхности, к которой она приложена, называется <em><strong>вектором напряжения</strong></em> (<em>traction</em>):</p>
+<div class="math notranslate nohighlight">
+\[\vec{T} = \frac{\vec{F}}{A}\]</div>
+</div>
+</div><p>Пусть имеется некоторое тело, к которому приложены некоторые внешние силы, находящееся в равновесии. Выделим в данном теле элементарный объем.</p>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+body = cube(20, 40, 5, scale_mult=0.1, equal_scale=True)
+
+ax.add_collection3d(body.collection())
+
+ax.set_xlim(body.xlim)
+ax.set_ylim(body.ylim)
+ax.set_zlim(body.zlim)
+
+ax.add_artist(Arrow3D([10, 20], [0, 10], [0, 10], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([-10, -20], [0, -20], [0, -10], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([0, 0], [-10, -20], [2.5, 20], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([-5, 0], [10, 20], [-2.5, -20], color='r', mutation_scale=10, lw=1))
+
+ax.text(20, 10, 10, '$\overrightarrow{F_1}$')
+ax.text(-20, -20, -10, '$\overrightarrow{F_2}$')
+ax.text(0, -20, 20, '$\overrightarrow{F_3}$')
+ax.text(0, 20, -20, '$\overrightarrow{F_n}$')
+
+unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g')
+ax.add_collection3d(unit_cube.collection())
+
+fig.tight_layout()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+body = cube(20, 40, 5, scale_mult=0.1, equal_scale=True)
+
+ax.add_collection3d(body.collection())
+
+ax.set_xlim(body.xlim)
+ax.set_ylim(body.ylim)
+ax.set_zlim(body.zlim)
+
+ax.add_artist(Arrow3D([10, 20], [0, 10], [0, 10], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([-10, -20], [0, -20], [0, -10], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([0, 0], [-10, -20], [2.5, 20], color='r', mutation_scale=10, lw=1))
+ax.add_artist(Arrow3D([-5, 0], [10, 20], [-2.5, -20], color='r', mutation_scale=10, lw=1))
+
+ax.text(20, 10, 10, '$\overrightarrow{F_1}$')
+ax.text(-20, -20, -10, '$\overrightarrow{F_2}$')
+ax.text(0, -20, 20, '$\overrightarrow{F_3}$')
+ax.text(0, 20, -20, '$\overrightarrow{F_n}$')
+
+unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g')
+ax.add_collection3d(unit_cube.collection())
+
+fig.tight_layout()
+</pre><p>Рассмотрим напряженное состояние данного элементарного объема. Для этого поместим его в базис <span class="math notranslate nohighlight">\((\vec{e_1}, \vec{e_2}, \vec{e_3})\)</span>. Действующие на тело внешние силы также будут оказывать воздействие на вырезанный элементарный объем, исходя из условия сплошности изучаемого объекта. Следовательно, к граням элементарного объема будут приложены некоторые векторы напряжения.</p>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g', equal_scale=True)
+ax.add_collection3d(unit_cube.collection())
+
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.add_artist(Arrow3D([0.5, 2], [0, -0.5], [0, -0.5], color='r'))
+ax.add_artist(Arrow3D([-0.5, -2], [0, 0.5], [0, 0.5], color='b'))
+ax.add_artist(Arrow3D([0, -0.5], [0.5, 2], [0, -1.5], color='r'))
+ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
+ax.add_artist(Arrow3D([0, 0], [0, -1], [0.5, 2.5], color='r'))
+ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
+
+ax.text(2, -0.5, -0.5, '$\overrightarrow{T_1}$')
+ax.text(-0.5, 2, -1.5, '$\overrightarrow{T_2}$')
+ax.text(0, -1, 2.5, '$\overrightarrow{T_3}$')
+ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+
+ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1))
+
+ax.text(1.5, 0, 0, '$\overrightarrow{e_1}$')
+ax.text(0, 1.5, 0, '$\overrightarrow{e_2}$')
+ax.text(0, 0, 1.5, '$\overrightarrow{e_3}$')
+
+ax.view_init(20, 55)
+
+fig.tight_layout()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g', equal_scale=True)
+ax.add_collection3d(unit_cube.collection())
+
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.add_artist(Arrow3D([0.5, 2], [0, -0.5], [0, -0.5], color='r'))
+ax.add_artist(Arrow3D([-0.5, -2], [0, 0.5], [0, 0.5], color='b'))
+ax.add_artist(Arrow3D([0, -0.5], [0.5, 2], [0, -1.5], color='r'))
+ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
+ax.add_artist(Arrow3D([0, 0], [0, -1], [0.5, 2.5], color='r'))
+ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
+
+ax.text(2, -0.5, -0.5, '$\overrightarrow{T_1}$')
+ax.text(-0.5, 2, -1.5, '$\overrightarrow{T_2}$')
+ax.text(0, -1, 2.5, '$\overrightarrow{T_3}$')
+ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+
+ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1))
+
+ax.text(1.5, 0, 0, '$\overrightarrow{e_1}$')
+ax.text(0, 1.5, 0, '$\overrightarrow{e_2}$')
+ax.text(0, 0, 1.5, '$\overrightarrow{e_3}$')
+
+ax.view_init(20, 55)
+
+fig.tight_layout()
+</pre><p>Рассечем данный элементарный объем плоскостью проходящей через его вершины. Поскольку оставшаяся треугольная пирамида находится в равновесии, то к рассекающей плоскости также будет приложен вектор напряжения.</p>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+v = np.array([[0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5],  [-0.5, -0.5, 0.5]])
+
+verts = [[v[0],v[1],v[2]], [v[0],v[1],v[3]], [v[1],v[2],v[3]]]
+verts_s = [[v[0],v[2],v[3]]]
+
+ax.add_collection3d(Poly3DCollection(verts, facecolors='g', linewidths=1, edgecolors='g', alpha=.25))
+ax.add_collection3d(Poly3DCollection(verts_s, facecolors='r', linewidths=1, edgecolors='r', alpha=.25))
+
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+ax.add_artist(Arrow3D([-0.5, -2], [0, 0.5], [0, 0.5], color='b'))
+ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
+ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
+ax.add_artist(Arrow3D([-0.25, 1], [-0.25, 1], [0, 0.5], color='r'))
+ax.add_artist(Arrow3D([-0.25, 0.5], [-0.25, 0.5], [0, 0.75], color='k'))
+
+ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+ax.text(1, 1, 0.5, '$\overrightarrow{T}$')
+ax.text(0.5, 0.5, 0.5, '$\overrightarrow{n}$')
+
+ax.view_init(20, 110)
+
+fig.tight_layout()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+
+v = np.array([[0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5],  [-0.5, -0.5, 0.5]])
+
+verts = [[v[0],v[1],v[2]], [v[0],v[1],v[3]], [v[1],v[2],v[3]]]
+verts_s = [[v[0],v[2],v[3]]]
+
+ax.add_collection3d(Poly3DCollection(verts, facecolors='g', linewidths=1, edgecolors='g', alpha=.25))
+ax.add_collection3d(Poly3DCollection(verts_s, facecolors='r', linewidths=1, edgecolors='r', alpha=.25))
+
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+ax.add_artist(Arrow3D([-0.5, -2], [0, 0.5], [0, 0.5], color='b'))
+ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
+ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
+ax.add_artist(Arrow3D([-0.25, 1], [-0.25, 1], [0, 0.5], color='r'))
+ax.add_artist(Arrow3D([-0.25, 0.5], [-0.25, 0.5], [0, 0.75], color='k'))
+
+ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+ax.text(1, 1, 0.5, '$\overrightarrow{T}$')
+ax.text(0.5, 0.5, 0.5, '$\overrightarrow{n}$')
+
+ax.view_init(20, 110)
+
+fig.tight_layout()
+</pre><p>Поскольку данный элементарный объем находится в равновесии, запишем для него <a class="reference external" href="https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion">первый закон Ньютона</a>:</p>
+<div class="math notranslate nohighlight">
+\[\vec{T_{}} \cdot dA -\vec{T_1} \cdot dA_1 - \vec{T_2} \cdot dA_2 - \vec{T_3} \cdot dA_3 = 0,\]</div>
+<p>где <span class="math notranslate nohighlight">\(dA, dA_1, dA_2, dA_3\)</span> – площади элементарного объема, к которому приложены соотвествующие векторы напряжения. Известно, что площадь <span class="math notranslate nohighlight">\(dA_1\)</span> выражается через площадь <span class="math notranslate nohighlight">\(dA\)</span> следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[dA_1 = dA \cdot \cos{\alpha},\]</div>
+<p>где <span class="math notranslate nohighlight">\(\alpha\)</span> – угол между плоскостями <span class="math notranslate nohighlight">\(dA\)</span> и <span class="math notranslate nohighlight">\(dA_1\)</span>. Угол между двумя плоскостями равен углу между нормалями к данным плоскостям: <span class="math notranslate nohighlight">\(\vec{n}\)</span> и <span class="math notranslate nohighlight">\(\vec{e_1}\)</span>. Поскольку вектор <span class="math notranslate nohighlight">\(\vec{e_1}\)</span> является базисным, то косинус угла между нормалью <span class="math notranslate nohighlight">\(\vec{n}\)</span> (нормаль является единичным вектором) и вектором <span class="math notranslate nohighlight">\(\vec{e_1}\)</span> является <a class="reference external" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html#math-lab-rotation_angles">направляющим косинусом</a> нормали <span class="math notranslate nohighlight">\(\vec{n}\)</span> и равен ее первой координате. Аналогично – для площадок <span class="math notranslate nohighlight">\( dA_2\)</span> и <span class="math notranslate nohighlight">\(dA_3\)</span>. Тогда координаты нормали <span class="math notranslate nohighlight">\(\vec{n}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\vec{n} = \begin{bmatrix} \cos{(\vec{n}, \vec{e_1})} \\ \cos{(\vec{n}, \vec{e_2})} \\ \cos{(\vec{n}, \vec{e_2})} \end{bmatrix}\end{split}\]</div>
+<p>Пусть</p>
+<div class="math notranslate nohighlight">
+\[\cos{(\vec{n}, \vec{e_1})} = n_1, \cos{(\vec{n}, \vec{e_2})} = n_2, \cos{(\vec{n}, \vec{e_2})} = n_3\]</div>
+<p>Тогда:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\vec{T_{}} \cdot dA -\vec{T_1} \cdot dA \cdot n_1 - \vec{T_2} \cdot dA \cdot n_2 - \vec{T_3} \cdot dA \cdot n_3 = 0 \\ \vec{T_{}} = \vec{T_1} \cdot n_1 + \vec{T_2} \cdot n_2 + \vec{T_3} \cdot n_3\end{split}\]</div>
+<p>Векторы напряжения <span class="math notranslate nohighlight">\(\vec{T_{}}, \vec{T_1}, \vec{T_2}, \vec{T_3}\)</span> являются векторами, то есть имеют три координаты (проекции на каждую из трех осей). Согласно <a class="reference external" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html#math-lab-vector_operations">правилу сложения векторов</a>, для этих координат можно записать следующие выражения</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}T_{x_1} = n_1 \cdot T_{1_{x_1}} + n_2 \cdot T_{2_{x_1}} + n_3 \cdot T_{3_{x_1}} \\ T_{x_2} = n_1 \cdot T_{1_{x_2}} + n_2 \cdot T_{2_{x_2}} + n_3 \cdot T_{3_{x_2}} \\ T_{x_3} = n_1 \cdot T_{1_{x_3}} + n_2 \cdot T_{2_{x_3}} + n_3 \cdot T_{3_{x_3}}\end{split}\]</div>
+<p>Данное выражение можно записать в виде матричного произведения:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix} T_{x_1} \\ T_{x_2} \\ T_{x_3} \end{bmatrix} = \begin{bmatrix} T_{1_{x_1}} &amp; T_{2_{x_1}} &amp; T_{3_{x_1}} \\ T_{1_{x_2}} &amp; T_{2_{x_2}} &amp; T_{3_{x_2}} \\ T_{1_{x_3}} &amp; T_{2_{x_3}} &amp; T_{3_{x_3}} \end{bmatrix} \cdot \begin{bmatrix} n_1 \\ n_2 \\ n_3 \end{bmatrix} \end{split}\]</div>
+<div class="math notranslate nohighlight">
+\[ \vec{T} = S \cdot \vec{n}\]</div>
+<div class="proof определение admonition" id="определение-1">
+<p class="admonition-title"><span>Определение </span></p>
+<div class="определение-content section" id="proof-content">
+<p>Матрица</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}S = \begin{bmatrix} T_{1_{x_1}} &amp; T_{2_{x_1}} &amp; T_{3_{x_1}} \\ T_{1_{x_2}} &amp; T_{2_{x_2}} &amp; T_{3_{x_2}} \\ T_{1_{x_3}} &amp; T_{2_{x_3}} &amp; T_{3_{x_3}} \end{bmatrix}\end{split}\]</div>
+<p>называется <em><strong>тензором напряжений Коши</strong></em> и характеризует напряженное состояние в точке. Нормальная составляющая вектора напряжения, действующая на эту площадку, называется <em><strong>нормальным напряжением</strong></em> и обозначается <span class="math notranslate nohighlight">\(\sigma\)</span>. Составляющая вектора напряжения, которая лежит в плоскости рассматриваемой площадки, к которой приложен этот вектор напряжения, называется <em><strong>касательным (или тангенциальным) напряжением</strong></em> и обозначается <span class="math notranslate nohighlight">\(\tau\)</span>.</p>
+</div>
+</div><p>С учетом этого, тензор напряжений можно записать следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}S = \begin{bmatrix} \sigma_{1} &amp; \tau_{12} &amp; \tau_{13} \\ \tau_{21} &amp; \sigma_{2} &amp; \tau_{23} \\ \tau_{31} &amp; \tau_{32} &amp; \sigma_{3} \end{bmatrix}\end{split}\]</div>
+<p>Рассматривая элементарный объем, тензор напряжений геометрически интерпретируется следующим образом:</p>
+<!-- ```{code-cell} ipython3
+:tags: [hide-input]
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+ax = plt.gca(projection='3d')
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+unit_cube = cube(1, 1, 1, facecolors='goldenrod', edgecolors='goldenrod', scale_mult=0.5)
+ax.add_collection3d(unit_cube.collection())
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0.5, 0.5], [0, 0.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0.5, 0.5], [0, 0.0], [0, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0.5], [0.5, 0.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0.5, 0.5], [0, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0.5], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0, 0.5], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
+ax.text(1.5, 0, 0, '$\overrightarrow{\sigma_1}$')
+ax.text(0, 1.5, 0, '$\overrightarrow{\sigma_2}$')
+ax.text(0, 0, 1.5, '$\overrightarrow{\sigma_3}$')
+ax.text(0.5, 0.3, 0.05, '$\overrightarrow{\\tau_{12}}$')
+ax.text(0.5, 0.0, 0.3, '$\overrightarrow{\\tau_{13}}$')
+ax.text(0.45, 0.5, -0.2, '$\overrightarrow{\\tau_{21}}$')
+ax.text(0, 0.55, 0.35, '$\overrightarrow{\\tau_{23}}$')
+ax.text(0.5, 0.0, 0.6, '$\overrightarrow{\\tau_{31}}$')
+ax.text(0, 0.5, 0.6, '$\overrightarrow{\\tau_{32}}$')
+ax.grid(None)
+ax.xaxis.set_ticks([])
+ax.yaxis.set_ticks([])
+ax.zaxis.set_ticks([])
+ax.view_init(20, 55)
+fig.tight_layout()
+``` -->
+<pre data-executable="true" data-readonly data-language="python">
+fig = plt.figure(figsize=(6, 4))
+fig.canvas.header_visible = False
+
+ax = plt.gca(projection='3d')
+
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_zlabel('$x_3$')
+
+unit_cube = cube(1, 1, 1, facecolors='goldenrod', edgecolors='goldenrod', scale_mult=0.5)
+ax.add_collection3d(unit_cube.collection())
+ax.set_xlim(unit_cube.xlim)
+ax.set_ylim(unit_cube.ylim)
+ax.set_zlim(unit_cube.zlim)
+
+ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0.5, 0.5], [0, 0.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0.5, 0.5], [0, 0.0], [0, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0.5], [0.5, 0.5], [0, 0], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0.5, 0.5], [0, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0.5], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
+ax.add_artist(Arrow3D([0, 0], [0, 0.5], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
+
+ax.text(1.5, 0, 0, '$\overrightarrow{\sigma_1}$')
+ax.text(0, 1.5, 0, '$\overrightarrow{\sigma_2}$')
+ax.text(0, 0, 1.5, '$\overrightarrow{\sigma_3}$')
+ax.text(0.5, 0.3, 0.05, '$\overrightarrow{\\tau_{12}}$')
+ax.text(0.5, 0.0, 0.3, '$\overrightarrow{\\tau_{13}}$')
+ax.text(0.45, 0.5, -0.2, '$\overrightarrow{\\tau_{21}}$')
+ax.text(0, 0.55, 0.35, '$\overrightarrow{\\tau_{23}}$')
+ax.text(0.5, 0.0, 0.6, '$\overrightarrow{\\tau_{31}}$')
+ax.text(0, 0.5, 0.6, '$\overrightarrow{\\tau_{32}}$')
+
+ax.grid(None)
+
+ax.xaxis.set_ticks([])
+ax.yaxis.set_ticks([])
+ax.zaxis.set_ticks([])
+
+ax.view_init(20, 55)
+
+fig.tight_layout()
+</pre></div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./5-Geomechanics\1-RG"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Daniel Skorov<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

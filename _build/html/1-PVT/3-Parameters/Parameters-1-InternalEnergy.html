@@ -1,0 +1,1035 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Внутренняя энергия &#8212; Основы моделирования пластовых систем</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Энтальпия" href="Parameters-2-Enthalpy.html" />
+    <link rel="prev" title="Определение параметров систем с использованием уравнений состояния" href="Parameters-0-Introduction.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../Introduction.html">
+   Основы моделирования пластовых систем
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Основы вычислительной математики
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
+   Основы линейной алгебры
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
+     Вектор. Координаты вектора
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
+     Операции с векторами
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
+     Направляющие косинусы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
+     Матрицы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
+     Определитель матрицы. Обратная матрица
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
+     Матричные уравнения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
+     Собственные векторы и значения матриц
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
+     Линейные преобразования
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
+   Пределы
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
+   Основы дифференциальных и интегральных исчислений
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
+   Дифференциальные уравнения
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
+   Методы оптимизации функций
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-1-Newton.html">
+     Нахождение стационарной точки функции методом Ньютона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-2-QNewton.html">
+     Квази-ньютоновские методы поиска стационарной точки функции
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-3-TR.html">
+     Метод доверительной области
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-4-Tunneling.html">
+     Туннельный метод оптимизации функции
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  PVT-моделирование
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../PVT-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../1-TD/TD-0-Introduction.html">
+   Основы термодинамики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-1-Basics.html">
+     Введение в термодинамику
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">
+     Термическое равновесие. Температура. Нулевое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">
+     Количество теплоты и работа. Первое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-6-Entropy.html">
+     Энтропия. Второе и третье начала термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">
+     Энергия Гельмгольца. Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-9-Observables.html">
+     Интенсивные и экстенсивные параметры
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">
+     Энергия Гиббса многокомпонентной системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">
+     Правило фаз Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">
+     Уравнение Гиббса-Дюгема
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">
+     Соотношения Максвелла
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">
+     Свободная энергия и фазовое равновесие
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-15-Fugacity.html">
+     Летучесть
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html">
+   Уравнения состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-1-VanDerWaals.html">
+     Уравнение состояния Ван-дер-Ваальса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html">
+     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-3-SW.html">
+     Уравнение состояния Сорейде-Уитсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-4-SAFT.html">
+     Теория SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-5-PCSAFT.html">
+     Уравнение состояния PC-SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-6-CPA.html">
+     Кубическое уравнение состояние с учетом ассоциации молекул
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">
+     Частные производные летучести компонентов
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">
+     Универсальный расчет коэффициентов попарного взаимодействия
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="Parameters-0-Introduction.html">
+   Определение параметров систем с использованием уравнений состояния
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Внутренняя энергия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-2-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-3-Entropy.html">
+     Энтропия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-5-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-6-GibbsEnergy.html">
+     Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-7-HelmholtzEnergy.html">
+     Энергия Гельмгольца
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-8-Compressibility-ThermalExpansion.html">
+     Коэффициент сжимаемости. Коэффициент термического расширения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-9-JouleThomsonCoefficient.html">
+     Коэффициент Джоуля-Томсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="Parameters-Appendix-A-PD.html">
+     Частные производные термодинамических параметров
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../4-ESC/ESC-0-Introduction.html">
+   Равновесие. Стабильность. Критическое состояние
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-1-Equilibrium.html">
+     Определение равновесного состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-2-Stability.html">
+     Определение стабильности фазового состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-3-Criticality.html">
+     Определение критического состояния системы
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Гидродинамика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Инициализация модели пласта
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Моделирование скважин
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геомеханика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/Geomech-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-0-Introduction.html">
+   Основы геомеханики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions.html">
+     Напряженно-деформированное состояние. Допущения и условия теории упругости
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-2-StressTensor.html">
+     Напряжение. Тензор напряжений
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust.html">
+     Напряженное состояние в земной коре
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/2-ARG/ARG-0-Introduction.html">
+   Основные вопросы геомеханического моделирования
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геохимия
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Численные методы в гидродинамическом моделировании
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="../../_sources/1-PVT/3-Parameters/Parameters-1-InternalEnergy.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/1-PVT/3-Parameters/Parameters-1-InternalEnergy.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/1-PVT/3-Parameters/Parameters-1-InternalEnergy.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
+   Вывод выражения внутренней энергии системы на основе уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id3">
+   Вывод выражения внутренней энергии системы на основе уравнения состояния Сорейде-Уитсона
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cpa">
+   Вывод выражения внутренней энергии системы на основе уравнения состояния CPA
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Внутренняя энергия</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
+   Вывод выражения внутренней энергии системы на основе уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id3">
+   Вывод выражения внутренней энергии системы на основе уравнения состояния Сорейде-Уитсона
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cpa">
+   Вывод выражения внутренней энергии системы на основе уравнения состояния CPA
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <p><a id='pvt-parameters-internal_energy'></a></p>
+<div class="section" id="id1">
+<h1>Внутренняя энергия<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>Рассмотрим систему, состоящую из одной фазы и нескольких компонентов. В соответствии с <a class="reference external" href="../1-TD/TD-11-GibbsPhaseRule.html#pvt-td-gibbs_phase_rule">правилом фаз Гиббса</a>, состояние такой системы определяется интенсивными параметрами (например, давлением и температурой) и количеством вещества компонентов. Тогда внутренняя энергия:</p>
+<div class="math notranslate nohighlight">
+\[U = U \left( P, T, n_i \right).\]</div>
+<p>С учетом этого дифференциал внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[dU = \left( \frac{\partial U}{\partial T} \right)_{P, n_i} dT + \left( \frac{\partial U}{\partial P} \right)_{T, n_i} dP + \sum_i \left( \frac{\partial U}{\partial n_i} \right)_{P, T} dn_i.\]</div>
+<p>По определению <a class="reference external" href="../1-TD/TD-4-HeatCapacity.html#pvt-td-heat_capacity-isobaric">изобарной теплоемкости</a>:</p>
+<div class="math notranslate nohighlight">
+\[C_P = \left( \frac{\partial U}{\partial T} \right)_{P} + P \left( \frac{\partial V}{\partial T} \right)_P.\]</div>
+<p>Тогда первое слагаемое дифференциала внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial U}{\partial T} \right)_{P, n_i} = C_P -  P \left( \frac{\partial V}{\partial T} \right)_{P, n_i}. \]</div>
+<p>Для системы с постоянным количеством частиц <a class="reference external" href="../1-TD/TD-6-Entropy.html#pvt-td-entropy-thermodynamic_identity">можно</a> записать следующее выражение:</p>
+<div class="math notranslate nohighlight">
+\[dU = T dS - P dV.\]</div>
+<p>Разделим левую и правую части на <span class="math notranslate nohighlight">\(dP\)</span> и будем рассматривать изотермический процесс с постоянном количеством вещества компонентов:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial U}{\partial P} \right)_{T, n_i} = T \left( \frac{\partial S}{\partial P} \right)_{T, n_i} - P \left( \frac{\partial V}{\partial P} \right)_{T, n_i}.\]</div>
+<p>С учетом <a class="reference external" href="../1-TD/TD-13-MaxwellRelations.html#pvt-td-maxwell_relations-fourth">четвертого соотношения Максвелла</a> данное выражение преобразуется к следующему:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial U}{\partial P} \right)_{T, n_i} = - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} - P \left( \frac{\partial V}{\partial P} \right)_{T, n_i}.\]</div>
+<p>Следовательно, второе слагаемое выражения для дифференциала внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial U}{\partial P} \right)_{T, n_i} dP = - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} dP - P \left( \frac{\partial V}{\partial P} \right)_{T, n_i} dP. \]</div>
+<p>Если рассматривать процесс с постоянным количеством частиц, то дифференциал давления <span class="math notranslate nohighlight">\(P = P \left( V, T, n_i \right)\)</span> можно записать следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[dP = \left( \frac{\partial P}{\partial V} \right)_{T, n_i} dV + \left( \frac{\partial P}{\partial T} \right)_{V, n_i} dT. \]</div>
+<p>Тогда второе слагаемое в выражении для дифференциала внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\left( \frac{\partial U}{\partial P} \right)_{T, n_i} dP = 
+&amp;- T \left( \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial V} \right)_{T, n_i} dV + \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i} dT \right) \\
+&amp; - P \left( \left( \frac{\partial V}{\partial P} \right)_{T, n_i} \left( \frac{\partial P}{\partial V} \right)_{T, n_i} dV + \left( \frac{\partial V}{\partial P} \right)_{T, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i} dT \right).
+\end{align} \end{split}\]</div>
+<p>Упростим полученное выражение. Для частных производных выполняется следующее <a class="reference external" href="https://en.wikipedia.org/wiki/Triple_product_rule">правило</a>:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial x}{\partial y} \right)_z \left( \frac{\partial y}{\partial z} \right)_x \left( \frac{\partial z}{\partial x} \right)_y = -1.\]</div>
+<p>Для рассматриваемых термодинамических параметров его можно записать в следующем виде:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial V}{\partial T} \right)_P \left( \frac{\partial T}{\partial P} \right)_V \left( \frac{\partial P}{\partial V} \right)_T = -1.\]</div>
+<p>Следовательно,</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial V}{\partial T} \right)_P \left( \frac{\partial P}{\partial V} \right)_T = - \left( \frac{\partial P}{\partial T} \right)_V.\]</div>
+<p>Кроме того, применяя <a class="reference external" href="https://en.wikipedia.org/wiki/Inverse_functions_and_differentiation">правило нахождения производной обратной функции</a>, получим</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial V}{\partial P} \right)_T \left( \frac{\partial P}{\partial T} \right)_V = - \left( \frac{\partial V}{\partial T} \right)_P.\]</div>
+<p>С учетом этого, второе слагаемое выражения для дифференциала внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial U}{\partial P} \right)_{T, n_i} dP = T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} dV - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i} dT - P dV + P \left( \frac{\partial V}{\partial T} \right)_{T, n_i} dT.\]</div>
+<p>Третье слагаемое дифференциала внутренней энергии отвечает за процесс изменения внутренней энергии при изменении количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента при постоянных давлении и температуры. К таким процессам относятся диффузия (выравнивание количества частиц при их стохастическом движении), а также химические реакции. Если пренебречь данными процессами, то есть если считать, что при постоянных давлении и температуре количество частиц <span class="math notranslate nohighlight">\(i\)</span>-го компонента остается постоянным, тогда дифференциал внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[dU = \left( C_P - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i} \right) dT + \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) dV .\]</div>
+<p>Если рассматривать внутреннюю энергию системы (при постоянном количестве вещества компонентов) как функцию от объема и температуры <span class="math notranslate nohighlight">\(U = U \left( V, T \right)\)</span>, тогда дифференциал внутренней энергии можно записать в следующем виде:</p>
+<div class="math notranslate nohighlight">
+\[dU = \left( \frac{\partial U}{\partial V} \right)_{T, n_i} dV + \left( \frac{\partial U}{\partial T} \right)_{V, n_i} dT.\]</div>
+<p>По <a class="reference external" href="../1-TD/TD-4-HeatCapacity.html#pvt-td-heat_capacity-isochoric">определению изохорной теплоемкости</a>:</p>
+<div class="math notranslate nohighlight">
+\[C_V = \left( \frac{\delta Q}{dT} \right)_V = \left( \frac{\partial U}{\partial T} \right)_V. \]</div>
+<p>Выражение для <a class="reference external" href="../1-TD/TD-6-Entropy.html#pvt-td-entropy-thermodynamic_identity">thermodynamic identity</a>:</p>
+<div class="math notranslate nohighlight">
+\[dU = TdS - PdV.\]</div>
+<p>Разделим левую и правую части на <span class="math notranslate nohighlight">\(dV\)</span>, принимая постоянным <span class="math notranslate nohighlight">\(T\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial U}{\partial V} \right)_{T, n_i} = T \left( \frac{\partial S}{\partial V} \right)_{T, n_i} - P.\]</div>
+<p>В соответствии со <a class="reference external" href="../1-TD/TD-13-MaxwellRelations.html#pvt-td-maxwell_relations-second">вторым соотношением Максвелла</a>:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial S}{\partial V} \right)_{T} = \left( \frac{\partial P}{\partial T} \right)_{V}.\]</div>
+<p>Следовательно:</p>
+<div class="math notranslate nohighlight">
+\[\left( \frac{\partial U}{\partial V} \right)_{T, n_i} = T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P.\]</div>
+<p>Тогда дифференциал внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[dU = C_V dT + \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) dV.\]</div>
+<p><a id='pvt-parameters-internal_energy-isobaric_isochoric_heat_capacities'></a></p>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>Сравнивая с полученным ранее выражением для дифференциала внутренней энергии, отметим, что:</p>
+<div class="math notranslate nohighlight">
+\[C_V = C_P - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i}.\]</div>
+</div>
+<p>Если рассматривается идеальный газ, для которого применимо уравнение состояния в виде <span class="math notranslate nohighlight">\(PV = n R T\)</span>, тогда:</p>
+<div class="math notranslate nohighlight">
+\[C_V = C_P - T \frac{n R}{P} \frac{n R}{V} = C_P - T \frac{n^2 R^2}{P V} = C_P - n R = C_P - N k.\]</div>
+<p>Полученное выражение соответствует выведенному <a class="reference external" href="../1-TD/TD-4-HeatCapacity.html#pvt-td-heat_capacity-ideal_gas">ранее</a> выражению для разницы изобарной и изохорной теплоемкостей идеального газа.</p>
+<p>Таким образом, изменение внутренней энергии системы в процессе перехода из состояния <span class="math notranslate nohighlight">\(\left( V_1, T_1 \right)\)</span> в состояние <span class="math notranslate nohighlight">\(\left( V_2, T_2 \right)\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \Delta U = \int_{T_1}^{T_2} C_V dT + \int_{V_1}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) dV . \]</div>
+<p><a id='pvt-parameters-internal_energy-isochoric_heat_capacity'></a>
+Преобразуем первое слагаемое в выражении для изменения внутренней энергии. Поскольку теплоемкость можно представить как функцию от объема и температуры, то есть <span class="math notranslate nohighlight">\(C_V = C_V \left( V, T \right)\)</span>, тогда, применяя <a class="reference external" href="../1-TD/TD-13-MaxwellRelations.html#pvt-td-maxwell_relations">свойство частных производных</a>, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial C_V}{\partial V} \right)_{T, n_i} = \frac{\partial}{\partial T} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right)_{V, n_i}. \]</div>
+<p>Данное равенство преобразуется к слудующему:</p>
+<div class="math notranslate nohighlight">
+\[ \left( \frac{\partial C_V}{\partial V} \right)_{T, n_i} = T \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i}. \]</div>
+<p>Следовательно, в изотермическом процессе:</p>
+<div class="math notranslate nohighlight">
+\[ \int_{ideal \; gas}^{real \; gas} dC_V = C_V - C_V^{*} = T \int_{ideal \; gas}^{real \; gas} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV = T \int_{\infty}^{V} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV .\]</div>
+<p>Здесь под пределом интегрирования <span class="math notranslate nohighlight">\(ideal \; gas\)</span> понимается <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span> и следовательно <span class="math notranslate nohighlight">\(V \rightarrow \infty\)</span>. При этом, если при таких условиях система достаточно точно описывается уравнением состояния идеального газа, то изохорная и изобарная теплоемкости связаны следующим соотношением:</p>
+<div class="math notranslate nohighlight">
+\[C_V^{*} = C_P^{*} - n R.\]</div>
+<p>Несмотря на то что большинство веществ имеют достаточно высокие значения давления, при котором происходит переход из жидкой фазы в газообразную, существуют вещества, которые даже при предельно низком давлении могут находиться в жидком состоянии. Такие вещества имеют достаточную <a class="reference external" href="https://en.wikipedia.org/wiki/Binding_energy">энергию связи</a> для того, чтобы данное вещество находилось в виде жидкой фазы. Кроме того, при низких давлениях вещества также могут находиться в твердом состоянии в зависимости от температуры системы. Таким образом, данное соотношение между изобарной и изохорной теплоемкостями стоит применять с осторожностью. С учетом представленных выше преобразований первое слагаемое в выражении для изменения внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[ \int_{T_1}^{T_2} C_V dT = \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{V} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT.\]</div>
+<p>Следовательно, изменение внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[ \Delta U = \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{V} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT + \int_{V_1}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) dV . \]</div>
+<p>Рассмотрим, каким образом может быть вычислено данное выражение. Существует три подхода, графическая интерпетация которых изображена на рисунке ниже:</p>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> widget
+
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;figure.max_open_warning&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">2.25</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">header_visible</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s1">&#39;$T_1$&#39;</span><span class="p">,</span> <span class="s1">&#39;$T_2$&#39;</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="s1">&#39;$V_1$&#39;</span><span class="p">,</span> <span class="s1">&#39;$V_2$&#39;</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s1">&#39;$T_1$&#39;</span><span class="p">,</span> <span class="s1">&#39;$T_2$&#39;</span><span class="p">])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="s1">&#39;$V_1$&#39;</span><span class="p">,</span> <span class="s1">&#39;$V_2$&#39;</span><span class="p">,</span> <span class="s1">&#39;$V_3$&#39;</span><span class="p">])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<script type="application/vnd.jupyter.widget-view+json">
+{"version_major": 2, "version_minor": 0, "model_id": "a565d21baf7947eeab66986dc40bf631"}
+</script></div>
+</div>
+<p>Рассмотрим подход <span class="math notranslate nohighlight">\(A\)</span>. Согласно условию, нам необходимо найти изменение внутренней энергии при переходе системы из точки <span class="math notranslate nohighlight">\(1: \; \left( T_1, V_1 \right)\)</span> в точку <span class="math notranslate nohighlight">\(2: \; \left( T_2, V_2 \right)\)</span>. В этом процессе изменение внутренней энергии будет равно:</p>
+<div class="math notranslate nohighlight">
+\[\Delta U_{1-2} = U_2 - U_1.\]</div>
+<p>Однако вместо перехода сразу из точки <span class="math notranslate nohighlight">\(1\)</span> в точку <span class="math notranslate nohighlight">\(2\)</span> рассмотрим переход с промежуточной точкой <span class="math notranslate nohighlight">\(2': \; \left( T_1, V_2 \right).\)</span> То есть будто рассматриваемая система сначала перешла в точку <span class="math notranslate nohighlight">\(2'\)</span> и только после этого - в точку <span class="math notranslate nohighlight">\(2\)</span>. Первый этап <span class="math notranslate nohighlight">\(1 - 2'\)</span> является изотермическим, так как он проходит при постоянной температуре <span class="math notranslate nohighlight">\(T = T_1.\)</span> В этом случае изменение внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[\Delta U_{1-2'} = U_{2'} - U_1 = \int_{V_1}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_1} dV.\]</div>
+<p>Второй этап <span class="math notranslate nohighlight">\(2' - 2\)</span> является изохорным, так как он проходит при постоянном объеме <span class="math notranslate nohighlight">\(V = V_2.\)</span> Тогда изменение внутренней энергии на данном этапе:</p>
+<div class="math notranslate nohighlight">
+\[\Delta U_{2' - 2} = U_2 - U_{2'} = \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{V_2} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT.\]</div>
+<p>Сложим изменения внутренних энергий на рассмотренных этапах:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\Delta U_{1-2'} + \Delta U_{2' - 2}
+&amp;= \left( U_{2'} - U_1 \right) + \left( U_2 - U_{2'} \right) \\
+&amp;= U_2 - U_1 \\
+&amp;= \Delta U_{1 - 2} \\
+&amp;= \int_{V_1}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_1} dV + \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{V_2} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT.
+\end{align} \end{split}\]</div>
+<p>Данный подход к нахождению изменения параметра значительно облегчает нахождение аналитического выражения интеграла.</p>
+<p>При подходе <span class="math notranslate nohighlight">\(A\)</span> изменение внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[ \Delta U = \int_{V_1}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_1} dV + \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{V_2} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT.\]</div>
+<p>При подходе <span class="math notranslate nohighlight">\(B\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \Delta U = \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{V_1} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT + \int_{V_1}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_2} dV.\]</div>
+<p>Рассмотрим подход <span class="math notranslate nohighlight">\(C\)</span>, при этом под <span class="math notranslate nohighlight">\(V_3\)</span> будем понимать условия идеального газа, то есть <span class="math notranslate nohighlight">\(V_3 = \infty\)</span>. Тогда измение внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{alignat}{1}
+\Delta U 
+&amp;= &amp; \; \int_{V_1}^{\infty} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_1} dV + \int_{T_1}^{T_2} \left( C_V^{*} + T \int_{\infty}^{\infty} \left( \frac{\partial^2 P}{\partial T^2} \right)_{V, n_i} dV \right) dT \\
+&amp;&amp; \; + \int_{\infty}^{V_2} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_2} dV \\
+&amp;= &amp; \; \int_{V_1}^{\infty} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_1} dV - \int_{V_2}^{\infty} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) \bigg\rvert_{T_2} dV + \int_{T_1}^{T_2} C_V^{*} dT .
+\end{alignat}\end{split}\]</div>
+<p><a id='pvt-parameters-internal_energy-srk_pr'></a></p>
+<div class="section" id="id2">
+<h2>Вывод выражения внутренней энергии системы на основе уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>Получим выражение для частной производной давления по температуре при постоянных объеме и количестве вещества компонентов, используя <a class="reference external" href="../2-EOS/EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\left( \frac{\partial P}{\partial T} \right)_{V, n_i}
+&amp;= \frac{\partial}{\partial T} \left( \frac{n R T}{V - n b_m} - \frac{\alpha_m n^2}{V^2 + \left( c + 1 \right) b_m n V - c b_m^2 n^2} \right)_{V, n_i} \\
+&amp;= \frac{n R}{V - n b_m} - \frac{n^2 \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i}}{V^2 + \left( c + 1 \right) b_m n V - c b_m^2 n^2}.
+\end{align} \end{split}\]</div>
+<p>С учетом этого подынтегральное выражение во втором слагаемом изменения внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[ T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P = \frac{n^2 \left( \alpha_m - T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} \right)}{V^2 + \left( c + 1 \right) b_m n V - c b_m^2 n^2}. \]</div>
+<p>Тогда:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+\int_{V}^{\infty} \left( T \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - P \right) dV
+&amp;= n^2 \left( \alpha_m - T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} \right) \int_{V_1}^{V_2} \frac{dV}{V^2 + \left( c + 1 \right) b_m n V - c b_m^2 n^2} \\
+&amp;= \frac{n \left( \alpha_m - T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} \right)}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{V + b_m n \delta_1}{V + b_m n \delta_2} \bigg\rvert_{V}^{\infty} \\
+&amp;= \frac{n \left( T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} - \alpha_m \right)}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{V + b_m n \delta_1}{V + b_m n \delta_2}.
+\end{align} \end{split}\]</div>
+<p>Таким образом, изменение внутренней энергии:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\Delta U = &amp; \frac{n \left( T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} - \alpha_m \right) \bigg\rvert_{T_1}}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{V_1 + b_m n \delta_1}{V_1 + b_m n \delta_2} - \frac{n \left( T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} - \alpha_m \right) \bigg\rvert_{T_2}}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{V_2 + b_m n \delta_1}{V_2 + b_m n \delta_2} \\ &amp; + \int_{T_1}^{T_2} C_V^{*} dT. 
+\end{align} \end{split}\]</div>
+<p>Изменение удельной (приведенной к единице количества вещества) внутренней энергии, выраженной через коэффициент сверхсжимаемости:</p>
+<div class="math notranslate nohighlight">
+\[ \Delta u = \frac{\left( T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} - \alpha_m \right) \bigg\rvert_{T_1}}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{Z_1 + \delta_1 B_1}{Z_1 + \delta_2 B_1} - \frac{\left( T \left( \frac{\partial \alpha_m}{\partial T} \right)_{V, n_i} - \alpha_m \right) \bigg\rvert_{T_2}}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{Z_2 + \delta_1 B_2}{Z_2 + \delta_2 B_2} + \int_{T_1}^{T_2} c_V^{*} dT.\]</div>
+<p>Если рассматривается изотермический процесс <span class="math notranslate nohighlight">\(\left( T_1 = T_2 = T \right)\)</span>, при этом в качестве референсных условий принимаются условия <span class="math notranslate nohighlight">\(\left( V_1 = \infty, P_1 = 0, Z_1 = 1 \right)\)</span>, тогда удельная внутренняя энергия:</p>
+<div class="math notranslate nohighlight">
+\[u \left(P, T \right) = u \left(0, T\right) + \frac{\alpha_m -  T \left(\frac{\partial \alpha_m}{\partial T} \right)_{V, n_i}}{b_m \left( \delta_2 - \delta_1 \right)} \ln \frac{Z + \delta_1 B}{Z + \delta_2 B}.\]</div>
+<p>Частная производная параметра <span class="math notranslate nohighlight">\(\alpha_m\)</span> по температуре при постоянном объеме и количестве вещества компонентов для уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона была рассмотрена <a class="reference external" href="../2-EOS/EOS-Appendix-A-PD.html#pvt-eos-appendix-fugacity_pd-srk_pr">ранее</a>.</p>
+<p><a id='pvt-parameters-internal_energy-sw'></a></p>
+</div>
+<div class="section" id="id3">
+<h2>Вывод выражения внутренней энергии системы на основе уравнения состояния Сорейде-Уитсона<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>Поскольку <a class="reference external" href="../2-EOS/EOS-3-SW.html#pvt-eos-sw">уравнение состояния Сорейде-Уитсона</a> отличается от <a class="reference external" href="../2-EOS/EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнения состояния Пенга-Робинсона</a> только расчетом парамета <span class="math notranslate nohighlight">\(a_i\)</span> для воды, как компонента, а также определением коэффициентов попарного взаимодействия между водой и растворенными компонентами, то определение внутренней энергии системы с использованием уравнения состояния Сорейде-Уитсона будет отличаться от рассмотренного <a class="reference external" href="#pvt-parameters-internal_energy-srk_pr">ранее</a> определения внутренней энергии системы с использованием уравнения состояния Пенга-Робинсона только нахождением частной производной параметра <span class="math notranslate nohighlight">\(\alpha_m\)</span> по температуре. Для уравнения состояния Сорейде-Уитсона частные производные параметров были рассмотрены <a class="reference external" href="../2-EOS/EOS-Appendix-A-PD.html#pvt-eos-appendix-fugacity_pd-sw">ранее</a>.</p>
+<p><a id='pvt-parameters-internal_energy-cpa'></a></p>
+</div>
+<div class="section" id="cpa">
+<h2>Вывод выражения внутренней энергии системы на основе уравнения состояния CPA<a class="headerlink" href="#cpa" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+<script type="application/vnd.jupyter.widget-state+json">
+{"state": {"fcf60b0294ee4e9eb202bc73a2380a08": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "a565d21baf7947eeab66986dc40bf631": {"model_name": "MPLCanvasModel", "model_module": "jupyter-matplotlib", "model_module_version": "^0.10.5", "state": {"_cursor": "default", "_data_url": "data:image/png;base64,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JPWjWl5Sh2pjS7W8pA4Vx5aKmbXCBkunDh48iI4dO6Jt27bVtsfExCAoKAhxcXGSktWutrz5+fmIjIzEQw89hJCQEGzevFliQlIVa4Gokmq1ABi7Hthg6dTBgwcRGhpaY/uUKVPw8ccfS0hUt9ry+vr6YunSpfjpp5+wZ88eTJs2DdeuXZOUkFTFWiCqpFotAMauBzZYOnXw4MFaT6lGRUWhRYsWEhLVrba87du3R/fu3QEAbdu2RatWrXDx4kUJ6UhlrAWiSqrVAmDsemCDpUPFxcXIz8+v9TcVPapP3qysLFRUVMBisXgxGamOtUBUSbVaAFgP/BahDmVnZwOAMoV0q7zFxcWIj4/Hhx9+6M1Y1AiwFogqqVYLAOuBZ7B0KCcnB23btkXHjh1lR6mXuvKWlpYiJiYGM2fORK9evSSkI5WxFogqqVYLAOuBE40qKD09HStWrEBqaqrsKHUSQmDUqFHo2rUr5syZIzsONUKsBaJKqtQCYJx6YIOlmP79++PgwYO4du0aWrVqha1bt6JHjx6yY9Xqm2++Qd++fRESEuLatm7dOlitVompqLFgLRBVUqkWAOPUAxssIiIiIo3xHiwiIiIijbHBIiIiItIYGywiIiIijbHBIiIiItIYGywiIiIijbHBIiIiItIYGywiIiIijbHBIiIiItIYGywiIiIijbHBMhiTyVTnIyEhQXZEIq9gLRBVYi14hq/sAORdp0+fdv33pk2b8H//93/Iy8tzbfP395cRi8jrWAtElVgLnsEGy2DatWvn+u/AwECYTKZq24iMgrVAVIm14Bm8REhERESkMTZYRERERBpjg0VERESkMTZYRERERBpjg0VERESkMTZYRERERBpjg0VERESkMZMQQsgOQURERNSY8AwWERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcbYYBERERFpjA0WERERkcb+H77eckNZ51upAAAAAElFTkSuQmCC", "_dom_classes": [], "_figure_label": "Figure", "_image_mode": "full", "_message": "", "_model_module": "jupyter-matplotlib", "_model_module_version": "^0.10.5", "_model_name": "MPLCanvasModel", "_rubberband_height": 0, "_rubberband_width": 0, "_rubberband_x": 0, "_rubberband_y": 0, "_size": [600.0, 225.0], "_view_count": null, "_view_module": "jupyter-matplotlib", "_view_module_version": "^0.10.5", "_view_name": "MPLCanvasView", "capture_scroll": false, "footer_visible": true, "header_visible": false, "layout": "IPY_MODEL_fcf60b0294ee4e9eb202bc73a2380a08", "pan_zoom_throttle": 33.0, "resizable": true, "toolbar": "IPY_MODEL_c5b54e4c88944e49a5e9ece86295470c", "toolbar_position": "left", "toolbar_visible": "fade-in-fade-out"}}, "43be15ac40684f188cc7305883d97dc6": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "09b784d3050e433cb9f70ae9b507ce02": {"model_name": "ToolbarModel", "model_module": "jupyter-matplotlib", "model_module_version": "^0.10.5", "state": {"_current_action": "", "_dom_classes": [], "_model_module": "jupyter-matplotlib", "_model_module_version": "^0.10.5", "_model_name": "ToolbarModel", "_view_count": null, "_view_module": "jupyter-matplotlib", "_view_module_version": "^0.10.5", "_view_name": "ToolbarView", "button_style": "", "collapsed": true, "layout": "IPY_MODEL_43be15ac40684f188cc7305883d97dc6", "orientation": "vertical", "toolitems": [["Home", "Reset original view", "home", "home"], ["Back", "Back to previous view", "arrow-left", "back"], ["Forward", "Forward to next view", "arrow-right", "forward"], ["Pan", "Left button pans, Right button zooms\nx/y fixes axis, CTRL fixes aspect", "arrows", "pan"], ["Zoom", "Zoom to rectangle\nx/y fixes axis", "square-o", "zoom"], ["Download", "Download plot", "floppy-o", "save_figure"]]}}, "b38808a9b7eb4702b12061b25a8d412b": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "c5b54e4c88944e49a5e9ece86295470c": {"model_name": "ToolbarModel", "model_module": "jupyter-matplotlib", "model_module_version": "^0.10.5", "state": {"_current_action": "", "_dom_classes": [], "_model_module": "jupyter-matplotlib", "_model_module_version": "^0.10.5", "_model_name": "ToolbarModel", "_view_count": null, "_view_module": "jupyter-matplotlib", "_view_module_version": "^0.10.5", "_view_name": "ToolbarView", "button_style": "", "collapsed": true, "layout": "IPY_MODEL_b38808a9b7eb4702b12061b25a8d412b", "orientation": "vertical", "toolitems": [["Home", "Reset original view", "home", "home"], ["Back", "Back to previous view", "arrow-left", "back"], ["Forward", "Forward to next view", "arrow-right", "forward"], ["Pan", "Left button pans, Right button zooms\nx/y fixes axis, CTRL fixes aspect", "arrows", "pan"], ["Zoom", "Zoom to rectangle\nx/y fixes axis", "square-o", "zoom"], ["Download", "Download plot", "floppy-o", "save_figure"]]}}}, "version_major": 2, "version_minor": 0}
+</script>
+
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./1-PVT\3-Parameters"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="Parameters-0-Introduction.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Определение параметров систем с использованием уравнений состояния</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="Parameters-2-Enthalpy.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Энтальпия</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Daniel Skorov<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

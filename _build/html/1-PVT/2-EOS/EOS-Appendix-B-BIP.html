@@ -1,0 +1,2275 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Универсальный расчет коэффициентов попарного взаимодействия &#8212; Основы моделирования пластовых систем</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Определение параметров систем с использованием уравнений состояния" href="../3-Parameters/Parameters-0-Introduction.html" />
+    <link rel="prev" title="Частные производные летучести компонентов" href="EOS-Appendix-A-PD.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../Introduction.html">
+   Основы моделирования пластовых систем
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Основы вычислительной математики
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
+   Основы линейной алгебры
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
+     Вектор. Координаты вектора
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
+     Операции с векторами
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
+     Направляющие косинусы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
+     Матрицы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
+     Определитель матрицы. Обратная матрица
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
+     Матричные уравнения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
+     Собственные векторы и значения матриц
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
+     Линейные преобразования
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
+   Пределы
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
+   Основы дифференциальных и интегральных исчислений
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
+   Дифференциальные уравнения
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
+   Методы оптимизации функций
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-1-Newton.html">
+     Нахождение стационарной точки функции методом Ньютона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-2-QNewton.html">
+     Квази-ньютоновские методы поиска стационарной точки функции
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-3-TR.html">
+     Метод доверительной области
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../0-Math/5-OM/OM-4-Tunneling.html">
+     Туннельный метод оптимизации функции
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  PVT-моделирование
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../PVT-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../1-TD/TD-0-Introduction.html">
+   Основы термодинамики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-1-Basics.html">
+     Введение в термодинамику
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">
+     Термическое равновесие. Температура. Нулевое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">
+     Количество теплоты и работа. Первое начало термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-6-Entropy.html">
+     Энтропия. Второе и третье начала термодинамики
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">
+     Энергия Гельмгольца. Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-9-Observables.html">
+     Интенсивные и экстенсивные параметры
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">
+     Энергия Гиббса многокомпонентной системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">
+     Правило фаз Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">
+     Уравнение Гиббса-Дюгема
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">
+     Соотношения Максвелла
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">
+     Свободная энергия и фазовое равновесие
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../1-TD/TD-15-Fugacity.html">
+     Летучесть
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="EOS-0-Introduction.html">
+   Уравнения состояния
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-1-VanDerWaals.html">
+     Уравнение состояния Ван-дер-Ваальса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-2-SRK-PR.html">
+     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-3-SW.html">
+     Уравнение состояния Сорейде-Уитсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-4-SAFT.html">
+     Теория SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-5-PCSAFT.html">
+     Уравнение состояния PC-SAFT
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-6-CPA.html">
+     Кубическое уравнение состояние с учетом ассоциации молекул
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="EOS-Appendix-A-PD.html">
+     Частные производные летучести компонентов
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Универсальный расчет коэффициентов попарного взаимодействия
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../3-Parameters/Parameters-0-Introduction.html">
+   Определение параметров систем с использованием уравнений состояния
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-1-InternalEnergy.html">
+     Внутренняя энергия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-2-Enthalpy.html">
+     Энтальпия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-3-Entropy.html">
+     Энтропия
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-4-HeatCapacity.html">
+     Теплоемкость
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-5-ChemicalPotential.html">
+     Химический потенциал
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-6-GibbsEnergy.html">
+     Энергия Гиббса
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-7-HelmholtzEnergy.html">
+     Энергия Гельмгольца
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
+     Коэффициент сжимаемости. Коэффициент термического расширения
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
+     Коэффициент Джоуля-Томсона
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../3-Parameters/Parameters-Appendix-A-PD.html">
+     Частные производные термодинамических параметров
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../4-ESC/ESC-0-Introduction.html">
+   Равновесие. Стабильность. Критическое состояние
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-1-Equilibrium.html">
+     Определение равновесного состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-2-Stability.html">
+     Определение стабильности фазового состояния системы
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../4-ESC/ESC-3-Criticality.html">
+     Определение критического состояния системы
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Гидродинамика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Инициализация модели пласта
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Моделирование скважин
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геомеханика
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/Geomech-Introduction.html">
+   Введение
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-0-Introduction.html">
+   Основы геомеханики
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions.html">
+     Напряженно-деформированное состояние. Допущения и условия теории упругости
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-2-StressTensor.html">
+     Напряжение. Тензор напряжений
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
+     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust.html">
+     Напряженное состояние в земной коре
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../5-Geomechanics/2-ARG/ARG-0-Introduction.html">
+   Основные вопросы геомеханического моделирования
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Геохимия
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Численные методы в гидродинамическом моделировании
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
+   Введение
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="../../_sources/1-PVT/2-EOS/EOS-Appendix-B-BIP.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/1-PVT/2-EOS/EOS-Appendix-B-BIP.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/1-PVT/2-EOS/EOS-Appendix-B-BIP.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Универсальный расчет коэффициентов попарного взаимодействия</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <p><a id='pvt-eos-appendix-bip'></a></p>
+<div class="section" id="id1">
+<h1>Универсальный расчет коэффициентов попарного взаимодействия<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>В данном приложении изложены ряд подходов, в том числе универсальный (погрупповой [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2004.06.059">Jaubert and Mutelet, 2004</a>]), для расчета коэффициентов попарного взаимодействия при использовании <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнений состояния Суаве-Редлиха-Квонга, Пенга-Робинсона</a> и <a class="reference external" href="./EOS-1-VanDerWaals.html#pvt-eos-van_der_waals-mix_rules">правил смешивания Ван-дер-Ваальса</a>.</p>
+<p>Параметр <span class="math notranslate nohighlight">\(\delta_{jk}\)</span>, коэффициент попарного взаимодействия компонентов, играет важную роль при расчете PVT-свойств флюидов с использованием уравнений состояния. <a class="reference external" href="./EOS-1-VanDerWaals.html#pvt-eos-van_der_waals-bip">Ранее</a> было показано, что коэффициент попарного взаимодействия между углеводородными компонентами можно оценить, используя их критические объемы <span class="math notranslate nohighlight">\(V_c\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\delta_{jk} = 1 - \left( \frac{2 {V_c}_j^{\frac{1}{6}} {V_c}_k^{\frac{1}{6}}}{{V_c}_j^{\frac{1}{3}} + {V_c}_k^{\frac{1}{3}}} \right)^c.\]</div>
+<p>В данном выражении параметр <span class="math notranslate nohighlight">\(c\)</span> подбирается при адаптации модели на лабораторные исследования. В качестве начального значения можно использовать <span class="math notranslate nohighlight">\(c = 1.2\)</span>, согласно [<a class="reference external" href="https://api.semanticscholar.org/CorpusID:94056056">Oellrich et al, 1981</a>]. Расчет коэффициентов попарного взаимодействия между углеводородными компонентами (и углеводородными гетероатомными, например, с включениями серы – меркаптаны) также рассматривается в работах [<a class="reference external" href="https://doi.org/10.2118/16941-PA">Slot-Petersen, 1983</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(92)85054-C">Gao et al, 1992</a> <a class="reference external" href="https://doi.org/10.1016/j.fluid.2004.06.059">Jaubert and Mutelet, 2004</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2005.09.003">Jaubert et al, 2005</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2006.02.004">Vitu et al, 2006</a>; <a class="reference external" href="https://doi.org/10.1016/j.jct.2008.05.013">Privat et al, 2008</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2012.08.007">Privat and Jaubert, 2012</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.06.040">Qian et al, 2013</a>; <a class="reference external" href="https://doi.org/10.1016/j.jare.2012.03.004">Fateen et al, 2013</a>]. Кроме того, коэффициенты попарного взаимодействия исследовались и для уравнения состояния Суаве-Редлиха-Квонга: [<a class="reference external" href="https://doi.org/10.1021/i200022a008">Mathias, 1983</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(94)87090-X">Coutinho et al, 1994</a>].</p>
+<p><a id='pvt-eos-appendix-bip-kato'></a>
+Для неуглеводородных компонентов коэффициенты попарного взаимодействия можно оценить с использованием корреляций. Например, в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(81)80009-X">Kato et al, 1981</a>] приводится корреляция для расчета коэффициента попарного взаимодействия между диоксидом углерода и углеводородными компонентами для уравнения состояния Пенга-Робинсона:</p>
+<div class="math notranslate nohighlight">
+\[\delta_{ij} = a \cdot \left( T - b \right)^2 + c,\]</div>
+<p>где коэффициенты <span class="math notranslate nohighlight">\(a, \; b, \; c\)</span> рассчитываются по функции от ацентрического фактора углеводородного компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align} a &amp;= -0.70421 \cdot 10^{-5} \lg \omega - 0.132 \cdot 10^{-7}; \\ b &amp;= 301.58 \omega + 226.57; \\ c &amp;= -0.0470356 \left( \lg \omega + 1.08884 \right)^2 + 0.13040. \end{align}\end{split}\]</div>
+<p>Данная корреляция получена регрессией для алканового ряда до нормального декана. Также, зависимости коэффициента попарного взаимодействия между диоксидом углерода и углеводородными компонентами исследуются в работах [<a class="reference external" href="https://doi.org/10.1021/i260076a033">Mulliken and Sandler, 1980</a>; <a class="reference external" href="https://doi.org/10.2118/9231-PA">Turek et al, 1984</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(88)80049-9">Nishiumi et al, 1988</a>; <a class="reference external" href="https://doi.org/10.1016/S0378-3812(01)00562-3">Pedersen et al, 2001</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2005.10.001">Mutelet et al, 2005</a>; <a class="reference external" href="https://doi.org/10.1016/j.supflu.2007.11.015">Vitu et al, 2008</a>; <a class="reference external" href="https://doi.org/10.1016/j.jare.2012.03.004">Fateen et al, 2013</a>].</p>
+<p><a id='pvt-eos-appendix-bip-nishumi'></a>
+В работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(88)80049-9">Nishiumi et al, 1988</a>] приводится обобщенная зависимость коэффициентов попарного взаимодействия для углеводородных (алканов до <span class="math notranslate nohighlight">\(C_{20}\)</span>, алкенов, циклоалканов, ароматических углвеодородов) и неуглеводородных компонентов (диоксида углерода, азота и сероводорода) для уравнения состояния Пенга-Робинсона в следующем виде:</p>
+<div class="math notranslate nohighlight">
+\[m_{ij} = 1 - \delta_{ij} = C + D \frac{{V_c}_i}{{V_c}_j} + E \left( \frac{{V_c}_i}{{V_c}_j} \right)^2.\]</div>
+<p>В данном уравнении коэффициенты <span class="math notranslate nohighlight">\(C, \; D, \; E\)</span> зависят от ацентрических факторов, а также типа компонента:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align} C &amp;= c_1 + c_2 \left| \omega_i - \omega_j \right|; \\ D &amp;= d_1 + d_2 \left| \omega_i - \omega_j \right|. \end{align}\end{split}\]</div>
+<p>В следующей таблице приводятся группы коэффициентов <span class="math notranslate nohighlight">\(c_1, \; c_2, \; d_1, \; d_2, \; E\)</span> в зависимости от типа компонента:</p>
+<div class="full-width docutils">
+<style type="text/css">
+.tg  {border-color:#ccc;border-spacing:0;margin:20px auto;}
+.tg td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:1px;color:#333;
+  font-family:Palatino, sans-serif;font-size:14px;overflow:hidden;padding:10px 16px;word-break:normal;}
+.tg th{border-color:#ccc;border-style:solid;border-width:1px;color:#333;
+  font-family:Palatino, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 16px;word-break:normal;}
+.tg .tg-0pky{border-color:inherit;text-align:center;vertical-align:center}
+.tg .tg-1pky{background-color:#f0f0f0;border-color:inherit;text-align:center;vertical-align:center;font-weight:bold}
+.tg .tg-abip{background-color:#f9f9f9;border-color:inherit;text-align:center;vertical-align:center}
+</style>
+<table class="tg">
+    <thead>
+        <tr>
+            <th class="tg-1pky"></th>
+            <th class="tg-1pky">Алканы<br>C<sub>1</sub> – C<sub>16</sub></th>
+            <th class="tg-1pky">Циклоалканы</th>
+            <th class="tg-1pky">Алкены</th>
+            <th class="tg-1pky">Ароматические<br>у/в</th>
+            <th class="tg-1pky">Алканы<br>C<sub>18</sub> – C<sub>20</sub></th>
+            <th class="tg-1pky">Диоксид<br>углерода</th>
+            <th class="tg-1pky">Сероводород</th>
+            <th class="tg-1pky">Азот</th>
+            <th class="tg-1pky">Ацетилен</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="tg-1pky">Алканы<br>C<sub>1</sub> – C<sub>16</sub></td>
+            <td class="tg-0pky">1</td>
+            <td class="tg-0pky">1</td>
+            <td class="tg-0pky">2</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">4</td>
+            <td class="tg-0pky">5</td>
+            <td class="tg-0pky">7</td>
+            <td class="tg-0pky">8</td>
+            <td class="tg-0pky">10</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Циклоалканы</td>
+            <td class="tg-0pky">1</td>
+            <td class="tg-0pky">1</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">5</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Алкены</td>
+            <td class="tg-0pky">2</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">2</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">4</td>
+            <td class="tg-0pky">6</td>
+            <td class="tg-0pky">7</td>
+            <td class="tg-0pky">8</td>
+            <td class="tg-0pky">9</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Ароматические<br>у/в</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">3</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">6</td>
+            <td class="tg-0pky">7</td>
+            <td class="tg-0pky">12</td>
+            <td class="tg-0pky">11</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Алканы<br>C<sub>18</sub> – C<sub>20</sub></td>
+            <td class="tg-0pky">4</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">4</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">4</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Диоксид<br>углерода</td>
+            <td class="tg-0pky">5</td>
+            <td class="tg-0pky">5</td>
+            <td class="tg-0pky">6</td>
+            <td class="tg-0pky">6</td>
+            <td class="tg-0pky">4</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">12</td>
+            <td class="tg-0pky">13</td>
+            <td class="tg-0pky">-</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Азот</td>
+            <td class="tg-0pky">7</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">7</td>
+            <td class="tg-0pky">7</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">12</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">14</td>
+            <td class="tg-0pky">-</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Сероводород</td>
+            <td class="tg-0pky">8</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">8</td>
+            <td class="tg-0pky">12</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">13</td>
+            <td class="tg-0pky">14</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+        </tr>
+        <tr>
+            <td class="tg-1pky">Ацетилен</td>
+            <td class="tg-0pky">10</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">9</td>
+            <td class="tg-0pky">11</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+            <td class="tg-0pky">-</td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<p>Для каждой группы значения коэффициентов <span class="math notranslate nohighlight">\(c_1, \; c_2, \; d_1, \; d_2, \; E\)</span>:</p>
+<style type="text/css">
+.tb  {border-color:#ccc;border-spacing:0;margin:20px auto;}
+.tb td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:1px;color:#333;
+  font-family:Palatino, sans-serif;font-size:14px;overflow:hidden;padding:10px 44px;word-break:normal;}
+.tb th{border-color:#ccc;border-style:solid;border-width:1px;color:#333;
+  font-family:Palatino, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 44px;word-break:normal;}
+.tb .tb-0pky{border-color:inherit;text-align:center;vertical-align:center}
+.tb .tb-1pky{background-color:#f0f0f0;border-color:inherit;text-align:center;vertical-align:center;font-weight:bold}
+.tb .tb-abip{background-color:#f9f9f9;border-color:inherit;text-align:center;vertical-align:center}
+</style>
+<table class="tb">
+    <thead>
+        <tr>
+            <th class="tb-1pky">Группа</th>
+            <th class="tb-1pky">c<sub>1</sub></th>
+            <th class="tb-1pky">c<sub>2</sub></th>
+            <th class="tb-1pky">d<sub>1</sub></th>
+            <th class="tb-1pky">d<sub>2</sub></th>
+            <th class="tb-1pky">E</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="tb-abip">1</td>
+            <td class="tb-0pky">1.041</td>
+            <td class="tb-0pky">0.11</td>
+            <td class="tb-0pky">-0.0403</td>
+            <td class="tb-0pky">0.0367</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">2</td>
+            <td class="tb-0pky">1.017</td>
+            <td class="tb-0pky">-0.417</td>
+            <td class="tb-0pky">-0.0124</td>
+            <td class="tb-0pky">0.0852</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">3</td>
+            <td class="tb-0pky">1.025</td>
+            <td class="tb-0pky">0.317</td>
+            <td class="tb-0pky">-0.0385</td>
+            <td class="tb-0pky">-0.0258</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">4</td>
+            <td class="tb-0pky">0.823</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0.0673</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">-0.0051</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">5</td>
+            <td class="tb-0pky">0.883</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0.0023</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">6</td>
+            <td class="tb-0pky">0.948</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">-0.0084</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">7</td>
+            <td class="tb-0pky">0.982</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">-0.0241</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">8</td>
+            <td class="tb-0pky">0.907</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0.0109</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">9</td>
+            <td class="tb-0pky">1.090</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">-0.1435</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">10</td>
+            <td class="tb-0pky">0.855</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">11</td>
+            <td class="tb-0pky">0.965</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">12</td>
+            <td class="tb-0pky">1.016</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">13</td>
+            <td class="tb-0pky">0.894</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+        <tr>
+            <td class="tb-abip">14</td>
+            <td class="tb-0pky">0.848</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+            <td class="tb-0pky">0</td>
+        </tr>
+    </tbody>
+</table><p>Также зависимости коэффициента попарного взаимодействия между азотом и углеводородными компонентами исследуются в работах [<a class="reference external" href="https://doi.org/10.2118/6721-PA">Katz and Firoozabadi, 1978</a>; <a class="reference external" href="http://dx.doi.org/10.11575/PRISM/13997">Mehra, 1981</a>; <a class="reference external" href="https://doi.org/10.1016/S0378-3812(01)00562-3">Pedersen et al, 2001</a>; <a class="reference external" href="https://doi.org/10.1021/ie800636h">Privat et al, 2008</a>; <a class="reference external" href="https://doi.org/10.1021/ie071524b">Privat et al, 2008</a>; <a class="reference external" href="https://doi.org/10.1016/j.jare.2012.03.004">Fateen et al, 2013</a>].</p>
+<p>Зависимости коэффициента попарного взаимодействия между кислородом, углеводородными и неуглеводородными компонентами рассматриваются в работе [<a class="reference external" href="https://doi.org/10.1021/acs.iecr.5b02639">Xu et al, 2015</a>]. Зависимости коэффициента попарного взаимодействия между водородом, сероводородом и другими углеводородоными и неуглеводородными компонентами приводятся в работах [<a class="reference external" href="https://doi.org/10.1016/0009-2509(90)87079-8">Valderama et al, 1990</a>; <a class="reference external" href="https://doi.org/10.1021/ie402541h">Qian et al, 2013</a>; <a class="reference external" href="https://doi.org/10.1016/j.jare.2012.03.004">Fateen et al, 2013</a>].</p>
+<p>Самостоятельный подход для описания фазового поведения воды с учетом ее минерализации был рассмотрен <a class="reference external" href="./EOS-3-SW.html#pvt-eos-sw">ранее</a>. Зависимости коэффициента попарного взаимодействия между водой, углеводородными и неуглеводородными компонентами для уравнения состояния Пенга-Робинсона изучаются в работах [<a class="reference external" href="https://doi.org/10.1021/ie402541h">Qian et al, 2013</a>].</p>
+<p>Таким образом, учитывая колоссальное количество корреляций для коэффициентов попарного взаимодействия, возникает задача разработки универсального подхода к расчету коэффициентов попарного взаимодействия. Данная задача решается в рамках работы [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2004.06.059">Jaubert and Mutelet, 2004</a>]. Авторами предложен погрупповой, по аналогии с рассмотренным <a class="reference external" href="#pvt-eos-appendix-bip-nishumi">ранее</a>, подход к определению коэффициентов попарного взаимодействия для <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнения состояния Пенга-Робинсона</a> и <a class="reference external" href="./EOS-1-VanDerWaals.html#pvt-eos-van_der_waals-mix_rules">правил смешивания Ван-дер-Ваальса</a> с тем отличием, что в рамках универсального подхода учитывается температурная зависимость коэффициентов попарного взаимодействия. При этом, в качестве исходных данных для расчета коэффициентов попарного взаимодействия необходимы критические давления компонентов <span class="math notranslate nohighlight">\({P_c}_i\)</span>, критические температуры компонентов <span class="math notranslate nohighlight">\({T_c}_i\)</span>, а также ацентрические факторы компонентов <span class="math notranslate nohighlight">\(\omega_i\)</span>, то есть те же самые параметры, необходимые для использования <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнения состояния Пенга-Робинсона</a>.</p>
+<p><a id='pvt-eos-appendix-bip-gcm'></a>
+Согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2004.06.059">Jaubert and Mutelet, 2004</a>], температурная зависимость коэффициента попарного взаимодействия определяется следующим выражением:</p>
+<div class="math notranslate nohighlight">
+\[ k_{ij} \left( T \right) = \frac{-\frac{1}{2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) A_{kl} \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 1} - \left( \delta_i - \delta_j \right)^2}{2 \delta_i \delta_j},\]</div>
+<p>где <span class="math notranslate nohighlight">\(\delta_i = \frac{\sqrt{\alpha_i}}{b_i}\)</span> (параметры <span class="math notranslate nohighlight">\(\alpha_i, \; b_i\)</span> определяются в соответствии с <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнением состояния Пенга-Робинсона</a>), <span class="math notranslate nohighlight">\(N_g\)</span> – количество групп (соответственно <span class="math notranslate nohighlight">\(k, \; l\)</span> – индексы групп), <span class="math notranslate nohighlight">\(\alpha_{ik}\)</span> – доля молекулы <span class="math notranslate nohighlight">\(i\)</span>, занятая группой <span class="math notranslate nohighlight">\(k\)</span> (то есть количество появлений группы <span class="math notranslate nohighlight">\(k\)</span> в молекуле <span class="math notranslate nohighlight">\(i\)</span>, деленное на общее количество групп в молекуле <span class="math notranslate nohighlight">\(i\)</span>), параметры <span class="math notranslate nohighlight">\(A_{kl} = A_{lk}, \; B_{kl} = B_{lk}\)</span> – коэффициенты, подобранные авторами работы [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2004.06.059">Jaubert and Mutelet, 2004</a>] для различных групп (<span class="math notranslate nohighlight">\(A_{kk} = B_{kk} = 0\)</span>). Следовательно, с учетом данной формулы для расчета коэффициента попарного взаимодействия молекул необходимо знать критические свойства компонентов, их ацентрические факторы и структуру молекулы.</p>
+<p>Приведенное выше выражение берет свое начало из описания термодинамической системы решеточной моделью (<a class="reference external" href="https://en.wikipedia.org/wiki/Lattice_model_(physics)">lattice model</a>). Фундамент для вывода данного выражения приводится в работах [<a class="reference external" href="https://doi.org/10.1021/ja01519a001">Redlich et al, 1959</a>; <a class="reference external" href="https://doi.org/10.1051/jcp/1971680922">Kehiaian et al, 1971</a>; <a class="reference external" href="https://doi.org/10.1351/pac198557010015">Kehiaian, 1985</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(87)85056-2">Tine and Kehiaian, 1987</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(91)85010-R">Abdoul et al, 1991</a>].</p>
+<p>Коэффициенты <span class="math notranslate nohighlight">\(A_{kl} = A_{lk}, \; B_{kl} = B_{lk}\)</span> в МПа представлены в работе [<a class="reference external" href="https://doi.org/10.1021/ie402541h">Qian et al, 2013</a>] и следующих таблицах:</p>
+<div class="cell tag_full-width docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_columns</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CH3&#39;</span><span class="p">,</span> <span class="s1">&#39;CH2&#39;</span><span class="p">,</span> <span class="s1">&#39;CH&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;CH4&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6&#39;</span><span class="p">,</span> <span class="s1">&#39;CH (aro)&#39;</span><span class="p">,</span> <span class="s1">&#39;C (aro)&#39;</span><span class="p">,</span> <span class="s1">&#39;C (fused aro rings)&#39;</span><span class="p">,</span> <span class="s1">&#39;CH2 (cyclic)&#39;</span><span class="p">,</span> <span class="s1">&#39;CH (cyclic) | C (cyclic)&#39;</span><span class="p">,</span> <span class="s1">&#39;CO2&#39;</span><span class="p">,</span> <span class="s1">&#39;N2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;H2S&#39;</span><span class="p">,</span> <span class="s1">&#39;SH&#39;</span><span class="p">,</span> <span class="s1">&#39;H2&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H4&#39;</span><span class="p">,</span> <span class="s1">&#39;CH2 (alkenic) | CH (alkenic)&#39;</span><span class="p">,</span> <span class="s1">&#39;C (alkenic)&#39;</span><span class="p">,</span> <span class="s1">&#39;CH (cycloalkenic) | C (cycloalkenic)&#39;</span><span class="p">,</span> <span class="s1">&#39;H2O&#39;</span><span class="p">]</span>
+<span class="n">df_a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io</span><span class="o">=</span><span class="s1">&#39;../../SupportCode/BIPCoefficients.xlsx&#39;</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="s1">&#39;D:Y&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dct</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">df_a</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">cols</span><span class="p">))</span>
+<span class="n">df_a_mod</span> <span class="o">=</span> <span class="n">df_a</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">dct</span><span class="p">)</span>
+<span class="n">df_a_mod</span> <span class="o">=</span> <span class="n">df_a_mod</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">dct</span><span class="p">)</span>
+<span class="n">df_a_mod</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CH3</th>
+      <th>CH2</th>
+      <th>CH</th>
+      <th>C</th>
+      <th>CH4</th>
+      <th>C2H6</th>
+      <th>CH (aro)</th>
+      <th>C (aro)</th>
+      <th>C (fused aro rings)</th>
+      <th>CH2 (cyclic)</th>
+      <th>CH (cyclic) | C (cyclic)</th>
+      <th>CO2</th>
+      <th>N2</th>
+      <th>H2S</th>
+      <th>SH</th>
+      <th>H2</th>
+      <th>C2H4</th>
+      <th>CH2 (alkenic) | CH (alkenic)</th>
+      <th>C (alkenic)</th>
+      <th>CH (cycloalkenic) | C (cycloalkenic)</th>
+      <th>H2O</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>CH3</th>
+      <td>0.000</td>
+      <td>74.8100</td>
+      <td>261.500</td>
+      <td>396.7</td>
+      <td>32.94</td>
+      <td>8.579</td>
+      <td>90.250</td>
+      <td>62.800</td>
+      <td>62.8</td>
+      <td>40.380</td>
+      <td>98.48</td>
+      <td>164.00</td>
+      <td>52.74</td>
+      <td>158.4</td>
+      <td>799.9</td>
+      <td>202.8</td>
+      <td>7.206</td>
+      <td>54.22</td>
+      <td>115.6</td>
+      <td>177.1</td>
+      <td>3557</td>
+    </tr>
+    <tr>
+      <th>CH2</th>
+      <td>74.810</td>
+      <td>0.0000</td>
+      <td>51.470</td>
+      <td>88.53</td>
+      <td>36.72</td>
+      <td>31.23</td>
+      <td>29.780</td>
+      <td>3.775</td>
+      <td>3.775</td>
+      <td>12.780</td>
+      <td>-54.9</td>
+      <td>136.90</td>
+      <td>82.28</td>
+      <td>134.6</td>
+      <td>459.5</td>
+      <td>132.5</td>
+      <td>59.71</td>
+      <td>11.67</td>
+      <td>60.39</td>
+      <td>0.0001</td>
+      <td>4324</td>
+    </tr>
+    <tr>
+      <th>CH</th>
+      <td>261.500</td>
+      <td>51.4700</td>
+      <td>0.000</td>
+      <td>-305.7</td>
+      <td>145.2</td>
+      <td>174.3</td>
+      <td>103.300</td>
+      <td>6.177</td>
+      <td>6.177</td>
+      <td>101.900</td>
+      <td>-226.5</td>
+      <td>184.30</td>
+      <td>365.4</td>
+      <td>193.9</td>
+      <td>425.5</td>
+      <td>415.2</td>
+      <td>176.7</td>
+      <td>118.4</td>
+      <td>103.6</td>
+      <td>39.12</td>
+      <td>971.4</td>
+    </tr>
+    <tr>
+      <th>C</th>
+      <td>396.700</td>
+      <td>88.5300</td>
+      <td>-305.700</td>
+      <td>0</td>
+      <td>263.9</td>
+      <td>333.2</td>
+      <td>158.900</td>
+      <td>79.610</td>
+      <td>79.61</td>
+      <td>177.100</td>
+      <td>17.84</td>
+      <td>287.90</td>
+      <td>263.9</td>
+      <td>305.1</td>
+      <td>682.9</td>
+      <td>226.5</td>
+      <td>319.5</td>
+      <td>50.79</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>CH4</th>
+      <td>32.940</td>
+      <td>36.7200</td>
+      <td>145.200</td>
+      <td>263.9</td>
+      <td>0</td>
+      <td>13.04</td>
+      <td>67.260</td>
+      <td>139.300</td>
+      <td>139.3</td>
+      <td>36.370</td>
+      <td>40.15</td>
+      <td>137.30</td>
+      <td>37.9</td>
+      <td>181.2</td>
+      <td>704.2</td>
+      <td>156.1</td>
+      <td>14.69</td>
+      <td>52.84</td>
+      <td>-</td>
+      <td>-</td>
+      <td>2265</td>
+    </tr>
+    <tr>
+      <th>C2H6</th>
+      <td>8.579</td>
+      <td>31.2300</td>
+      <td>174.300</td>
+      <td>333.2</td>
+      <td>13.04</td>
+      <td>0</td>
+      <td>41.180</td>
+      <td>-3.088</td>
+      <td>-3.088</td>
+      <td>8.579</td>
+      <td>10.29</td>
+      <td>135.50</td>
+      <td>61.59</td>
+      <td>157.2</td>
+      <td>-</td>
+      <td>137.6</td>
+      <td>7.549</td>
+      <td>26.42</td>
+      <td>-</td>
+      <td>-</td>
+      <td>2333</td>
+    </tr>
+    <tr>
+      <th>CH (aro)</th>
+      <td>90.250</td>
+      <td>29.7800</td>
+      <td>103.300</td>
+      <td>158.9</td>
+      <td>67.26</td>
+      <td>41.18</td>
+      <td>0.000</td>
+      <td>-13.380</td>
+      <td>-13.38</td>
+      <td>29.170</td>
+      <td>-26.42</td>
+      <td>102.60</td>
+      <td>185.2</td>
+      <td>21.96</td>
+      <td>285.5</td>
+      <td>284.8</td>
+      <td>20.25</td>
+      <td>8.579</td>
+      <td>1.029</td>
+      <td>6.177</td>
+      <td>2268</td>
+    </tr>
+    <tr>
+      <th>C (aro)</th>
+      <td>62.800</td>
+      <td>3.7750</td>
+      <td>6.177</td>
+      <td>79.61</td>
+      <td>139.3</td>
+      <td>-3.088</td>
+      <td>-13.380</td>
+      <td>0.000</td>
+      <td>0</td>
+      <td>34.310</td>
+      <td>-105.7</td>
+      <td>110.10</td>
+      <td>284</td>
+      <td>1.029</td>
+      <td>1072</td>
+      <td>377.5</td>
+      <td>65.2</td>
+      <td>-70.69</td>
+      <td>217.5</td>
+      <td>3.431</td>
+      <td>543.5</td>
+    </tr>
+    <tr>
+      <th>C (fused aro rings)</th>
+      <td>62.800</td>
+      <td>3.7750</td>
+      <td>6.177</td>
+      <td>79.61</td>
+      <td>139.3</td>
+      <td>-3.088</td>
+      <td>-13.380</td>
+      <td>0.000</td>
+      <td>0</td>
+      <td>34.310</td>
+      <td>-105.7</td>
+      <td>267.30</td>
+      <td>718.1</td>
+      <td>1.029</td>
+      <td>1072</td>
+      <td>549</td>
+      <td>199</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>1340</td>
+    </tr>
+    <tr>
+      <th>CH2 (cyclic)</th>
+      <td>40.380</td>
+      <td>12.7800</td>
+      <td>101.900</td>
+      <td>177.1</td>
+      <td>36.37</td>
+      <td>8.579</td>
+      <td>29.170</td>
+      <td>34.310</td>
+      <td>34.31</td>
+      <td>0.000</td>
+      <td>-50.1</td>
+      <td>130.10</td>
+      <td>179.5</td>
+      <td>120.8</td>
+      <td>446.1</td>
+      <td>232</td>
+      <td>35.34</td>
+      <td>27.11</td>
+      <td>-29.85</td>
+      <td>51.47</td>
+      <td>4211</td>
+    </tr>
+    <tr>
+      <th>CH (cyclic) | C (cyclic)</th>
+      <td>98.480</td>
+      <td>-54.9000</td>
+      <td>-226.500</td>
+      <td>17.84</td>
+      <td>40.15</td>
+      <td>10.29</td>
+      <td>-26.420</td>
+      <td>-105.700</td>
+      <td>-105.7</td>
+      <td>-50.100</td>
+      <td>0</td>
+      <td>91.28</td>
+      <td>100.9</td>
+      <td>-16.13</td>
+      <td>411.8</td>
+      <td>-314</td>
+      <td>-38.43</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-29.17</td>
+      <td>244</td>
+    </tr>
+    <tr>
+      <th>CO2</th>
+      <td>164.000</td>
+      <td>136.9000</td>
+      <td>184.300</td>
+      <td>287.9</td>
+      <td>137.3</td>
+      <td>135.5</td>
+      <td>102.600</td>
+      <td>110.100</td>
+      <td>267.3</td>
+      <td>130.100</td>
+      <td>91.28</td>
+      <td>0.00</td>
+      <td>98.42</td>
+      <td>134.9</td>
+      <td>469.6</td>
+      <td>265.9</td>
+      <td>73.09</td>
+      <td>59.71</td>
+      <td>23.68</td>
+      <td>87.85</td>
+      <td>559.3</td>
+    </tr>
+    <tr>
+      <th>N2</th>
+      <td>52.740</td>
+      <td>82.2800</td>
+      <td>365.400</td>
+      <td>263.9</td>
+      <td>37.9</td>
+      <td>61.59</td>
+      <td>185.200</td>
+      <td>284.000</td>
+      <td>718.1</td>
+      <td>179.500</td>
+      <td>100.9</td>
+      <td>98.42</td>
+      <td>0</td>
+      <td>319.5</td>
+      <td>1044</td>
+      <td>65.2</td>
+      <td>88.53</td>
+      <td>125.2</td>
+      <td>455.7</td>
+      <td>-</td>
+      <td>2574</td>
+    </tr>
+    <tr>
+      <th>H2S</th>
+      <td>158.400</td>
+      <td>134.6000</td>
+      <td>193.900</td>
+      <td>305.1</td>
+      <td>181.2</td>
+      <td>157.2</td>
+      <td>21.960</td>
+      <td>1.029</td>
+      <td>1.029</td>
+      <td>120.800</td>
+      <td>-16.13</td>
+      <td>134.90</td>
+      <td>319.5</td>
+      <td>0</td>
+      <td>-77.21</td>
+      <td>145.8</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>603.9</td>
+    </tr>
+    <tr>
+      <th>SH</th>
+      <td>799.900</td>
+      <td>459.5000</td>
+      <td>425.500</td>
+      <td>682.9</td>
+      <td>704.2</td>
+      <td>-</td>
+      <td>285.500</td>
+      <td>1072.000</td>
+      <td>1072</td>
+      <td>446.100</td>
+      <td>411.8</td>
+      <td>469.60</td>
+      <td>1044</td>
+      <td>-77.21</td>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>30.88</td>
+    </tr>
+    <tr>
+      <th>H2</th>
+      <td>202.800</td>
+      <td>132.5000</td>
+      <td>415.200</td>
+      <td>226.5</td>
+      <td>156.1</td>
+      <td>137.6</td>
+      <td>284.800</td>
+      <td>377.500</td>
+      <td>549</td>
+      <td>232.000</td>
+      <td>-314</td>
+      <td>265.90</td>
+      <td>65.2</td>
+      <td>145.8</td>
+      <td>-</td>
+      <td>0</td>
+      <td>151.3</td>
+      <td>163</td>
+      <td>630</td>
+      <td>483.1</td>
+      <td>830.8</td>
+    </tr>
+    <tr>
+      <th>C2H4</th>
+      <td>7.206</td>
+      <td>59.7100</td>
+      <td>176.700</td>
+      <td>319.5</td>
+      <td>14.69</td>
+      <td>7.549</td>
+      <td>20.250</td>
+      <td>65.200</td>
+      <td>199</td>
+      <td>35.340</td>
+      <td>-38.43</td>
+      <td>73.09</td>
+      <td>88.53</td>
+      <td>-</td>
+      <td>-</td>
+      <td>151.3</td>
+      <td>0</td>
+      <td>17.16</td>
+      <td>-13.04</td>
+      <td>-44.95</td>
+      <td>1632</td>
+    </tr>
+    <tr>
+      <th>CH2 (alkenic) | CH (alkenic)</th>
+      <td>54.220</td>
+      <td>11.6700</td>
+      <td>118.400</td>
+      <td>50.79</td>
+      <td>52.84</td>
+      <td>26.42</td>
+      <td>8.579</td>
+      <td>-70.690</td>
+      <td>-</td>
+      <td>27.110</td>
+      <td>-</td>
+      <td>59.71</td>
+      <td>125.2</td>
+      <td>-</td>
+      <td>-</td>
+      <td>163</td>
+      <td>17.16</td>
+      <td>0</td>
+      <td>21.62</td>
+      <td>119.8</td>
+      <td>2243</td>
+    </tr>
+    <tr>
+      <th>C (alkenic)</th>
+      <td>115.600</td>
+      <td>60.3900</td>
+      <td>103.600</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>1.029</td>
+      <td>217.500</td>
+      <td>-</td>
+      <td>-29.850</td>
+      <td>-</td>
+      <td>23.68</td>
+      <td>455.7</td>
+      <td>-</td>
+      <td>-</td>
+      <td>630</td>
+      <td>-13.04</td>
+      <td>21.62</td>
+      <td>0</td>
+      <td>-392.9</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>CH (cycloalkenic) | C (cycloalkenic)</th>
+      <td>177.100</td>
+      <td>0.0001</td>
+      <td>39.120</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>6.177</td>
+      <td>3.431</td>
+      <td>-</td>
+      <td>51.470</td>
+      <td>-29.17</td>
+      <td>87.85</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>483.1</td>
+      <td>-44.95</td>
+      <td>119.8</td>
+      <td>-392.9</td>
+      <td>0</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>H2O</th>
+      <td>3557.000</td>
+      <td>4324.0000</td>
+      <td>971.400</td>
+      <td>-</td>
+      <td>2265</td>
+      <td>2333</td>
+      <td>2268.000</td>
+      <td>543.500</td>
+      <td>1340</td>
+      <td>4211.000</td>
+      <td>244</td>
+      <td>559.30</td>
+      <td>2574</td>
+      <td>603.9</td>
+      <td>30.88</td>
+      <td>830.8</td>
+      <td>1632</td>
+      <td>2243</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell tag_full-width docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_b</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io</span><span class="o">=</span><span class="s1">&#39;../../SupportCode/BIPCoefficients.xlsx&#39;</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="s1">&#39;D:Y&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">df_b_mod</span> <span class="o">=</span> <span class="n">df_b</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">dct</span><span class="p">)</span>
+<span class="n">df_b_mod</span> <span class="o">=</span> <span class="n">df_b_mod</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">dct</span><span class="p">)</span>
+<span class="n">df_b_mod</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CH3</th>
+      <th>CH2</th>
+      <th>CH</th>
+      <th>C</th>
+      <th>CH4</th>
+      <th>C2H6</th>
+      <th>CH (aro)</th>
+      <th>C (aro)</th>
+      <th>C (fused aro rings)</th>
+      <th>CH2 (cyclic)</th>
+      <th>CH (cyclic) | C (cyclic)</th>
+      <th>CO2</th>
+      <th>N2</th>
+      <th>H2S</th>
+      <th>SH</th>
+      <th>H2</th>
+      <th>C2H4</th>
+      <th>CH2 (alkenic) | CH (alkenic)</th>
+      <th>C (alkenic)</th>
+      <th>CH (cycloalkenic) | C (cycloalkenic)</th>
+      <th>H2O</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>CH3</th>
+      <td>0.00</td>
+      <td>165.700</td>
+      <td>388.80</td>
+      <td>804.3</td>
+      <td>-35</td>
+      <td>-29.51</td>
+      <td>146.100</td>
+      <td>41.860</td>
+      <td>41.86</td>
+      <td>95.90</td>
+      <td>231.6</td>
+      <td>269.00</td>
+      <td>87.19</td>
+      <td>241.2</td>
+      <td>2109</td>
+      <td>317.4</td>
+      <td>39.12</td>
+      <td>142.4</td>
+      <td>118.4</td>
+      <td>358.9</td>
+      <td>11195</td>
+    </tr>
+    <tr>
+      <th>CH2</th>
+      <td>165.70</td>
+      <td>0.000</td>
+      <td>79.61</td>
+      <td>315</td>
+      <td>108.4</td>
+      <td>84.76</td>
+      <td>58.170</td>
+      <td>144.800</td>
+      <td>144.8</td>
+      <td>28.37</td>
+      <td>-319.5</td>
+      <td>254.60</td>
+      <td>202.8</td>
+      <td>138.3</td>
+      <td>627.3</td>
+      <td>147.2</td>
+      <td>78.58</td>
+      <td>29.51</td>
+      <td>272.8</td>
+      <td>-7.206</td>
+      <td>12126</td>
+    </tr>
+    <tr>
+      <th>CH</th>
+      <td>388.80</td>
+      <td>79.610</td>
+      <td>0.00</td>
+      <td>-250.8</td>
+      <td>301.6</td>
+      <td>352.1</td>
+      <td>191.800</td>
+      <td>-33.970</td>
+      <td>-33.97</td>
+      <td>-90.93</td>
+      <td>-51.47</td>
+      <td>762.10</td>
+      <td>521.9</td>
+      <td>307.8</td>
+      <td>514.7</td>
+      <td>726.4</td>
+      <td>118</td>
+      <td>158.9</td>
+      <td>430.6</td>
+      <td>1038</td>
+      <td>567.6</td>
+    </tr>
+    <tr>
+      <th>C</th>
+      <td>804.30</td>
+      <td>315.000</td>
+      <td>-250.80</td>
+      <td>0</td>
+      <td>531.5</td>
+      <td>203.8</td>
+      <td>613.200</td>
+      <td>-326.000</td>
+      <td>-326</td>
+      <td>601.90</td>
+      <td>-109.5</td>
+      <td>346.20</td>
+      <td>772.6</td>
+      <td>-143.1</td>
+      <td>1544</td>
+      <td>1812</td>
+      <td>-248.1</td>
+      <td>-284.5</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>CH4</th>
+      <td>-35.00</td>
+      <td>108.400</td>
+      <td>301.60</td>
+      <td>531.5</td>
+      <td>0</td>
+      <td>6.863</td>
+      <td>167.500</td>
+      <td>464.300</td>
+      <td>464.3</td>
+      <td>26.42</td>
+      <td>255.3</td>
+      <td>194.20</td>
+      <td>37.2</td>
+      <td>288.9</td>
+      <td>1496</td>
+      <td>92.99</td>
+      <td>30.2</td>
+      <td>110.5</td>
+      <td>-</td>
+      <td>-</td>
+      <td>4722</td>
+    </tr>
+    <tr>
+      <th>C2H6</th>
+      <td>-29.51</td>
+      <td>84.760</td>
+      <td>352.10</td>
+      <td>203.8</td>
+      <td>6.863</td>
+      <td>0</td>
+      <td>50.790</td>
+      <td>13.040</td>
+      <td>13.04</td>
+      <td>76.86</td>
+      <td>-52.84</td>
+      <td>239.50</td>
+      <td>84.92</td>
+      <td>217.1</td>
+      <td>-</td>
+      <td>150</td>
+      <td>19.22</td>
+      <td>50.44</td>
+      <td>-</td>
+      <td>-</td>
+      <td>5147</td>
+    </tr>
+    <tr>
+      <th>CH (aro)</th>
+      <td>146.10</td>
+      <td>58.170</td>
+      <td>191.80</td>
+      <td>613.2</td>
+      <td>167.5</td>
+      <td>50.79</td>
+      <td>0.000</td>
+      <td>20.250</td>
+      <td>20.25</td>
+      <td>69.32</td>
+      <td>-789.2</td>
+      <td>161.30</td>
+      <td>490.6</td>
+      <td>13.04</td>
+      <td>392</td>
+      <td>175</td>
+      <td>94.02</td>
+      <td>-7.549</td>
+      <td>-16.81</td>
+      <td>5.49</td>
+      <td>6218</td>
+    </tr>
+    <tr>
+      <th>C (aro)</th>
+      <td>41.86</td>
+      <td>144.800</td>
+      <td>-33.97</td>
+      <td>-326</td>
+      <td>464.3</td>
+      <td>13.04</td>
+      <td>20.250</td>
+      <td>0.000</td>
+      <td>0</td>
+      <td>95.39</td>
+      <td>-286.5</td>
+      <td>637.60</td>
+      <td>1892</td>
+      <td>-8.579</td>
+      <td>1094</td>
+      <td>1201</td>
+      <td>125.2</td>
+      <td>36.72</td>
+      <td>-170.2</td>
+      <td>-37.75</td>
+      <td>411.8</td>
+    </tr>
+    <tr>
+      <th>C (fused aro rings)</th>
+      <td>41.86</td>
+      <td>144.800</td>
+      <td>-33.97</td>
+      <td>-326</td>
+      <td>464.3</td>
+      <td>13.04</td>
+      <td>20.250</td>
+      <td>0.000</td>
+      <td>0</td>
+      <td>95.39</td>
+      <td>-286.5</td>
+      <td>444.40</td>
+      <td>1892</td>
+      <td>-8.579</td>
+      <td>1094</td>
+      <td>1476</td>
+      <td>3820</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-65.88</td>
+    </tr>
+    <tr>
+      <th>CH2 (cyclic)</th>
+      <td>95.90</td>
+      <td>28.370</td>
+      <td>-90.93</td>
+      <td>601.9</td>
+      <td>26.42</td>
+      <td>76.86</td>
+      <td>69.320</td>
+      <td>95.390</td>
+      <td>95.39</td>
+      <td>0.00</td>
+      <td>-891.1</td>
+      <td>225.80</td>
+      <td>546.6</td>
+      <td>163</td>
+      <td>549</td>
+      <td>167.5</td>
+      <td>52.5</td>
+      <td>454.7</td>
+      <td>-149.3</td>
+      <td>254.6</td>
+      <td>13031</td>
+    </tr>
+    <tr>
+      <th>CH (cyclic) | C (cyclic)</th>
+      <td>231.60</td>
+      <td>-319.500</td>
+      <td>-51.47</td>
+      <td>-109.5</td>
+      <td>255.3</td>
+      <td>-52.84</td>
+      <td>-789.200</td>
+      <td>-286.500</td>
+      <td>-286.5</td>
+      <td>-891.10</td>
+      <td>0</td>
+      <td>82.01</td>
+      <td>249.8</td>
+      <td>-147.6</td>
+      <td>-308.8</td>
+      <td>-225.8</td>
+      <td>-688.4</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-145.8</td>
+      <td>-60.39</td>
+    </tr>
+    <tr>
+      <th>CO2</th>
+      <td>269.00</td>
+      <td>254.600</td>
+      <td>762.10</td>
+      <td>346.2</td>
+      <td>194.2</td>
+      <td>239.5</td>
+      <td>161.300</td>
+      <td>637.600</td>
+      <td>444.4</td>
+      <td>225.80</td>
+      <td>82.01</td>
+      <td>0.00</td>
+      <td>221.4</td>
+      <td>201.4</td>
+      <td>899.6</td>
+      <td>268.3</td>
+      <td>115.3</td>
+      <td>210.3</td>
+      <td>-186</td>
+      <td>94.37</td>
+      <td>277.9</td>
+    </tr>
+    <tr>
+      <th>N2</th>
+      <td>87.19</td>
+      <td>202.800</td>
+      <td>521.90</td>
+      <td>772.6</td>
+      <td>37.2</td>
+      <td>84.92</td>
+      <td>490.600</td>
+      <td>1892.000</td>
+      <td>1892</td>
+      <td>546.60</td>
+      <td>249.8</td>
+      <td>221.40</td>
+      <td>0</td>
+      <td>550.1</td>
+      <td>1872</td>
+      <td>70.1</td>
+      <td>109.1</td>
+      <td>285.5</td>
+      <td>30.54</td>
+      <td>-</td>
+      <td>5490</td>
+    </tr>
+    <tr>
+      <th>H2S</th>
+      <td>241.20</td>
+      <td>138.300</td>
+      <td>307.80</td>
+      <td>-143.1</td>
+      <td>288.9</td>
+      <td>217.1</td>
+      <td>13.040</td>
+      <td>-8.579</td>
+      <td>-8.579</td>
+      <td>163.00</td>
+      <td>-147.6</td>
+      <td>201.40</td>
+      <td>550.1</td>
+      <td>0</td>
+      <td>156.1</td>
+      <td>823.5</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>599.1</td>
+    </tr>
+    <tr>
+      <th>SH</th>
+      <td>2109.00</td>
+      <td>627.300</td>
+      <td>514.70</td>
+      <td>1544</td>
+      <td>1496</td>
+      <td>-</td>
+      <td>392.000</td>
+      <td>1094.000</td>
+      <td>1094</td>
+      <td>549.00</td>
+      <td>-308.8</td>
+      <td>899.60</td>
+      <td>1872</td>
+      <td>156.1</td>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-113.6</td>
+    </tr>
+    <tr>
+      <th>H2</th>
+      <td>317.40</td>
+      <td>147.200</td>
+      <td>726.40</td>
+      <td>1812</td>
+      <td>92.99</td>
+      <td>150</td>
+      <td>175.000</td>
+      <td>1201.000</td>
+      <td>1476</td>
+      <td>167.50</td>
+      <td>-225.8</td>
+      <td>268.30</td>
+      <td>70.1</td>
+      <td>823.5</td>
+      <td>-</td>
+      <td>0</td>
+      <td>165.1</td>
+      <td>322.2</td>
+      <td>573.1</td>
+      <td>2417</td>
+      <td>-137.9</td>
+    </tr>
+    <tr>
+      <th>C2H4</th>
+      <td>39.12</td>
+      <td>78.580</td>
+      <td>118.00</td>
+      <td>-248.1</td>
+      <td>30.2</td>
+      <td>19.22</td>
+      <td>94.020</td>
+      <td>125.200</td>
+      <td>3820</td>
+      <td>52.50</td>
+      <td>-688.4</td>
+      <td>115.30</td>
+      <td>109.1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>165.1</td>
+      <td>0</td>
+      <td>36.72</td>
+      <td>65.2</td>
+      <td>224.8</td>
+      <td>1612</td>
+    </tr>
+    <tr>
+      <th>CH2 (alkenic) | CH (alkenic)</th>
+      <td>142.40</td>
+      <td>29.510</td>
+      <td>158.90</td>
+      <td>-284.5</td>
+      <td>110.5</td>
+      <td>50.44</td>
+      <td>-7.549</td>
+      <td>36.720</td>
+      <td>-</td>
+      <td>454.70</td>
+      <td>-</td>
+      <td>210.30</td>
+      <td>285.5</td>
+      <td>-</td>
+      <td>-</td>
+      <td>322.2</td>
+      <td>36.72</td>
+      <td>0</td>
+      <td>134.9</td>
+      <td>-72.06</td>
+      <td>5199</td>
+    </tr>
+    <tr>
+      <th>C (alkenic)</th>
+      <td>118.40</td>
+      <td>272.800</td>
+      <td>430.60</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-16.810</td>
+      <td>-170.200</td>
+      <td>-</td>
+      <td>-149.30</td>
+      <td>-</td>
+      <td>-186.00</td>
+      <td>30.54</td>
+      <td>-</td>
+      <td>-</td>
+      <td>573.1</td>
+      <td>65.2</td>
+      <td>134.9</td>
+      <td>0</td>
+      <td>-197.3</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>CH (cycloalkenic) | C (cycloalkenic)</th>
+      <td>358.90</td>
+      <td>-7.206</td>
+      <td>1038.00</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>5.490</td>
+      <td>-37.750</td>
+      <td>-</td>
+      <td>254.60</td>
+      <td>-145.8</td>
+      <td>94.37</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>2417</td>
+      <td>224.8</td>
+      <td>-72.06</td>
+      <td>-197.3</td>
+      <td>0</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <th>H2O</th>
+      <td>11195.00</td>
+      <td>12126.000</td>
+      <td>567.60</td>
+      <td>-</td>
+      <td>4722</td>
+      <td>5147</td>
+      <td>6218.000</td>
+      <td>411.800</td>
+      <td>-65.88</td>
+      <td>13031.00</td>
+      <td>-60.39</td>
+      <td>277.90</td>
+      <td>5490</td>
+      <td>599.1</td>
+      <td>-113.6</td>
+      <td>-137.9</td>
+      <td>1612</td>
+      <td>5199</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Рассмотрим пример расчета коэффициента попарного взаимодействия с использованием данного выражения. В качестве примера возьмем смесь нормального бутана <span class="math notranslate nohighlight">\( \left( CH_3 - CH_2 - CH_2 - CH_3 \right) \)</span> и пропана <span class="math notranslate nohighlight">\( \left( CH_3 - CH_2 - CH_3 \right) \)</span> при температуре <span class="math notranslate nohighlight">\(T = 303.15 \; K\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">R</span> <span class="o">=</span> <span class="mf">8.314472</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">303.15</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Пропан состоит из двух групп <span class="math notranslate nohighlight">\(\#1:CH_3\)</span> и одной группы <span class="math notranslate nohighlight">\(\#2:CH_2\)</span>, следовательно, общее количество групп <span class="math notranslate nohighlight">\({N_g}_1 = 3\)</span>. Нормальный бутан состоит из двух групп <span class="math notranslate nohighlight">\(\#1:CH_3\)</span> и двух групп <span class="math notranslate nohighlight">\(\#2:CH_2\)</span>, следовательно, общее количество групп <span class="math notranslate nohighlight">\({N_g}_2 = 4\)</span>. Поскольку в данном примере используются всего две группы, то матрицы <span class="math notranslate nohighlight">\(A_{kl}\)</span> и <span class="math notranslate nohighlight">\(B_{kl}\)</span> можно упростить до:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">Akl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">74.81</span><span class="p">],</span> <span class="p">[</span><span class="mf">74.81</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
+<span class="n">Bkl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">165.7</span><span class="p">],</span> <span class="p">[</span><span class="mf">165.7</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Доля группы <span class="math notranslate nohighlight">\(\#1:CH_3\)</span> в составе молекулы пропана:</p>
+<div class="math notranslate nohighlight">
+\[\alpha_{11} = \frac{2}{3}.\]</div>
+<p>Аналогично доля группы <span class="math notranslate nohighlight">\(\#2:CH_2\)</span> в составе молекулы пропана:</p>
+<div class="math notranslate nohighlight">
+\[\alpha_{12} = \frac{1}{3}.\]</div>
+<p>Для остальных групп <span class="math notranslate nohighlight">\(k = 3 \ldots 21\)</span> доля в составе молекулы пропана:</p>
+<div class="math notranslate nohighlight">
+\[\alpha_{1k} = 0, \; k = 3 \dots 21.\]</div>
+<p>Для молекулы нормального бутана:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align} \alpha_{21} &amp;= \frac{2}{4} = \frac{1}{2}; \\ \alpha_{22} &amp;= \frac{2}{4} = \frac{1}{2}; \\ \alpha_{2k} &amp;= 0, \; k = 3 \dots 2. \end{align}\end{split}\]</div>
+<p>Тогда сформируем два вектора следующим образом:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alpha1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">]])</span>
+<span class="n">alpha2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим значение параметра <span class="math notranslate nohighlight">\(DS\)</span> (double sum):</p>
+<div class="math notranslate nohighlight">
+\[DS = -\frac{1}{2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) A_{kl} \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 1}.\]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">alpha1</span> <span class="o">-</span> <span class="n">alpha2</span><span class="p">,</span> <span class="n">alpha1</span> <span class="o">-</span> <span class="n">alpha2</span><span class="p">)</span> <span class="o">*</span> <span class="n">Akl</span> <span class="o">*</span> <span class="p">(</span><span class="mf">298.15</span> <span class="o">/</span> <span class="n">T</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">Bkl</span><span class="p">,</span> <span class="n">Akl</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Akl</span><span class="p">),</span> <span class="n">where</span><span class="o">=</span><span class="n">Akl</span><span class="o">!=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">DS</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2036488.221561837
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим значения параметров <span class="math notranslate nohighlight">\(\alpha_i\)</span> и <span class="math notranslate nohighlight">\(b_i\)</span> для компонентов с учетом их критических свойств и ацентрического фактора:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Pc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.248</span><span class="p">,</span> <span class="mf">3.796</span><span class="p">])</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
+<span class="n">Tc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">369.83</span><span class="p">,</span> <span class="mf">425.12</span><span class="p">])</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.152</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ai</span> <span class="o">=</span> <span class="mf">0.45724</span> <span class="o">*</span> <span class="p">(</span><span class="n">R</span> <span class="o">*</span> <span class="n">Tc</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">Pc</span>
+<span class="n">alphai</span> <span class="o">=</span> <span class="n">ai</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.37464</span> <span class="o">+</span> <span class="mf">1.54226</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="mf">0.26992</span> <span class="o">*</span> <span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">T</span> <span class="o">/</span> <span class="n">Tc</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+<span class="n">bi</span> <span class="o">=</span> <span class="mf">0.07780</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">Tc</span> <span class="o">/</span> <span class="n">Pc</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим значение <span class="math notranslate nohighlight">\(\delta_i\)</span> для каждого компонента:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deltai</span> <span class="o">=</span> <span class="n">alphai</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">/</span> <span class="n">bi</span>
+<span class="n">deltai</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([18935.53719891, 18704.73244236])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Тогда коэффициент попарного взаимодействия:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kij</span> <span class="o">=</span> <span class="p">(</span><span class="n">DS</span> <span class="o">-</span> <span class="p">(</span><span class="n">deltai</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">deltai</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">deltai</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">deltai</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">kij</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.00279969804825329
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition-nb admonition">
+<p class="admonition-title">NB</p>
+<p>Очевидно, что изложенный выше подход к расчету коэффициентов попарного взаимодействия применим для компонентов с известной молекулярной структурой. Для псевдокомпонентов, характеризующих, скорее фракцию, чем конкретное вещество, данный подход может быть использован для определеления начальных значений коэффициентов попарного взаимодействия с целью последующего уточнения значений в процессе адаптации модели.</p>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./1-PVT\2-EOS"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="EOS-Appendix-A-PD.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Частные производные летучести компонентов</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../3-Parameters/Parameters-0-Introduction.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Определение параметров систем с использованием уравнений состояния</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Daniel Skorov<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>
