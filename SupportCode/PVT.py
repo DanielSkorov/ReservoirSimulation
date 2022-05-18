@@ -808,6 +808,7 @@ class flash_isothermal_ssi(core):
             lambda_pow = 1
             Fmin = np.zeros_like(F)
             Fmax = np.ones_like(F)
+            # print(kv, np.max(np.abs(residuals)))
             while (np.abs(residuals) > self.ssi_eq_eps).any() and it < self.ssi_eq_max_iter:
                 F_prev = F
                 F = self.calc_rr_newton(F, kv)
@@ -825,6 +826,7 @@ class flash_isothermal_ssi(core):
                 if self.ssi_use_opt:
                     lambda_pow = - lambda_pow * np.sum(residuals_prev**2) / (np.sum(residuals_prev * residuals) - np.sum(residuals_prev**2))
                 kv = kv * np.exp(residuals)**(-lambda_pow)
+                # print(kv, np.max(np.abs(residuals)))
                 it += 1
                 if self.ssi_switch:
                     if np.sum(residuals**2) / np.sum(residuals_prev**2) > self.ssi_eps_r and np.all(np.abs(F - F_prev) < self.ssi_eps_v) and \
@@ -935,3 +937,196 @@ class flash_isothermal_gibbs(flash_isothermal_ssi):
         return res
     pass
 
+
+class equilibrium_isothermal(flash_isothermal_gibbs):
+    def __init__(self, mr, eos_ders, z, stab_update_kv=False, stab_max_phases=3, stab_onephase_only=False, stab_kv_init_levels=range(0, 5, 1),
+                 stab_max_iter=15, stab_eps=1e-8, stab_ssi_max_iter=10, stab_include_water=False, stab_onephase_calc_condition=False, **kwargs):
+        super(equilibrium_isothermal, self).__init__(mr, eos_ders, z, **kwargs)
+        self.stab_onephase_only = stab_onephase_only
+        self.stab_kv_init_levels = stab_kv_init_levels
+        self.stab_max_iter = stab_max_iter
+        self.stab_ssi_max_iter = stab_ssi_max_iter
+        self.stab_eps = stab_eps
+        self.stab_update_kv = stab_update_kv
+        self.stab_max_phases = stab_max_phases
+        self.stab_onephase_calc_condition = stab_onephase_calc_condition
+        if stab_include_water or mr.sw:
+            self.stab_all_phases = ['g', 'w', 'o']
+            self.stab_phases = ['g', 'w']
+        else:
+            self.stab_all_phases = ['g', 'o']
+            self.stab_phases = ['g']
+        if not stab_update_kv:
+            self.stab_phase_states = self.stab_phases.copy()
+            p1 = 'g' if self.stab_phases[-1] == 'w' else 'w'
+            for i in range(0, stab_max_phases - 1, 1):
+                self.stab_phase_states.append(p1 + i * 'o' + self.stab_phases[-1])
+        pass
+
+    @staticmethod
+    def calc_tpd(flash, flash0):
+        return np.sum(flash.F * flash.y * flash.eos.lnf - flash0.F * flash0.y * flash0.eos.lnf)
+
+    @staticmethod
+    def calc_stab_onephase_jacobian(Y, ders, n):
+        return np.identity(Y.shape[1]) / Y + ders.dlnphi_dnk * n / np.sum(Y)
+
+    @staticmethod
+    def calc_stab_onephase_equation(Y, lnphi, z, lnphi0):
+        return np.log(Y) + lnphi - np.log(z) - lnphi0
+
+    def calc_stab_onephase(self, P, T, state, flash0, checking_levels, **kwargs):
+        check_phases = self.stab_all_phases.copy()
+        for phase in self.stab_phases:
+            if phase in state and phase in check_phases:
+                check_phases.remove(phase)
+        # print(state, 'stab_phases', self.stab_phases,  'check_phases', check_phases)
+        if self.stab_update_kv:
+            Ycurr = None
+            PHcurr = None
+            KVcurr = None
+        for new_phase in check_phases:
+            phases = new_phase + state[-1]
+            for level in checking_levels:
+                kv = self.calc_kv_init(P, T, phases, level)
+                # print(state, phases, level, 'kv0', kv)
+                Y = kv * flash0.y[-1]
+                # print(state, phases, level, 'Y0', Y)
+                y = Y / np.sum(Y)
+                # print(state, phases, level, 'y0', y)
+                eos = self.mr.eos_run(y, P, T, new_phase, **kwargs)
+                residuals = self.calc_stab_onephase_equation(Y, eos.lnphi[0], flash0.y[-1], flash0.eos.lnphi[-1]).reshape((self.mr.Nc, 1))
+                i = 0
+                while np.any(np.abs(residuals) > self.stab_eps) and i < self.stab_max_iter:
+                    if i < self.stab_ssi_max_iter:
+                        Y = np.array([np.exp(np.log(flash0.y[-1]) + flash0.eos.lnphi[-1] - eos.lnphi[0])])
+                    else:
+                        nj = np.array([flash0.F[-1]]) * self.mr.n
+                        Y = Y - np.linalg.inv(self.calc_stab_onephase_jacobian(Y, self.eos_ders(self.mr, eos, nj, der_nk=True).get('dlnphi_dnk'), nj)).dot(residuals).reshape((1, self.mr.Nc))
+                    y = Y / np.sum(Y)
+                    # print('iter', i, 'y', y)
+                    eos = self.mr.eos_run(y, P, T, new_phase, **kwargs)
+                    residuals = self.calc_stab_onephase_equation(Y, eos.lnphi[0], flash0.y[-1], flash0.eos.lnphi[-1]).reshape((self.mr.Nc, 1))
+                    i += 1
+                Ysum = np.sum(Y)
+                # print(state, phases, level, 'Ysum', Ysum, 'iters', i, 'max_residuals', np.max(np.abs(residuals)))
+                if self.stab_onephase_calc_condition:
+                    nj = np.array([flash0.F[-1]]) * self.mr.n
+                    condition = 1 + np.sum(self.stab_eps / np.diag(self.calc_stab_onephase_jacobian(Y, self.eos_ders(self.mr, eos, nj, der_nk=True).get('dlnphi_dnk'), nj)[0]))
+                else:
+                    condition = 1 + self.stab_eps
+                # print('condition', condition)
+                # if i < self.stab_max_iter and Ysum > condition:
+                if Ysum > condition:
+                    if not self.stab_update_kv:
+                        return False
+                    else:
+                        if Ycurr is None:
+                            Ycurr = Ysum
+                            PHcurr = phases
+                            if new_phase == 'g' or new_phase == 'w' or 'o' in state:
+                                KVcurr = Y / flash0.y[-1]
+                            elif new_phase == 'o':
+                                KVcurr = flash0.y[-1] / Y
+                        elif Ycurr < (Ysum - condition + 1):
+                            Ycurr = Ysum
+                            PHcurr = phases
+                            if new_phase == 'g' or new_phase == 'w' or 'o' in state:
+                                KVcurr = Y / flash0.y[-1]
+                            elif new_phase == 'o':
+                                KVcurr = flash0.y[-1] / Y
+        if not self.stab_update_kv:
+            return True
+        elif PHcurr is None:
+            return True, None, self.stab_kv_init_levels[0]
+        else:
+            return False, PHcurr, KVcurr if len(state) == 1 else np.append(flash0.kv, KVcurr, axis=0)
+
+    def calc_stab_multiphase(self, P, T, state, flash0, checking_levels, **kwargs):
+        if self.stab_update_kv:
+            tpds = []
+            flashs = []
+        for level in checking_levels:
+            flash = self.flash_isothermal_gibbs_run(P, T, state, kv0=level, **kwargs)
+            # print('mphase', level, flash.isnan)
+            if not flash.isnan:
+                tpd = self.calc_tpd(flash, flash0)
+                # print('mphase', level, 'tpd', tpd)
+                if tpd < -self.gibbs_eps:
+                    if not self.stab_update_kv:
+                        return False
+                    else:
+                        tpds.append(tpd)
+                        flashs.append(flash)
+        if not self.stab_update_kv:
+            return True
+        elif tpds:
+            return False, flashs[np.argmin(tpds)]
+        else:
+            return True, flash0
+
+    def equilibrium_isothermal_run(self, P, T, **kwargs):
+        states_checked = {}
+        if not self.stab_update_kv:
+            for state in self.stab_phase_states:
+                for i, kv0 in enumerate(self.stab_kv_init_levels):
+                    flash0 = self.flash_isothermal_gibbs_run(P, T, state, kv0, **kwargs)
+                    if not flash0.isnan:
+                        break
+                else:
+                    continue
+                checking_levels = np.delete(self.stab_kv_init_levels, i).tolist()
+                if self.stab_onephase_only or len(state) == 1:
+                    stability = self.calc_stab_onephase(P, T, state, flash0, checking_levels, **kwargs)
+                    states_checked.update({state: stability})
+                else:
+                    stability = self.calc_stab_multiphase(P, T, state, flash0, checking_levels, **kwargs)
+                    states_checked.update({state: stability})
+                if stability:
+                    break
+        else:
+            i = 0
+            state = self.stab_phases[i]
+            kv0 = self.stab_kv_init_levels[0]
+            flash0 = None
+            stability = False
+            while not stability or len(state) <= self.stab_max_phases:
+                # print('state', state)
+                flash0 = self.flash_isothermal_gibbs_run(P, T, state, kv0, **kwargs)
+                # print(state, 'flash0.isnan', flash0.isnan)
+                # print('kv0', kv0)
+                # print(*('flash0_res', np.max(np.abs(flash0.residuals)), 'flash0_gibbs_it', flash0.it, 'flash0_ssi_it', flash0.ssi_it) if not flash0.isnan else [flash0.isnan])
+                if flash0.isnan:
+                    for j, kv0 in enumerate(self.stab_kv_init_levels):
+                        flash0 = self.flash_isothermal_gibbs_run(P, T, state, kv0, **kwargs)
+                        # print('new flash0:', j, flash0.isnan)
+                        if not flash0.isnan:
+                            break
+                    else:
+                        state = state[:-1] + 'o' + state[-1]
+                        kv0 = self.stab_kv_init_levels[0]
+                        continue
+                    checking_levels = np.delete(self.stab_kv_init_levels, j).tolist()
+                else:
+                    checking_levels = self.stab_kv_init_levels
+                if len(state) == 1 or self.stab_onephase_only:
+                    stability, splitted_phases, kv0 = self.calc_stab_onephase(P, T, state, flash0, checking_levels, **kwargs)
+                    states_checked.update({state: stability})
+                    # print('state', state, 'stability', stability)
+                    if not stability:
+                        state = state[:-1] + splitted_phases
+                else:
+                    stability, flash = self.calc_stab_multiphase(P, T, state, flash0, checking_levels, **kwargs)
+                    states_checked.update({state: stability})
+                    if isinstance(kv0, int):
+                        kv0 = self.calc_kv_init(P, T, state, kv0)
+                    state = state[:-1] + 'o' + state[-1]
+                    kv0 = np.append(kv0, [flash.y[-1] / flash.y[-2]], 0)
+                if len(state) > self.stab_max_phases and i < len(self.stab_phases) - 1:
+                    i += 1
+                    state = self.stab_phases[i]
+                    kv0 = self.stab_kv_init_levels[0]
+                if stability:
+                    break
+        flash0.states_checked = states_checked
+        return flash0
