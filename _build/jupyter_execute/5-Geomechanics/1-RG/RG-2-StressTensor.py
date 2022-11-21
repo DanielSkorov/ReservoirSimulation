@@ -31,7 +31,7 @@ from Graphics import cube, Arrow3D
 # $$\vec{T} = \frac{\vec{F}}{A}$$
 # +++
 # ```
-
+# 
 # Пусть имеется некоторое тело, к которому приложены некоторые внешние силы, находящееся в равновесии. Выделим в данном теле элементарный объем.
 
 # In[2]:
@@ -58,10 +58,10 @@ ax.add_artist(Arrow3D([-10, -20], [0, -20], [0, -10], color='r', mutation_scale=
 ax.add_artist(Arrow3D([0, 0], [-10, -20], [2.5, 20], color='r', mutation_scale=10, lw=1))
 ax.add_artist(Arrow3D([-5, 0], [10, 20], [-2.5, -20], color='r', mutation_scale=10, lw=1))
 
-ax.text(20, 10, 10, '$\overrightarrow{F_1}$')
-ax.text(-20, -20, -10, '$\overrightarrow{F_2}$')
-ax.text(0, -20, 20, '$\overrightarrow{F_3}$')
-ax.text(0, 20, -20, '$\overrightarrow{F_n}$')
+ax.text(20, 10, 10, r'$\overrightarrow{F_1}$')
+ax.text(-20, -20, -10, r'$\overrightarrow{F_2}$')
+ax.text(0, -20, 20, r'$\overrightarrow{F_3}$')
+ax.text(0, 20, -20, r'$\overrightarrow{F_n}$')
 
 unit_cube = cube(1, 1, 1, facecolors='g', edgecolors='g')
 ax.add_collection3d(unit_cube.collection())
@@ -96,20 +96,20 @@ ax.add_artist(Arrow3D([0, 0.5], [-0.5, -2], [0, 1.5], color='b'))
 ax.add_artist(Arrow3D([0, 0], [0, -1], [0.5, 2.5], color='r'))
 ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
 
-ax.text(2, -0.5, -0.5, '$\overrightarrow{T_1}$')
-ax.text(-0.5, 2, -1.5, '$\overrightarrow{T_2}$')
-ax.text(0, -1, 2.5, '$\overrightarrow{T_3}$')
-ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
-ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
-ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
+ax.text(2, -0.5, -0.5, r'$\overrightarrow{T_1}$')
+ax.text(-0.5, 2, -1.5, r'$\overrightarrow{T_2}$')
+ax.text(0, -1, 2.5, r'$\overrightarrow{T_3}$')
+ax.text(-2, 0.5, 0.5, r'$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, r'$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, r'$\overrightarrow{-T_3}$')
 
 ax.add_artist(Arrow3D([0.5, 1.5], [0, 0], [0, 0], color='k', lw=1))
 ax.add_artist(Arrow3D([0, 0], [0.5, 1.5], [0, 0], color='k', lw=1))
 ax.add_artist(Arrow3D([0, 0], [0, 0], [0.5, 1.5], color='k', lw=1))
 
-ax.text(1.5, 0, 0, '$\overrightarrow{e_1}$')
-ax.text(0, 1.5, 0, '$\overrightarrow{e_2}$')
-ax.text(0, 0, 1.5, '$\overrightarrow{e_3}$')
+ax.text(1.5, 0, 0, r'$\overrightarrow{e_1}$')
+ax.text(0, 1.5, 0, r'$\overrightarrow{e_2}$')
+ax.text(0, 0, 1.5, r'$\overrightarrow{e_3}$')
 
 ax.view_init(20, 55)
 
@@ -147,11 +147,11 @@ ax.add_artist(Arrow3D([0, 0], [0, 1], [-0.5, -2.5], color='b'))
 ax.add_artist(Arrow3D([-0.25, 1], [-0.25, 1], [0, 0.5], color='r'))
 ax.add_artist(Arrow3D([-0.25, 0.5], [-0.25, 0.5], [0, 0.75], color='k'))
 
-ax.text(-2, 0.5, 0.5, '$\overrightarrow{-T_1}$')
-ax.text(0.5, -2, 1.5, '$\overrightarrow{-T_2}$')
-ax.text(0, 1, -2.5, '$\overrightarrow{-T_3}$')
-ax.text(1, 1, 0.5, '$\overrightarrow{T}$')
-ax.text(0.5, 0.5, 0.5, '$\overrightarrow{n}$')
+ax.text(-2, 0.5, 0.5, r'$\overrightarrow{-T_1}$')
+ax.text(0.5, -2, 1.5, r'$\overrightarrow{-T_2}$')
+ax.text(0, 1, -2.5, r'$\overrightarrow{-T_3}$')
+ax.text(1, 1, 0.5, r'$\overrightarrow{T}$')
+ax.text(0.5, 0.5, 0.5, r'$\overrightarrow{n}$')
 
 ax.view_init(20, 110)
 
@@ -159,49 +159,46 @@ fig.tight_layout()
 
 
 # Поскольку данный элементарный объем находится в равновесии, запишем для него [первый закон Ньютона](https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion):
-
+# 
 # $$\vec{T_{}} \cdot dA -\vec{T_1} \cdot dA_1 - \vec{T_2} \cdot dA_2 - \vec{T_3} \cdot dA_3 = 0,$$
-
+# 
 # где $dA, dA_1, dA_2, dA_3$ – площади элементарного объема, к которому приложены соотвествующие векторы напряжения. Известно, что площадь $dA_1$ выражается через площадь $dA$ следующим образом:
-
+# 
 # $$dA_1 = dA \cdot \cos{\alpha},$$
-
+# 
 # где $\alpha$ – угол между плоскостями $dA$ и $dA_1$. Угол между двумя плоскостями равен углу между нормалями к данным плоскостям: $\vec{n}$ и $\vec{e_1}$. Поскольку вектор $\vec{e_1}$ является базисным, то косинус угла между нормалью $\vec{n}$ (нормаль является единичным вектором) и вектором $\vec{e_1}$ является [направляющим косинусом](../../0-Math/1-LAB/LAB-3-RotationAngles.html#math-lab-rotation_angles) нормали $\vec{n}$ и равен ее первой координате. Аналогично – для площадок $ dA_2$ и $dA_3$. Тогда координаты нормали $\vec{n}$:
-
+# 
 # $$\vec{n} = \begin{bmatrix} \cos{(\vec{n}, \vec{e_1})} \\ \cos{(\vec{n}, \vec{e_2})} \\ \cos{(\vec{n}, \vec{e_2})} \end{bmatrix}$$
-
+# 
 # Пусть
-
+# 
 # $$\cos{(\vec{n}, \vec{e_1})} = n_1, \cos{(\vec{n}, \vec{e_2})} = n_2, \cos{(\vec{n}, \vec{e_2})} = n_3$$
-
+# 
 # Тогда:
-
+# 
 # $$\vec{T_{}} \cdot dA -\vec{T_1} \cdot dA \cdot n_1 - \vec{T_2} \cdot dA \cdot n_2 - \vec{T_3} \cdot dA \cdot n_3 = 0 \\ \vec{T_{}} = \vec{T_1} \cdot n_1 + \vec{T_2} \cdot n_2 + \vec{T_3} \cdot n_3$$
-
+# 
 # Векторы напряжения $\vec{T_{}}, \vec{T_1}, \vec{T_2}, \vec{T_3}$ являются векторами, то есть имеют три координаты (проекции на каждую из трех осей). Согласно [правилу сложения векторов](../../0-Math/1-LAB/LAB-2-VectorOperations.html#math-lab-vector_operations), для этих координат можно записать следующие выражения
-
+# 
 # $$T_{x_1} = n_1 \cdot T_{1_{x_1}} + n_2 \cdot T_{2_{x_1}} + n_3 \cdot T_{3_{x_1}} \\ T_{x_2} = n_1 \cdot T_{1_{x_2}} + n_2 \cdot T_{2_{x_2}} + n_3 \cdot T_{3_{x_2}} \\ T_{x_3} = n_1 \cdot T_{1_{x_3}} + n_2 \cdot T_{2_{x_3}} + n_3 \cdot T_{3_{x_3}}$$
-
+# 
 # Данное выражение можно записать в виде матричного произведения:
-
+# 
 # $$\begin{bmatrix} T_{x_1} \\ T_{x_2} \\ T_{x_3} \end{bmatrix} = \begin{bmatrix} T_{1_{x_1}} & T_{2_{x_1}} & T_{3_{x_1}} \\ T_{1_{x_2}} & T_{2_{x_2}} & T_{3_{x_2}} \\ T_{1_{x_3}} & T_{2_{x_3}} & T_{3_{x_3}} \end{bmatrix} \cdot \begin{bmatrix} n_1 \\ n_2 \\ n_3 \end{bmatrix} $$
-
+# 
 # $$ \vec{T} = S \cdot \vec{n}$$
-
+# 
 # ```{prf:определение}
 # :nonumber:
 # Матрица 
-# +++
 # $$S = \begin{bmatrix} T_{1_{x_1}} & T_{2_{x_1}} & T_{3_{x_1}} \\ T_{1_{x_2}} & T_{2_{x_2}} & T_{3_{x_2}} \\ T_{1_{x_3}} & T_{2_{x_3}} & T_{3_{x_3}} \end{bmatrix}$$
-# +++
 # называется ***тензором напряжений Коши*** и характеризует напряженное состояние в точке. Нормальная составляющая вектора напряжения, действующая на эту площадку, называется ***нормальным напряжением*** и обозначается $\sigma$. Составляющая вектора напряжения, которая лежит в плоскости рассматриваемой площадки, к которой приложен этот вектор напряжения, называется ***касательным (или тангенциальным) напряжением*** и обозначается $\tau$.
-# +++
 # ```
-
+# 
 # С учетом этого, тензор напряжений можно записать следующим образом:
-
+# 
 # $$S = \begin{bmatrix} \sigma_{1} & \tau_{12} & \tau_{13} \\ \tau_{21} & \sigma_{2} & \tau_{23} \\ \tau_{31} & \tau_{32} & \sigma_{3} \end{bmatrix}$$
-
+# 
 # Рассматривая элементарный объем, тензор напряжений геометрически интерпретируется следующим образом:
 
 # In[5]:
@@ -227,15 +224,15 @@ ax.add_artist(Arrow3D([0, 0.5], [0.5, 0.5], [0, 0], color='k', lw=1, mutation_sc
 ax.add_artist(Arrow3D([0, 0], [0.5, 0.5], [0, 0.5], color='k', lw=1, mutation_scale=4))
 ax.add_artist(Arrow3D([0, 0.5], [0, 0], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
 ax.add_artist(Arrow3D([0, 0], [0, 0.5], [0.5, 0.5], color='k', lw=1, mutation_scale=4))
-ax.text(1.5, 0, 0, '$\overrightarrow{\sigma_1}$')
-ax.text(0, 1.5, 0, '$\overrightarrow{\sigma_2}$')
-ax.text(0, 0, 1.5, '$\overrightarrow{\sigma_3}$')
-ax.text(0.5, 0.3, 0.05, '$\overrightarrow{\\tau_{12}}$')
-ax.text(0.5, 0.0, 0.3, '$\overrightarrow{\\tau_{13}}$')
-ax.text(0.45, 0.5, -0.2, '$\overrightarrow{\\tau_{21}}$')
-ax.text(0, 0.55, 0.35, '$\overrightarrow{\\tau_{23}}$')
-ax.text(0.5, 0.0, 0.6, '$\overrightarrow{\\tau_{31}}$')
-ax.text(0, 0.5, 0.6, '$\overrightarrow{\\tau_{32}}$')
+ax.text(1.5, 0, 0, r'$\overrightarrow{\sigma_1}$')
+ax.text(0, 1.5, 0, r'$\overrightarrow{\sigma_2}$')
+ax.text(0, 0, 1.5, r'$\overrightarrow{\sigma_3}$')
+ax.text(0.5, 0.3, 0.05, r'$\overrightarrow{\\tau_{12}}$')
+ax.text(0.5, 0.0, 0.3, r'$\overrightarrow{\\tau_{13}}$')
+ax.text(0.45, 0.5, -0.2, r'$\overrightarrow{\\tau_{21}}$')
+ax.text(0, 0.55, 0.35, r'$\overrightarrow{\\tau_{23}}$')
+ax.text(0.5, 0.0, 0.6, r'$\overrightarrow{\\tau_{31}}$')
+ax.text(0, 0.5, 0.6, r'$\overrightarrow{\\tau_{32}}$')
 ax.grid(None)
 ax.xaxis.set_ticks([])
 ax.yaxis.set_ticks([])

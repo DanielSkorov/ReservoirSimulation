@@ -667,8 +667,8 @@ class derivatives_parameters_2param(parameters_2param):
 
 
 class flash_isothermal_ssi(core):
-    def __init__(self, mr, z, ssi_rr_eps=1e-8, ssi_eq_eps=1e-8, ssi_use_opt=False, ssi_negative_flash=False, ssi_eq_max_iter=30,
-                 ssi_eps_r=0.6, ssi_eps_v=1e-2, ssi_eps_l=1e-5, ssi_eps_u=1e-3, ssi_switch=False, full_output=True):
+    def __init__(self, mr, z, ssi_rr_eps=1e-8, ssi_eq_eps=1e-8, ssi_use_opt=False, ssi_negative_flash=False, ssi_eq_max_iter=300,
+                 ssi_eps_r=0.6, ssi_eps_v=1e-2, ssi_eps_l=1e-5, ssi_eps_u=1e-3, ssi_switch=False, full_output=True, ssi_rr_newton=True):
         self.z = z
         self.mr = mr
         self.ssi_rr_eps = ssi_rr_eps
@@ -682,6 +682,7 @@ class flash_isothermal_ssi(core):
         self.ssi_eps_l = ssi_eps_l
         self.ssi_switch = ssi_switch
         self.full_output = full_output
+        self.ssi_rr_newton = ssi_rr_newton
         pass
 
     # def calc_kv_init(self, P, T, phases, level=0, kv_go=None, kv_gw=None, y=None):
@@ -760,23 +761,102 @@ class flash_isothermal_ssi(core):
         if phases == 'wog':
             return np.array([1 / kv_gw, 1 / kv_go])
 
-    def calc_rr_equation(self, F, kv):
-        return np.sum(self.z * (kv - 1) / (1 + np.sum(F * (kv - 1), axis=0)), axis=1).reshape(F.shape[0], 1)
-
-    def calc_rr_jacobian(self, F, kv):
-        return (-1) * np.sum(self.repeat(self.repeat(self.z, 0, F.shape[0]), 1, F.shape[0]) * self.repeat(kv - 1, 0, F.shape[0]) * \
-                             self.repeat(np.sum(self.repeat(np.identity(F.shape[0]), 2, self.mr.Nc) * self.repeat(kv - 1, 0, F.shape[0]), axis=1), axis=1) / 
-                             self.repeat(self.repeat((1 + np.sum(F * (kv - 1), axis=0))**2, 0, F.shape[0]), 1, F.shape[0]), axis=2)
-
-    def calc_rr_newton(self, x0, kv):
+    def calc_rr_gradient(self, x0, kv):
         x = x0
-        rr_eq_val = np.ones_like(x0)
-        while np.all(np.abs(rr_eq_val) > self.ssi_rr_eps):
-            rr_eq_val = self.calc_rr_equation(x, kv)
-            if x.shape[0] > 1:
-                x = x - np.linalg.inv(self.calc_rr_jacobian(x, kv)).dot(rr_eq_val)
+        kv = 1 - kv
+        Np, Nc = kv.shape
+        two_phase = False if Np > 1 else True
+        eq = np.ones_like(x0)
+        # i = 0
+        while np.all(np.abs(eq) > self.ssi_rr_eps):
+            ti = 1 - np.sum(x * kv, axis=0)
+            eq = np.sum(kv * self.z / ti, axis=1).reshape(Np, 1)
+            # print('eq', eq)
+            grad = np.sum(kv.reshape(Np, 1, Nc) * kv.reshape(1, Np, Nc) * self.z / ti**2, axis=2)
+            # print('grad', grad)
+            if two_phase:
+                x = x - eq / grad
             else:
-                x = x - rr_eq_val / self.calc_rr_jacobian(x, kv)
+                x = x - np.linalg.inv(grad).dot(eq)
+            # i += 1
+        # print('iters', i)
+        return x
+
+    def calc_rr_newton(self, kv, x0=None):
+        Np, Nc = kv.shape
+        two_phase = False if Np > 1 else True
+        bi = np.minimum(1 - self.z, np.amin(1 - kv * self.z, axis=0)).reshape(Nc, 1)
+        # print('bi', bi)
+        kv = 1 - kv
+        aiT = kv.T
+        # print('aiT', aiT)
+        if x0 is None:
+            x = np.linalg.inv(kv.dot(aiT)).dot(kv).dot(bi)
+            # print('x0', x)
+            x = np.where(x < 0, np.zeros_like(x), x)
+            # print('x0 (fix negative)', x)
+            # print('condition', aiT.dot(x) <= bi)
+        else:
+            x = x0
+        grad = np.ones_like(x)
+        # i = 0
+        while np.all(np.abs(grad) > self.ssi_rr_eps):
+            ti = 1 - np.sum(x * kv, axis=0)
+            grad = np.sum(kv * self.z / ti, axis=1).reshape(Np, 1)
+            if np.all(np.abs(grad) < self.ssi_rr_eps):
+                return x
+            # print('grad', grad)
+            hessian = np.sum(kv.reshape(Np, 1, Nc) * kv.reshape(1, Np, Nc) * self.z / ti**2, axis=2)
+            # print('hessian', hessian)
+            if two_phase:
+                d = - grad / hessian
+                # print('d', d)
+                den = aiT * d
+                # print('den', den)
+                expr = (bi - aiT * x) / den
+                # print('lambda_max array', expr)
+                lambda_max = np.min(expr, where=den>0, initial=np.max(expr))
+                # print('lambda_max', lambda_max)
+                if lambda_max > 1:
+                    lambda_max = 1
+                s = 1
+                grad_s = 1
+                while np.abs(grad_s) > 1e-5:
+                    ti_s = 1 - np.sum((x + s * lambda_max * d) * kv, axis=0)
+                    # print('ti_s', ti_s)
+                    grad_s = lambda_max * np.sum(kv * self.z / ti_s, axis=1).reshape(1, Np) * d
+                    # print('grad_s', grad_s)
+                    grad2_s = lambda_max**2 * d**2 * np.sum(kv.reshape(Np, 1, Nc) * kv.reshape(1, Np, Nc) * self.z / ti_s**2, axis=2)
+                    # print('grad2_s', grad2_s)
+                    s = s - (grad_s / grad2_s)[0][0]
+                    # print('s', s)
+                if s > 1:
+                    s = 1
+            else:
+                d = - np.linalg.inv(hessian).dot(grad)
+                den = aiT.dot(d)
+                expr = (bi - aiT.dot(x)) / den
+                # print('lambda_max denominator', den)
+                # print('lambda_max array', expr)
+                lambda_max = np.min(expr, where=den>0, initial=np.max(expr))
+                # print('lambda_max', lambda_max)
+                if lambda_max > 1:
+                    lambda_max = 1
+                s = 1
+                grad_s = 1
+                while np.abs(grad_s) > 1e-5:
+                    ti_s = 1 - np.sum((x + s * lambda_max * d) * kv, axis=0)
+                    # print('ti_s', ti_s)
+                    grad_s = lambda_max * np.sum(kv * self.z / ti_s, axis=1).reshape(1, Np).dot(d)
+                    # print('grad_s', grad_s)
+                    grad2_s = lambda_max**2 * d.T.dot(np.sum(kv.reshape(Np, 1, Nc) * kv.reshape(1, Np, Nc) * self.z / ti_s**2, axis=2)).dot(d)
+                    # print('grad2_s', grad2_s)
+                    s = s - (grad_s / grad2_s)[0][0]
+                    # print('s', s)
+            x = x + lambda_max * s * d
+            # i += 1
+            # print('x', x)
+        # print('iters', i)
         return x
 
     def calc_rr_negative_limits(self, kv):
@@ -802,21 +882,31 @@ class flash_isothermal_ssi(core):
             else:
                 kv = kv0
                 Np_1 = len(kv0)
-            F = np.array([Np_1 * [1 / (Np_1 + 1)]]).reshape(Np_1, 1)
+            lambda_pow = 1
+            Fmin = np.zeros(shape=(Np_1, 1))
+            Fmax = np.ones(shape=(Np_1, 1))
             residuals = np.ones(shape=(Np_1, self.mr.Nc))
             it = 0
-            lambda_pow = 1
-            Fmin = np.zeros_like(F)
-            Fmax = np.ones_like(F)
+            if not self.ssi_rr_newton:
+                Fmin, Fmax = self.calc_rr_negative_limits(kv)
+                F = (Fmin + Fmax) / 2
+            else:
+                F = None
+            # print('F0', F)
             # print(kv, np.max(np.abs(residuals)))
             while (np.abs(residuals) > self.ssi_eq_eps).any() and it < self.ssi_eq_max_iter:
-                F_prev = F
-                F = self.calc_rr_newton(F, kv)
+                # print('kv', kv)
+                if self.ssi_rr_newton:
+                    F = self.calc_rr_newton(kv, F)
+                else:
+                    F = self.calc_rr_gradient(F, kv)
+                # print('F', F)
                 if self.ssi_negative_flash:
                     Fmin, Fmax = self.calc_rr_negative_limits(kv)
                 F = np.where(F < Fmin, Fmin, F)
                 F = np.where(F > Fmax, Fmax, F)
                 y = self.calc_y_kv(F, kv)
+                # print('y', y)
                 if self.check_failed_mole_fractions(y):
                     res.isnan = True
                     return res
@@ -825,13 +915,16 @@ class flash_isothermal_ssi(core):
                 residuals = np.log(kv) + eos.lnphi[:-1] - eos.lnphi[-1]
                 if self.ssi_use_opt:
                     lambda_pow = - lambda_pow * np.sum(residuals_prev**2) / (np.sum(residuals_prev * residuals) - np.sum(residuals_prev**2))
-                kv = kv * np.exp(residuals)**(-lambda_pow)
-                # print(kv, np.max(np.abs(residuals)))
+                    kv = kv * np.exp(residuals)**(-lambda_pow)
+                else:
+                    kv = kv * np.exp(residuals)
+                # print('residuals', np.max(np.abs(residuals)))
                 it += 1
-                if self.ssi_switch:
+                if self.ssi_switch and it > 1:
                     if np.sum(residuals**2) / np.sum(residuals_prev**2) > self.ssi_eps_r and np.all(np.abs(F - F_prev) < self.ssi_eps_v) and \
                     self.ssi_eps_l < np.sum(residuals**2) < self.ssi_eps_u and 0 < F < 1:
                         break
+                    F_prev = F
             if not res.isnan:
                 res.kv = kv
                 res.y = self.calc_y_kv(F, kv)
@@ -1015,7 +1108,7 @@ class equilibrium_isothermal(flash_isothermal_gibbs):
                     condition = 1 + np.sum(self.stab_eps / np.diag(self.calc_stab_onephase_jacobian(Y, self.eos_ders(self.mr, eos, nj, der_nk=True).get('dlnphi_dnk'), nj)[0]))
                 else:
                     condition = 1 + self.stab_eps
-                # print('condition', condition)
+                # print('condition', condition, 'Ysum > condition', Ysum > condition)
                 # if i < self.stab_max_iter and Ysum > condition:
                 if Ysum > condition:
                     if not self.stab_update_kv:
@@ -1069,8 +1162,11 @@ class equilibrium_isothermal(flash_isothermal_gibbs):
         states_checked = {}
         if not self.stab_update_kv:
             for state in self.stab_phase_states:
+                # print('state', state)
                 for i, kv0 in enumerate(self.stab_kv_init_levels):
+                    # print('kv0', kv0)
                     flash0 = self.flash_isothermal_gibbs_run(P, T, state, kv0, **kwargs)
+                    # print('flash0.isnan', flash0.isnan)
                     if not flash0.isnan:
                         break
                 else:
@@ -1090,8 +1186,7 @@ class equilibrium_isothermal(flash_isothermal_gibbs):
             kv0 = self.stab_kv_init_levels[0]
             flash0 = None
             stability = False
-            while not stability or len(state) <= self.stab_max_phases:
-                # print('state', state)
+            while not stability and len(state) <= self.stab_max_phases:
                 flash0 = self.flash_isothermal_gibbs_run(P, T, state, kv0, **kwargs)
                 # print(state, 'flash0.isnan', flash0.isnan)
                 # print('kv0', kv0)

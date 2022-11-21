@@ -20,10 +20,11 @@ parts:
       - file: 0-Math/4-DE/DE-0-Introduction
       - file: 0-Math/5-OM/OM-0-Introduction
         sections:
-          - file: 0-Math/5-OM/OM-1-Newton
-          - file: 0-Math/5-OM/OM-2-QNewton
-          - file: 0-Math/5-OM/OM-3-TR
-          - file: 0-Math/5-OM/OM-4-Tunneling
+          - file: 0-Math/5-OM/OM-1-GradientDescent
+          - file: 0-Math/5-OM/OM-2-Newton
+          - file: 0-Math/5-OM/OM-3-QNewton
+          - file: 0-Math/5-OM/OM-4-TR
+          - file: 0-Math/5-OM/OM-5-Tunneling
   - caption: "PVT-моделирование"
     chapters:
       - file: 1-PVT/PVT-Introduction

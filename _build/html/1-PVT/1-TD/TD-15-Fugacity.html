@@ -43,8 +43,6 @@
     <script src="../../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
     <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
@@ -732,21 +730,21 @@
 <h2>Определение летучести<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>Выражение <a class="reference external" href="./TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-gibbs_partials">thermodynamic identity</a>, записанное через энергию Гиббса, при постоянном количестве частиц в системе записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[dG = -S dT + V dP.\]</div>
+\[ dG = -S dT + V dP. \]</div>
 <p>Если рассматривать изотермический процесс, то данное выражение преобразуется следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[dG = V dP.\]</div>
+\[ dG = V dP. \]</div>
 <div class="admonition-nb admonition">
 <p class="admonition-title">NB</p>
 <p>Важно отметить, что, принимая температуру постоянной, мы предполагаем, что в системе температура всех фаз одинакова.</p>
 </div>
 <p>Для идеального газа с учетом <a class="reference external" href="./TD-1-Basics.html#pvt-td-basics-ideal_gas_eos">уравнения состояния</a>:</p>
 <div class="math notranslate nohighlight">
-\[dG = \frac{N k T}{P} dP = N k T d \ln P = \frac{N}{N_A} \left(k N_A \right) T d \ln P = n R T d \ln P.\]</div>
+\[ dG = \frac{N k T}{P} dP = N k T d \ln P = \frac{N}{N_A} \left(k N_A \right) T d \ln P = n R T d \ln P. \]</div>
 <p>Здесь <span class="math notranslate nohighlight">\(N_A = 6.022 \cdot 10^{23} \; \frac{1}{моль}\)</span> – число Авогадро, <span class="math notranslate nohighlight">\(R = k \cdot N_A = 8.314 \; \frac{Дж}{моль K}\)</span> – универсальная газовая постоянная, <span class="math notranslate nohighlight">\(n\)</span> – количество вещества (моль). Стоит отметить, что полученные равнее уравнения относительно количества частиц <span class="math notranslate nohighlight">\(N\)</span> справедливы и для количества вещества <span class="math notranslate nohighlight">\(n\)</span>.</p>
 <p>Полученное выражение дифференциала энергии Гиббса справедливо для идеального газа с постоянным количеством молекул в изотермическом квази-стационарном процессе. Для реального газа вместо давления используют такой параметр, как <em><strong>летучесть</strong></em>:</p>
 <div class="math notranslate nohighlight">
-\[dG = n R T d \ln f.\]</div>
+\[ dG = n R T d \ln f. \]</div>
 <div class="proof определение admonition" id="определение-0">
 <p class="admonition-title"><span>Определение </span></p>
 <div class="определение-content section" id="proof-content">
@@ -764,10 +762,10 @@
 </div>
 </div><p>Для компонента <span class="math notranslate nohighlight">\(i\)</span>, находящегося в термодинамическом равновесии (или в квази-стационарном изотермическом процессе), летучесть определяется следующим выражением (единицы измерения химического потенциала – <span class="math notranslate nohighlight">\(\frac{Дж}{моль}\)</span>):</p>
 <div class="math notranslate nohighlight">
-\[d \mu_i = R T d \ln f_i.\]</div>
+\[ d \mu_i = R T d \ln f_i. \]</div>
 <p>Данное выражение справедливо для процесса с постоянным количеством молекул компонента <span class="math notranslate nohighlight">\(i\)</span> в системе. При этом, определение летучести дается на основании следующего выражения:</p>
 <div class="math notranslate nohighlight">
-\[\lim_{P \rightarrow 0} \left( \frac{f_i}{x_i P} \right) = 1. \]</div>
+\[ \lim_{P \rightarrow 0} \left( \frac{f_i}{x_i P} \right) = 1. \]</div>
 <p>Здесь <span class="math notranslate nohighlight">\(x_i\)</span> – мольная доля компонента в фазе.</p>
 <p><a id='pvt-td-fugacity-component_fugacity'></a>
 Преобразуем уравнение, определяющее летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента, к следующему виду:</p>
@@ -775,7 +773,7 @@
 \[\begin{split} \begin{align} d \mu_i - R T d \ln \left( x_i P \right) &amp;= R T d \ln f_i - R T d \ln \left( x_i P \right); \\ d \mu_i - R T d \ln \left( x_i P \right) &amp;= R T d \ln \phi_i; \\ d \mu_i - R T \left( d \ln x_i + d \ln P \right) &amp;= R T d \ln \phi_i. \end{align}\end{split}\]</div>
 <p>Поскольку количество молекул <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе зафиксировано, то:</p>
 <div class="math notranslate nohighlight">
-\[d \mu_i - R T d \ln P = R T d \ln \phi_i.\]</div>
+\[ d \mu_i - R T d \ln P = R T d \ln \phi_i. \]</div>
 <p>Пусть</p>
 <div class="proof определение admonition" id="определение-2">
 <p class="admonition-title"><span>Определение </span></p>
@@ -786,38 +784,38 @@
 </div>
 </div><p>Получим дифференциал коэффициента сверхсжимаемости, рассматривая изотермический процесс с постоянным количеством молекул в системе:</p>
 <div class="math notranslate nohighlight">
-\[ dZ = \frac{d \left( P V \right)}{n R T} = \frac{V dP + P dV}{n R T}.\]</div>
+\[ dZ = \frac{d \left( P V \right)}{n R T} = \frac{V dP + P dV}{n R T}. \]</div>
 <p>Разделим левую и правую части уравнения на <span class="math notranslate nohighlight">\(Z\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\frac{dZ}{Z} = \frac{dP}{P} + \frac{dV}{V}.\]</div>
+\[ \frac{dZ}{Z} = \frac{dP}{P} + \frac{dV}{V}. \]</div>
 <p>С учетом этого, <a class="reference external" href="#pvt-td-fugacity-component_fugacity">выражение</a> для определения летучести компонента будет иметь следующий вид:</p>
 <div class="math notranslate nohighlight">
-\[R T d \ln \phi_i = d \mu_i - R T \left( \frac{dZ}{Z} - \frac{dV}{V} \right).\]</div>
+\[ R T d \ln \phi_i = d \mu_i - R T \left( \frac{dZ}{Z} - \frac{dV}{V} \right). \]</div>
 <p><a id='pvt-td-fugacity-chemical_potential_relation'></a>
 Для многокомпонентной системы <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-helmholtz_partials">thermodynamic identity</a>, выраженное через энергию Гельмгольца, будет иметь следующий вид:</p>
 <div class="math notranslate nohighlight">
-\[dF = -P dV - S dT + \sum_i \mu_i dn_i.\]</div>
+\[ dF = -P dV - S dT + \sum_i \mu_i dn_i. \]</div>
 <p>Отсюда следует, что:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \begin{align} \mu_i &amp;= \left( \frac{\partial F}{\partial n_i} \right)_{V, T, n_{j \neq i}}; \\ -P &amp;= \left( \frac{\partial F}{\partial V} \right)_{T, n_i}. \end{align}\end{split}\]</div>
+\[\begin{split} \begin{align} \mu_i &amp;= \left( \frac{\partial F}{\partial n_i} \right)_{V, T, n_{j \neq i}}; \\ -P &amp;= \left( \frac{\partial F}{\partial V} \right)_{T, n_i}. \end{align} \end{split}\]</div>
 <p>Запишем вторую частную производную энергии Гельмгольца <span class="math notranslate nohighlight">\(F\)</span> по объему <span class="math notranslate nohighlight">\(V\)</span> и количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента <span class="math notranslate nohighlight">\(n_i\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\frac{\partial^2 F}{\partial n_i \partial V} = \frac{\partial}{\partial n_i} \left( \frac{\partial F}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial F}{\partial n_i} \right). \]</div>
+\[ \frac{\partial^2 F}{\partial n_i \partial V} = \frac{\partial}{\partial n_i} \left( \frac{\partial F}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial F}{\partial n_i} \right). \]</div>
 <p>С учетом полученных частных производных энергиии Гельмгольца по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента и объему:</p>
 <div class="math notranslate nohighlight">
 \[ - \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \left( \frac{\partial \mu_i}{\partial V} \right)_{T, n_i}. \]</div>
 <p>Следовательно, расссматривая изотермический процесс с постоянным количеством молекул <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе можно записать:</p>
 <div class="math notranslate nohighlight">
-\[ d\mu_i = - \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} dV.\]</div>
+\[ d\mu_i = - \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} dV. \]</div>
 <p>С учетом дифференциала химического потенциала <span class="math notranslate nohighlight">\(i\)</span> компонента в изотермическом процессе с постоянным количеством вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе получим дифференциал логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
 \[ d \ln \phi_i = \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - d \ln Z. \]</div>
 <p>Следовательно, интегрируя данное выражение, получим:</p>
 <div class="math notranslate nohighlight">
-\[ \int_0^{\ln \phi_i} d \ln \phi_i = \int_\infty^V \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - \int_0^{\ln Z} d \ln Z.\]</div>
+\[ \int_0^{\ln \phi_i} d \ln \phi_i = \int_\infty^V \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - \int_0^{\ln Z} d \ln Z. \]</div>
 <p>Или при замене пределов интегрирования:</p>
 <div class="math notranslate nohighlight">
-\[ \ln \phi_i = \int_\infty^V \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - \ln Z = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln Z .\]</div>
+\[ \ln \phi_i = \int_\infty^V \left( \frac{1}{V} - \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} \right) dV - \ln Z = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln Z . \]</div>
 <p><a id='pvt-td-fugacity-equilibrium'></a></p>
 <div class="admonition-nb admonition">
 <p class="admonition-title">NB</p>
@@ -837,38 +835,38 @@
 <h2>Летучесть идеального газа<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>Рассмотрим применение полученного выражения для идеального газа, описываемого уравнением состояния:</p>
 <div class="math notranslate nohighlight">
-\[PV = n R T.\]</div>
+\[ PV = n R T. \]</div>
 <p>Для идеального газа частная производная давления по количеству вещества компонента:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial P}{\partial n} \right)_{V, T} = \frac{RT}{V}.\]</div>
+\[ \left( \frac{\partial P}{\partial n} \right)_{V, T} = \frac{RT}{V}. \]</div>
 <p>Тогда логарифм коэффициента летучести:</p>
 <div class="math notranslate nohighlight">
-\[\ln \phi = \int_V^\infty \left( \frac{1}{R T} \frac{RT}{V} - \frac{1}{V} \right) dV - \ln Z = - \ln Z.\]</div>
+\[ \ln \phi = \int_V^\infty \left( \frac{1}{R T} \frac{RT}{V} - \frac{1}{V} \right) dV - \ln Z = - \ln Z. \]</div>
 <p>Поскольку для идеального газа коэффициент сверхсжимаемости <span class="math notranslate nohighlight">\(Z = 1,\)</span> тогда</p>
 <div class="math notranslate nohighlight">
-\[ \ln \phi = 0.\]</div>
+\[ \ln \phi = 0. \]</div>
 <p>То есть коэффициент летучести:</p>
 <div class="math notranslate nohighlight">
-\[\phi = 1.\]</div>
+\[ \phi = 1. \]</div>
 <p>Следовательно, летучесть:</p>
 <div class="math notranslate nohighlight">
-\[f = P.\]</div>
+\[ f = P. \]</div>
 <p><a id='pvt-td-fugacity-ideal_gas_mixture'></a></p>
 </div>
 <div class="section" id="id4">
 <h2>Летучесть смеси идеальных газов<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <p>Для смеси идеальных газов также выполняется уравнение состояния:</p>
 <div class="math notranslate nohighlight">
-\[ PV = n R T,\]</div>
+\[ PV = n R T, \]</div>
 <p>где <span class="math notranslate nohighlight">\(n = \sum_{i=1}^{N_c} n_i.\)</span> В данном выражении <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе. Следовательно, частная производная давления по количеству вещества компонента <span class="math notranslate nohighlight">\(i\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} \sum_{i=1}^{N_c} \left( \frac{\partial n_i}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} .\]</div>
+\[ \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} \sum_{i=1}^{N_c} \left( \frac{\partial n_i}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} . \]</div>
 <p>Тогда логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
-\[\ln \phi_i = 0.\]</div>
+\[ \ln \phi_i = 0. \]</div>
 <p>Тогда летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
-\[f_i = x_i P.\]</div>
+\[ f_i = x_i P. \]</div>
 <div class="admonition-nb admonition">
 <p class="admonition-title">NB</p>
 <p>Полученное выражение является частным случаем соотношения, выполняемого для <em><strong>идеальных смесей</strong></em>:</p>

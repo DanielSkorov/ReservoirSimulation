@@ -42,14 +42,14 @@ ax.quiver(x0, y0, U, V, scale=1, angles='xy', scale_units='xy', color=['k', 'k',
 plot_angle_arc(ax, 0, 0, 0, np.rad2deg(np.arctan(4/3)), 1.0, 1, color='b')
 plot_angle_arc(ax, 0, 0, np.rad2deg(np.arctan(4/3)), 90, 1.0, 2, color='g')
 
-ax.text(1, -0.35, '$\overrightarrow{i}$')
-ax.text(-0.2, 1, '$\overrightarrow{j}$')
-ax.text(3, 4, '$\overrightarrow{v}$')
+ax.text(1, -0.35, r'$\overrightarrow{i}$')
+ax.text(-0.2, 1, r'$\overrightarrow{j}$')
+ax.text(3, 4, r'$\overrightarrow{v}$')
 ax.text(2, -0.35, '$v_x$')
 ax.text(-0.35, 2, '$v_y$')
 ax.text(0.5, 0.2, r'$\alpha$', c='b')
 ax.text(0.15, 0.65, r'$\beta$', c='g')
-ax.text(0.6, 0.62, '$\overrightarrow{u}$')
+ax.text(0.6, 0.62, r'$\overrightarrow{u}$')
 
 ax.set_xlim(-1, 5)
 ax.set_ylim(-1, 5)
@@ -81,7 +81,7 @@ mod_v
 
 
 # Обозначим через $\alpha$ угол между вектором $\vec{v}$ и положительным направлением оси Ox (вектором $\vec{i}$). Тогда косинус этого угла:
-
+# 
 # $$ \cos\alpha=\frac{v_x}{|\vec{v}|}. $$
 
 # In[5]:
@@ -92,7 +92,7 @@ cos_alpha
 
 
 # Аналогично для угла $\beta$:
-
+# 
 # $$ \cos\beta=\frac{v_y}{|\vec{v}|}. $$
 
 # In[6]:
@@ -103,7 +103,7 @@ cos_beta
 
 
 # Косинусы $\cos\alpha$ и $\cos\beta$ называются ***направляющими косинусами***. Причем, для любого ненулевого вектора справедливо равенство:
-
+# 
 # $$ \cos^2\alpha+\cos^2\beta=1. $$
 
 # In[7]:

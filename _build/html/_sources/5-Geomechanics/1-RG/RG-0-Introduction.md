@@ -25,6 +25,6 @@ kernelspec:
 * [Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3](./RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.md)
 * [Напряженное состояние в земной коре](./RG-4-StressesInEarthsCrust.md)
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

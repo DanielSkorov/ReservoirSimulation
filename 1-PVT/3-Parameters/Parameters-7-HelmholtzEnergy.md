@@ -14,6 +14,6 @@ kernelspec:
 <a id='pvt-parameters-helmholtz_energy'></a>
 # Энергия Гельмгольца
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

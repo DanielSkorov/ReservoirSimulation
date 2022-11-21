@@ -991,18 +991,10 @@ np.arccos(C[0, 0]) * 180 / np.pi
 
 Главные напряжения индексируются числами в порядке уменьшения:
 
-+++
-
 $$\sigma_1 = 6.24, \sigma_2 = 1.76$$
-
-+++
 
 Тензор напряжения на главных площадках будет равен:
 
-+++
-
 $$S = \begin{bmatrix} \sigma_1 & 0 \\ 0 & \sigma_2 \end{bmatrix}$$
-
-+++
 
 Трехмерный базис тензора напряжений будет рассмотрен в [следующем разделе](RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html#geomech-rg-stress_rotation-2).

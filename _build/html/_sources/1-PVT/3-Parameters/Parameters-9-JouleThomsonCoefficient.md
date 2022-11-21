@@ -14,6 +14,6 @@ kernelspec:
 <a id='pvt-parameters-joule-thomson'></a>
 # Коэффициент Джоуля-Томсона
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

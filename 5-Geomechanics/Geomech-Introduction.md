@@ -27,6 +27,6 @@ kernelspec:
     * [Напряженное состояние в земной коре](./1-RG/RG-4-StressesInEarthsCrust.md)
 *   ***[Основные вопросы геомеханического моделирования](./2-ARG/ARG-0-Introduction.md)***
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

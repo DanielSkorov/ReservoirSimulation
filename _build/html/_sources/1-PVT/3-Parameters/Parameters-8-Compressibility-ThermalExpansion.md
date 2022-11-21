@@ -14,6 +14,6 @@ kernelspec:
 <a id='pvt-parameters-compressibility_expansion'></a>
 # Коэффициент сжимаемости. Коэффициент термического расширения
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

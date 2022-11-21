@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-```{code-cell} ipython3
+```{code-cell} python
 :tags: [hide-input]
 
 from matplotlib import pyplot as plt
@@ -28,8 +28,6 @@ def plot_angle_arc(axis, x0, y0, theta1, theta2, rad, num=1, inc=0.1, color='k')
 
 ```
 
-+++
-
 <a id='math-lab-rotation_angles'></a>
 # Направляющие косинусы
 
@@ -37,7 +35,7 @@ def plot_angle_arc(axis, x0, y0, theta1, theta2, rad, num=1, inc=0.1, color='k')
 
 Рассмотрим вектор $\vec{v}=(3, 4)$, заданный своими координатами в базисе $(\vec{i}, \vec{j})$.
 
-```{code-cell} ipython3
+```{code-cell} python
 :tags: [hide-input]
 
 fig, ax = plt.subplots(figsize=(6, 4))
@@ -57,14 +55,14 @@ ax.quiver(x0, y0, U, V, scale=1, angles='xy', scale_units='xy', color=['k', 'k',
 plot_angle_arc(ax, 0, 0, 0, np.rad2deg(np.arctan(4/3)), 1.0, 1, color='b')
 plot_angle_arc(ax, 0, 0, np.rad2deg(np.arctan(4/3)), 90, 1.0, 2, color='g')
 
-ax.text(1, -0.35, '$\overrightarrow{i}$')
-ax.text(-0.2, 1, '$\overrightarrow{j}$')
-ax.text(3, 4, '$\overrightarrow{v}$')
+ax.text(1, -0.35, r'$\overrightarrow{i}$')
+ax.text(-0.2, 1, r'$\overrightarrow{j}$')
+ax.text(3, 4, r'$\overrightarrow{v}$')
 ax.text(2, -0.35, '$v_x$')
 ax.text(-0.35, 2, '$v_y$')
 ax.text(0.5, 0.2, r'$\alpha$', c='b')
 ax.text(0.15, 0.65, r'$\beta$', c='g')
-ax.text(0.6, 0.62, '$\overrightarrow{u}$')
+ax.text(0.6, 0.62, r'$\overrightarrow{u}$')
 
 ax.set_xlim(-1, 5)
 ax.set_ylim(-1, 5)
@@ -76,72 +74,46 @@ ax.set_ylabel('Y')
 fig.tight_layout()
 ```
 
-+++
-
 Проекцией вектора на координатную ось является его координата.
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 v = np.array([3, 4])
 v_x = 3
 v_y = 4
 ```
 
-+++
-
 Длина вектора $\vec{v}$:
 
-```{code-cell} ipython3
+```{code-cell} python
 mod_v = np.linalg.norm(v)
 mod_v
 ```
 
-+++
-
 Обозначим через $\alpha$ угол между вектором $\vec{v}$ и положительным направлением оси Ox (вектором $\vec{i}$). Тогда косинус этого угла:
-
-+++
 
 $$ \cos\alpha=\frac{v_x}{|\vec{v}|}. $$
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 cos_alpha = v_x / mod_v
 cos_alpha
 ```
 
-+++
-
 Аналогично для угла $\beta$:
-
-+++
 
 $$ \cos\beta=\frac{v_y}{|\vec{v}|}. $$
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 cos_beta = v_y / mod_v
 cos_beta
 ```
 
-+++
-
 Косинусы $\cos\alpha$ и $\cos\beta$ называются ***направляющими косинусами***. Причем, для любого ненулевого вектора справедливо равенство:
-
-+++
 
 $$ \cos^2\alpha+\cos^2\beta=1. $$
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 cos_alpha**2 + cos_beta**2
 ```
-
-+++
 
 Данное свойство характерно и для трехмерного пространства.
 

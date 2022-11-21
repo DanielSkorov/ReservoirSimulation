@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-+++ {"tags": []}
++++
 
 <a id='math.lab'></a>
 # Основы линейной алгебры

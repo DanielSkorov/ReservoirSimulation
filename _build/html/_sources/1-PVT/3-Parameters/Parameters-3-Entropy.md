@@ -14,27 +14,27 @@ kernelspec:
 <a id='pvt-parameters-entropy'></a>
 # Энтропия
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```
 
 <a id='pvt-parameters-entropy-pr_srk'></a>
 ## Вывод выражения энтропии с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```
 
 <a id='pvt-parameters-entropy-sw'></a>
 ## Вывод выражения энтропии с использованием уравнения состояния Сорейде-Уитсона
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```
 
 <a id='pvt-parameters-entropy-cpa'></a>
 ## Вывод выражения энтропии с использованием уравнения состояния CPA
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

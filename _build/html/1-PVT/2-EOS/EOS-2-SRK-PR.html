@@ -919,34 +919,34 @@ F \left( V \right)
 </div>
 <p>В критической точке параметр <span class="math notranslate nohighlight">\(A\)</span> определяется следующим выражением:</p>
 <div class="math notranslate nohighlight">
-\[A = \frac{\alpha P_c}{R^2 T_c^2}.\]</div>
+\[ A = \frac{\alpha P_c}{R^2 T_c^2}. \]</div>
 <p>Параметр <span class="math notranslate nohighlight">\(\alpha\)</span> в критической точке при <span class="math notranslate nohighlight">\( T = T_c\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\alpha = a \left( 1 + \kappa \left( 1 - \sqrt{\frac{T}{T_c}} \right) \right)^2 = a.\]</div>
+\[ \alpha = a \left( 1 + \kappa \left( 1 - \sqrt{\frac{T}{T_c}} \right) \right)^2 = a. \]</div>
 <p>С учетом этого, выражение для параметра <span class="math notranslate nohighlight">\(a\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[a = \Omega_a \frac{R^2 T_c^2}{P_c}. \]</div>
+\[ a = \Omega_a \frac{R^2 T_c^2}{P_c}. \]</div>
 <p>Здесь коэффициент для уравнения состояния Суаве-Редлиха-Квонга <span class="math notranslate nohighlight">\(\Omega_a = 0.42748\)</span>, для уравнения состояния Пенга-Робинсона <span class="math notranslate nohighlight">\(\Omega_a = 0.45724.\)</span></p>
 <p><a id='pvt-eos-srk_pr-kappa'></a>
 Как было отмечено ранее, коэффициент <span class="math notranslate nohighlight">\(\kappa\)</span> рассчитывается по корреляции от ацентрического фактора. В своей <a class="reference external" href="https://doi.org/10.1021/i160057a011">работе</a> Пенг и Робинсон в 1976 году предложили использовать следующую корреляцию:</p>
 <div class="math notranslate nohighlight">
-\[\kappa = 0.37464 + 1.54226 \omega - 0.26992 \omega^2.\]</div>
+\[ \kappa = 0.37464 + 1.54226 \omega - 0.26992 \omega^2. \]</div>
 <p>Данная корреляция с удовлетворительной точностью воспроизводит значения <span class="math notranslate nohighlight">\(\kappa\)</span> для компонентов из углеводородного ряда до декана, а также для диоксида углерода, азота и сероводорода. Позднее, в 1978 году, Пенг и Робинсон для более тяжедых компонентов предложили следующую корреляцию:</p>
 <div class="math notranslate nohighlight">
-\[ \kappa = 0.379642 + 1.48503 \omega - 0.164423 \omega^2 + 0.016666 \omega^3.\]</div>
+\[ \kappa = 0.379642 + 1.48503 \omega - 0.164423 \omega^2 + 0.016666 \omega^3. \]</div>
 <p>Для уравнения состояния Суаве-Редлиха-Квонга в соответствии со <a class="reference external" href="https://doi.org/10.1016/0009-2509(72)80096-4">статьей</a> Суаве рекомендуется использование следующей корреляции:</p>
 <div class="math notranslate nohighlight">
-\[\kappa = 0.480 + 1.574 \omega - 0.176 \omega^2.\]</div>
+\[ \kappa = 0.480 + 1.574 \omega - 0.176 \omega^2. \]</div>
 <p>В 1978 году для уравнения состояния Суаве-Редлиха-Квонга <a class="reference external" href="https://doi.org/10.1021/i260068a010">было предложено</a> использовать следующую зависимость:</p>
 <div class="math notranslate nohighlight">
-\[ \kappa = 0.48508 + 1.55171 \omega - 0.15613 \omega^2.\]</div>
+\[ \kappa = 0.48508 + 1.55171 \omega - 0.15613 \omega^2. \]</div>
 <p>Решение кубического уравнения состояния относительно коэффициента сверхсжимаемости может привести к возникновению нескольких действительных корней. Как было показано <a class="reference external" href="./EOS-1-VanDerWaals.html#pvt-eos-van_der_waals-root_selection">ранее</a>, выбор нужного корня осуществляется на основе сравнения величин энергий Гиббса для каждого корня. Пусть <span class="math notranslate nohighlight">\(Z_1\)</span> и <span class="math notranslate nohighlight">\(Z_2\)</span> – корни кубического уравнения состояния относительно коэффициента сверсхжимаемости. Тогда:</p>
 <div class="math notranslate nohighlight">
-\[ G_1 - G_2 = n R T \left( \sum_{i=1}^{N_c} x_i \ln {f_1}_i - \sum_{i=1}^{N_c} x_i \ln {f_2}_i \right).\]</div>
+\[ G_1 - G_2 = n R T \left( \sum_{i=1}^{N_c} x_i \ln {f_1}_i - \sum_{i=1}^{N_c} x_i \ln {f_2}_i \right). \]</div>
 <p>Логарифм летучести компонента может быть выражен через логарифм коэффициента летучести компонента:</p>
 <div class="math notranslate nohighlight">
 \[ \ln f_i = \ln \phi_i + \ln x_i P. \]</div>
-<p>С учетом выражения для логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента, полученного при использовании уравнений состояния Пенга-Робинсона или Суаве-Редлиха-Квонга, получим для <span class="math notranslate nohighlight">\( \sum_{i=1}^{N_c} x_i \ln \phi_i\)</span>:</p>
+<p>С учетом выражения для логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента, полученного при использовании уравнений состояния Пенга-Робинсона или Суаве-Редлиха-Квонга, получим для <span class="math notranslate nohighlight">\(\sum_{i=1}^{N_c} x_i \ln \phi_i\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{alignat}{1}
 \sum_{i=1}^{N_c} x_i \ln \phi_i
@@ -956,7 +956,7 @@ F \left( V \right)
 \end{alignat} \end{split}\]</div>
 <p>Тогда:</p>
 <div class="math notranslate nohighlight">
-\[ G_1 - G_2 = - \ln \left( \frac{Z_1 - B}{Z_2 - B} \right) + \left( Z_1 - Z_2 \right) + \frac{1}{\left( \delta_2 - \delta_1 \right)} \frac{A}{B} \ln \left( \frac{Z_1 + B \delta_1}{Z_1 + B \delta_2} \frac{Z_2 + B \delta_2}{Z_2 + B \delta_1} \right).\]</div>
+\[ G_1 - G_2 = - \ln \left( \frac{Z_1 - B}{Z_2 - B} \right) + \left( Z_1 - Z_2 \right) + \frac{1}{\left( \delta_2 - \delta_1 \right)} \frac{A}{B} \ln \left( \frac{Z_1 + B \delta_1}{Z_1 + B \delta_2} \frac{Z_2 + B \delta_2}{Z_2 + B \delta_1} \right). \]</div>
 <p>Следовательно, если <span class="math notranslate nohighlight">\(G_1 - G_2 &gt; 0\)</span>, то коэффициент сверхсжимаемости равен <span class="math notranslate nohighlight">\(Z_2\)</span>.</p>
 <p>Теперь рассмотрим применение уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона. Для этого определим летучести компонентов рассмотренной <a class="reference external" href="./EOS-1-VanDerWaals.html#pvt-eos-van_der_waals-exercise">ранее</a> системы.</p>
 <div class="cell docutils container">

@@ -14,6 +14,6 @@ kernelspec:
 <a id='pvt-esc-criticality'></a>
 # Определение критического состояния системы
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```
