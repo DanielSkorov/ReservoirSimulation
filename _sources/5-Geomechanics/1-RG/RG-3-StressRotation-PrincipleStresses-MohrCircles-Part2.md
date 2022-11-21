@@ -16,9 +16,7 @@ kernelspec:
 Данная страница инициализирована в статичном режиме – все графики неинтерактивны. При необходимости Вы можете посмотреть [интерактивную копию](RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2-I.md) данной страницы.
 ```
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 :tags: [hide-input]
 import numpy as np
 import matplotlib as mpl
@@ -32,6 +30,8 @@ sys.path.append('../../SupportCode/')
 from Graphics import plot_angle_arc, cube_plane, Arrow3D
 ```
 
++++
+
 <a id='geomech-rg-stress_rotation-2'></a>
 # Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
 
@@ -39,27 +39,15 @@ from Graphics import plot_angle_arc, cube_plane, Arrow3D
 
 Теперь рассмотрим элементарный объем в трехмерном пространстве. Для этого необходимо составить матрицу перехода от стандартного базиса к базису, повернутому на некоторые углы в трехмерном пространстве. Рассматривать вращения будем вокруг каждой из осей: $x, y, z$. Углы вращения соответственно: $\gamma, \beta, \alpha$. Вращение вокруг оси $z$ уже было рассмотрено. Система уравнений для трехмерного случая имеет вид:
 
-+++
-
 $$\left\{\begin{array} \\ \sigma_{1'} = \sigma_1 \cdot \cos{\alpha} + \sigma_2 \cdot \sin{\alpha} \\ \sigma_{2'} = -\sigma_1 \cdot \sin{\alpha} + \sigma_2 \cdot \cos{\alpha} \\ \sigma_{3'} = \sigma_{3}  \end{array} \right.$$
-
-+++
 
 Матричная запись данной системы уравнений:
 
-+++
-
 $$\begin{bmatrix} \sigma_{1'} \\ \sigma_{2'} \\ \sigma_{3'} \end{bmatrix} = \begin{bmatrix} \cos{\alpha} & \sin{\alpha} & 0 \\ -\sin{\alpha} & \cos{\alpha} & 0 \\ 0 & 0 & 1 \end{bmatrix} \cdot \begin{bmatrix} \sigma_{1} \\ \sigma_{2} \\ \sigma_{3} \end{bmatrix}$$
-
-+++
 
 Таким образом, матрица
 
-+++
-
 $$Q_z = \begin{bmatrix} \cos{\alpha} & \sin{\alpha} & 0 \\ -\sin{\alpha} & \cos{\alpha} & 0 \\ 0 & 0 & 1 \end{bmatrix}$$
-
-+++
 
 является матрицей вращения напряжений вокруг оси $z$ в трехмерном пространстве.
 
@@ -67,9 +55,7 @@ $$Q_z = \begin{bmatrix} \cos{\alpha} & \sin{\alpha} & 0 \\ -\sin{\alpha} & \cos{
 
 Рассмотрим вращение вокруг оси $y$, направленной на читателя на рисунке ниже.
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 :tags: [hide-input]
 
 fig, ax = plt.subplots(figsize=(6, 4))
@@ -89,10 +75,10 @@ ax.text(6, 4, '$x$')
 ax.text(0.2, -2, '$z$')
 ax.text(6, 7, '$x\'$')
 ax.text(3, -2, '$z\'$')
-ax.text(1.2, 5, '$\overrightarrow{\\sigma_{1\'}}$')
-ax.text(3, 4.2, '$\overrightarrow{\\sigma_{1}}$')
-ax.text(1.2, 2, '$\overrightarrow{\\sigma_{3\'}}$')
-ax.text(-0.8, 3, '$\overrightarrow{\\sigma_{3}}$')
+ax.text(1.2, 5, '$\\overrightarrow{\\sigma_{1\'}}$')
+ax.text(3, 4.2, '$\\overrightarrow{\\sigma_{1}}$')
+ax.text(1.2, 2, '$\\overrightarrow{\\sigma_{3\'}}$')
+ax.text(-0.8, 3, '$\\overrightarrow{\\sigma_{3}}$')
 ax.text(0.5, 1.2, '$\\beta$', c='c')
 
 ax.set_xlim(-3, 8)
@@ -108,31 +94,17 @@ ax.set_ylabel('Z')
 fig.tight_layout()
 ```
 
-+++
-
 С учетом принципа вращения напряжений получим следующую систему уравнений:
-
-+++
 
 $$\left\{\begin{array} \\ \sigma_{1'} = \sigma_1 \cdot \cos{\beta} - \sigma_3 \cdot \sin{\beta} \\ \sigma_{2'} = \sigma_2 \\ \sigma_{3'} = \sigma_1 \cdot \sin{\beta} + \sigma_3 \cdot \cos{\beta} \end{array} \right.$$
 
-+++
-
 Данная система уравнений в матричной форме:
-
-+++
 
 $$\begin{bmatrix}\sigma_{1'} \\ \sigma_{2'} \\ \sigma_{3'} \end{bmatrix} = \begin{bmatrix} \cos{\beta} & 0 & -\sin{\beta} \\ 0 & 1 & 0 \\ \sin{\beta} & 0 & \cos{\beta} \end{bmatrix} \cdot \begin{bmatrix}\sigma_1 \\ \sigma_2 \\ \sigma_3 \end{bmatrix}$$
 
-+++
-
 Таким образом, матрица
 
-+++
-
 $$Q_y = \begin{bmatrix} \cos{\beta} & 0 & -\sin{\beta} \\ 0 & 1 & 0 \\ \sin{\beta} & 0 & \cos{\beta} \end{bmatrix}$$
-
-+++
 
 является матрицей вращения напряжений вокруг оси $y$.
 
@@ -140,9 +112,7 @@ $$Q_y = \begin{bmatrix} \cos{\beta} & 0 & -\sin{\beta} \\ 0 & 1 & 0 \\ \sin{\bet
 
 Рассмотрим вращение вокруг оси $x$, направленной от читателя на рисунке ниже.
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 :tags: [hide-input]
 
 fig, ax = plt.subplots(figsize=(6, 4))
@@ -162,10 +132,10 @@ ax.text(6, 4, '$y$')
 ax.text(0.2, -2, '$z$')
 ax.text(6, 1, '$x\'$')
 ax.text(-2.8, -2, '$z\'$')
-ax.text(5, 1.8, '$\overrightarrow{\\sigma_{2\'}}$')
-ax.text(4, 4.2, '$\overrightarrow{\\sigma_{2}}$')
-ax.text(-1.8, 2, '$\overrightarrow{\\sigma_{3\'}}$')
-ax.text(0.2, -0.5, '$\overrightarrow{\\sigma_{3}}$')
+ax.text(5, 1.8, '$\\overrightarrow{\\sigma_{2\'}}$')
+ax.text(4, 4.2, '$\\overrightarrow{\\sigma_{2}}$')
+ax.text(-1.8, 2, '$\\overrightarrow{\\sigma_{3\'}}$')
+ax.text(0.2, -0.5, '$\\overrightarrow{\\sigma_{3}}$')
 ax.text(-0.8, 1.2, '$\\gamma$', c='m')
 
 ax.set_xlim(-4, 7)
@@ -181,31 +151,17 @@ ax.set_ylabel('Z')
 fig.tight_layout()
 ```
 
-+++
-
 С учетом принципа вращения напряжений получим следующую систему уравнений:
-
-+++
 
 $$\left\{\begin{array} \\ \sigma_{1'} = \sigma_1 \\ \sigma_{2'} = \sigma_2 \cdot \cos{\gamma} + \sigma_3 \cdot \sin{\gamma} \\ \sigma_{3'} = -\sigma_2 \cdot \sin{\gamma} + \sigma_3 \cdot \cos{\gamma} \end{array} \right.$$
 
-+++
-
 Данная система уравнений в матричной форме:
-
-+++
 
 $$\begin{bmatrix}\sigma_{1'} \\ \sigma_{2'} \\ \sigma_{3'} \end{bmatrix} = \begin{bmatrix} 1 & 0 & 0 \\ 0 & \cos{\gamma} & \sin{\gamma} \\ 0 & -\sin{\gamma} & \cos{\gamma} \end{bmatrix} \cdot \begin{bmatrix}\sigma_1 \\ \sigma_2 \\ \sigma_3 \end{bmatrix}$$
 
-+++
-
 Таким образом, матрица
 
-+++
-
 $$Q_x = \begin{bmatrix} 1 & 0 & 0 \\ 0 & \cos{\gamma} & \sin{\gamma} \\ 0 & -\sin{\gamma} & \cos{\gamma} \end{bmatrix}$$
-
-+++
 
 является матрицей вращения напряжений вокруг оси $x$.
 
@@ -213,13 +169,9 @@ $$Q_x = \begin{bmatrix} 1 & 0 & 0 \\ 0 & \cos{\gamma} & \sin{\gamma} \\ 0 & -\si
 
 Итоговая матрица преобразования в трехмерном пространстве:
 
-+++
-
 $$Q = Q_x \cdot Q_y \cdot Q_z$$
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 alpha = Symbol('alpha')
 beta = Symbol('beta')
 gamma = Symbol('gamma')
@@ -229,15 +181,9 @@ Qz = Matrix([[cos(alpha), sin(alpha), 0], [-sin(alpha), cos(alpha), 0], [0, 0, 1
 Qx * Qy * Qz
 ```
 
-+++
-
 Рассмотрим пример. Пусть напряженное состояние в некоторой точке трехмерного пространства представлено следующим тензором в стандартном базисе:
 
-+++
-
 $$S = \begin{bmatrix} 2 & 1 & 0 \\ 1 & 3 & -2 \\ 0 & -2 & 1 \end{bmatrix}$$
-
-+++
 
 Необходимо найти тензор напряженного состояния при повороте стандартного базиса на угол: $\beta = \frac{\pi}{4}$, то есть вокруг оси $y$.
 
@@ -245,9 +191,7 @@ $$S = \begin{bmatrix} 2 & 1 & 0 \\ 1 & 3 & -2 \\ 0 & -2 & 1 \end{bmatrix}$$
 
 Для начала убедимся, что при нулевых значениях углов в результате перехода к новому базису мы получаем исходную матрицу.
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 S = np.array([[2, 1, 0], [1, 3, -2], [0, -2, 1]])
 
 def stress_rotation_matrix_3d(a, b, g):
@@ -260,20 +204,14 @@ Q = stress_rotation_matrix_3d(0, 0, 0)
 Q.dot(S).dot(np.linalg.inv(Q))
 ```
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 Q = stress_rotation_matrix_3d(0, np.pi/4, 0)
 Q.dot(S).dot(np.linalg.inv(Q))
 ```
 
-+++
-
 Ниже представлена интерактивная диаграмма для определения напряженного состояния в трехмерном пространстве для любых значений углов поворота вокруг каждой из трех осей.
 
-+++
-
-```{code-cell} ipython3
+```{code-cell} python
 :tags: [hide-input]
 fig = plt.figure(figsize=(7, 5))
 fig.canvas.header_visible = False
@@ -324,16 +262,14 @@ def rotation_3d(alpha, beta, gamma):
     ax.add_artist(Arrow3D([0.5, 0.5], [0, s12_rot], [0, 0], color='r', lw=1, mutation_scale=4, rotation_angles=(alpha, beta, gamma)))
     ax.add_artist(Arrow3D([0, 0], [0.5, 0.5], [0, s23_rot], color='r', lw=1, mutation_scale=4, rotation_angles=(alpha, beta, gamma)))
     ax.add_artist(Arrow3D([0, s31_rot], [0, 0], [0.5, 0.5], color='r', lw=1, mutation_scale=4, rotation_angles=(alpha, beta, gamma)))
-    ax.text(*rot_m.dot(np.array([0.5+s11_rot, 0, 0])), '$\sigma_{11}$')
-    ax.text(*rot_m.dot(np.array([0, 0.5+s22_rot, 0])), '$\sigma_{22}$')
-    ax.text(*rot_m.dot(np.array([0, 0, 0.5+s33_rot])), '$\sigma_{33}$')
+    ax.text(*rot_m.dot(np.array([0.5+s11_rot, 0, 0])), '$\\sigma_{11}$')
+    ax.text(*rot_m.dot(np.array([0, 0.5+s22_rot, 0])), '$\\sigma_{22}$')
+    ax.text(*rot_m.dot(np.array([0, 0, 0.5+s33_rot])), '$\\sigma_{33}$')
     ax.text(*rot_m.dot(np.array([0.5, s12_rot, 0])), '$\\tau_{12}$')
     ax.text(*rot_m.dot(np.array([0, 0.5, s23_rot])), '$\\tau_{23}$')
     ax.text(*rot_m.dot(np.array([s31_rot, 0, 0.5])), '$\\tau_{31}$')
     pass
 ```
-
-+++
 
 С использованием данной диаграммы решается задача преобразования известного тензора напряжений при повороте элементарного объема из условия постоянства напряженного состония. Иными словами, при любых значениях углов поворота значение вектора напряжения остается неизменным.
 

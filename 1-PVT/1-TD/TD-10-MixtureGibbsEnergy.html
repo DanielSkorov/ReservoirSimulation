@@ -713,10 +713,10 @@
 <h2>Энергия Гиббса при постоянных давлении и температуре<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>Ранее, при введении параметра <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-gibbs">энергии Гиббса</a>, было показано, что:</p>
 <div class="math notranslate nohighlight">
-\[\mu = \left( \frac{\partial G}{\partial N} \right)_{T, P}.\]</div>
+\[ \mu = \left( \frac{\partial G}{\partial N} \right)_{T, P}. \]</div>
 <p>Данное выражение означает, что приращение энергии Гиббса при добавлении молекул к системе есть химический потенциал при фиксированных давлении и температуре. При этом, энергия Гиббса является экстенсивным параметром, то есть она зависит от количества частиц: <span class="math notranslate nohighlight">\(G = G \left( N, T, P \right)\)</span>. Кроме того, единственным экстенсивным параметром, используемым для расчета энергии Гиббса, является количество молекул, следовательно, энергия Гиббса должна быть пропорциональна количеству молекул. Из этого следует, что если в рассматриваемой системе при постоянных давлении и температуре имеется только один вид молекул (один компонент), то энергия Гиббса может быть определена следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[G = \mu N.\]</div>
+\[ G = \mu N. \]</div>
 <p>То есть химический потенциал можно интерпретировать как энергия Гиббса, приходящаяся на одну молекулу. При этом, химический потенциал является функцией от давления и температуры:</p>
 <div class="math notranslate nohighlight">
 \[ \mu = \mu \left( P, T \right).\]</div>
@@ -729,25 +729,25 @@
 <h2>Парциальные молярные экстенсивные параметры<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>Пусть переменная <span class="math notranslate nohighlight">\(E\)</span> обозначает любой <a class="reference external" href="./TD-9-Observables.html#pvt-td-observables-extensive">экстенсивный параметр</a> системы. Обозначим частную производную по количеству молекул <span class="math notranslate nohighlight">\(i\)</span>-го компонета (или по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента) данного параметра при постоянных давлении, температуре и количествах молекул остальных компонентов как <span class="math notranslate nohighlight">\(\bar{E_i}\)</span>, то есть:</p>
 <div class="math notranslate nohighlight">
-\[\bar{E_i} = \left( \frac{\partial E_i}{\partial N_i} \right)_{P,T,n_j}.\]</div>
+\[ \bar{E_i} = \left( \frac{\partial E_i}{\partial N_i} \right)_{P,T,n_j}. \]</div>
 <p>При этом, любой экстенсивный параметр <span class="math notranslate nohighlight">\(E\)</span>, как функция относительно <span class="math notranslate nohighlight">\(\lambda N_i\)</span> количеств молекул компонентов, выражается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ E \left( P, T, \lambda N_1, \lambda N_2, \ldots, \lambda N_c \right) = \lambda E \left( P, T, N_1, N_2, \ldots, N_C \right),\]</div>
 <p>где <span class="math notranslate nohighlight">\(C\)</span> – количество компонентов. Получим частную производную от левой и правой части данного выражения по <span class="math notranslate nohighlight">\(\lambda\)</span>. Поскольку параметр <span class="math notranslate nohighlight">\(E\)</span> является функцией от величины <span class="math notranslate nohighlight">\(\lambda N_i\)</span>, каждая из которых является функцией от <span class="math notranslate nohighlight">\(\lambda\)</span>, то, применяя <a class="reference external" href="https://en.wikipedia.org/wiki/Chain_rule#Multivariable_case">правило дифференциирования сложной функции</a>, получим:</p>
 <div class="math notranslate nohighlight">
-\[\sum_{i=1}^C \left( \frac{\partial E}{\partial \lambda n_i} \right)_{P,T,n_j} \frac{d \lambda n_i}{d \lambda} = E \left( P, T, N_1, N_2, \ldots, N_c \right).\]</div>
+\[ \sum_{i=1}^C \left( \frac{\partial E}{\partial \lambda n_i} \right)_{P,T,n_j} \frac{d \lambda n_i}{d \lambda} = E \left( P, T, N_1, N_2, \ldots, N_c \right). \]</div>
 <p>Для <span class="math notranslate nohighlight">\(\lambda=1\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\sum_{i=1}^C \left( \frac{\partial E}{\partial  N_i} \right)_{P,T,N_j} N_i = \sum_{i=1}^C \bar{E_i} N_i = E \left( P, T, N_1, N_2, \ldots, N_c \right).\]</div>
+\[ \sum_{i=1}^C \left( \frac{\partial E}{\partial  N_i} \right)_{P,T,N_j} N_i = \sum_{i=1}^C \bar{E_i} N_i = E \left( P, T, N_1, N_2, \ldots, N_c \right). \]</div>
 <p>Таким образом, любой экстенсивный параметр может быть рассчитан из его частных производных по количеству молекул (вещества) компонентов. Необходимо также отметить, что фиксация давления и температуры необходимы для того, чтобы выполнялось полученное соотношение. <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-helmholtz_partials">Ранее</a> было показано, что химический потенциал является частной производной энергии Гельмгольца по количеству молекул компонента при постоянных температуре и объеме:</p>
 <div class="math notranslate nohighlight">
-\[\mu_i = \left( \frac{\partial F}{\partial N_i} \right)_{T,V}.\]</div>
+\[ \mu_i = \left( \frac{\partial F}{\partial N_i} \right)_{T,V}. \]</div>
 <p>При этом, парциальная молярная энергия Гельмгольца, определяемая выражением:</p>
 <div class="math notranslate nohighlight">
-\[\bar{F_i} = \left( \frac{\partial F}{\partial N_i} \right)_{P,T},\]</div>
+\[ \bar{F_i} = \left( \frac{\partial F}{\partial N_i} \right)_{P,T}, \]</div>
 <p>не равная химическому потенциалу, то есть:</p>
 <div class="math notranslate nohighlight">
-\[\bar{F_i} \neq \mu_i.\]</div>
+\[ \bar{F_i} \neq \mu_i. \]</div>
 <p><a id='pvt-td-mixture_gibbs_energy-partial_molar_observables-ideal_gas'></a>
 Также стоит отметить, что из-за межмолекулярных взаимодействий различных компонентов парциальный молярный параметр не равен приведенному на единицу количества молекул параметру, то есть:</p>
 <div class="math notranslate nohighlight">

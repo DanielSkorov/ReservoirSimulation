@@ -18,6 +18,6 @@ kernelspec:
 
 **Содержание:**
 
-```{code-cell} ipython3
+```{code-cell} python
 
 ```

@@ -674,27 +674,27 @@
 <h1>Соотношения Максвелла<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <p>Существует множество соотношений между частными производными термодинамических параметров систем, называемые <em><strong>соотношения Максвелла</strong></em>. Все они основаны на следующих свойствах дифференциала и частных производных. Пусть имеется некоторая функция <span class="math notranslate nohighlight">\(\phi \left( x, y \right)\)</span>, при этом ее дифференциал записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[d \phi \left( x, y \right) = M \left( x, y \right) dx + N \left( x, y \right) dy.\]</div>
+\[ d \phi \left( x, y \right) = M \left( x, y \right) dx + N \left( x, y \right) dy. \]</div>
 <p>Следовательно, можно записать, что:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}M \left( x, y \right) = \left( \frac{\partial \phi \left( x, y \right)}{\partial x} \right)_y; \\ N \left( x, y \right) = \left( \frac{\partial \phi \left( x, y \right)}{\partial y} \right)_x.\end{split}\]</div>
+\[\begin{split} M \left( x, y \right) = \left( \frac{\partial \phi \left( x, y \right)}{\partial x} \right)_y; \\ N \left( x, y \right) = \left( \frac{\partial \phi \left( x, y \right)}{\partial y} \right)_x. \end{split}\]</div>
 <p>Запишем выражение для второй частной производной функции <span class="math notranslate nohighlight">\(\phi \left( x, y \right)\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\frac{\partial^2 \phi \left( x, y \right)}{\partial x \partial y} = \left( \frac{\partial}{\partial x} \left( \frac{\partial \phi \left( x, y \right)}{\partial y} \right)_x \right)_y = \left( \frac{\partial}{\partial y} \left( \frac{\partial \phi \left( x, y \right) }{\partial x} \right)_y \right)_x.\]</div>
+\[ \frac{\partial^2 \phi \left( x, y \right)}{\partial x \partial y} = \left( \frac{\partial}{\partial x} \left( \frac{\partial \phi \left( x, y \right)}{\partial y} \right)_x \right)_y = \left( \frac{\partial}{\partial y} \left( \frac{\partial \phi \left( x, y \right) }{\partial x} \right)_y \right)_x. \]</div>
 <p>Преобразуя, получим:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial N \left( x, y \right)}{\partial x} \right)_y = \left( \frac{\partial M \left( x, y \right)}{\partial y} \right)_x.\]</div>
+\[ \left( \frac{\partial N \left( x, y \right)}{\partial x} \right)_y = \left( \frac{\partial M \left( x, y \right)}{\partial y} \right)_x. \]</div>
 <p>Используя данное свойство, рассмотрим вывод соотношений Максвелла.</p>
 <p><a id='pvt-td-maxwell_relations-first'></a>
 Допустим, что вторая частная производная внутренней энергии <span class="math notranslate nohighlight">\(U\)</span> по энтропии <span class="math notranslate nohighlight">\(S\)</span> и объему <span class="math notranslate nohighlight">\(V\)</span> непрерывна и определена. <a class="reference external" href="https://en.wikipedia.org/wiki/Symmetry_of_second_derivatives#Theorem_of_Schwarz">Тогда</a> можно записать следующее соотношение:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial^2 U}{\partial S \partial V} = \frac{\partial}{\partial S} \left( \frac{\partial U}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial U}{\partial S} \right).\]</div>
+\[ \frac{\partial^2 U}{\partial S \partial V} = \frac{\partial}{\partial S} \left( \frac{\partial U}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial U}{\partial S} \right). \]</div>
 <p>При выводе <a class="reference external" href="TD-6-Entropy.html#pvt-td-entropy-thermodynamic_identity">thermodynamic identity</a> было показано, что:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align} \left( \frac{\partial U}{\partial S} \right)_{V, N} &amp;= T; \\ \left( \frac{\partial U}{\partial V} \right)_{S, N} &amp;= -P. \end{align} \end{split}\]</div>
 <p>С учетом этого можно заключить, что:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial T}{\partial V} \right)_{S, N} = - \left( \frac{\partial P}{\partial S} \right)_{V, N}.\]</div>
+\[ \left( \frac{\partial T}{\partial V} \right)_{S, N} = - \left( \frac{\partial P}{\partial S} \right)_{V, N}. \]</div>
 <p>С учетом <a class="reference external" href="https://en.wikipedia.org/wiki/Inverse_functions_and_differentiation">производной обратной функции</a> данное выражение преобразуется к следующему:</p>
 <div class="math notranslate nohighlight">
 \[ \left( \frac{\partial V}{\partial T} \right)_{S, N} = - \left( \frac{\partial S}{\partial P} \right)_{V, N}. \]</div>
@@ -702,44 +702,44 @@
 <p><a id='pvt-td-maxwell_relations-second'></a>
 Получим второе соотношение Максвелла. Для этого применим правило симметрии для второй частной производной энергии Гельмгольца <span class="math notranslate nohighlight">\(F\)</span> по температуре <span class="math notranslate nohighlight">\(T\)</span> и объему <span class="math notranslate nohighlight">\(V\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial^2 F}{\partial T \partial V} = \frac{\partial}{\partial T} \left( \frac{\partial F}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial F}{\partial T} \right).\]</div>
+\[ \frac{\partial^2 F}{\partial T \partial V} = \frac{\partial}{\partial T} \left( \frac{\partial F}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial F}{\partial T} \right). \]</div>
 <p>При выводе <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-helmholtz_partials">дифференциала энергии Гельмгольца</a> было показано, что</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \left( \frac{\partial F}{\partial T} \right)_{V, N} = -S; \\ \left( \frac{\partial F}{\partial V} \right)_{T, N} = -P.\end{split}\]</div>
+\[\begin{split} \left( \frac{\partial F}{\partial T} \right)_{V, N} = -S; \\ \left( \frac{\partial F}{\partial V} \right)_{T, N} = -P. \end{split}\]</div>
 <p>Отсюда следует, что</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial S}{\partial V} \right)_{T, N} = \left( \frac{\partial P}{\partial T} \right)_{V, N}.\]</div>
+\[ \left( \frac{\partial S}{\partial V} \right)_{T, N} = \left( \frac{\partial P}{\partial T} \right)_{V, N}. \]</div>
 <p>Данное выражение является <em><strong>вторым соотношением Максвелла</strong></em>.</p>
 <p><a id='pvt-td-maxwell_relations-third'></a>
 Для получения третьего соотношения Максвелла запишем дифференциал <a class="reference external" href="TD-5-Enthalpy.html#pvt-td-enthalpy">энтальпии</a>:</p>
 <div class="math notranslate nohighlight">
-\[dH = dU + P dV + V dP.\]</div>
+\[ dH = dU + P dV + V dP. \]</div>
 <p>С учетом выражения <a class="reference external" href="TD-6-Entropy.html#pvt-td-entropy-thermodynamic_identity">thermodynamic identity</a> его можно преобразовать к следующему виду:</p>
 <div class="math notranslate nohighlight">
-\[dH = T dS + V dP.\]</div>
+\[ dH = T dS + V dP. \]</div>
 <p>Следовательно,</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \left( \frac{\partial H}{\partial S} \right)_{P, N} = T; \\ \left( \frac{\partial H}{\partial P} \right)_{S, N} = V.\end{split}\]</div>
+\[\begin{split} \left( \frac{\partial H}{\partial S} \right)_{P, N} = T; \\ \left( \frac{\partial H}{\partial P} \right)_{S, N} = V. \end{split}\]</div>
 <p>Применим правило симметрии для второй частной производной энтальпии по энтропии и давлению:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial^2 H}{\partial S \partial P} = \frac{\partial}{\partial S} \left( \frac{\partial H}{\partial P} \right) = \frac{\partial}{\partial P} \left( \frac{\partial H}{\partial S} \right).\]</div>
+\[ \frac{\partial^2 H}{\partial S \partial P} = \frac{\partial}{\partial S} \left( \frac{\partial H}{\partial P} \right) = \frac{\partial}{\partial P} \left( \frac{\partial H}{\partial S} \right). \]</div>
 <p>Следовательно,</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial T}{\partial P} \right)_{S, N} = \left( \frac{\partial V}{\partial S} \right)_{P, N}.\]</div>
+\[ \left( \frac{\partial T}{\partial P} \right)_{S, N} = \left( \frac{\partial V}{\partial S} \right)_{P, N}. \]</div>
 <p>Или с учетом производной обратной функции:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial P}{\partial T} \right)_{S, N} = \left( \frac{\partial S}{\partial V} \right)_{P, N}.\]</div>
+\[ \left( \frac{\partial P}{\partial T} \right)_{S, N} = \left( \frac{\partial S}{\partial V} \right)_{P, N}. \]</div>
 <p>Данное выражение является <em><strong>третьим соотношением Максвелла</strong></em>.</p>
 <p><a id='pvt-td-maxwell_relations-fourth'></a>
 Наконец, для получения четвертого соотношения Максвелла запишем правило симметрии для второй частной производной энергии Гиббса <span class="math notranslate nohighlight">\(G\)</span> по температуре <span class="math notranslate nohighlight">\(T\)</span> и объему <span class="math notranslate nohighlight">\(V\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial^2 G}{\partial T \partial V} = \frac{\partial}{\partial T} \left( \frac{\partial G}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial G}{\partial T} \right).\]</div>
+\[ \frac{\partial^2 G}{\partial T \partial V} = \frac{\partial}{\partial T} \left( \frac{\partial G}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial G}{\partial T} \right). \]</div>
 <p>При выводе <a class="reference external" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-gibbs_partials">дифференциала энергии Гиббса</a> было показано, что</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align*} \left( \frac{\partial G}{\partial T} \right)_{P, N} &amp;= -S; \\ \left( \frac{\partial G}{\partial P} \right)_{T, N} &amp;= V. \end{align*} \end{split}\]</div>
 <p>С учетом этого получим:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial S}{\partial P} \right)_{T, N} = - \left( \frac{\partial V}{\partial T} \right)_{P, N}.\]</div>
+\[ \left( \frac{\partial S}{\partial P} \right)_{T, N} = - \left( \frac{\partial V}{\partial T} \right)_{P, N}. \]</div>
 <p>Данное выражение является <em><strong>четвертым соотношением Максвелла</strong></em>.</p>
 </div>
 

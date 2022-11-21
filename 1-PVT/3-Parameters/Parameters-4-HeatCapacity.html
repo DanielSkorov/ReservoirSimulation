@@ -751,35 +751,35 @@
 <p><a id='pvt-parameters-heat_capacity-ideal_gas'></a>
 Для получения значения изменения внутренней энергии и энтальпии в неизотермическом процессе необходимо вычислить интеграл изохорной и изобарной теплоемкостей системы при <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span> по температуре соотвественно. Если рассматриваемая система при низких значениях давления и рассматриваемых температурах может описываться уравнением состояния идеального газа, тогда:</p>
 <div class="math notranslate nohighlight">
-\[C_V^* = C_P^* - n R.\]</div>
+\[ C_V^* = C_P^* - n R. \]</div>
 <p>Изобарная теплоемкость при низких давлениях для некоторых веществ может рассматриваться как функция температуры в следующем виде:</p>
 <div class="math notranslate nohighlight">
-\[C_P^* = a + b T + c T^2 + d T^3 + e T^4.\]</div>
+\[ C_P^* = a + b T + c T^2 + d T^3 + e T^4. \]</div>
 <p>Коэффициенты в данном уравнении для некоторых чистых веществ могут быть найдены в различных публикациях и <a class="reference external" href="https://www.cheric.org/research/kdb/hcprop/cmpsrch.php">базах данных</a>. Кроме того, корреляции для расчета изобарной теплоемкости, энтальпии и энтропии компонентов, находящихся в состоянии идеального газа, могут быть найдены в работе [<a class="reference external" href="https://doi.org/10.1021/i260044a016">Passut and Danner, 1972</a>]. При этом, поскольку теплоемкость является экстенсивным параметром, то теплоемкость смеси на практике может быть рассчитана на основе известных теплоемкостей компонентов. При этом, данное правило применимо в том случае, когда на теплоемкость смеси не оказывает влияние межмолекулярное взаимодействие, или им можно пренебречь. Покажем, что приведенное выше выражение, связывающее между собой изохорную и изобарную теплоемкости, справедливо также и для <a class="reference external" href="../2-EOS/EOS-2-SRK-PR.html#pvt-eos-srk_pr">кубических уравнений состояния</a>.</p>
 <p>В общем виде соотношение между изохорной и изобарной теплоемкостями <a class="reference external" href="./Parameters-1-InternalEnergy.html#pvt-parameters-internal_energy-isobaric_isochoric_heat_capacities">записывается</a> в следующем виде:</p>
 <div class="math notranslate nohighlight">
-\[C_V = C_P - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i}.\]</div>
+\[ C_V = C_P - T \left( \frac{\partial V}{\partial T} \right)_{P, n_i} \left( \frac{\partial P}{\partial T} \right)_{V, n_i}. \]</div>
 <p>Если для идеального газа уравнение состояния записывается в виде <span class="math notranslate nohighlight">\(PV = n R T\)</span>, то для реальных систем вводится понятие коэффициента сверхсжимаемости, определяемого выражением:</p>
 <div class="math notranslate nohighlight">
-\[Z = \frac{PV}{nRT}.\]</div>
+\[ Z = \frac{PV}{nRT}. \]</div>
 <p>Запишем частные производные коэффициента сверхсжимаемости по температуре при постоянных давлении и объеме:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} = \frac{P}{nR} \frac{\partial}{\partial T} \left( \frac{V}{T} \right)_{P, n_i} = \frac{P}{nRT} \left( \frac{\partial V}{\partial T} \right)_{P, n_i} - \frac{PV}{nrT^2} = \frac{P}{nRT} \left( \frac{\partial V}{\partial T} \right)_{P, n_i} - \frac{Z}{T}; \\ \left( \frac{\partial Z}{\partial T} \right)_{V, n_i} = \frac{V}{nR} \frac{\partial}{\partial T} \left( \frac{P}{T} \right)_{V, n_i} = \frac{V}{nRT} \left( \frac{\partial P}{\partial T} \right)_{V, n_i} - \frac{PV}{nrT^2} = \frac{V}{nRT} \left( \frac{\partial P}{\partial T} \right)_{P, n_i} - \frac{Z}{T}.\end{split}\]</div>
 <p>Тогда частные производные объема и давления по температуре:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\left( \frac{\partial V}{\partial T} \right)_{P, n_i} = \frac{nR}{P} \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \right); \\ \left( \frac{\partial P}{\partial T} \right)_{V, n_i} = \frac{nR}{V} \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{V, n_i} \right).\end{split}\]</div>
+\[\begin{split} \left( \frac{\partial V}{\partial T} \right)_{P, n_i} = \frac{nR}{P} \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \right); \\ \left( \frac{\partial P}{\partial T} \right)_{V, n_i} = \frac{nR}{V} \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{V, n_i} \right). \end{split}\]</div>
 <p>Тогда соотношение между изохорной и изобарной теплоемкостями можно записать в следующем виде:</p>
 <div class="math notranslate nohighlight">
-\[C_V = C_P - \frac{nRT}{Z} \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \right) \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{V, n_i} \right).\]</div>
+\[ C_V = C_P - \frac{nRT}{Z} \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \right) \left( Z + T \left( \frac{\partial Z}{\partial T} \right)_{V, n_i} \right). \]</div>
 <p><a class="reference external" href="../2-EOS/EOS-2-SRK-PR.html#pvt-eos-srk_pr-Z_PT">Кубические уравнения состояния</a> относительно коэффициента сверхсжимаемости:</p>
 <div class="math notranslate nohighlight">
 \[ Z^3 - \left( 1 - c B \right) Z^2 + \left( A - \left( c + 1 \right) B - \left( 2 c + 1\right) B^2 \right) Z^2 - \left( A B - c \left( B^2 + B^3 \right) \right) = 0. \]</div>
 <p>Параметры <span class="math notranslate nohighlight">\(A\)</span> и <span class="math notranslate nohighlight">\(B\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \begin{align*} A &amp;= \frac{\alpha_m P}{R^2 T^2}; \\ B &amp;= \frac{b_m P}{R T}. \end{align*}\end{split}\]</div>
+\[\begin{split} \begin{align*} A &amp;= \frac{\alpha_m P}{R^2 T^2}; \\ B &amp;= \frac{b_m P}{R T}. \end{align*} \end{split}\]</div>
 <p>При <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span> параметры <span class="math notranslate nohighlight">\(A \rightarrow 0\)</span> и <span class="math notranslate nohighlight">\(B \rightarrow 0\)</span>. Тогда уравнение состояния относительно коэффициента сверхсжимаемости:</p>
 <div class="math notranslate nohighlight">
-\[Z^3 - Z^2 = 0.\]</div>
+\[ Z^3 - Z^2 = 0. \]</div>
 <p>То есть коэффициент сверхсжимаемости <span class="math notranslate nohighlight">\(Z \rightarrow 1\)</span> при <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span>. Поскольку коэффициент сверсхжимаемости становится равным константе, то его частные производные по температуре становятся равными нулю. Тогда соотношение между изохорной и изобарной теплоемкостью будет записываться аналогично соотношению, полученному при использовании уравнения состояния идеального газа. Таким образом, <span class="math notranslate nohighlight">\(C_V^* = C_P^* - n R\)</span> свойственно и для систем, для которых применимы кубические уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона.</p>
 <div class="admonition-nb admonition">
 <p class="admonition-title">NB</p>

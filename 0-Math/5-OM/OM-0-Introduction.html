@@ -43,8 +43,6 @@
     <script src="../../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
     <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
@@ -54,7 +52,7 @@
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Нахождение стационарной точки функции методом Ньютона" href="OM-1-Newton.html" />
+    <link rel="next" title="Нахождение стационарной точки функции методом градиентного спуска" href="OM-1-GradientDescent.html" />
     <link rel="prev" title="Дифференциальные уравнения" href="../4-DE/DE-0-Introduction.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -183,22 +181,27 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="OM-1-Newton.html">
+    <a class="reference internal" href="OM-1-GradientDescent.html">
+     Нахождение стационарной точки функции методом градиентного спуска
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="OM-2-Newton.html">
      Нахождение стационарной точки функции методом Ньютона
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="OM-2-QNewton.html">
+    <a class="reference internal" href="OM-3-QNewton.html">
      Квази-ньютоновские методы поиска стационарной точки функции
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="OM-3-TR.html">
+    <a class="reference internal" href="OM-4-TR.html">
      Метод доверительной области
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="OM-4-Tunneling.html">
+    <a class="reference internal" href="OM-5-Tunneling.html">
      Туннельный метод оптимизации функции
     </a>
    </li>
@@ -673,10 +676,11 @@
 <p>Данный раздел посвящен изложению некоторых численных методов оптимизации: поиска стационарных точек функции, а также глобальных минимума и максимума функции, которые будут использовать в дальнейшем для решения задач моделирования.</p>
 <p><strong>Содержание:</strong></p>
 <ul class="simple">
-<li><p><a class="reference external" href="./OM-1-Newton.html#math-om-newton">Нахождение стационарной точки функции методом Ньютона</a></p></li>
-<li><p><a class="reference external" href="./OM-2-QNewton.html#math-om-qnewton">Квази-ньютоновские методы поиска стационарной точки функции</a></p></li>
-<li><p><a class="reference external" href="./OM-3-TR.html#math-om-tr">Метод доверительной области</a></p></li>
-<li><p><a class="reference external" href="./OM-4-Tunneling.html#math-om-tunneling">Туннельный метод оптимизации функции</a></p></li>
+<li><p><a class="reference internal" href="OM-1-GradientDescent.html"><span class="doc std std-doc">Нахождение стационарной точки методом градиентного спуска</span></a></p></li>
+<li><p><a class="reference internal" href="OM-2-Newton.html"><span class="doc std std-doc">Нахождение стационарной точки методом Ньютона</span></a></p></li>
+<li><p><a class="reference internal" href="OM-3-QNewton.html"><span class="doc std std-doc">Квази-ньютоновские методы поиска стационарной точки функции</span></a></p></li>
+<li><p><a class="reference internal" href="OM-4-TR.html"><span class="doc std std-doc">Метод доверительной области</span></a></p></li>
+<li><p><a class="reference internal" href="OM-5-Tunneling.html"><span class="doc std std-doc">Туннельный метод оптимизации функции</span></a></p></li>
 </ul>
 <div class="toctree-wrapper compound">
 </div>
@@ -714,10 +718,10 @@
             <p class="prev-next-title">Дифференциальные уравнения</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="OM-1-Newton.html" title="next page">
+    <a class='right-next' id="next-link" href="OM-1-GradientDescent.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Нахождение стационарной точки функции методом Ньютона</p>
+        <p class="prev-next-title">Нахождение стационарной точки функции методом градиентного спуска</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

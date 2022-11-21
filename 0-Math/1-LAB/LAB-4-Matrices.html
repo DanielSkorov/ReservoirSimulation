@@ -43,8 +43,6 @@
     <script src="../../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
     <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
@@ -185,22 +183,27 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../5-OM/OM-1-Newton.html">
+    <a class="reference internal" href="../5-OM/OM-1-GradientDescent.html">
+     Нахождение стационарной точки функции методом градиентного спуска
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../5-OM/OM-2-Newton.html">
      Нахождение стационарной точки функции методом Ньютона
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../5-OM/OM-2-QNewton.html">
+    <a class="reference internal" href="../5-OM/OM-3-QNewton.html">
      Квази-ньютоновские методы поиска стационарной точки функции
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../5-OM/OM-3-TR.html">
+    <a class="reference internal" href="../5-OM/OM-4-TR.html">
      Метод доверительной области
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../5-OM/OM-4-Tunneling.html">
+    <a class="reference internal" href="../5-OM/OM-5-Tunneling.html">
      Туннельный метод оптимизации функции
     </a>
    </li>
@@ -686,7 +689,7 @@
 </div>
 </div><p>Рассмотрим следующую матрицу:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}M = \begin{bmatrix} 3 &amp; 5 &amp; -17 \\ -1 &amp; 0 &amp; 10 \end{bmatrix}.\end{split}\]</div>
+\[\begin{split} M = \begin{bmatrix} 3 &amp; 5 &amp; -17 \\ -1 &amp; 0 &amp; 10 \end{bmatrix}. \end{split}\]</div>
 <p>С использованием <em><a class="reference external" href="https://numpy.org/">numpy</a></em> матрица задается следующим образом:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -715,7 +718,7 @@
 </div>
 </div>
 </div>
-<p>Если в матрице количество строк и/или столбцов равно 1, то такая матрица называется <em><strong>вектором</strong></em>. Данная тема подробно освещалась в <a class="reference external" href="./LAB-1-Vectors.html#math-lab-vector">разделе, посвященном векторам</a>.</p>
+<p>Если в матрице количество строк и/или столбцов равно 1, то такая матрица называется <em><strong>вектором</strong></em>. Данная тема подробно освещалась в <a class="reference internal" href="LAB-1-Vectors.html"><span class="doc std std-doc">разделе, посвященном векторам</span></a>.</p>
 <p>Чтобы <em><strong>умножить матрицу на число</strong></em>, необходимо умножить каждый ее элемент на данное число:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \lambda \cdot M = \lambda \cdot \begin{bmatrix} m_{11} &amp; \dots &amp; m_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ m_{n1} &amp; \dots &amp; m_{nk} \end{bmatrix} = \begin{bmatrix} \lambda \cdot m_{11} &amp; \dots &amp; \lambda \cdot m_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ \lambda \cdot m_{n1} &amp; \dots &amp; \lambda \cdot m_{nk} \end{bmatrix}. \end{split}\]</div>
