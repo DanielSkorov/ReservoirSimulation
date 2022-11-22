@@ -245,7 +245,7 @@ G2 = np.sum(z * mr1.eos_run(z, P, T, points * 'g').lnf, axis=1)
 # In[8]:
 
 
-flash1 = flash_isothermal_ssi(mr1, np.array([0.2, 0.8])).flash_isothermal_ssi_run(P, T, phases='og')
+flash1 = flash_isothermal_ssi(mr1, np.array([0.2, 0.8]), ssi_use_opt=True).flash_isothermal_ssi_run(P, T, phases='og')
 G = np.sum(np.array([G1, G2]) * flash1.F, axis=0)
 L1 = np.sum(z * flash1.eos.lnf[0], axis=1)
 L2 = np.sum(z * flash1.eos.lnf[1], axis=1)
@@ -253,7 +253,7 @@ L = np.sum(np.array([L1, L2]) * flash1.F, axis=0)
 D = G - L
 
 
-# In[ ]:
+# In[9]:
 
 
 plt.rcParams.update({'figure.max_open_warning': False})
@@ -279,13 +279,13 @@ ax1[1].set_ylim(0, 1)
 fig1.tight_layout()
 
 
-# In[ ]:
+# In[10]:
 
 
 flash1.comp_mole_frac
 
 
-# In[ ]:
+# In[11]:
 
 
 flash1.residuals
@@ -300,14 +300,14 @@ flash1.residuals
 
 # Сначала зададим все исходные данные.
 
-# In[ ]:
+# In[12]:
 
 
 P = 5.0 * 10**6
 T = 343.15
 
 
-# In[ ]:
+# In[13]:
 
 
 Pc = np.array([4.6, 2.95, 22.05])*10**6
@@ -365,15 +365,14 @@ comp_type = np.array([1, 1, 2])
 #         </tr>
 #     </tbody>
 # </table>
-# +++
 
-# In[ ]:
+# In[14]:
 
 
 alpha_matrix = np.array([[0.0, 0.0, 1.0, 0.0], [2/8, 6/8, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
 
 
-# In[ ]:
+# In[15]:
 
 
 groups = [1, 2, 5, 21]
@@ -381,7 +380,7 @@ Akl = df_a.loc[groups, groups].to_numpy(dtype=np.float64) * 10**6
 Bkl = df_b.loc[groups, groups].to_numpy(dtype=np.float64) * 10**6
 
 
-# In[ ]:
+# In[16]:
 
 
 mr2 = eos_sw(Pc, Tc, w, comp_type, Akl=Akl, Bkl=Bkl, alpha_matrix=alpha_matrix)
@@ -389,7 +388,7 @@ mr2 = eos_sw(Pc, Tc, w, comp_type, Akl=Akl, Bkl=Bkl, alpha_matrix=alpha_matrix)
 
 # Пусть данная система является однофазной, тогда мольные доли в равновесном состоянии однофазной системы соответствуют заданным глобальным мольным долям $z_i$. Для данной системы с использованием уравнения состояния Сорейде-Уитсона выполним расчет логарифмов летучести компонентов.
 
-# In[ ]:
+# In[17]:
 
 
 eos2 = mr2.eos_run(np.array([z]), P, T, 'w', cw=0.0)
@@ -397,7 +396,7 @@ eos2 = mr2.eos_run(np.array([z]), P, T, 'w', cw=0.0)
 
 # Построим поверхность приведенной энергии Гиббса.
 
-# In[ ]:
+# In[18]:
 
 
 zi, zj = np.mgrid[1e-8:1-1e-8:50j, 1e-8:1-1e-8:50j]
@@ -413,7 +412,7 @@ zz = zz / np.sum(zz, axis=1).reshape(points, 1)
 G = np.sum(zz * mr2.eos_run(zz, P, T, points * 'w', cw=0.0).lnf, axis=1)
 
 
-# In[ ]:
+# In[19]:
 
 
 from plotly import figure_factory as ff
@@ -424,7 +423,7 @@ ff.create_ternary_contour(np.stack((zz[:,0], zz[:,1], zz[:,2])), G, pole_labels=
 
 # Рассчитаем функцию $D \left( \vec{r^j} \right)$ и построим ее в тех же координатах.
 
-# In[ ]:
+# In[20]:
 
 
 D = G - np.sum(eos2.lnf * zz, axis=1)
@@ -435,39 +434,39 @@ fig2.add_trace(go.Scatterternary(a=[z[0]], b=[z[1]], c=[z[2]], mode='markers', m
 
 # Из данного рисунка видно, что несмотря на то, что в точке предполагаемого равновесного состояния функция $D \left( \vec{r} \right)$ равняется нулю, она имеет отрицательные значения в других значениях компонентного состава. То есть касательная к поверхности энергии Гиббса пересекает ее, следовательно, сделанное предположение о том, что система находится в равновесии при наличии одной фазы, неверно. Тогда пусть система находится в равновесии при ее двухфазном состоянии. Выполним расчет равновесного состояния с использованием метода минимизации энергии Гиббса. Также посчитаем приведенную энергию Гиббса и функцию $\sum_{j=1}^{N_p} D \left( \vec{r^j} \right)$.
 
-# In[ ]:
+# In[21]:
 
 
 flash2 = flash_isothermal_ssi(mr2, z).flash_isothermal_ssi_run(P, T, phases='ow', cw=0.0)
 
 
-# In[ ]:
+# In[22]:
 
 
 flash2.residuals
 
 
-# In[ ]:
+# In[23]:
 
 
 G1 = np.sum(zz * mr2.eos_run(zz, P, T, points * 'o', cw=0.0).lnf, axis=1)
 G2 = np.sum(zz * mr2.eos_run(zz, P, T, points * 'w', cw=0.0).lnf, axis=1)
 
 
-# In[ ]:
+# In[24]:
 
 
 G = np.sum(np.array([G1, G2]) * flash2.F, axis=0)
 
 
-# In[ ]:
+# In[25]:
 
 
 ff.create_ternary_contour(np.stack((zz[:,0], zz[:,1], zz[:,2])), G, pole_labels=['$CH_4$', '$C_8H_{18}$', '$H_2O$'], ncontours=20, colorscale='Viridis', interp_mode='cartesian',
                           showscale=True, title=r'$ \text{Приведенная энергия Гиббса} \; \sum_{j=1}^{N_p} \tilde{G} \left( \vec{r^j} \right)$')
 
 
-# In[ ]:
+# In[26]:
 
 
 L = np.sum(flash2.eos.lnf[0] * zz, axis=1)
@@ -475,7 +474,7 @@ L = np.sum(np.array([L, L]) * flash2.F, axis=0)
 D = G - L
 
 
-# In[ ]:
+# In[27]:
 
 
 fig2 = ff.create_ternary_contour(np.stack((zz[:,0], zz[:,1], zz[:,2])), D, pole_labels=['$CH_4$', '$C_8H_{18}$', '$H_2O$'], ncontours=20, colorscale='Viridis', interp_mode='cartesian', showscale=True,
@@ -485,32 +484,32 @@ fig2.add_trace(go.Scatterternary(a=flash2.y.T[0], b=flash2.y.T[1], c=flash2.y.T[
 
 # Функция $\sum_{j=1}^{N_p} D \left( \vec{r^j} \right)$ имеет отрицательные значения. Следовательно, рассматриваемое двухфазное состояние не является равновесным. Выполним расчет равновесного состояния, предположив наличие трех фаз в системе.
 
-# In[ ]:
+# In[28]:
 
 
 flash3 = flash_isothermal_ssi(mr2, z).flash_isothermal_ssi_run(P, T, phases='gow', cw=0.0)
 
 
-# In[ ]:
+# In[29]:
 
 
 flash3.residuals
 
 
-# In[ ]:
+# In[30]:
 
 
 G = np.sum(np.array([G1, G1, G2]) * flash3.F, axis=0)
 
 
-# In[ ]:
+# In[31]:
 
 
 ff.create_ternary_contour(np.stack((zz[:,0], zz[:,1], zz[:,2])), G, pole_labels=['$CH_4$', '$C_8H_{18}$', '$H_2O$'], ncontours=20, colorscale='Viridis', interp_mode='cartesian',
                           showscale=True, title=r'$ \text{Приведенная энергия Гиббса} \; \sum_{j=1}^{N_p} \tilde{G} \left( \vec{r^j} \right)$')
 
 
-# In[ ]:
+# In[32]:
 
 
 L = np.sum(flash3.eos.lnf[0] * zz, axis=1)
@@ -518,7 +517,7 @@ L = np.sum(np.array([L, L, L]) * flash3.F, axis=0)
 D = G - L
 
 
-# In[ ]:
+# In[33]:
 
 
 fig2 = ff.create_ternary_contour(np.stack((zz[:,0], zz[:,1], zz[:,2])), D, pole_labels=['$CH_4$', '$C_8H_{18}$', '$H_2O$'], ncontours=20, colorscale='Viridis', interp_mode='cartesian', showscale=True,
@@ -528,13 +527,13 @@ fig2.add_trace(go.Scatterternary(a=flash3.y.T[0], b=flash3.y.T[1], c=flash3.y.T[
 
 # Функция $\sum_{j=1}^{N_p} D \left( \vec{r^j} \right)$ для трехфазного состояния неотрицательна, следовательно, оно является равновесным. Красным на рисунке отмечены компонентные составы фаз:
 
-# In[ ]:
+# In[34]:
 
 
 flash3.comp_mole_frac
 
 
-# In[ ]:
+# In[35]:
 
 
 np.all(D >= 0)
@@ -715,7 +714,7 @@ np.all(D >= 0)
 
 # Проиллюстрируем данный вывод на следующем примере. Ранее было показано, что трехфазное состояние системы из метана, нормального октана и воды является равновесным, поскольку в этом состоянии касательная к энергии Гиббса $\sum_{j=1}^{N_p} G \left( \vec{m^k} \right)$ не пересекает саму функцию энергии Гиббса, то есть функция $\sum_{j=1}^{N_p} D \left( \vec{m^k} \right)$ неотрицательна. Построим функцию $ D \left( \vec{m^k} \right)$ для водной фазы.
 
-# In[ ]:
+# In[36]:
 
 
 Dw = G2 - L
@@ -726,7 +725,7 @@ fig2.add_trace(go.Scatterternary(a=[flash3.y[-1][0]], b=[flash3.y[-1][1]], c=[fl
 
 # На данном рисунке видно, что касательная, проведенная к энергии Гиббса в точке равновесного состояния системы, пересекает поверхность энергии Гиббса для водной фазы. При этом, минимальная энергия Гиббса водной фазы характеризуется следующим компонентным составом:
 
-# In[ ]:
+# In[37]:
 
 
 zz[np.argmin(G2)]
@@ -742,7 +741,7 @@ zz[np.argmin(G2)]
 # 
 # С использованием изложенного выше алгоритма выполним проверку стабильности фазового состояния для рассмотренного ранее [примера](#pvt-esc-stability-ex2). Для этого создадим класс для определения стабильности фазового состояния системы.
 
-# In[ ]:
+# In[38]:
 
 
 class equilibrium_isothermal(flash_isothermal_gibbs):
@@ -936,7 +935,7 @@ class equilibrium_isothermal(flash_isothermal_gibbs):
         return flash0
 
 
-# In[ ]:
+# In[39]:
 
 
 equil1 = equilibrium_isothermal(mr2, derivatives_eos_2param, z, ssi_switch=True)
@@ -944,7 +943,7 @@ equil1 = equilibrium_isothermal(mr2, derivatives_eos_2param, z, ssi_switch=True)
 
 # Проверка стабильности фазового состояния будет проводиться для следующих вариантов фазового состояния данной системы.
 
-# In[ ]:
+# In[40]:
 
 
 equil1.stab_phase_states
@@ -952,13 +951,13 @@ equil1.stab_phase_states
 
 # Если ни одно из них не удовлетворит условиям стабильности, следовательно, рассматриваемая система будет являться трехфазной, согласно [правилу фаз Гиббса](../1-TD/TD-11-GibbsPhaseRule.html#pvt-td-gibbs_phase_rule).
 
-# In[ ]:
+# In[41]:
 
 
 flash4 = equil1.equilibrium_isothermal_run(P, T, cw=0.0)
 
 
-# In[ ]:
+# In[42]:
 
 
 flash4.states_checked
@@ -966,13 +965,13 @@ flash4.states_checked
 
 # Все возможные фазовые состояния системы были рассмотрены и оказались нестабильными. Следовательно, система представлена тремя фазами.
 
-# In[ ]:
+# In[43]:
 
 
 flash4.comp_mole_frac
 
 
-# In[ ]:
+# In[44]:
 
 
 flash4.residuals
@@ -996,14 +995,14 @@ flash4.residuals
 # 
 # Для начала зададим исходные данные.
 
-# In[ ]:
+# In[45]:
 
 
 P = 20.0 * 10**6
 T = 323.15
 
 
-# In[ ]:
+# In[46]:
 
 
 Pc = np.array([4.600155, 2.950584, 0.7234605, 22.04832]) * 10**6
@@ -1014,26 +1013,26 @@ z = np.array([0.35, 0.25, 0.15, 0.25])
 comp_type = np.array([0, 0, 0, 2])
 
 
-# In[ ]:
+# In[47]:
 
 
 mr3 = eos_srk_pr(Pc, Tc, w, comp_type, c=1, vc=vc)
 
 
-# In[ ]:
+# In[48]:
 
 
-equil2 = equilibrium_isothermal(mr3, derivatives_eos_2param, z, ssi_switch=True, stab_update_kv=True, stab_include_water=True, stab_onephase_only=True, stab_max_phases=4, ssi_use_opt=True)
+equil2 = equilibrium_isothermal(mr3, derivatives_eos_2param, z, ssi_switch=True, stab_update_kv=True, stab_include_water=True, stab_onephase_only=True, stab_max_phases=4, ssi_use_opt=True, ssi_rr_newton=True)
 
 
-# In[ ]:
+# In[49]:
 
 
 flash5 = equil2.equilibrium_isothermal_run(P, T)
 flash5.comp_mole_frac
 
 
-# In[ ]:
+# In[50]:
 
 
 flash5.states_checked

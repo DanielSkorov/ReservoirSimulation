@@ -17,7 +17,7 @@ kernelspec:
 from matplotlib import pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': False})
 
-# %matplotlib widget
+%matplotlib widget
 
 import numpy as np
 ```

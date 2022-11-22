@@ -7,7 +7,7 @@
 from matplotlib import pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': False})
 
-# %matplotlib widget
+get_ipython().run_line_magic('matplotlib', 'widget')
 
 import numpy as np
 

@@ -668,7 +668,7 @@ class derivatives_parameters_2param(parameters_2param):
 
 class flash_isothermal_ssi(core):
     def __init__(self, mr, z, ssi_rr_eps=1e-8, ssi_eq_eps=1e-8, ssi_use_opt=False, ssi_negative_flash=False, ssi_eq_max_iter=300,
-                 ssi_eps_r=0.6, ssi_eps_v=1e-2, ssi_eps_l=1e-5, ssi_eps_u=1e-3, ssi_switch=False, full_output=True, ssi_rr_newton=True):
+                 ssi_eps_r=0.6, ssi_eps_v=1e-2, ssi_eps_l=1e-5, ssi_eps_u=1e-3, ssi_switch=False, full_output=True, ssi_rr_newton=False):
         self.z = z
         self.mr = mr
         self.ssi_rr_eps = ssi_rr_eps
@@ -771,9 +771,9 @@ class flash_isothermal_ssi(core):
         while np.all(np.abs(eq) > self.ssi_rr_eps):
             ti = 1 - np.sum(x * kv, axis=0)
             eq = np.sum(kv * self.z / ti, axis=1).reshape(Np, 1)
-            # print('eq', eq)
+            # print('rr. gradient: eq', eq)
             grad = np.sum(kv.reshape(Np, 1, Nc) * kv.reshape(1, Np, Nc) * self.z / ti**2, axis=2)
-            # print('grad', grad)
+            # print('rr. gradient: grad', grad)
             if two_phase:
                 x = x - eq / grad
             else:
@@ -895,6 +895,7 @@ class flash_isothermal_ssi(core):
             # print('F0', F)
             # print(kv, np.max(np.abs(residuals)))
             while (np.abs(residuals) > self.ssi_eq_eps).any() and it < self.ssi_eq_max_iter:
+                # print('iter', it)
                 # print('kv', kv)
                 if self.ssi_rr_newton:
                     F = self.calc_rr_newton(kv, F)
@@ -914,10 +915,10 @@ class flash_isothermal_ssi(core):
                 residuals_prev = residuals
                 residuals = np.log(kv) + eos.lnphi[:-1] - eos.lnphi[-1]
                 if self.ssi_use_opt:
-                    lambda_pow = - lambda_pow * np.sum(residuals_prev**2) / (np.sum(residuals_prev * residuals) - np.sum(residuals_prev**2))
-                    kv = kv * np.exp(residuals)**(-lambda_pow)
+                    lambda_pow *= - np.sum(residuals_prev**2) / (np.sum(residuals_prev * residuals) - np.sum(residuals_prev**2))
+                    kv *= np.exp(residuals)**(-lambda_pow)
                 else:
-                    kv = kv * np.exp(residuals)
+                    kv *= np.exp(residuals)**-1
                 # print('residuals', np.max(np.abs(residuals)))
                 it += 1
                 if self.ssi_switch and it > 1:
