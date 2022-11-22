@@ -14,9 +14,9 @@ sphinx:
   extra_extensions:
     - sphinx_proof
 
-# repository:
-#   url: "https://github.com/DanielSkorov/Basics-of-Modelling"
-#   branch: "main"
+repository:
+  url: "https://github.com/DanielSkorov/Basics-of-Modelling"
+  branch: "main"
 
-# launch_buttons:
-#   thebe: true
+launch_buttons:
+  thebe: true
