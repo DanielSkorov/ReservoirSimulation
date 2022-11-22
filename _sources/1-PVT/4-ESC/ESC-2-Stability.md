@@ -255,7 +255,7 @@ G2 = np.sum(z * mr1.eos_run(z, P, T, points * 'g').lnf, axis=1)
 Выполняем расчет равновесного состояния с использованием изотермического метода последовательных подстановок. Рассчитываем уравнения касательных для каждой фазы по летучестям (или химическим потенциалам) компонентов в равновесном состоянии. Определяем разницу между энергией Гиббса системы в каждой точке и значением касательной к ней в равновесном состоянии.
 
 ```{code-cell} python
-flash1 = flash_isothermal_ssi(mr1, np.array([0.2, 0.8])).flash_isothermal_ssi_run(P, T, phases='og')
+flash1 = flash_isothermal_ssi(mr1, np.array([0.2, 0.8]), ssi_use_opt=True).flash_isothermal_ssi_run(P, T, phases='og')
 G = np.sum(np.array([G1, G2]) * flash1.F, axis=0)
 L1 = np.sum(z * flash1.eos.lnf[0], axis=1)
 L2 = np.sum(z * flash1.eos.lnf[1], axis=1)
@@ -325,7 +325,6 @@ z = np.array([0.2, 0.3, 0.5])
 comp_type = np.array([1, 1, 2])
 ```
 
-+++
 <style type="text/css">
 .tb  {border-color:#ccc;border-spacing:0px;margin:20px auto}
 .tb td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:1px;color:#333;
@@ -374,7 +373,6 @@ comp_type = np.array([1, 1, 2])
         </tr>
     </tbody>
 </table>
-+++
 
 ```{code-cell} python
 alpha_matrix = np.array([[0.0, 0.0, 1.0, 0.0], [2/8, 6/8, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
@@ -980,7 +978,7 @@ mr3 = eos_srk_pr(Pc, Tc, w, comp_type, c=1, vc=vc)
 ```
 
 ```{code-cell} python
-equil2 = equilibrium_isothermal(mr3, derivatives_eos_2param, z, ssi_switch=True, stab_update_kv=True, stab_include_water=True, stab_onephase_only=True, stab_max_phases=4, ssi_use_opt=True)
+equil2 = equilibrium_isothermal(mr3, derivatives_eos_2param, z, ssi_switch=True, stab_update_kv=True, stab_include_water=True, stab_onephase_only=True, stab_max_phases=4, ssi_use_opt=True, ssi_rr_newton=True)
 ```
 
 ```{code-cell} python
