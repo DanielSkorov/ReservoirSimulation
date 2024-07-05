@@ -101,9 +101,9 @@ $$ \left( \frac{\partial P}{\partial T} \right)_{S, N} = \left( \frac{\partial S
 +++
 
 <a id='pvt-td-maxwell_relations-fourth'></a>
-Наконец, для получения четвертого соотношения Максвелла запишем правило симметрии для второй частной производной энергии Гиббса $G$ по температуре $T$ и объему $V$:
+Наконец, для получения четвертого соотношения Максвелла запишем правило симметрии для второй частной производной энергии Гиббса $G$ по температуре $T$ и давлению $P$:
 
-$$ \frac{\partial^2 G}{\partial T \partial V} = \frac{\partial}{\partial T} \left( \frac{\partial G}{\partial V} \right) = \frac{\partial}{\partial V} \left( \frac{\partial G}{\partial T} \right). $$
+$$ \frac{\partial^2 G}{\partial T \partial P} = \frac{\partial}{\partial T} \left( \frac{\partial G}{\partial P} \right) = \frac{\partial}{\partial P} \left( \frac{\partial G}{\partial T} \right). $$
 
 При выводе [дифференциала энергии Гиббса](TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtz_gibbs-gibbs_partials) было показано, что
 
