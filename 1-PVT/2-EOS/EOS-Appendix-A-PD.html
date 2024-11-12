@@ -1,770 +1,404 @@
 
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" data-content_root="../../" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>Частные производные летучести компонентов &#8212; Основы моделирования пластовых систем</title>
-    
-  <link href="../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
-    
-  <link rel="stylesheet"
-    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    
-      
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=2db6e6e7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
-    
-  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
-
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/togglebutton.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
-    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
-    <script >
-        const thebe_selector = ".thebe,.cell"
-        const thebe_selector_input = "pre,.cell_input div.highlight"
-        const thebe_selector_output = ".output,.cell_output"
-    </script>
-    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/2-EOS/EOS-Appendix-A-PD';</script>
+    <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Универсальный расчет коэффициентов попарного взаимодействия" href="EOS-Appendix-B-BIP.html" />
-    <link rel="prev" title="Кубическое уравнение состояние с учетом ассоциации молекул" href="EOS-6-CPA.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+    <link rel="prev" title="Кубическое уравнение состояние с учетом ассоциации молекул" href="EOS-3-CPA.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
     
-        <div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../../index.html">
-      
-      
-      
-      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../Introduction.html">
-   Основы моделирования пластовых систем
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Основы вычислительной математики
- </span>
-</p>
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../Introduction.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Основы моделирования пластовых систем</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../Introduction.html">
+                    Основы моделирования пластовых систем
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Основы вычислительной математики</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
-   Введение
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
-   Основы линейной алгебры
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
-     Вектор. Координаты вектора
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
-     Операции с векторами
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
-     Направляющие косинусы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
-     Матрицы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
-     Определитель матрицы. Обратная матрица
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
-     Матричные уравнения
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
-     Собственные векторы и значения матриц
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
-     Линейные преобразования
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
-   Пределы
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
-   Основы дифференциальных и интегральных исчислений
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
-   Дифференциальные уравнения
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
-   Методы оптимизации функций
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-1-GradientDescent.html">
-     Нахождение стационарной точки функции методом градиентного спуска
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-2-Newton.html">
-     Нахождение стационарной точки функции методом Ньютона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-3-QNewton.html">
-     Квази-ньютоновские методы поиска стационарной точки функции
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-4-TR.html">
-     Метод доверительной области
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-5-Tunneling.html">
-     Туннельный метод оптимизации функции
-    </a>
-   </li>
-  </ul>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../../0-Math/Math-Introduction.html">Введение</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../0-Math/0-LAB/LAB-0-Introduction.html">Основы линейной алгебры</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-1-Vectors.html">Вектор. Координаты вектора</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-2-VectorOperations.html">Операции с векторами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-4-Matrices.html">Матрицы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  PVT-моделирование
- </span>
-</p>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PVT-моделирование</span></p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../PVT-Introduction.html">
-   Введение
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../1-TD/TD-0-Introduction.html">
-   Основы термодинамики
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-1-Basics.html">
-     Введение в термодинамику
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">
-     Термическое равновесие. Температура. Нулевое начало термодинамики
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">
-     Количество теплоты и работа. Первое начало термодинамики
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">
-     Теплоемкость
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">
-     Энтальпия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-6-Entropy.html">
-     Энтропия. Второе и третье начала термодинамики
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">
-     Химический потенциал
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">
-     Энергия Гельмгольца. Энергия Гиббса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-9-Observables.html">
-     Интенсивные и экстенсивные параметры
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">
-     Энергия Гиббса многокомпонентной системы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">
-     Правило фаз Гиббса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">
-     Уравнение Гиббса-Дюгема
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">
-     Соотношения Максвелла
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">
-     Свободная энергия и фазовое равновесие
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../1-TD/TD-15-Fugacity.html">
-     Летучесть
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="EOS-0-Introduction.html">
-   Уравнения состояния
-  </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-  <label for="toctree-checkbox-4">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="current">
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-1-VanDerWaals.html">
-     Уравнение состояния Ван-дер-Ваальса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-2-SRK-PR.html">
-     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-3-SW.html">
-     Уравнение состояния Сорейде-Уитсона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-4-SAFT.html">
-     Теория SAFT
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-5-PCSAFT.html">
-     Уравнение состояния PC-SAFT
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-6-CPA.html">
-     Кубическое уравнение состояние с учетом ассоциации молекул
-    </a>
-   </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     Частные производные летучести компонентов
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="EOS-Appendix-B-BIP.html">
-     Универсальный расчет коэффициентов попарного взаимодействия
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../3-Parameters/Parameters-0-Introduction.html">
-   Определение параметров систем с использованием уравнений состояния
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-  <label for="toctree-checkbox-5">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-1-InternalEnergy.html">
-     Внутренняя энергия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-2-Enthalpy.html">
-     Энтальпия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-3-Entropy.html">
-     Энтропия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-4-HeatCapacity.html">
-     Теплоемкость
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-5-ChemicalPotential.html">
-     Химический потенциал
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-6-GibbsEnergy.html">
-     Энергия Гиббса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-7-HelmholtzEnergy.html">
-     Энергия Гельмгольца
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
-     Коэффициент сжимаемости. Коэффициент термического расширения
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
-     Коэффициент Джоуля-Томсона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-Appendix-A-PD.html">
-     Частные производные термодинамических параметров
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../4-ESC/ESC-0-Introduction.html">
-   Равновесие. Стабильность. Критическое состояние
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-  <label for="toctree-checkbox-6">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../4-ESC/ESC-1-Equilibrium.html">
-     Определение равновесного состояния системы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../4-ESC/ESC-2-Stability.html">
-     Определение стабильности фазового состояния системы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../4-ESC/ESC-3-Criticality.html">
-     Определение критического состояния системы
-    </a>
-   </li>
-  </ul>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../PVT-Introduction.html">Введение</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../1-TD/TD-0-Introduction.html">Основы термодинамики</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-1-Basics.html">Введение в термодинамику</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">Теплоемкость</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">Энтальпия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">Химический потенциал</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-15-Fugacity.html">Летучесть</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  Гидродинамика
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
-   Введение
-  </a>
- </li>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="EOS-0-Introduction.html">Уравнения состояния</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="EOS-1-VanDerWaals.html">Уравнение состояния Ван-дер-Ваальса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EOS-2-SRK-PR.html">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Частные производные летучести компонентов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  Инициализация модели пласта
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
-   Введение
-  </a>
- </li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3-SEC/SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../3-SEC/SEC-2-Equilibrium.html">Определение равновесного состояния системы</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  Моделирование скважин
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
-   Введение
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Геомеханика
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../5-Geomechanics/Geomech-Introduction.html">
-   Введение
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-0-Introduction.html">
-   Основы геомеханики
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-  <label for="toctree-checkbox-7">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions.html">
-     Напряженно-деформированное состояние. Допущения и условия теории упругости
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-2-StressTensor.html">
-     Напряжение. Тензор напряжений
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
-     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
-     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
-     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust.html">
-     Напряженное состояние в земной коре
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../5-Geomechanics/2-ARG/ARG-0-Introduction.html">
-   Основные вопросы геомеханического моделирования
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Геохимия
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
-   Введение
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Численные методы в гидродинамическом моделировании
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
-   Введение
-  </a>
- </li>
+</details></li>
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
-            
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        <a class="dropdown-buttons"
-            href="../../_sources/1-PVT/2-EOS/EOS-Appendix-A-PD.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
-                data-placement="left">.ipynb</button></a>
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/1-PVT/2-EOS/EOS-Appendix-A-PD.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+</nav></div>
     </div>
-</div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
 
-            <!-- Source interaction buttons -->
 
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
-    <div class="dropdown-buttons">
-        
-        <a class="binder-button" href="https://mybinder.org/v2/gh/DanielSkorov/Basics-of-Modelling/main?urlpath=tree/1-PVT/2-EOS/EOS-Appendix-A-PD.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
-                data-placement="left"><img class="binder-button-logo"
-                    src="../../_static/images/logo_binder.svg"
-                    alt="Interact on binder">Binder</button></a>
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
         
         
-        
-        <button type="button" class="btn btn-secondary topbarbtn"
-            onclick="initThebeSBT()" title="Launch Thebe" data-toggle="tooltip" data-placement="left"><i
-                class="fas fa-play"></i><span style="margin-left: .4em;">Live Code</span></button>
-        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
     </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/1-PVT/2-EOS/EOS-Appendix-A-PD.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
 </div>
 
-        </div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Частные производные летучести компонентов</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
             
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
+            <div>
+                <h2> Contents </h2>
             </div>
-            <nav id="bd-toc-nav" aria-label="Page">
+            <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#pt">
-   Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id2">
-   Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id3">
-   Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (при постоянных объеме и температуре)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id4">
-   Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (при постоянных объеме и температуре)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id5">
-   Частные производные летучести компонентов с использованием уравнения состояния Сорейде-Уитсона
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id6">
-   Вторые частные производные летучести компонентов с использованием уравнения состояния Сорейде-Уитсона
-  </a>
- </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)</a></li>
 </ul>
-
             </nav>
         </div>
     </div>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Частные производные летучести компонентов</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#pt">
-   Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id2">
-   Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id3">
-   Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (при постоянных объеме и температуре)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id4">
-   Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (при постоянных объеме и температуре)
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id5">
-   Частные производные летучести компонентов с использованием уравнения состояния Сорейде-Уитсона
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id6">
-   Вторые частные производные летучести компонентов с использованием уравнения состояния Сорейде-Уитсона
-  </a>
- </li>
-</ul>
 
-                        </nav>
-                    </div>
-                </div>
-            </div>
-            
-              <div>
+              
                 
-  <p><a id='pvt-eos-appendix-fugacity_pd'></a></p>
-<div class="section" id="id1">
-<h1>Частные производные летучести компонентов<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="pvt-eos-appendix-fugacitypd">
+<span id="id1"></span><h1>Частные производные летучести компонентов<a class="headerlink" href="#pvt-eos-appendix-fugacitypd" title="Link to this heading">#</a></h1>
 <div class="full-width docutils">
 <p>Целью данного приложения является получение частных производных логарифма коэффициента летучести (и логарифма летучести) по давлению, объему, температуре и количеству вещества компонента с использованием уравнений состояния. Некоторые из представленных частных производных уже были рассмотрены в предыдущих разделах. Рассмотренные производные будут полезны при изучении последующих задач.</p>
 </div>
 <div class="full-width docutils">
-<p>Рассмотрим нахождение частных производных логарифма коэффициента летучести (и логарифма летучести) по давлению, объему, температуре и количеству вещества компонента компонента с использованием <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr">уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a>.</p>
+<p>Рассмотрим нахождение частных производных логарифма коэффициента летучести (и логарифма летучести) по давлению, объему, температуре и количеству вещества компонента компонента с использованием <a class="reference internal" href="EOS-2-SRK-PR.html#pvt-eos-srkpr"><span class="std std-ref">уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</span></a>.</p>
 </div>
-<p><a id='pvt-eos-appendix-fugacity_pd-srk_pr-p'></a></p>
+<p><a id='pvt-eos-appendix-fugacitypd-srkpr-p'></a></p>
 <div class="full-width docutils">
-<p>Логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона, <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr-fugacity_coeff-pt">записанный</a> относительно давления <span class="math notranslate nohighlight">\(P\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span> и коэффициента сверхсжимаемости <span class="math notranslate nohighlight">\(Z\)</span>:</p>
+<p>Логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона, <a class="reference internal" href="EOS-2-SRK-PR.html#pvt-eos-srkpr-fugacitycoeff-pt"><span class="std std-ref">записанный</span></a> относительно давления <span class="math notranslate nohighlight">\(P\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span> и коэффициента сверхсжимаемости <span class="math notranslate nohighlight">\(Z\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ \ln \phi_i = -\ln \left( Z - B \right) + \frac{b_i}{b_m} \left( Z - 1 \right) + \frac{1}{\left( \delta_2 - \delta_1 \right)} \frac{A}{B} \left( \frac{2 \sum_{j=1}^{N_c} \alpha_{ij} x_j}{\alpha_m} - \frac{b_i}{b_m} \right)  \ln \left( \frac{Z + B \delta_1}{Z + B \delta_2} \right) \]</div>
 <p>Для упрощения работы с данным выражением запишем его в следующем виде:</p>
@@ -773,10 +407,10 @@
 <p>где:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align} g_Z &amp;= \ln \left( Z - B \right); \\ g_{\phi_i} &amp;= \frac{A}{B} \left( \frac{2 \sum_{j=1}^{N_c} \alpha_{ij} x_j}{\alpha_m} - \frac{b_i}{b_m} \right) = \frac{1}{R T b_m} \left( 2 \sum_{j=1}^{N_c} \alpha_{ij} x_j - \alpha_m \frac{b_i}{b_m} \right); \\ f_Z &amp;= \ln \left( \frac{Z + B \delta_1}{Z + B \delta_2} \right). \end{align}\end{split}\]</div>
-<p>Здесь и далее принимается, что параметры <span class="math notranslate nohighlight">\(\alpha_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> рассчитываются с использованием <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr-mix_rules">правил смешивания Ван-дер-Ваальса</a>.</p>
+<p>Здесь и далее принимается, что параметры <span class="math notranslate nohighlight">\(\alpha_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> рассчитываются с использованием <a class="reference internal" href="EOS-2-SRK-PR.html#pvt-eos-srkpr-mixrules"><span class="std std-ref">правил смешивания Ван-дер-Ваальса</span></a>.</p>
 </div>
-<div class="section" id="pt">
-<h2>Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)<a class="headerlink" href="#pt" title="Permalink to this headline">¶</a></h2>
+<section id="pt">
+<h2>Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
 <div class="full-width docutils">
 <p>Тогда частные производные логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента по температуре, давлению и количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
@@ -868,17 +502,17 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 &amp;= - a_i \left( 1 + \kappa_i \left( 1 - \sqrt{\frac{T}{{T_c}_i}} \right) \right) \kappa_i \frac{1}{\sqrt{{T_c}_i T}} \\
 &amp;= - \sqrt{\frac{a_i \alpha_i}{{T_c}_i T}} \kappa_i.
 \end{align}\end{split}\]</div>
-<p>Частная производная параметра <span class="math notranslate nohighlight">\(\alpha_i\)</span> для воды (как компонента), используемого в <a class="reference external" href="./EOS-3-SW.html#pvt-eos-sw">уравнении состояния Сорейде-Уитсона</a>, будет рассмотрена <a class="reference external" href="#pvt-eos-appendix-fugacity_pd-sw">ниже</a>. Также необходимо получить частные производные коэффициентов попарного взаимодействия по температуре при использовании <a class="reference external" href="EOS-Appendix-B-BIP.html#pvt-eos-appendix-bip-gcm">GCM</a> для их расчета:</p>
+<p>Также необходимо получить частные производные коэффициентов попарного взаимодействия по температуре при использовании <a class="reference internal" href="EOS-Appendix-B-BIP.html#pvt-eos-appendix-bip-gcm"><span class="std std-ref">GCM</span></a> для их расчета:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \frac{-\frac{1}{2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) A_{kl} \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 1} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2}{2 \frac{\sqrt{\alpha_i}}{b_i} \frac{\sqrt{\alpha_j}}{b_j}} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{b_i b_j}{2} \frac{\partial}{\partial T} \left( \frac{DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2}{\sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{b_i b_j}{2} \frac{\sqrt{\alpha_i \alpha_j} \frac{\partial}{\partial T} \left( DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2 \right)_{P,n_i} - \left( DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2 \right) \frac{\partial}{\partial T} \left( \sqrt{\alpha_i \alpha_j} \right)_{P,n_i}}{\alpha_i \alpha_j} \\
-&amp;= &amp; \; \frac{b_i b_j}{2 \alpha_i \alpha_j} \left( \sqrt{\alpha_i \alpha_j} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right. \\
-&amp;&amp; \; \left. - \left( DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2 \right) \frac{1}{2\sqrt{\alpha_i \alpha_j}} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \\
-&amp;= &amp; \; \frac{1}{2} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right. \\
-&amp;&amp; \; \left. - \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right).
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \frac{-\frac{1}{2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) A_{kl} \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 1} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2}{2 \frac{\sqrt{\alpha_i}}{b_i} \frac{\sqrt{\alpha_j}}{b_j}} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{b_i b_j}{2} \frac{\partial}{\partial T} \left( \frac{DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2}{\sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{b_i b_j}{2} \frac{\sqrt{\alpha_i \alpha_j} \frac{\partial}{\partial T} \left( DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2 \right)_{P,n_i} - \left( DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2 \right) \frac{\partial}{\partial T} \left( \sqrt{\alpha_i \alpha_j} \right)_{P,n_i}}{\alpha_i \alpha_j} \\
+&amp;= &amp;&amp; \; \frac{b_i b_j}{2 \alpha_i \alpha_j} \left( \sqrt{\alpha_i \alpha_j} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right. \\
+&amp;&amp;&amp; \; \left. - \left( DS - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)^2 \right) \frac{1}{2\sqrt{\alpha_i \alpha_j}} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \\
+&amp;= &amp;&amp; \; \frac{1}{2} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right. \\
+&amp;&amp;&amp; \; \left. - \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right).
 \end{alignat}\end{split}\]</div>
 <p>Частная производная двойной суммы <span class="math notranslate nohighlight">\(DS\)</span> по температуре:</p>
 <div class="math notranslate nohighlight">
@@ -887,7 +521,7 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 &amp;= \frac{\partial}{\partial T} \left( -\frac{1}{2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) A_{kl} \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 1} \right)_{P,n_i} \\
 &amp;= \frac{149.075}{T^2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2}.
 \end{align}\end{split}\]</div>
-<p>Частные производные параметров <span class="math notranslate nohighlight">\(\alpha_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента были рассмотрены <a class="reference external" href="./EOS-1-VanDerWaals.html#pvt-eos-van_der_waals-am_bm_derivative">ранее</a>. Поэтому здесь приведем только конечные выражения:</p>
+<p>Частные производные параметров <span class="math notranslate nohighlight">\(\alpha_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента были рассмотрены <a class="reference internal" href="EOS-1-VanDerWaals.html#pvt-eos-vdw-ambmderivative"><span class="std std-ref">ранее</span></a>. Поэтому здесь приведем только конечные выражения:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align} \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} &amp;= \frac{2}{n} \left( \sum_{i=1}^{N_c} \alpha_{ik} x_i - \alpha_m \right); \\ \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} &amp;= \frac{b_k - b_m}{n}. \end{align}\end{split}\]</div>
 <p>Теперь частная производная коэффициента сверхсжимаемости по давлению, температуре и количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента определена, следовательно, определены вторые слагаемые в выражении для частной производной логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента.</p>
@@ -986,9 +620,9 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \[ \left( \frac{\partial \ln f_i}{\partial n_k} \right)_{P,T} = \left( \frac{\partial \ln \phi_i}{\partial n_k} \right)_{P,T} + \frac{E_{ik}}{x_i n} - \frac{1}{n}.\]</div>
 <p>При этом, необходимо отметить, что под <span class="math notranslate nohighlight">\(n\)</span> понимается в данном случае количество вещества фазы, поскольку летучести компонентов, коэффициент сверхсжимаемости и т.д. определяются с использованием уравнения состояния для фазы.</p>
 </div>
-</div>
-<div class="section" id="id2">
-<h2>Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id2">
+<h2>Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
 <div class="full-width docutils">
 <p>Получим также вторые частные производные логарифма коэффициента летучести по давлению, температуре и количеству вещества <span class="math notranslate nohighlight">\(l\)</span>-го комонента:</p>
 <div class="math notranslate nohighlight">
@@ -1002,26 +636,26 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \end{align}\end{split}\]</div>
 <p>Распишем подробнее вторые слагаемые в приведенных выше выражениях:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \frac{\partial^2}{\partial T^2} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \frac{\partial}{\partial T} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{P,n_i} \right)_{P,n_i} = \frac{\partial}{\partial T} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial T}  \right)_{P,n_i} \right)_{P,n_i} = \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial T^2}  \right)_{P,n_i} ; \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \frac{\partial}{\partial T} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{P,n_i} \right)_{P,n_i} = \frac{\partial}{\partial T} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial T}  \right)_{P,n_i} \right)_{P,n_i} = \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial T^2}  \right)_{P,n_i} ; \\
 \frac{\partial^2}{\partial P^2} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{T,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial P} \left( \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{T,n_i} \right)_{T,n_i} = \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial P}  \right)_{T,n_i} \right)_{T,n_i} =  \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial P^2}  \right)_{T,n_i}; \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial P} \left( \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{T,n_i} \right)_{T,n_i} = \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial P}  \right)_{T,n_i} \right)_{T,n_i} =  \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial P^2}  \right)_{T,n_i}; \\
 \frac{\partial^2}{\partial n_k \partial n_l} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{P,T}
-&amp;= &amp; \; \frac{\partial}{\partial n_l} \left( \frac{\partial}{\partial n_k} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{P,T} \right)_{P,T} \\
-&amp;= &amp; \; \frac{\partial}{\partial n_l} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} - \left( Z-1 \right) \frac{b_i}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right)_{P,T} \\
-&amp;= &amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T} - \frac{b_i}{b_m^2} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} - \frac{b_i}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \\
-&amp;&amp; \; + \frac{2 \left( Z-1 \right) b_i}{b_m^3} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} - \left( Z-1 \right) \frac{b_i}{b_m^2} \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P,T} \\
-&amp;= &amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T} - \frac{b_i}{b_m^2} \left( \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} + \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \right) \\
-&amp;&amp; \; + \left( Z-1 \right) \frac{b_i}{b_m^2} \left( \frac{2}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} - \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P,T} \right) ; \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_l} \left( \frac{\partial}{\partial n_k} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{P,T} \right)_{P,T} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_l} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} - \left( Z-1 \right) \frac{b_i}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right)_{P,T} \\
+&amp;= &amp;&amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T} - \frac{b_i}{b_m^2} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} - \frac{b_i}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \\
+&amp;&amp;&amp; \; + \frac{2 \left( Z-1 \right) b_i}{b_m^3} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} - \left( Z-1 \right) \frac{b_i}{b_m^2} \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P,T} \\
+&amp;= &amp;&amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T} - \frac{b_i}{b_m^2} \left( \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} + \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \right) \\
+&amp;&amp;&amp; \; + \left( Z-1 \right) \frac{b_i}{b_m^2} \left( \frac{2}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} - \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P,T} \right) ; \\
 \frac{\partial^2}{\partial T \partial n_k} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{P}
-&amp;= &amp; \; \frac{\partial}{\partial n_k} \left( \frac{\partial}{\partial T} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{P,n_i} \right)_{P,T} = \frac{\partial}{\partial n_k} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \right)_{P,T} \\
-&amp;= &amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial T \partial n_k} \right)_{P} - \frac{b_i}{b_m^2} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T}; \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_k} \left( \frac{\partial}{\partial T} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{P,n_i} \right)_{P,T} = \frac{\partial}{\partial n_k} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \right)_{P,T} \\
+&amp;= &amp;&amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial T \partial n_k} \right)_{P} - \frac{b_i}{b_m^2} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T}; \\
 \frac{\partial^2}{\partial P \partial n_k} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{T}
-&amp;= &amp; \; \frac{\partial}{\partial n_k} \left( \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{T,n_i} \right)_{P,T} = \frac{\partial}{\partial n_k} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \right)_{P,T} \\
-&amp;= &amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial P \partial n_k} \right)_{T} - \frac{b_i}{b_m^2} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T}; \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_k} \left( \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( Z-1 \right) \right)_{T,n_i} \right)_{P,T} = \frac{\partial}{\partial n_k} \left( \frac{b_i}{b_m} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \right)_{P,T} \\
+&amp;= &amp;&amp; \; \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial P \partial n_k} \right)_{T} - \frac{b_i}{b_m^2} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T}; \\
 \frac{\partial^2}{\partial P \partial T} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{T, n_i} \right)_{P, n_i} = \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial P \partial T} \right)_{n_i}.
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \frac{\partial}{\partial P} \left( \frac{b_i}{b_m} \left( Z - 1 \right) \right)_{T, n_i} \right)_{P, n_i} = \frac{b_i}{b_m} \left( \frac{\partial^2 Z}{\partial P \partial T} \right)_{n_i}.
 \end{alignat}\end{split}\]</div>
 <p>Для определения значений данных выражений необходимо знать вторые частные производные коэффициента сверхсжимаемости. Рассмотрим вывод выражения второй частной производной коэффициента сверхсжимаемости по температуре. Для этого запишем вторую частную производную по температуре уравнения состояния <span class="math notranslate nohighlight">\( q = q \left( Z, P, T, n_i \right)\)</span></p>
 <div class="math notranslate nohighlight">
@@ -1062,30 +696,30 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \end{align}\end{split}\]</div>
 <p>Следовательно, вторая частная производная коэффициента сверхсжимаемости по температуре:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i}
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{P, n_i} + \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial T} \right)_{Z, P, n_i} \right)_{P, n_i} \right) \\
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial Z}{\partial T} \right)_{P, n_i}^2 \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} \right. \\
-&amp;&amp; \; \left. + \left( \frac{\partial^2 q}{\partial T^2} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} \right) \\
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial T^2} \right)_{Z, P, n_i} + 2 \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P, n_i}^2 \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right).
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{P, n_i} + \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial T} \right)_{Z, P, n_i} \right)_{P, n_i} \right) \\
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial Z}{\partial T} \right)_{P, n_i}^2 \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} \right. \\
+&amp;&amp;&amp; \; \left. + \left( \frac{\partial^2 q}{\partial T^2} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} \right) \\
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial T^2} \right)_{Z, P, n_i} + 2 \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P, n_i}^2 \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right).
 \end{alignat}\end{split}\]</div>
 <p>Аналогично получаются и другие вторые частные производные коэффициента сверхсжимаемости:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 Z}{\partial P^2} \right)_{T, n_i}
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial P^2} \right)_{Z, T, n_i} + 2 \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \frac{\partial}{\partial P} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, T, n_i} + \left( \frac{\partial Z}{\partial P} \right)_{T, n_i}^2 \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial P^2} \right)_{Z, T, n_i} + 2 \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \frac{\partial}{\partial P} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, T, n_i} + \left( \frac{\partial Z}{\partial P} \right)_{T, n_i}^2 \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
 \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T}
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial n_k \partial n_l} \right)_{Z, P,T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \frac{\partial}{\partial n_l} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P,T} + \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \frac{\partial}{\partial n_k} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P,T} \right. \\
-&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial n_k \partial n_l} \right)_{Z, P,T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \frac{\partial}{\partial n_l} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P,T} + \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \frac{\partial}{\partial n_k} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P,T} \right. \\
+&amp;&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
 \left( \frac{\partial^2 Z}{\partial n_k \partial T} \right)_{P}
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial n_k \partial T} \right)_{Z, P} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial n_k} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, T} \right. \\
-&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial n_k \partial T} \right)_{Z, P} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial n_k} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, T} \right. \\
+&amp;&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
 \left( \frac{\partial^2 Z}{\partial n_k \partial P} \right)_{T}
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial n_k \partial P} \right)_{Z, T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \frac{\partial}{\partial P} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, T, n_i} + \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \frac{\partial}{\partial n_k} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, T} \right. \\
-&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial n_k \partial P} \right)_{Z, T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \frac{\partial}{\partial P} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, T, n_i} + \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \frac{\partial}{\partial n_k} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, T} \right. \\
+&amp;&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right); \\
 \left( \frac{\partial^2 Z}{\partial P \partial T} \right)_{n_i}
-&amp;= &amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial P \partial T} \right)_{Z, n_i} + \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial P} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, T, n_i} \right. \\
-&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right).
+&amp;= &amp;&amp; \; - \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1} \left( \left( \frac{\partial^2 q}{\partial P \partial T} \right)_{Z, n_i} + \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, P, n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial P} \left( \left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i} \right)_{Z, T, n_i} \right. \\
+&amp;&amp;&amp; \; \left. + \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial^2 q}{\partial Z^2} \right)_{P,T,n_i} \right).
 \end{alignat}\end{split}\]</div>
 <p>В выражениях выше распишем подробнее слагаемые:</p>
 <div class="math notranslate nohighlight">
@@ -1106,35 +740,35 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \end{align}\end{split}\]</div>
 <p>Рассмотрим вторую частную производную коэффициентов <span class="math notranslate nohighlight">\(\{d_2, \; d_1, \; d_0\}\)</span> по температуре:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 d_m}{\partial T^2} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial T^2} \right)_{P,n_i} + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P,n_i} \\
-&amp;= &amp; \; \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial T^2} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 d_m}{\partial B \partial A} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P,n_i} \\
-&amp;= &amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial T^2} \right)_{P,n_i} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P,n_i} \\
-&amp;&amp; \; + 2 \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial T^2} \right)_{P,n_i} + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial T^2} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 d_m}{\partial B \partial A} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial T^2} \right)_{P,n_i} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + 2 \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}
 \end{alignat}\end{split}\]</div>
 <p>Аналогично получаются остальные вторые частные производные коэффициентов <span class="math notranslate nohighlight">\(\{d_2, \; d_1, \; d_0\}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 d_m}{\partial P^2} \right)_{T,n_i}
-&amp;= &amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial P^2} \right)_{T,n_i} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P^2} \right)_{T,n_i} \\
-&amp;&amp; \; + 2 \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}; \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial P^2} \right)_{T,n_i} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P^2} \right)_{T,n_i} \\
+&amp;&amp;&amp; \; + 2 \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}; \\
 \left( \frac{\partial^2 d_m}{\partial n_k \partial n_l} \right)_{P,T}
-&amp;= &amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial A}{\partial n_l} \right)_{P,T} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} \\
-&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} + \left( \frac{\partial A}{\partial n_l} \right)_{P,T} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial A}{\partial n_l} \right)_{P,T} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} + \left( \frac{\partial A}{\partial n_l} \right)_{P,T} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
 \left( \frac{\partial^2 d_m}{\partial n_k \partial T} \right)_{P}
-&amp;= &amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial n_k \partial T} \right)_{P} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial T} \right)_{P} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial n_k \partial T} \right)_{P} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial T} \right)_{P} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
 \left( \frac{\partial^2 d_m}{\partial n_k \partial P} \right)_{T}
-&amp;= &amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial A}{\partial P} \right)_{T,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial n_k \partial P} \right)_{T} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial P} \right)_{T} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} + \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial A}{\partial P} \right)_{T,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial n_k \partial P} \right)_{T} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial P} \right)_{T} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} + \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
 \left( \frac{\partial^2 d_m}{\partial P \partial T} \right)_{n_i}
-&amp;= &amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 d_m}{\partial A^2} \right)_{T,P,n_i} \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial A}{\partial T} \right)_{P,n_i} + \left( \frac{\partial d_m}{\partial A} \right)_{T,P,n_i} \left( \frac{\partial^2 A}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 d_m}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial d_m}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 d_m}{\partial A \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial A}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial A}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right); \\
 \end{alignat}\end{split}\]</div>
 <p>Вторые частные производные коэффициентов <span class="math notranslate nohighlight">\(\{d_2, \; d_1, \; d_0\}\)</span> по параметрам <span class="math notranslate nohighlight">\(A\)</span> и <span class="math notranslate nohighlight">\(B\)</span>:</p>
 <div class="math notranslate nohighlight">
@@ -1192,13 +826,13 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \end{align} \end{split}\]</div>
 <p>Получим вторую частную производную параметра <span class="math notranslate nohighlight">\(\alpha_{ij}\)</span> по температуре:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \begin{alignat}{1}
+\[\begin{split} \begin{alignat}{3}
 \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( 1 - \delta_{ij} \right) \frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} - \sqrt{\alpha_i \alpha_j} \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; -\frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} + \left( 1 - \delta_{ij} \right) \frac{\partial}{\partial T} \left( \frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} \\
-&amp;&amp; \; - \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \sqrt{\alpha_i \alpha_j} \right)_{P,n_i} - \sqrt{\alpha_i \alpha_j} \left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i} \\
-&amp;= &amp; \; -\frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{\sqrt{\alpha_i \alpha_j}} \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} + \left( 1 - \delta_{ij} \right) \frac{\partial}{\partial T} \left( \frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} - \sqrt{\alpha_i \alpha_j} \left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i}.
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( 1 - \delta_{ij} \right) \frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} - \sqrt{\alpha_i \alpha_j} \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; -\frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} + \left( 1 - \delta_{ij} \right) \frac{\partial}{\partial T} \left( \frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; - \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \sqrt{\alpha_i \alpha_j} \right)_{P,n_i} - \sqrt{\alpha_i \alpha_j} \left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; -\frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{\sqrt{\alpha_i \alpha_j}} \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} + \left( 1 - \delta_{ij} \right) \frac{\partial}{\partial T} \left( \frac{\alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i}}{2 \sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} - \sqrt{\alpha_i \alpha_j} \left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i}.
 \end{alignat}\end{split}\]</div>
 <p>Распишем второе слагаемое:</p>
 <div class="math notranslate nohighlight">
@@ -1225,15 +859,15 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 &amp;= -\kappa_i \sqrt{\frac{a_i }{{T_c}_i}} \frac{1}{2\sqrt{\frac{\alpha_i}{T}}} \frac{T \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} - \alpha_i}{T^2} \\
 &amp;= -\frac{\kappa_i}{2} \sqrt{\frac{a_i T}{{T_c}_i \alpha_i}} \left( \frac{1}{T} \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} - \frac{\alpha_i}{T^2} \right).
 \end{align}\end{split}\]</div>
-<p>Вторая частная производная параметра <span class="math notranslate nohighlight">\(\alpha_i\)</span> для воды (как компонента), используемого в <a class="reference external" href="EOS-3-SW.html#pvt-eos-sw">уравнении состояния Сорейде-Уитсона</a>, будет рассмотрена <a class="reference external" href="#pvt-eos-appendix-fugacity_pd-sw">ниже</a>. Также необходимо получить вторые частные производные коэффициентов попарного взаимодействия по температуре при использовании <a class="reference external" href="EOS-Appendix-B-BIP.html#pvt-eos-appendix-bip-gcm">GCM</a> для их расчета:</p>
+<p>Также необходимо получить вторые частные производные коэффициентов попарного взаимодействия по температуре при использовании <a class="reference internal" href="EOS-Appendix-B-BIP.html#pvt-eos-appendix-bip-gcm"><span class="std std-ref">GCM</span></a> для их расчета:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \frac{1}{2} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right. \right. \\
-&amp;&amp; \; \left. \left. - \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{1}{2} \frac{\partial}{\partial T} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right)_{P,n_i} \\
-&amp;&amp; \; - \frac{1}{2} \frac{\partial}{\partial T} \left( \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i}.
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \frac{1}{2} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right. \right. \\
+&amp;&amp;&amp; \; \left. \left. - \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{1}{2} \frac{\partial}{\partial T} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right) \right)_{P,n_i} \\
+&amp;&amp;&amp; \; - \frac{1}{2} \frac{\partial}{\partial T} \left( \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i}.
 \end{alignat}\end{split}\]</div>
 <p>Рассмотрим подробнее первое и второе слагаемые. Для начала обозначим <span class="math notranslate nohighlight">\(S\)</span> следующее выражение:</p>
 <div class="math notranslate nohighlight">
@@ -1243,28 +877,28 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \[ \frac{\partial}{\partial T} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} S \right)_{P,n_i} = S \frac{\partial}{\partial T} \left( \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \right)_{P,n_i} + \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \frac{\partial S}{\partial T} \right)_{P,n_i} = - \frac{S}{2} \frac{b_i b_j}{\sqrt{\alpha_i^3 \alpha_j^3}} \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) + \frac{b_i b_j}{\sqrt{\alpha_i \alpha_j}} \left( \frac{\partial S}{\partial T} \right)_{P,n_i}.\]</div>
 <p>Преобразуем частную производную <span class="math notranslate nohighlight">\(\left( \frac{\partial S}{\partial T} \right)_{P,n_i}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial S}{\partial T} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i} \\
-&amp;= &amp; \; \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i} - \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \frac{\partial}{\partial T} \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)_{P,n_i} \\
-&amp;&amp; \; - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \frac{\partial}{\partial T} \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i} - \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \left( \frac{1}{2 b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{2 b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) - \\
-&amp;&amp; \;  - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i} \frac{\sqrt{\alpha_i} \left( \frac{\partial^2 \alpha_i }{\partial T^2} \right)_{P,n_i} - \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} \frac{1}{2 \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i}}{\alpha_i} - \frac{1}{b_j} \frac{\sqrt{\alpha_j} \left( \frac{\partial^2 \alpha_j }{\partial T^2} \right)_{P,n_i} - \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \frac{1}{2 \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i}}{\alpha_j} \right) \\
-&amp;= &amp; \; \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i} - \frac{1}{2} \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)^2 \\
-&amp;&amp; \; - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)  \left( \frac{\left( \frac{\partial^2 \alpha_i }{\partial T^2} \right)_{P,n_i} - \frac{1}{2 \alpha_i} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i}^2}{b_i \sqrt{\alpha_i}} - \frac{\left( \frac{\partial^2 \alpha_j }{\partial T^2} \right)_{P,n_i} - \frac{1}{2 \alpha_j} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i}^2}{b_j \sqrt{\alpha_j}} \right).
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i} - \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \frac{\partial}{\partial T} \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \frac{\partial}{\partial T} \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i} - \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \left( \frac{1}{2 b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{2 b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) - \\
+&amp;&amp;&amp; \;  - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right) \left( \frac{1}{b_i} \frac{\sqrt{\alpha_i} \left( \frac{\partial^2 \alpha_i }{\partial T^2} \right)_{P,n_i} - \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} \frac{1}{2 \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i}}{\alpha_i} - \frac{1}{b_j} \frac{\sqrt{\alpha_j} \left( \frac{\partial^2 \alpha_j }{\partial T^2} \right)_{P,n_i} - \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \frac{1}{2 \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i}}{\alpha_j} \right) \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i} - \frac{1}{2} \left( \frac{1}{b_i \sqrt{\alpha_i}} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} - \frac{1}{b_j \sqrt{\alpha_j}} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)^2 \\
+&amp;&amp;&amp; \; - \left( \frac{\sqrt{\alpha_i}}{b_i} - \frac{\sqrt{\alpha_j}}{b_j} \right)  \left( \frac{\left( \frac{\partial^2 \alpha_i }{\partial T^2} \right)_{P,n_i} - \frac{1}{2 \alpha_i} \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i}^2}{b_i \sqrt{\alpha_i}} - \frac{\left( \frac{\partial^2 \alpha_j }{\partial T^2} \right)_{P,n_i} - \frac{1}{2 \alpha_j} \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i}^2}{b_j \sqrt{\alpha_j}} \right).
 \end{alignat}\end{split}\]</div>
 <p>Второе слагаемое частной производной <span class="math notranslate nohighlight">\(\left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \frac{\partial}{\partial T} \left( \frac{\delta_{ij}}{\alpha_i \alpha_j} \left(\alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i}
-&amp;= &amp; \; \frac{1}{\left( \alpha_i \alpha_j \right)^2} \left( \alpha_i \alpha_j \frac{\partial}{\partial T} \left( \delta_{ij} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i} \right. \\
-&amp;&amp; \; \left. - \delta_{ij} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \frac{\partial}{\partial T} \left( \alpha_i \alpha_j \right)_{P,n_i} \right) \\
-&amp;= &amp; \; \frac{1}{\left( \alpha_i \alpha_j \right)^2} \left( \alpha_i \alpha_j \left( \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right. \right. \\
-&amp;&amp; \; \left. \left. + \delta_{ij} \frac{\partial}{\partial T} \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \right) \right. \\
-&amp;&amp; \; \left. - \delta_{ij} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)^2 \right) \\
-&amp;= &amp; \; \frac{1}{\alpha_i \alpha_j} \left( \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right. \\
-&amp;&amp; \; \left. + \delta_{ij} \left( \alpha_j \left( \frac{\partial^2 \alpha_i}{\partial T^2} \right)_{P,n_i} + \alpha_i \left( \frac{\partial^2 \alpha_j}{\partial T^2} \right)_{P,n_i} + 2 \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) \right) \\
-&amp;&amp; \; - \frac{\delta_{ij}}{\left( \alpha_i \alpha_j \right)^2} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)^2.
+&amp;= &amp;&amp; \; \frac{1}{\left( \alpha_i \alpha_j \right)^2} \left( \alpha_i \alpha_j \frac{\partial}{\partial T} \left( \delta_{ij} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \right)_{P,n_i} \right. \\
+&amp;&amp;&amp; \; \left. - \delta_{ij} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right) \frac{\partial}{\partial T} \left( \alpha_i \alpha_j \right)_{P,n_i} \right) \\
+&amp;= &amp;&amp; \; \frac{1}{\left( \alpha_i \alpha_j \right)^2} \left( \alpha_i \alpha_j \left( \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right. \right. \\
+&amp;&amp;&amp; \; \left. \left. + \delta_{ij} \frac{\partial}{\partial T} \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \right) \right. \\
+&amp;&amp;&amp; \; \left. - \delta_{ij} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)^2 \right) \\
+&amp;= &amp;&amp; \; \frac{1}{\alpha_i \alpha_j} \left( \left( \alpha_j \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) \left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} \right. \\
+&amp;&amp;&amp; \; \left. + \delta_{ij} \left( \alpha_j \left( \frac{\partial^2 \alpha_i}{\partial T^2} \right)_{P,n_i} + \alpha_i \left( \frac{\partial^2 \alpha_j}{\partial T^2} \right)_{P,n_i} + 2 \left( \frac{\partial \alpha_i}{\partial T} \right)_{P,n_i} \left( \frac{\partial \alpha_j}{\partial T} \right)_{P,n_i} \right) \right) \\
+&amp;&amp;&amp; \; - \frac{\delta_{ij}}{\left( \alpha_i \alpha_j \right)^2} \left( \alpha_j \left( \frac{\partial \alpha_i }{\partial T} \right)_{P,n_i} + \alpha_i \left( \frac{\partial \alpha_j }{\partial T} \right)_{P,n_i} \right)^2.
 \end{alignat}\end{split}\]</div>
 <p>Таким образом, финальное выражение для второй частной производной коэффициентов попарного взаимодействия по температуре:</p>
 <div class="math notranslate nohighlight">
@@ -1277,47 +911,47 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \end{align}\end{split}\]</div>
 <p>Также получим вторую частную производную удвоенной суммы <span class="math notranslate nohighlight">\(DS\)</span> по температуре:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 DS}{\partial T^2} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \frac{149.075}{T^2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{149.075}{T^4} \left( T^2 \frac{\partial}{\partial T} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} \right. \\
-&amp;&amp; \; \left. - 2 T \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right) \right) \\
-&amp;= &amp; \; \frac{149.075}{T^2} \frac{\partial}{\partial T} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} \\
-&amp;&amp; \; - \frac{2}{T} \frac{149.075}{T^2} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right) \\
-&amp;= &amp; \; \frac{149.075}{T^2} \frac{\partial}{\partial T} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} - \frac{2}{T} \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} \\
-&amp;= &amp; \; -\frac{298.15^2}{2 T^4} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{B_{kl}}{A_{kl}} - 2 \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 3} \right) - \frac{2}{T} \left( \frac{\partial DS}{\partial T} \right)_{P,n_i}.
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \frac{149.075}{T^2} \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{149.075}{T^4} \left( T^2 \frac{\partial}{\partial T} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} \right. \\
+&amp;&amp;&amp; \; \left. - 2 T \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right) \right) \\
+&amp;= &amp;&amp; \; \frac{149.075}{T^2} \frac{\partial}{\partial T} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; - \frac{2}{T} \frac{149.075}{T^2} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right) \\
+&amp;= &amp;&amp; \; \frac{149.075}{T^2} \frac{\partial}{\partial T} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 2} \right)_{P,n_i} - \frac{2}{T} \left( \frac{\partial DS}{\partial T} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; -\frac{298.15^2}{2 T^4} \left( \sum_k^{N_g} \sum_l^{N_g} \left( \alpha_{ik} - \alpha_{jk} \right) \left( \alpha_{il} - \alpha_{jl} \right) \left( B_{kl} - A_{kl} \right) \left( \frac{B_{kl}}{A_{kl}} - 2 \right) \left( \frac{298.15}{T} \right)^{\frac{B_{kl}}{A_{kl}} - 3} \right) - \frac{2}{T} \left( \frac{\partial DS}{\partial T} \right)_{P,n_i}.
 \end{alignat}\end{split}\]</div>
 <p>Рассмотрим вторую частную производную <span class="math notranslate nohighlight">\(g_Z\)</span> по температуре:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 g_Z}{\partial T^2} \right)_{P, n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial T} \right)_{P, n_i} \right)_{P, n_i} = \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right)_{P, n_i} \\
-&amp;= &amp; \; \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \right)_{P, n_i} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i} + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \right)_{P, n_i} \\
-&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P, n_i} \\
-&amp;= &amp; \; \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i} \\
-&amp;&amp; \; + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 g_Z}{\partial B \partial Z} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P, n_i} \\
-&amp;= &amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P, n_i} \\
-&amp;&amp; \; + 2 \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}.
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial T} \right)_{P, n_i} \right)_{P, n_i} = \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right)_{P, n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \right)_{P, n_i} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i} + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \frac{\partial}{\partial T} \left( \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \right)_{P, n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P, n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \left( \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial^2 g_Z}{\partial B \partial Z} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \right) + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P, n_i} \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T^2} \right)_{P, n_i} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}^2 + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T^2} \right)_{P, n_i} \\
+&amp;&amp;&amp; \; + 2 \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i}.
 \end{alignat}\end{split}\]</div>
 <p>Аналогично могут быть получены остальные частные производные <span class="math notranslate nohighlight">\(g_Z\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 g_Z}{\partial P^2} \right)_{T, n_i}
-&amp;= &amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial P^2} \right)_{T, n_i} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P^2} \right)_{T, n_i} \\
-&amp;&amp; \; + 2 \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}; \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial P^2} \right)_{T, n_i} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}^2 + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P^2} \right)_{T, n_i} \\
+&amp;&amp;&amp; \; + 2 \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i}; \\
 \left( \frac{\partial^2 g_Z}{\partial n_k \partial n_l} \right)_{P,T}
-&amp;= &amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} \\
-&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} + \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial n_k \partial n_l} \right)_{P,T} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial n_l} \right)_{P,T} + \left( \frac{\partial Z}{\partial n_l} \right)_{P,T} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \right); \\
 \left( \frac{\partial^2 g_Z}{\partial T \partial n_k} \right)_{P}
-&amp;= &amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T \partial n_k} \right)_{P} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \\
-&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T \partial n_k} \right)_{P} +  \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial T \partial n_k} \right)_{P} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial T \partial n_k} \right)_{P} +  \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \right); \\
 \left( \frac{\partial^2 g_Z}{\partial P \partial n_k} \right)_{T}
-&amp;= &amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial P \partial n_k} \right)_{T} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \\
-&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial n_k} \right)_{T} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right); \\
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial P \partial n_k} \right)_{T} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial n_k} \right)_{T} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial n_k} \right)_{P,T} + \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right); \\
 \left( \frac{\partial^2 g_Z}{\partial P \partial T} \right)_{n_i}
-&amp;= &amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right).
+&amp;= &amp;&amp; \; \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} + \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} \left( \frac{\partial^2 Z}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 g_Z}{\partial B^2} \right)_{T,P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right).
 \end{alignat}\end{split}\]</div>
 <p>При этом, вторые частные производные <span class="math notranslate nohighlight">\(g_Z\)</span> по <span class="math notranslate nohighlight">\(Z\)</span> и <span class="math notranslate nohighlight">\(B\)</span>:</p>
 <div class="math notranslate nohighlight">
@@ -1328,65 +962,65 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 \end{align}\end{split}\]</div>
 <p>Рассмотрим последние слагаемые в выражениях вторых частных производных логарифма коэффициента летучести.</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 \left( g_{\phi_i} f_Z \right)}{\partial T^2} \right)_{P, n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial T} \right)_{P, n_i} \right)_{P,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial T^2} \right)_{P, n_i} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial T^2} \right)_{P, n_i} + 2 \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P, n_i} \left( \frac{\partial f_Z}{\partial T} \right)_{P, n_i};\\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial T} \right)_{P, n_i} \right)_{P,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial T^2} \right)_{P, n_i} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial T^2} \right)_{P, n_i} + 2 \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P, n_i} \left( \frac{\partial f_Z}{\partial T} \right)_{P, n_i};\\
 \left( \frac{\partial^2 \left( g_{\phi_i} f_Z \right)}{\partial P^2} \right)_{T, n_i}
-&amp;= &amp; \; \frac{\partial}{\partial P} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial P} \right)_{T, n_i} \right)_{T,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial P^2} \right)_{T, n_i} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial P^2} \right)_{T, n_i} + 2 \left( \frac{\partial g_{\phi_i}}{\partial P} \right)_{T, n_i} \left( \frac{\partial f_Z}{\partial P} \right)_{T, n_i};\\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial P} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial P} \right)_{T, n_i} \right)_{T,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial P^2} \right)_{T, n_i} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial P^2} \right)_{T, n_i} + 2 \left( \frac{\partial g_{\phi_i}}{\partial P} \right)_{T, n_i} \left( \frac{\partial f_Z}{\partial P} \right)_{T, n_i};\\
 \left( \frac{\partial^2 \left( g_{\phi_i} f_Z \right)}{\partial n_k \partial n_l} \right)_{P, T}
-&amp;= &amp; \; \frac{\partial}{\partial n_l} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial n_k} \right)_{P,T} \right)_{P,T} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial n_l} \right)_{P, T} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial n_k \partial n_l} \right)_{P, T} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial f_Z}{\partial n_l} \right)_{P,T} \\
-&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial n_l} \right)_{P,T} \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T};\\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_l} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial n_k} \right)_{P,T} \right)_{P,T} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial n_l} \right)_{P, T} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial n_k \partial n_l} \right)_{P, T} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial f_Z}{\partial n_l} \right)_{P,T} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial n_l} \right)_{P,T} \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T};\\
 \left( \frac{\partial^2 \left( g_{\phi_i} f_Z \right)}{\partial n_k \partial T} \right)_{P}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial n_k} \right)_{P,T} \right)_{P,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial T} \right)_{P} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial n_k \partial T} \right)_{P} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial f_Z}{\partial T} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T};\\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial n_k} \right)_{P,T} \right)_{P,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial T} \right)_{P} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial n_k \partial T} \right)_{P} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial f_Z}{\partial T} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T};\\
 \left( \frac{\partial^2 \left( g_{\phi_i} f_Z \right)}{\partial n_k \partial P} \right)_{T}
-&amp;= &amp; \; \frac{\partial}{\partial P} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial n_k} \right)_{P,T} \right)_{T,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial P} \right)_{T} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial n_k \partial P} \right)_{T} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial f_Z}{\partial P} \right)_{T,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial P} \right)_{T,n_i} \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T};\\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial P} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial n_k} \right)_{P,T} \right)_{T,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial P} \right)_{T} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial n_k \partial P} \right)_{T} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial f_Z}{\partial P} \right)_{T,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial P} \right)_{T,n_i} \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T};\\
 \left( \frac{\partial^2 \left( g_{\phi_i} f_Z \right)}{\partial P \partial T} \right)_{n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial P} \right)_{T,n_i} \right)_{P,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial P \partial T} \right)_{n_i} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial g_{\phi_i}}{\partial P} \right)_{T,n_i} \left( \frac{\partial f_Z}{\partial T} \right)_{P,n_i} \\
-&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \left( \frac{\partial f_Z}{\partial P} \right)_{T,n_i}.
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial \left( g_{\phi_i} f_Z \right)}{\partial P} \right)_{T,n_i} \right)_{P,n_i} = f_z \left( \frac{\partial^2 g_{\phi_i}}{\partial P \partial T} \right)_{n_i} + g_{\phi_i} \left( \frac{\partial^2 f_Z}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial g_{\phi_i}}{\partial P} \right)_{T,n_i} \left( \frac{\partial f_Z}{\partial T} \right)_{P,n_i} \\
+&amp;&amp;&amp; \; + \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \left( \frac{\partial f_Z}{\partial P} \right)_{T,n_i}.
 \end{alignat}\end{split}\]</div>
 <p>Получим выражения для вторых частных производных <span class="math notranslate nohighlight">\(g_{\phi_i}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{alignat}{1}
+\[\begin{split}\begin{alignat}{3}
 \left( \frac{\partial^2 g_{\phi_i}}{\partial T^2} \right)_{P,n_i}
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{\partial}{\partial T} \left( \frac{1}{T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) - g_{\phi_i} \right) \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{1}{T} \frac{\partial}{\partial T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} - g_{\phi_i} \right) \\
-&amp;&amp; \; - \frac{1}{T^2} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) - g_{\phi_i} \right) \\
-&amp;= &amp; \; \frac{1}{T} \frac{\partial}{\partial T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} - g_{\phi_i} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{1}{R T b_m^2} \left( b_m \frac{\partial}{\partial T} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} - \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right) \right) \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right) \\
-&amp;&amp; \; - \frac{2}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{1}{R T b_m^2} \left( b_m \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial^2 \alpha_m}{\partial T^2} \right)_{P,n_i} + \frac{b_i}{b_m^2} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right) \right. \\
-&amp;&amp; \; \left. - \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right) \right) \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right) - \frac{2}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{1}{R T b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial^2 \alpha_m}{\partial T^2} \right)_{P,n_i} + \frac{b_i}{b_m^2} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right. \\
-&amp;&amp; \; \left. - R \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \left( g_{\phi_i} + T \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right) \right) - \frac{2}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
-&amp;= &amp; \; \frac{1}{T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial^2 \alpha_m}{\partial T^2} \right)_{P,n_i} + \frac{b_i}{b_m^2} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right. \right. \\
-&amp;&amp; \; \left. \left. - R \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \left( g_{\phi_i} + T \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right) \right) - 2 \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right); \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial T} \left( \frac{1}{T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) - g_{\phi_i} \right) \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{1}{T} \frac{\partial}{\partial T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} - g_{\phi_i} \right) \\
+&amp;&amp;&amp; \; - \frac{1}{T^2} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) - g_{\phi_i} \right) \\
+&amp;= &amp;&amp; \; \frac{1}{T} \frac{\partial}{\partial T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} - g_{\phi_i} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{1}{R T b_m^2} \left( b_m \frac{\partial}{\partial T} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,n_i} - \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right) \right) \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right) \\
+&amp;&amp;&amp; \; - \frac{2}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{1}{R T b_m^2} \left( b_m \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial^2 \alpha_m}{\partial T^2} \right)_{P,n_i} + \frac{b_i}{b_m^2} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right) \right. \\
+&amp;&amp;&amp; \; \left. - \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right) \right) \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right) - \frac{2}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{1}{R T b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial^2 \alpha_m}{\partial T^2} \right)_{P,n_i} + \frac{b_i}{b_m^2} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right. \\
+&amp;&amp;&amp; \; \left. - R \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \left( g_{\phi_i} + T \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right) \right) - \frac{2}{T} \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \\
+&amp;= &amp;&amp; \; \frac{1}{T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial^2 \alpha_{ij}}{\partial T^2} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial^2 \alpha_m}{\partial T^2} \right)_{P,n_i} + \frac{b_i}{b_m^2} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \right. \right. \\
+&amp;&amp;&amp; \; \left. \left. - R \left( \frac{\partial b_m}{\partial T} \right)_{P,n_i} \left( g_{\phi_i} + T \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right) \right) - 2 \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} \right); \\
 \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial n_l} \right)_{P, T}
-&amp;= &amp; \; \frac{\partial}{\partial n_l} \left( \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \right)_{P, T} \\
-&amp;= &amp; \; \frac{\partial}{\partial n_l} \left( \frac{1}{R T b_m} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right) \right)_{P, T} \\
-&amp;= &amp; \; \frac{1}{RTb_m^2} \left( b_m \frac{\partial}{\partial n_l} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right)_{P,T} \right. \\
-&amp;&amp; \; \left. - \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right) \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \\
-&amp;= &amp; \; \frac{1}{RT b_m} \left( \frac{\partial}{\partial n_l} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right)_{P,T} \right. \\
-&amp;&amp; \; \left. - RT \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \\
-&amp;= &amp; \; \frac{1}{RT b_m} \left( \frac{\partial}{\partial n_l} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) \right)_{P,T} - RT \frac{\partial}{\partial n_l} \left( \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} \right)_{P,T} \right. \\
-&amp;&amp; \; \left. - \frac{\partial}{\partial n_l} \left( \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right)_{P,T} - RT \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \\
-&amp;= &amp; \; \frac{1}{RT b_m} \left( \frac{2}{n^2} \left( 2 \sum_{j=1}^{N_c} x_j \alpha_{ij} - \alpha_{ik} - \alpha_{il} \right) - RT g_{\phi_i} \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P, T} \right. \\
-&amp;&amp; \; \left. - \frac{b_i}{b_m} \left( \left( \frac{\partial^2 \alpha_m}{\partial n_k \partial n_l} \right)_{P, T} - \frac{1}{b_m} \left( \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial \alpha_m}{\partial n_l} \right)_{P,T} + \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - 2 \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \right. \right. \\
-&amp;&amp; \; \left. \left. - \frac{\alpha_m}{b_m} \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P, T} \right) - RT \left( \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial g_{\phi_i}}{\partial n_l} \right)_{P,T} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \right); \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_l} \left( \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_l} \left( \frac{1}{R T b_m} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right) \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{1}{RTb_m^2} \left( b_m \frac{\partial}{\partial n_l} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right)_{P,T} \right. \\
+&amp;&amp;&amp; \; \left. - \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right) \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \\
+&amp;= &amp;&amp; \; \frac{1}{RT b_m} \left( \frac{\partial}{\partial n_l} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} R T - \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right)_{P,T} \right. \\
+&amp;&amp;&amp; \; \left. - RT \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \\
+&amp;= &amp;&amp; \; \frac{1}{RT b_m} \left( \frac{\partial}{\partial n_l} \left( \frac{2}{n} \left( \alpha_{ik} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \right) \right)_{P,T} - RT \frac{\partial}{\partial n_l} \left( \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} g_{\phi_i} \right)_{P,T} \right. \\
+&amp;&amp;&amp; \; \left. - \frac{\partial}{\partial n_l} \left( \frac{b_i}{b_m} \left( \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right)_{P,T} - RT \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \\
+&amp;= &amp;&amp; \; \frac{1}{RT b_m} \left( \frac{2}{n^2} \left( 2 \sum_{j=1}^{N_c} x_j \alpha_{ij} - \alpha_{ik} - \alpha_{il} \right) - RT g_{\phi_i} \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P, T} \right. \\
+&amp;&amp;&amp; \; \left. - \frac{b_i}{b_m} \left( \left( \frac{\partial^2 \alpha_m}{\partial n_k \partial n_l} \right)_{P, T} - \frac{1}{b_m} \left( \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial \alpha_m}{\partial n_l} \right)_{P,T} + \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \left( \frac{\partial \alpha_m}{\partial n_k} \right)_{P,T} - 2 \frac{\alpha_m}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \right. \right. \\
+&amp;&amp;&amp; \; \left. \left. - \frac{\alpha_m}{b_m} \left( \frac{\partial^2 b_m}{\partial n_k \partial n_l} \right)_{P, T} \right) - RT \left( \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \frac{\partial g_{\phi_i}}{\partial n_l} \right)_{P,T} + \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} \left( \frac{\partial b_m}{\partial n_l} \right)_{P,T} \right) \right); \\
 \left( \frac{\partial^2 g_{\phi_i}}{\partial n_k \partial T} \right)_{P}
-&amp;= &amp; \; \frac{\partial}{\partial n_k} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P, n_i} \right)_{P, T} \\
-&amp;= &amp; \; \frac{\partial}{\partial n_k} \left( \frac{1}{T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) - g_{\phi_i} \right) \right)_{P, T} \\
-&amp;= &amp; \; \frac{\partial}{\partial n_k} \left( \frac{1}{R T b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) \right)_{P, T} - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \\
-&amp;= &amp; \; \frac{1}{R T} \frac{b_m \frac{\partial}{\partial n_k} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,T} - \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} }{b_m^2} \\
-&amp;&amp; \; - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \\
-&amp;= &amp; \; \frac{1}{R T b_m} \frac{\partial}{\partial n_k} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,T} - \frac{1}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( T \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} + g_{\phi_i} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \\
-&amp;= &amp; \; \frac{1}{R T b_m} \left( \frac{2}{n} \left( \left( \frac{\partial \alpha_{ik}}{\partial T} \right)_{P,n_i} - \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} \right) - \frac{b_i}{b_m} \left( \left( \frac{\partial^2 \alpha_m}{\partial T \partial n_k} \right)_{P} - \frac{1}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right) \\
-&amp;&amp; \; - \frac{1}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} + \frac{g_{\phi_i}}{T} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T}; \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_k} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P, n_i} \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_k} \left( \frac{1}{T} \left( \frac{1}{R b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) - g_{\phi_i} \right) \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{\partial}{\partial n_k} \left( \frac{1}{R T b_m} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) \right)_{P, T} - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{1}{R T} \frac{b_m \frac{\partial}{\partial n_k} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,T} - \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right) \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} }{b_m^2} \\
+&amp;&amp;&amp; \; - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{1}{R T b_m} \frac{\partial}{\partial n_k} \left( 2 \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} - \frac{b_i}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \right)_{P,T} - \frac{1}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( T \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} + g_{\phi_i} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T} \\
+&amp;= &amp;&amp; \; \frac{1}{R T b_m} \left( \frac{2}{n} \left( \left( \frac{\partial \alpha_{ik}}{\partial T} \right)_{P,n_i} - \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} \right) - \frac{b_i}{b_m} \left( \left( \frac{\partial^2 \alpha_m}{\partial T \partial n_k} \right)_{P} - \frac{1}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \right) \right) \\
+&amp;&amp;&amp; \; - \frac{1}{b_m} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} + \frac{g_{\phi_i}}{T} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P, T}; \\
 \left( \frac{\partial^2 g_{\phi_i}}{\partial n_i \partial T} \right)_{P}
-&amp;= &amp; \; \frac{1}{R T b_m} \left( \frac{2}{n} \left( \sum_{j=1}^{N_c} \left( \frac{\partial \alpha_{ij, \; i=j}}{\partial T} \right)_{P,n_i} - \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} \right) - \frac{b_i}{b_m} \left( \left( \frac{\partial^2 \alpha_m}{\partial T \partial n_i} \right)_{P} - \frac{1}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial n_i} \right)_{P,T} \right) \right) \\
-&amp;&amp; \; - \frac{1}{b_m} \left( \frac{\partial b_m}{\partial n_i} \right)_{P,T} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} + \frac{g_{\phi_i}}{T} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_i} \right)_{P, T}.
+&amp;= &amp;&amp; \; \frac{1}{R T b_m} \left( \frac{2}{n} \left( \sum_{j=1}^{N_c} \left( \frac{\partial \alpha_{ij, \; i=j}}{\partial T} \right)_{P,n_i} - \sum_{j=1}^{N_c} x_j \left( \frac{\partial \alpha_{ij}}{\partial T} \right)_{P,n_i} \right) - \frac{b_i}{b_m} \left( \left( \frac{\partial^2 \alpha_m}{\partial T \partial n_i} \right)_{P} - \frac{1}{b_m} \left( \frac{\partial \alpha_m}{\partial T} \right)_{P,n_i} \left( \frac{\partial b_m}{\partial n_i} \right)_{P,T} \right) \right) \\
+&amp;&amp;&amp; \; - \frac{1}{b_m} \left( \frac{\partial b_m}{\partial n_i} \right)_{P,T} \left( \left( \frac{\partial g_{\phi_i}}{\partial T} \right)_{P,n_i} + \frac{g_{\phi_i}}{T} \right) - \frac{1}{T} \left( \frac{\partial g_{\phi_i}}{\partial n_i} \right)_{P, T}.
 \end{alignat}\end{split}\]</div>
 <p>Остальные частные производные <span class="math notranslate nohighlight">\(g_{\phi_i}\)</span> равны нулю, поскольку <span class="math notranslate nohighlight">\(g_{\phi_i}\)</span> не зависит от давления.</p>
 <p>Вторые частные производные <span class="math notranslate nohighlight">\(f_Z\)</span> по давлению, температуре и количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го и <span class="math notranslate nohighlight">\(l\)</span>-го компонентов определяются аналогично вторым частным производным <span class="math notranslate nohighlight">\(g_Z\)</span>. Поэтому приведем вторые частные производные <span class="math notranslate nohighlight">\(f_Z\)</span> по коэффициенту сверхсжимаемости <span class="math notranslate nohighlight">\(Z\)</span> и параметру <span class="math notranslate nohighlight">\(B\)</span>:</p>
@@ -1421,72 +1055,22 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 <div class="math notranslate nohighlight">
 \[ \left( \frac{\partial^2 \ln \phi_i}{\partial P \partial T} \right)_{n_i} = \frac{\partial}{\partial P} \left( \left( \frac{\partial \ln \phi_i}{\partial T} \right)_{P,n_i} \right)_{T,n_i} = \frac{\partial}{\partial P} \left( \left( \frac{\partial \ln f_i}{\partial T} \right)_{P,n_i} \right)_{T,n_i} = \left( \frac{\partial^2 \ln f_i}{\partial P \partial T} \right)_{n_i} .\]</div>
 </div>
-<p><a id='pvt-eos-appendix-fugacity_pd-srk_pr-v'></a></p>
-</div>
-<div class="section" id="id3">
-<h2>Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (при постоянных объеме и температуре)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
-<div class="full-width docutils">
-<p>Логарифм коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона, <a class="reference external" href="./EOS-2-SRK-PR.html#pvt-eos-srk_pr-fugacity_coeff-tv">записанный</a> относительно объема <span class="math notranslate nohighlight">\(V\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span> и коэффициента сверхсжимаемости <span class="math notranslate nohighlight">\(Z\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align} \ln \phi_i = &amp;-\ln \frac{V - n b_m}{V} + b_i \left( \frac{n}{V - n b_m} - \frac{n \alpha_m}{R T b_m} \frac{V}{\left( V + n b_m \delta_1 \right) \left( V + n b_m \delta_2 \right)} \right) \\ &amp; + \frac{1}{R T \left( \delta_2 - \delta_1 \right)} \left( \frac{2 \sum_{j=1}^{N_c} \alpha_{ij} x_j}{b_m} - \frac{\alpha_m b_i}{b_m^2} \right) \ln \left( \frac{V + n b_m \delta_1}{V + n b_m \delta_2} \right) - \ln Z. \end{align} \end{split}\]</div>
-</div>
-</div>
-<div class="section" id="id4">
-<h2>Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (при постоянных объеме и температуре)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
-<p><a id='pvt-eos-appendix-fugacity_pd-sw'></a></p>
-</div>
-<div class="section" id="id5">
-<h2>Частные производные летучести компонентов с использованием уравнения состояния Сорейде-Уитсона<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
-<div class="full-width docutils">
-<p>Рассмотрим нахождение частных производных логарифма коэффициента летучести (и логарифма летучести) по давлению, объему температуре и количеству вещества компонента компонента с использованием <a class="reference external" href="./EOS-3-SW.html#pvt-eos-sw">уравнения состояния Сорейде-Уитсона</a>. Для уравнения состояния Сорейде-Уитсона частные производные логарифма коэффициента летучести (и логарифма летучести) находятся аналогично рассмотренным ранее <a class="reference external" href="#pvt-eos-appendix-fugacity_pd-srk_pr">частным производным для уравнения состояния Пенга-Робинсона</a> за исключением частных производных коэффициента попарного взаимодействия по температуре для ряда компонентов, а также частной производной параметра <span class="math notranslate nohighlight">\(\alpha_i\)</span> для воды как компонента.</p>
-<p>Для углеводородов <span class="math notranslate nohighlight">\(i\)</span> частная производная коэффициента попарного взаимодействия с водой <span class="math notranslate nohighlight">\(j\)</span> по температуре определяется следующим выражением:</p>
-<div class="math notranslate nohighlight">
-\[\left( \frac{\partial \delta_{ij}}{\partial T} \right)_{P,n_i} = \frac{A_1}{{T_c}_i} \left( 1 + \alpha_1 c_w \right) + 2 A_2 \frac{T}{{T_c}_i} \left( 1 + \alpha_2 c_w \right).\]</div>
-<p>Коэффициенты в данном уравнении были представлены <a class="reference external" href="./EOS-3-SW.html#pvt-eos-sw">ранее</a>. Для неуглеводородных компонентов <span class="math notranslate nohighlight">\(i\)</span> частная производная коэффициента попарного взаимодействия с водой <span class="math notranslate nohighlight">\(j\)</span> по температуре определяется следующими выражениями:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align}
-\left( \frac{\partial \delta_{ij}^{AQ} \left( N_2 \right)}{\partial T} \right)_{P,n_i} &amp;= \frac{0.44338}{{T_c}_i} \left( 1 + 0.08126 c_w^{0.75} \right); \\
-\left( \frac{\partial \delta_{ij}^{AQ} \left( CO_2 \right)}{\partial T} \right)_{P,n_i} &amp;= \frac{1}{{T_c}_i} \left( 0.23580 \left( 1 + 0.17837 c_w^{0.979} \right) + 142.8911 e^{-6.7222 {T_r}_i - c_w} \right); \\
-\left( \frac{\partial \delta_{ij}^{AQ} \left( H_2S \right)}{\partial T} \right)_{P,n_i} &amp;= \frac{0.23426}{{T_c}_i}.
-\end{align} \end{split}\]</div>
-<p>Частная производная параметра <span class="math notranslate nohighlight">\(\alpha_i\)</span> для воды по температуре:</p>
-<div class="math notranslate nohighlight">
-\[\left( \frac{\partial \alpha_w}{\partial T} \right)_{P,n_i} = 2 \sqrt{a_w \alpha_w} \left( - \frac{0.4530}{{T_c}_w} \left( 1 - 0.0103 c_w^{1.1} \right) - 0.0102  \frac{{T_c}_w^3}{T^4} \right).\]</div>
-</div>
-</div>
-<div class="section" id="id6">
-<h2>Вторые частные производные летучести компонентов с использованием уравнения состояния Сорейде-Уитсона<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
-<div class="full-width docutils">
-<p>Вторая частная производная коэффициента попарного взаимодействия между углеводородом <span class="math notranslate nohighlight">\(i\)</span> и водой <span class="math notranslate nohighlight">\(j\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[\left( \frac{\partial^2 \delta_{ij}}{\partial T^2} \right)_{P,n_i} = \frac{2 A_2}{{T_c}_i} \left( 1 + \alpha_2 c_w \right).\]</div>
-<p>Для неуглеводородных компонентов вторые частные производные коэффициентов попарного взаимодействия:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align}
-\left( \frac{\partial^2 \delta_{ij}^{AQ} \left( N_2 \right)}{\partial T^2} \right)_{P,n_i} &amp;= 0; \\
-\left( \frac{\partial^2 \delta_{ij}^{AQ} \left( CO_2 \right)}{\partial T^2} \right)_{P,n_i} &amp;= -\frac{960.5426}{{T_c}_i^2} e^{-6.7222 {T_r}_i - c_w}; \\
-\left( \frac{\partial^2 \delta_{ij}^{AQ} \left( H_2S \right)}{\partial T^2} \right)_{P,n_i} &amp;= 0.
-\end{align} \end{split}\]</div>
-<p>Вторая частная производная параметра <span class="math notranslate nohighlight">\(\alpha_i\)</span> по температуре для воды:</p>
-<div class="math notranslate nohighlight">
-\[\left( \frac{\partial^2 \alpha_w}{\partial T^2} \right)_{P,n_i} = \frac{1}{2 \alpha_w} \left( \frac{\partial \alpha_w}{\partial T} \right)_{P,n_i}^2 + 0.0816 \frac{\sqrt{a_w \alpha_w} {T_c}_w^3}{T^5}.\]</div>
-</div>
-</div>
-</div>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
         requestKernel: true,
         binderOptions: {
-            repo: "DanielSkorov/Basics-of-Modelling",
-            ref: "main",
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
         },
         codeMirrorConfig: {
             theme: "abcdef",
             mode: "python"
         },
         kernelOptions: {
-            kernelName: "python3",
+            name: "python3",
             path: "./1-PVT\2-EOS"
         },
         predefinedOutput: true
@@ -1494,44 +1078,104 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
+                </article>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="EOS-6-CPA.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Кубическое уравнение состояние с учетом ассоциации молекул</p>
-        </div>
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="EOS-3-CPA.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Кубическое уравнение состояние с учетом ассоциации молекул</p>
+      </div>
     </a>
-    <a class='right-next' id="next-link" href="EOS-Appendix-B-BIP.html" title="next page">
-    <div class="prev-next-info">
+    <a class="right-next"
+       href="EOS-Appendix-B-BIP.html"
+       title="next page">
+      <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">Универсальный расчет коэффициентов попарного взаимодействия</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
+                </footer>
+              
+            </div>
             
-        </div>
-    </div>
-    <footer class="footer">
-  <p>
-    
-      By Daniel Skorov<br/>
-    
-        &copy; Copyright 2022.<br/>
-  </p>
-</footer>
-</main>
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-      </div>
-    </div>
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">Частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
   
-  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <div class="footer-item">
+    
+<p class="component-author">
+By Daniel Skorov
+</p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>

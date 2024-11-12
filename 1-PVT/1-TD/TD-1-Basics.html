@@ -1,721 +1,419 @@
 
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" data-content_root="../../" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>Введение в термодинамику &#8212; Основы моделирования пластовых систем</title>
-    
-  <link href="../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
-    
-  <link rel="stylesheet"
-    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    
-      
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=2db6e6e7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/proof.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
-    
-  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
-
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/togglebutton.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.1/dist/embed-amd.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
-    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
-    <script >
-        const thebe_selector = ".thebe,.cell"
-        const thebe_selector_input = "pre,.cell_input div.highlight"
-        const thebe_selector_output = ".output,.cell_output"
-    </script>
-    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/1-TD/TD-1-Basics';</script>
+    <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Термическое равновесие. Температура. Нулевое начало термодинамики" href="TD-2-ThermalEquilibrium.html" />
     <link rel="prev" title="Основы термодинамики" href="TD-0-Introduction.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
     
-        <div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../../index.html">
-      
-      
-      
-      <h1 class="site-logo" id="site-title">Основы моделирования пластовых систем</h1>
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../Introduction.html">
-   Основы моделирования пластовых систем
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Основы вычислительной математики
- </span>
-</p>
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../Introduction.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Основы моделирования пластовых систем</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../Introduction.html">
+                    Основы моделирования пластовых систем
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Основы вычислительной математики</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/Math-Introduction.html">
-   Введение
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../0-Math/1-LAB/LAB-0-Introduction.html">
-   Основы линейной алгебры
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-1-Vectors.html">
-     Вектор. Координаты вектора
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-2-VectorOperations.html">
-     Операции с векторами
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-3-RotationAngles.html">
-     Направляющие косинусы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-4-Matrices.html">
-     Матрицы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-5-Determinant-InverseMatrix.html">
-     Определитель матрицы. Обратная матрица
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-6-MatrixEquation.html">
-     Матричные уравнения
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-7-Eigenvalues-Eigenvectors.html">
-     Собственные векторы и значения матриц
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/1-LAB/LAB-8-LinearTransformations.html">
-     Линейные преобразования
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/2-Limits/Limits-0-Introduction.html">
-   Пределы
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/3-DIB/DIB-0-Introduction.html">
-   Основы дифференциальных и интегральных исчислений
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../0-Math/4-DE/DE-0-Introduction.html">
-   Дифференциальные уравнения
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../0-Math/5-OM/OM-0-Introduction.html">
-   Методы оптимизации функций
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-1-GradientDescent.html">
-     Нахождение стационарной точки функции методом градиентного спуска
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-2-Newton.html">
-     Нахождение стационарной точки функции методом Ньютона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-3-QNewton.html">
-     Квази-ньютоновские методы поиска стационарной точки функции
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-4-TR.html">
-     Метод доверительной области
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../0-Math/5-OM/OM-5-Tunneling.html">
-     Туннельный метод оптимизации функции
-    </a>
-   </li>
-  </ul>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../../0-Math/Math-Introduction.html">Введение</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../0-Math/0-LAB/LAB-0-Introduction.html">Основы линейной алгебры</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-1-Vectors.html">Вектор. Координаты вектора</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-2-VectorOperations.html">Операции с векторами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-4-Matrices.html">Матрицы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  PVT-моделирование
- </span>
-</p>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PVT-моделирование</span></p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../PVT-Introduction.html">
-   Введение
-  </a>
- </li>
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="TD-0-Introduction.html">
-   Основы термодинамики
-  </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="current">
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     Введение в термодинамику
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-2-ThermalEquilibrium.html">
-     Термическое равновесие. Температура. Нулевое начало термодинамики
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-3-Heat-Work.html">
-     Количество теплоты и работа. Первое начало термодинамики
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-4-HeatCapacity.html">
-     Теплоемкость
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-5-Enthalpy.html">
-     Энтальпия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-6-Entropy.html">
-     Энтропия. Второе и третье начала термодинамики
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-7-ChemicalPotential.html">
-     Химический потенциал
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-8-Helmholtz-Gibbs.html">
-     Энергия Гельмгольца. Энергия Гиббса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-9-Observables.html">
-     Интенсивные и экстенсивные параметры
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-10-MixtureGibbsEnergy.html">
-     Энергия Гиббса многокомпонентной системы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-11-GibbsPhaseRule.html">
-     Правило фаз Гиббса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-12-GibbsDuhemEquation.html">
-     Уравнение Гиббса-Дюгема
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-13-MaxwellRelations.html">
-     Соотношения Максвелла
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-14-PhaseEquilibrium.html">
-     Свободная энергия и фазовое равновесие
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="TD-15-Fugacity.html">
-     Летучесть
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html">
-   Уравнения состояния
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-  <label for="toctree-checkbox-4">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-1-VanDerWaals.html">
-     Уравнение состояния Ван-дер-Ваальса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html">
-     Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-3-SW.html">
-     Уравнение состояния Сорейде-Уитсона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-4-SAFT.html">
-     Теория SAFT
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-5-PCSAFT.html">
-     Уравнение состояния PC-SAFT
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-6-CPA.html">
-     Кубическое уравнение состояние с учетом ассоциации молекул
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">
-     Частные производные летучести компонентов
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">
-     Универсальный расчет коэффициентов попарного взаимодействия
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../3-Parameters/Parameters-0-Introduction.html">
-   Определение параметров систем с использованием уравнений состояния
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-  <label for="toctree-checkbox-5">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-1-InternalEnergy.html">
-     Внутренняя энергия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-2-Enthalpy.html">
-     Энтальпия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-3-Entropy.html">
-     Энтропия
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-4-HeatCapacity.html">
-     Теплоемкость
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-5-ChemicalPotential.html">
-     Химический потенциал
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-6-GibbsEnergy.html">
-     Энергия Гиббса
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-7-HelmholtzEnergy.html">
-     Энергия Гельмгольца
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-8-Compressibility-ThermalExpansion.html">
-     Коэффициент сжимаемости. Коэффициент термического расширения
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-9-JouleThomsonCoefficient.html">
-     Коэффициент Джоуля-Томсона
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../3-Parameters/Parameters-Appendix-A-PD.html">
-     Частные производные термодинамических параметров
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../4-ESC/ESC-0-Introduction.html">
-   Равновесие. Стабильность. Критическое состояние
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-  <label for="toctree-checkbox-6">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../4-ESC/ESC-1-Equilibrium.html">
-     Определение равновесного состояния системы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../4-ESC/ESC-2-Stability.html">
-     Определение стабильности фазового состояния системы
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../4-ESC/ESC-3-Criticality.html">
-     Определение критического состояния системы
-    </a>
-   </li>
-  </ul>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../PVT-Introduction.html">Введение</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="TD-0-Introduction.html">Основы термодинамики</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Введение в термодинамику</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-4-HeatCapacity.html">Теплоемкость</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-5-Enthalpy.html">Энтальпия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-7-ChemicalPotential.html">Химический потенциал</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TD-15-Fugacity.html">Летучесть</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  Гидродинамика
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../2-ReservoirHydrodynamics/RH-Introduction.html">
-   Введение
-  </a>
- </li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2-EOS/EOS-0-Introduction.html">Уравнения состояния</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-1-VanDerWaals.html">Уравнение состояния Ван-дер-Ваальса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  Инициализация модели пласта
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../3-ReservoirInitialization/RI-Introduction.html">
-   Введение
-  </a>
- </li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3-SEC/SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../3-SEC/SEC-2-Equilibrium.html">Определение равновесного состояния системы</a></li>
 </ul>
-<p class="caption">
- <span class="caption-text">
-  Моделирование скважин
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../4-WellModelling/WM-Introduction.html">
-   Введение
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Геомеханика
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../5-Geomechanics/Geomech-Introduction.html">
-   Введение
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-0-Introduction.html">
-   Основы геомеханики
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-  <label for="toctree-checkbox-7">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-1-LinearElasticityAssumptions.html">
-     Напряженно-деформированное состояние. Допущения и условия теории упругости
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-2-StressTensor.html">
-     Напряжение. Тензор напряжений
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part1.html">
-     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 1
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part2.html">
-     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 2
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-3-StressRotation-PrincipleStresses-MohrCircles-Part3.html">
-     Базис тензора напряжений. Главные напряжения. Круги Мора. Часть 3
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../5-Geomechanics/1-RG/RG-4-StressesInEarthsCrust.html">
-     Напряженное состояние в земной коре
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../5-Geomechanics/2-ARG/ARG-0-Introduction.html">
-   Основные вопросы геомеханического моделирования
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Геохимия
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../6-Geochemistry/Geochem-Introduction.html">
-   Введение
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Численные методы в гидродинамическом моделировании
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../7-NumericalMethods/NM-Introduction.html">
-   Введение
-  </a>
- </li>
+</details></li>
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
-            
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        <a class="dropdown-buttons"
-            href="../../_sources/1-PVT/1-TD/TD-1-Basics.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
-                data-placement="left">.ipynb</button></a>
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/1-PVT/1-TD/TD-1-Basics.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+</nav></div>
     </div>
-</div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
 
-            <!-- Source interaction buttons -->
 
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
-    <div class="dropdown-buttons">
-        
-        <a class="binder-button" href="https://mybinder.org/v2/gh/DanielSkorov/Basics-of-Modelling/main?urlpath=tree/1-PVT/1-TD/TD-1-Basics.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
-                data-placement="left"><img class="binder-button-logo"
-                    src="../../_static/images/logo_binder.svg"
-                    alt="Interact on binder">Binder</button></a>
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
         
         
-        
-        <button type="button" class="btn btn-secondary topbarbtn"
-            onclick="initThebeSBT()" title="Launch Thebe" data-toggle="tooltip" data-placement="left"><i
-                class="fas fa-play"></i><span style="margin-left: .4em;">Live Code</span></button>
-        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
     </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/1-PVT/1-TD/TD-1-Basics.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
 </div>
 
-        </div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Введение в термодинамику</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
             
         </div>
     </div>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Введение в термодинамику</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                    </div>
-                </div>
-            </div>
-            
-              <div>
+
+              
                 
-  <p><a id='pvt-td-basics'></a></p>
-<div class="section" id="id1">
-<h1>Введение в термодинамику<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="pvt-td-basics">
+<span id="id1"></span><h1>Введение в термодинамику<a class="headerlink" href="#pvt-td-basics" title="Link to this heading">#</a></h1>
 <p>Рассмотрение вопросов термодинамики необходимо начать с введения таких понятий, как <em><strong>параметр</strong></em>, <em><strong>состояние</strong></em> и <em><strong>закон</strong></em>.</p>
 <p><a id='pvt-td-basics-observables'></a>
-Под термодинамическими <em><strong>параметрами</strong></em> здесь и далее будут пониматься такие свойства системы, которые могут быть измерены (или получены путем математических преобразований из измеряемых величин). Понимание и моделирование (предсказание поведения) одних термодинамических параметров системы при изменении других является основной целью PVT-моделирования. Данные параметры имеют конечные значения (в отличие от, например, <a class="reference external" href="https://en.wikipedia.org/wiki/Quantum_mechanics">квантовой механики</a>, которая рассматривает любую систему с точки зрения вероятности).  Примерами таких термодинамических параметров являются температура <span class="math notranslate nohighlight">\(T\)</span>, давление <span class="math notranslate nohighlight">\(P\)</span>, объем <span class="math notranslate nohighlight">\(V\)</span>. Стоит также отметить, что в данном разделе, в основном, будут рассматриваться термодинамические параметры макроскопических систем, нежели чем микроскопических (например, атом).</p>
+Под термодинамическими <em><strong>параметрами</strong></em> здесь и далее будут пониматься такие свойства системы, которые могут быть измерены (или получены путем математических преобразований из измеряемых величин). Понимание и моделирование (предсказание поведения) одних термодинамических параметров системы при изменении других является основной целью PVT-моделирования. Данные параметры имеют конечные значения (в отличие от, например, <a class="reference external" href="https://en.wikipedia.org/wiki/Quantum_mechanics">квантовой механики</a>, которая рассматривает любую систему с точки зрения вероятности). Примерами таких термодинамических параметров являются температура <span class="math notranslate nohighlight">\(T\)</span>, давление <span class="math notranslate nohighlight">\(P\)</span>, объем <span class="math notranslate nohighlight">\(V\)</span>. Стоит также отметить, что в данном разделе, в основном, будут рассматриваться термодинамические параметры макроскопических систем, нежели чем микроскопических (например, атом).</p>
 <p><a id='pvt-td-basics-state'></a>
 Понятие <em><strong>состояние</strong></em> системы с точки зрения термодинамики более абстрактно. Состояние системы отвечает на вопрос: какова данная система в рассматриваемый период времени? Каким образом можно определить состояние системы? Путем определения ее параметров. То есть для того чтобы охарактеризовать состояние системы необходимо определить ее параметры. Иными словами, если мы скажем, что система характеризуется такими-то объемом, давлением, температурой и т.д., то мы опишем ее состояние. Зачастую для описания состояния макроскопической системы с точки зрения термодинамики не требуется большого количества параметров. Стоит отметить, что если любой из параметров системы изменился, то можно говорить, что произошло и изменение состояния системы. Верно и обратное: если состояние системы изменилось, то изменился хотя бы один ее параметр.</p>
-<p><a id='pvt-td-basics-laws'></a>
-<em><strong>Законы</strong></em> позволяют определить взаимосвять между параметрами термодинамической системы и ее состояниями. То есть они позволяют ответить на вопросы:</p>
+<p id="pvt-td-basics-laws"><em><strong>Законы</strong></em> позволяют определить взаимосвять между параметрами термодинамической системы и ее состояниями. То есть они позволяют ответить на вопросы:</p>
 <ul class="simple">
 <li><p>Как соотносятся параметры с состояниями?</p></li>
 <li><p>Как состояния изменяются при изменении параметров?</p></li>
 <li><p>Как состояния изменяются при наличии внешних к рассматриваемой системе сил?</p></li>
 </ul>
-<p>Существует четыре (или три – в зависимости от того, как считать) закона термодинамики. <em>Вы должны играть в игру</em>. <em>Вы никогда не победите</em>. <em>Вы не можете вернуться на предыдущий уровень</em>. <em>Вы не можете выйти из игры</em>. Все четыре закона темродинамики применимы к любой макроскопической системе.</p>
-<p><a id='pvt-td-basics-ideal_gas_eos'></a>
+<p>Существует четыре закона (начала) термодинамики. <em>Вы должны играть в игру</em>. <em>Вы никогда не победите</em>. <em>Вы не можете вернуться на предыдущий уровень</em>. <em>Вы не можете выйти из игры</em>. Все четыре закона темродинамики применимы к любой макроскопической системе.</p>
+<p><a id='pvt-td-basics-idealgaseos'></a>
 В дополнении к законам термодинамики часто используют <em><strong>правила</strong></em>, понимая под ними <em><strong>уравнения состояния</strong></em>. Уравнения состояния устанавливают связь между термодинамическими параметрами. В термодинамике уравнения состояния являются либо эмпирическими зависимостями, либо они могут быть выведены из теорий, рассматривающих систему с микроскопической точки зрения. Наиболее простым уравнением состояния является уравнение состояния <a class="reference external" href="https://en.wikipedia.org/wiki/Ideal_gas#Classical_thermodynamic_ideal_gas">идеального газа</a>:</p>
 <div class="math notranslate nohighlight">
-\[ P V = N k T.\]</div>
-<p>Здесь <span class="math notranslate nohighlight">\(P\)</span> – давление газа (Па), <span class="math notranslate nohighlight">\(V\)</span> – объем газа (м³), <span class="math notranslate nohighlight">\(T\)</span> – абсолютная температура газа (K), <span class="math notranslate nohighlight">\(N\)</span> – количество молекул в системе, <span class="math notranslate nohighlight">\(k\)</span> – постоянная Больцмана <span class="math notranslate nohighlight">\(k = 1.380649 \cdot 10^{-23} \frac{Дж}{K}\)</span>. Если предположить, что количество молекул газа в системе постоянно, то уравнение состояния идеального газа говорит о том, что зная два любых параметра можно определить третий. То есть размерность фиксированного количества газа равна двум: двумя любыми параметрами можно охарактеризовать состояние системы.</p>
+\[ P V = N k T. \]</div>
+<p>Здесь <span class="math notranslate nohighlight">\(P\)</span> – давление газа (Па), <span class="math notranslate nohighlight">\(V\)</span> – объем газа (м³), <span class="math notranslate nohighlight">\(T\)</span> – абсолютная температура газа (K), <span class="math notranslate nohighlight">\(N\)</span> – количество молекул в системе, <span class="math notranslate nohighlight">\(k\)</span> – постоянная Больцмана <span class="math notranslate nohighlight">\(k = 1.380649 \cdot 10^{-23} \, \frac{Дж}{K}\)</span>. Если предположить, что количество молекул газа в системе постоянно, то уравнение состояния идеального газа говорит о том, что зная два любых параметра можно определить третий. То есть размерность фиксированного количества газа равна двум: двумя любыми параметрами можно охарактеризовать состояние системы.</p>
 <p>Необходимо ввести еще одно понятие – <em><strong>равновесие</strong></em>. Строго говоря, термодинамические параметры относятся только к <em>равновесным состояниям</em>. В зависимости от того, как рассматриваемая система взаимодействует с окружающими ее системами, равновесие может характеризоваться различными параметрами. Например, <em>механическое равновесие</em> представляет собой состояние, в котором все действующие на систему силы уравновешены. Система при этом может достичь механического равновесия в результате некоторого движения или изменения ее геометрических параметров. Другим примером равновесия является <em>диффузивное равновесие</em> (или <em>химическое равновесие</em>) – когда система стремится равномерно распределить составляющие ее молекулы в доступном пространстве. <em>Термическое равновесие</em> достигается системой в результате обмена энергией с окружающими системами в результате наличия разницы температуры. Данный энергетический обмен является основным предметом изучения термодинамики.</p>
-<p>Поскольку понятие термодинамических параметров системы применимо только к равновесным состояниям, то, строго говоря, термодинамика не позволяет описывать процесс энергетического обмена, а только его начало и конец – начальное и конечное равновесные состояния. Однако, рассматривая энергетический обмен как <em><strong>квази-стационарный</strong></em>, то есть состоящий из совокупности (последовательности) <em>равновесных состояний</em>, термодинамика может использоваться в качестве идеализированного (аппроксимационного) способа описания системы, в том числе в процессе энергетического обмена.</p>
+<p>Поскольку понятие термодинамических параметров системы применимо только к равновесным состояниям, то, строго говоря, термодинамика не позволяет описывать процесс энергитического обмена, а только его начало и конец – начальное и конечное равновесные состояния. Однако, рассматривая энергетический обмен как <em><strong>квази-стационарный</strong></em>, то есть состоящий из совокупности (последовательности) <em>равновесных состояний</em>, термодинамика может использоваться в качестве идеализированного (аппроксимационного) способа описания системы, в том числе в процессе энергетического обмена.</p>
 <p>С учетом этого, термодинамика представляется самодостаточным разделом физики, поскольку позволяет описывать состояния систем независимо от их микроскопического масштаба. Это важный аспект практического применения термодинамики для моделирования систем, поскольку микроуровневое моделирование значительно более сложно и ресурсоемко. Однако термодинамика не может охарактеризовать микроуровень, что может быть необходимо при более детальном исследовании многих процессов, в том числе фазовых переходов. Таким образом, далеко не все процессы могут быть достаточно точно описаны термодинамическими параметрами. Изучение систем на микроуровне с целью установления взаимосвязи с термодинамическими параметрами и их обоснования занимается <em>статистическая термодинамика</em>, которая лишь поверхностно будет рассмотрена в данном разделе.</p>
-</div>
+</section>
 
     <script type="text/x-thebe-config">
     {
         requestKernel: true,
         binderOptions: {
-            repo: "DanielSkorov/Basics-of-Modelling",
-            ref: "main",
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
         },
         codeMirrorConfig: {
             theme: "abcdef",
             mode: "python"
         },
         kernelOptions: {
-            kernelName: "python3",
+            name: "python3",
             path: "./1-PVT\1-TD"
         },
         predefinedOutput: true
@@ -723,44 +421,88 @@
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
+                </article>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="TD-0-Introduction.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Основы термодинамики</p>
-        </div>
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="TD-0-Introduction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Основы термодинамики</p>
+      </div>
     </a>
-    <a class='right-next' id="next-link" href="TD-2-ThermalEquilibrium.html" title="next page">
-    <div class="prev-next-info">
+    <a class="right-next"
+       href="TD-2-ThermalEquilibrium.html"
+       title="next page">
+      <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">Термическое равновесие. Температура. Нулевое начало термодинамики</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
+                </footer>
+              
+            </div>
             
-        </div>
-    </div>
-    <footer class="footer">
-  <p>
-    
-      By Daniel Skorov<br/>
-    
-        &copy; Copyright 2022.<br/>
-  </p>
-</footer>
-</main>
-
-
-      </div>
-    </div>
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
   
-  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <div class="footer-item">
+    
+<p class="component-author">
+By Daniel Skorov
+</p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>

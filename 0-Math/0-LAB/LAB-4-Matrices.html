@@ -1,0 +1,913 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Матрицы &#8212; Основы моделирования пластовых систем</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=2db6e6e7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0-Math/0-LAB/LAB-4-Matrices';</script>
+    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Определитель матрицы. Обратная матрица" href="LAB-5-Determinant-InverseMatrix.html" />
+    <link rel="prev" title="Направляющие косинусы" href="LAB-3-RotationAngles.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../Introduction.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Основы моделирования пластовых систем</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../Introduction.html">
+                    Основы моделирования пластовых систем
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Основы вычислительной математики</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../Math-Introduction.html">Введение</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="LAB-0-Introduction.html">Основы линейной алгебры</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="LAB-1-Vectors.html">Вектор. Координаты вектора</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-2-VectorOperations.html">Операции с векторами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Матрицы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PVT-моделирование</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../1-PVT/PVT-Introduction.html">Введение</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/1-TD/TD-0-Introduction.html">Основы термодинамики</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-1-Basics.html">Введение в термодинамику</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-4-HeatCapacity.html">Теплоемкость</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-5-Enthalpy.html">Энтальпия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-7-ChemicalPotential.html">Химический потенциал</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-15-Fugacity.html">Летучесть</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-0-Introduction.html">Уравнения состояния</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-1-VanDerWaals.html">Уравнение состояния Ван-дер-Ваальса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-2-SRK-PR.html">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-2-Equilibrium.html">Определение равновесного состояния системы</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/0-Math/0-LAB/LAB-4-Matrices.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Матрицы</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-definition">Определение и объявление</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-dotnumber">Умножение матрицы на число</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-addition">Сложение матриц</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-multiplication">Произведение матриц</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-dotvector">Произведение матрицы и вектора</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-transpose">Транспонирование матрицы</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-trace">След матрицы</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="cell tag_remove-input docutils container">
+</div>
+<section class="tex2jax_ignore mathjax_ignore" id="math-lab-matrix">
+<span id="id1"></span><h1>Матрицы<a class="headerlink" href="#math-lab-matrix" title="Link to this heading">#</a></h1>
+<section id="math-lab-matrix-definition">
+<span id="id2"></span><h2>Определение и объявление<a class="headerlink" href="#math-lab-matrix-definition" title="Link to this heading">#</a></h2>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p>Под <em><strong>матрицей</strong></em> в общем смысле понимается совокупность строк и столбцов, на пересечении которых находяется элементы. В качестве элементов в разделе линейной алгебры используются действительные числа.</p>
+</div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Существуют также многомерные матрицы, называемые <em>тензорами</em>. Например, трехмерный тензор объявляется следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \exists ~ \mathbf{T} \in {\rm I\!R}^{n \times m \times k}. \]</div>
+</div>
+</aside>
+<p>Для обозначения матрицы здесь и далее будут использоваться заглавные латинские буквы, выделенные жирным, например, <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>. В отличие от <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">вектора</span></a>, представляющего собой одномерный набор действительных чисел, матрица является двумерной. Например, следующая запись</p>
+<div class="math notranslate nohighlight">
+\[ \exists ~ \mathbf{A} \in {\rm I\!R}^{n \times m} \]</div>
+<p>читается следующим образом: <em>существует</em> <span class="math notranslate nohighlight">\(\left( \exists \right)\)</span> <em>матрица</em> <span class="math notranslate nohighlight">\(\left( \mathbf{A} \right)\)</span> <em>, принадлежащая пространству реальных чисел</em> <span class="math notranslate nohighlight">\(\left( {\rm I\!R} \right)\)</span>, <em>размерностью</em> <span class="math notranslate nohighlight">\(n \times m\)</span>. Данная запись объявляет матрицу <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> следующего вида:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{A} = \begin{bmatrix} a_{1,1} &amp; a_{1,2} &amp; \ldots &amp; a_{1,m} \\ a_{2,1} &amp; a_{2,2} &amp; \ldots &amp; a_{2,m} \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ a_{n,1} &amp; a_{n,2} &amp; \ldots &amp; a_{n,m} \end{bmatrix}. \end{split}\]</div>
+<p>Кроме того, матрица может обозначаться путем указания элементов с индексами, например, для изложенного выше примера:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{A} = \left\{ a_{ij}, \, i=1 \ldotp \ldotp n, \, j = 1 \ldotp \ldotp m \right\}. \]</div>
+<!-- ```{admonition} Определение
+:class: tip
+***Рангом матрицы*** с $n$ строками и $m$ столбцами называется максимальное число линейно независимых строк или столбцов (то есть таких строк и столбцов, которые не могут быть выражены линейно через другие) матрицы.
+``` -->
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p><em><strong>Квадратной матрицей</strong></em> называется матрица, у которой число строк равняется числу столбцов (и это число называется порядком).</p>
+</div>
+<p>Рассмотрим следующую <em>прямоугольную</em> матрицу:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{M} = \begin{bmatrix} 3 &amp; 5 &amp; -17 \\ -1 &amp; 0 &amp; 10 \end{bmatrix}. \end{split}\]</div>
+<p>С использованием <em><a class="reference external" href="https://numpy.org/">numpy</a></em> матрица задается следующим образом:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">17</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]])</span>
+<span class="n">M</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[  3,   5, -17],
+       [ -1,   0,  10]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Данная матрица состоит из двух строк и трех столбцов.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(2, 3)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Если в матрице количество строк (столбцов) равно 1, то такая матрица называется <em><strong>вектором-строкой</strong></em> (<em><strong>вектором-столбцом</strong></em>). Данная тема подробно освещалась в <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">разделе, посвященном векторам</span></a>.</p>
+</section>
+<section id="math-lab-matrix-dotnumber">
+<span id="id3"></span><h2>Умножение матрицы на число<a class="headerlink" href="#math-lab-matrix-dotnumber" title="Link to this heading">#</a></h2>
+<p>Чтобы <em><strong>умножить матрицу на число</strong></em>, необходимо умножить каждый ее элемент на данное число:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \lambda \cdot \mathbf{M} = \lambda \mathbf{M} = \lambda \cdot \begin{bmatrix} m_{11} &amp; \dots &amp; m_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ m_{n1} &amp; \dots &amp; m_{nk} \end{bmatrix} = \begin{bmatrix} \lambda \cdot m_{11} &amp; \dots &amp; \lambda \cdot m_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ \lambda \cdot m_{n1} &amp; \dots &amp; \lambda \cdot m_{nk} \end{bmatrix}. \end{split}\]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span> <span class="o">*</span> <span class="n">M</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[  6,  10, -34],
+       [ -2,   0,  20]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">*</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[  6,  10, -34],
+       [ -2,   0,  20]])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="math-lab-matrix-addition">
+<span id="id4"></span><h2>Сложение матриц<a class="headerlink" href="#math-lab-matrix-addition" title="Link to this heading">#</a></h2>
+<p>Чтобы <em><strong>сложить матрицы</strong></em> между собой, необходимо сложить их значения поэлементно. Можно складывать матрицы только с одинаковыми размерностями.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{M} + \mathbf{P} = \begin{bmatrix} m_{11} &amp; \dots &amp; m_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ m_{n1} &amp; \dots &amp; m_{nk} \end{bmatrix} + \begin{bmatrix} p_{11} &amp; \dots &amp; p_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ p_{n1} &amp; \dots &amp; p_{nk} \end{bmatrix} = \begin{bmatrix} m_{11} + p_{11} &amp; \dots &amp; m_{1k} + p_{1k} \\ \vdots &amp; \ddots &amp; \vdots \\ m_{n1} + p_{n1} &amp; \dots &amp; m_{nk} + p_{nk} \end{bmatrix}. \end{split}\]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">7</span><span class="p">]])</span>
+<span class="n">P</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 1,  3, 14],
+       [ 5,  2, -7]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">+</span> <span class="n">P</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 4,  8, -3],
+       [ 4,  2,  3]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">+</span> <span class="n">M</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 4,  8, -3],
+       [ 4,  2,  3]])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="math-lab-matrix-multiplication">
+<span id="id5"></span><h2>Произведение матриц<a class="headerlink" href="#math-lab-matrix-multiplication" title="Link to this heading">#</a></h2>
+<p><em><strong>Произведением двух матриц</strong></em> <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> и <span class="math notranslate nohighlight">\(\mathbf{P}\)</span> называется матрица <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span>, элемент которой, находящийся на пересечении <span class="math notranslate nohighlight">\(i\)</span>-ой строки и <span class="math notranslate nohighlight">\(j\)</span>-го столбца равен сумме произведений элементов <span class="math notranslate nohighlight">\(i\)</span>-ой строки матрицы <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> на соответствующие (по порядку) элементы <span class="math notranslate nohighlight">\(j\)</span>-го столбца матрицы <span class="math notranslate nohighlight">\(\mathbf{P}\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[ q_{ij} = m_{i1} \cdot p_{1j} + m_{i2} \cdot p_{2j} + \ldots + m_{in} \cdot p_{nj}. \]</div>
+<p>Исходя из данного определения, количество столбцов матрицы <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> должно быть равно количеству строк матрицы <span class="math notranslate nohighlight">\(\mathbf{P}\)</span>. Произведение двух матриц будет обозначаться <span class="math notranslate nohighlight">\(\mathbf{M} \mathbf{P}\)</span></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="n">M</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 1,  2],
+       [-1,  3]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]])</span>
+<span class="n">P</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 3,  5, -2],
+       [-1,  0, 10]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 1,  5, 18],
+       [-6, -5, 32]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Результатом произведения некоторой матрицы на <em>единичную матрицу</em> является эта же самая матрица:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">P</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 3,  5, -2],
+       [-1,  0, 10]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p><em><strong>Единичная матрица</strong></em> является квадратной матрицей, на главной диагонали которой расположены единицы, а все остальные элементы равны нулю.</p>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">I</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[1, 0, 0],
+       [0, 1, 0],
+       [0, 0, 1]])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="math-lab-matrix-dotvector">
+<span id="id6"></span><h2>Произведение матрицы и вектора<a class="headerlink" href="#math-lab-matrix-dotvector" title="Link to this heading">#</a></h2>
+<p>В результате произведения матрицы и вектора получится вектор:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{M} \mathbf{a} = \mathbf{b}. \]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([ 9, 11])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Кроме того, произведение матрицы <span class="math notranslate nohighlight">\(\mathbf{A} = \left\{ a_{ij}, \, i=1 \ldotp \ldotp n, \, j = 1 \ldotp \ldotp m \right\}\)</span> и вектора <span class="math notranslate nohighlight">\(\mathbf{b} = \left\{b_j, \, j = 1 \ldotp \ldotp m \right\}\)</span> можно записать следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \sum_{j=1}^m a_{ij} \cdot b_j = c_i. \]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+<span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([17, 32, 47, 62])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([17, 32, 47, 62])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Результатом произведения единичной матрицы и вектора является этот же вектор.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">I</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([4, 5, 6])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="math-lab-matrix-transpose">
+<span id="id7"></span><h2>Транспонирование матрицы<a class="headerlink" href="#math-lab-matrix-transpose" title="Link to this heading">#</a></h2>
+<p>Для того чтобы <em><strong>транспонировать матрицу</strong></em>, нужно ее строки записать в столбцы транспонированной матрицы. Транспонирование обозначается символом <span class="math notranslate nohighlight">\(^\top\)</span> или изменением индексов матрицы:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align} &amp; \mathbf{A} = \left\{ a_{ij}, \, i=1 \ldotp \ldotp n, \, j = 1 \ldotp \ldotp m \right\}, \\ &amp; \mathbf{A}^{\top} = \left\{ a_{ji}, \, j = 1 \ldotp \ldotp m, \, i=1 \ldotp \ldotp n \right\}. \end{align} \end{split}\]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[0, 1, 2],
+       [1, 2, 3],
+       [2, 3, 4],
+       [3, 4, 5]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[0, 1, 2, 3],
+       [1, 2, 3, 4],
+       [2, 3, 4, 5]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p><em><strong>Симметричной матрицей</strong></em> называется <em>квадратная матрица</em>, совпадающая со своей транспонированной матрицей, то есть:</p>
+<div class="math notranslate nohighlight">
+\[ A = A^{\top}. \]</div>
+</div>
+<p>Например, единичная матрица является симметричной:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">I</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<p>Например, симметричная матрица получается в результате <a class="reference internal" href="LAB-2-VectorOperations.html#math-lab-vectoroperations-outerproduct"><span class="std std-ref">тензорного произведения вектора</span></a> на самого себя:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[16, 20, 24],
+       [20, 25, 30],
+       [24, 30, 36]])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="math-lab-matrix-trace">
+<span id="id8"></span><h2>След матрицы<a class="headerlink" href="#math-lab-matrix-trace" title="Link to this heading">#</a></h2>
+<p>Под <em><strong>следом матрицы</strong></em> понимается сумма компонентов главной диагонали квадратной матрицы.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">]])</span>
+<span class="n">A</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 1,  3, 14],
+       [ 5,  2, -7],
+       [ 4, -2,  7]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.int64(10)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./0-Math\0-LAB"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="LAB-3-RotationAngles.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Направляющие косинусы</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="LAB-5-Determinant-InverseMatrix.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Определитель матрицы. Обратная матрица</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-definition">Определение и объявление</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-dotnumber">Умножение матрицы на число</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-addition">Сложение матриц</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-multiplication">Произведение матриц</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-dotvector">Произведение матрицы и вектора</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-transpose">Транспонирование матрицы</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#math-lab-matrix-trace">След матрицы</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Daniel Skorov
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

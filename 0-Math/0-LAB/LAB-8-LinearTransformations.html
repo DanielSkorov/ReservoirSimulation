@@ -1,0 +1,744 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Линейные преобразования &#8212; Основы моделирования пластовых систем</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=2db6e6e7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0-Math/0-LAB/LAB-8-LinearTransformations';</script>
+    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Методы оптимизации функций" href="../1-OM/OM-0-Introduction.html" />
+    <link rel="prev" title="Собственные векторы и значения матриц" href="LAB-7-Eigenvalues-Eigenvectors.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../Introduction.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Основы моделирования пластовых систем</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../Introduction.html">
+                    Основы моделирования пластовых систем
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Основы вычислительной математики</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../Math-Introduction.html">Введение</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="LAB-0-Introduction.html">Основы линейной алгебры</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="LAB-1-Vectors.html">Вектор. Координаты вектора</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-2-VectorOperations.html">Операции с векторами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-4-Matrices.html">Матрицы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Линейные преобразования</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PVT-моделирование</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../1-PVT/PVT-Introduction.html">Введение</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/1-TD/TD-0-Introduction.html">Основы термодинамики</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-1-Basics.html">Введение в термодинамику</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-4-HeatCapacity.html">Теплоемкость</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-5-Enthalpy.html">Энтальпия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-7-ChemicalPotential.html">Химический потенциал</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-15-Fugacity.html">Летучесть</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-0-Introduction.html">Уравнения состояния</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-1-VanDerWaals.html">Уравнение состояния Ван-дер-Ваальса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-2-SRK-PR.html">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-2-Equilibrium.html">Определение равновесного состояния системы</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/0-Math/0-LAB/LAB-8-LinearTransformations.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Линейные преобразования</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="cell tag_remove-input docutils container">
+</div>
+<section class="tex2jax_ignore mathjax_ignore" id="math-lab-lineartransform">
+<span id="id1"></span><h1>Линейные преобразования<a class="headerlink" href="#math-lab-lineartransform" title="Link to this heading">#</a></h1>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p>Пусть имеется множество <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">векторов</span></a>, для каждого из которых определены операции <a class="reference internal" href="LAB-2-VectorOperations.html#math-lab-vectoroperations"><span class="std std-ref">сложения и умножения на скаляр</span></a>, при этом, если результаты данных операций также принадлежат данному множеству, и для каждого элемента этого множества выполняются <a class="reference external" href="https://en.wikipedia.org/wiki/Vector_space">аксиомы векторного пространства</a>, то такое множество называется <em><strong>векторным (или линейным) пространством</strong></em>.</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p>Если в некотором линейном пространстве <span class="math notranslate nohighlight">\(\mathbf{V}\)</span> каждому вектору <span class="math notranslate nohighlight">\(\mathbf{v}\)</span> по некоторому правилу <span class="math notranslate nohighlight">\(\mathbf{T}\)</span> поставлен в соответствие вектор <span class="math notranslate nohighlight">\(\mathbf{u}\)</span> этого же пространства, то говорят, что в данном пространстве задана <em><strong>функция линейного преобразования</strong></em> (<em>linear transformation</em>).</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{u} = \mathbf{T} \left(\mathbf{v} \right). \]</div>
+</div>
+<p>При этом, для функции линейного преобразования должны выполняться <em><strong>свойства линейности</strong></em>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{T}\left( a + b \right)=\mathbf{T} \left( a \right) + \mathbf{T} \left( b \right) ;\\ \mathbf{T} \left( \lambda a \right) = \lambda \mathbf{T} \left( a \right). \end{split}\]</div>
+<p>Рассмотрим пример:</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть функция преобразования определена так, что:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{T} \left( \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \right) = \begin{bmatrix} x_1 + x_2 \\ 3x_1 \end{bmatrix}. \end{split}\]</div>
+<p>Необходимо доказать, что данное преобразование является линейным.</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Рассмотрим два вектора <span class="math notranslate nohighlight">\(\mathbf{a} = \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}\)</span> и <span class="math notranslate nohighlight">\(\mathbf{b} = \begin{bmatrix} b_1 \\ b_2 \end{bmatrix}.\)</span> Их сумма:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{a} + \mathbf{b} = \begin{bmatrix} a_1 + b_1 \\ a_2 + b_2 \end{bmatrix}. \end{split}\]</div>
+<p class="sd-card-text">Тогда:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{T} \left( \mathbf{a} + \mathbf{b} \right) = \mathbf{T} \left( \begin{bmatrix} a_1 + b_1 \\ a_2 + b_2 \end{bmatrix} \right) = \begin{bmatrix} a_1 + b_1 + a_2 + b_2 \\ 3a_1 + 3b_2 \end{bmatrix}.\end{split}\]</div>
+<p class="sd-card-text">Линейное преобразование вектора <span class="math notranslate nohighlight">\(\mathbf{a}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{T} \left( \mathbf{a} \right)= \mathbf{T} \left( \begin{bmatrix} a_1 \\ a_2 \end{bmatrix} \right) = \begin{bmatrix} a_1 + a_2 \\ 3a_1 \end{bmatrix}. \end{split}\]</div>
+<p class="sd-card-text">Линейное преобразование вектора <span class="math notranslate nohighlight">\(\mathbf{b}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{T} \left( \mathbf{b} \right) = \mathbf{T} \left( \begin{bmatrix} b_1 \\ b_2 \end{bmatrix} \right) = \begin{bmatrix} b_1 + b_2 \\ 3b_1 \end{bmatrix}. \\ \mathbf{T} \left( \mathbf{a} \right) + \mathbf{T} \left( \mathbf{b} \right) = \begin{bmatrix} a_1 + a_2 \\ 3a_1 \end{bmatrix} + \begin{bmatrix} b_1 + b_2 \\ 3b_1 \end{bmatrix} = \begin{bmatrix} a_1 + a_2 + b_1 + b_2 \\ 3a_1 + 3b_1 \end{bmatrix}. \end{split}\]</div>
+<p class="sd-card-text">Из этого следует, что</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{T} \left(\mathbf{a} + \mathbf{b} \right) = \mathbf{T} \left( \mathbf{a} \right) + \mathbf{T} \left( \mathbf{b} \right). \]</div>
+<p class="sd-card-text">Докажем для данного примера и второе свойство линейности:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{T} \left( \lambda \mathbf{a} \right) = \mathbf{T} \left(\lambda \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}\right) = \mathbf{T} \left( \begin{bmatrix} \lambda a_1 \\ \lambda a_2 \end{bmatrix} \right) = \begin{bmatrix} \lambda a_1 + \lambda a_2 \\ 3 \lambda a_1 \end{bmatrix} \\ \lambda \mathbf{T} \left( \mathbf{a} \right) = \lambda \mathbf{T} \left( \begin{bmatrix} a_1 \\ a_2 \end{bmatrix} \right) = \lambda \begin{bmatrix} a_1 + a_2 \\ 3a_1 \end{bmatrix} = \begin{bmatrix} \lambda a_1 + \lambda a_2 \\ 3 \lambda a_1 \end{bmatrix}. \end{split}\]</div>
+<p class="sd-card-text">Из этого следует, что</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{T} \left( \lambda \mathbf{a} \right) = \lambda \mathbf{T} \left( \mathbf{a} \right). \]</div>
+<p class="sd-card-text">Таким образом, преобразование <span class="math notranslate nohighlight">\(\mathbf{T} \left( \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \right) = \begin{bmatrix} x_1 + x_2 \\ 3x_1 \end{bmatrix}\)</span> является линейным.</p>
+</div>
+</details><div class="danger admonition">
+<p class="admonition-title">Теорема</p>
+<p>Любое линейное преобразование вектора можно представить в виде произведения матрицы на данный вектор.</p>
+</div>
+<div class="proof admonition">
+<p class="admonition-title">Доказательство</p>
+<p>Пусть имеется вектор <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. Данный вектор можно разложить на сумму:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ \vdots \\ x_n \end{bmatrix}
+&amp;= x_1 \cdot \begin{bmatrix} 1 \\ 0 \\ 0 \\ \vdots \\ 0 \end{bmatrix} + x_2 \cdot \begin{bmatrix} 0 \\ 1 \\ 0 \\ \vdots \\ 0 \end{bmatrix} + x_3 \cdot \begin{bmatrix} 0 \\ 0 \\ 1 \\ \vdots \\ 0 \end{bmatrix} + \ldots + x_n \cdot \begin{bmatrix} 0 \\ 0 \\ 0 \\ \vdots \\ 1 \end{bmatrix} \\
+&amp;= x_1 \cdot \mathbf{e_1} + x_2 \cdot \mathbf{e_2} + \ldots + x_n \cdot \mathbf{e_n},
+\end{align} \end{split}\]</div>
+<p>где <span class="math notranslate nohighlight">\(\mathbf{e_1}\)</span>, <span class="math notranslate nohighlight">\(\mathbf{e_2}\)</span>, <span class="math notranslate nohighlight">\(\ldots\)</span>, <span class="math notranslate nohighlight">\(\mathbf{e_n}\)</span> – вертикальные векторы единичной квадратной матрицы <span class="math notranslate nohighlight">\(\mathbf{I_n}\)</span> размерностью <span class="math notranslate nohighlight">\(n \times n\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{I_n} = \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; \ldots &amp; 0 \\ 0 &amp; 1 &amp; 0 &amp; \ldots &amp; 0 \\ 0 &amp; 0 &amp; 1 &amp; \ldots &amp; 0 \\ \vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ 0 &amp; 0 &amp; 0 &amp; \ldots &amp; 1 \end{bmatrix}. \end{split}\]</div>
+<p>Тогда линейное преобразование вектора <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\mathbf{T} \left( \mathbf{x} \right)
+&amp;= \mathbf{T} \left( x_1 \cdot \mathbf{e_1} + x_2 \cdot \mathbf{e_2} + \ldots + x_n \cdot \mathbf{e_n} \right) \\
+&amp;= \mathbf{T} \left( x_1 \cdot \mathbf{e_1} \right) + \mathbf{T} \left( x_2 \cdot \mathbf{e_2} \right) + \ldots + \mathbf{T} \left( x_n \cdot \mathbf{e_n} \right) \\
+&amp;= x_1 \cdot \mathbf{T} \left( \mathbf{e_1} \right) + x_2 \cdot \mathbf{T} \left( \mathbf{e_2} \right) + \ldots + x_n \cdot \mathbf{T} \left( \mathbf{e_n} \right).
+\end{align}\end{split}\]</div>
+<p>Здесь последовательно были применены свойства линейности линейных преобразований. Последнее выражение может быть преобразовано следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\mathbf{T} \left( \mathbf{x} \right)
+&amp;= x_1 \cdot \mathbf{T} \left( \mathbf{e_1} \right) + x_2 \cdot \mathbf{T} \left( \mathbf{e_2} \right) + \ldots + x_n \cdot \mathbf{T} \left( \mathbf{e_n} \right) \\
+&amp;= \begin{bmatrix} | &amp; | &amp; \, &amp; | \\ \mathbf{T} \left( \mathbf{e_1} \right) &amp; \mathbf{T} \left( \mathbf{e_2} \right) &amp; \ldots &amp; \mathbf{T} \left( \mathbf{e_n} \right) \\ | &amp; | &amp; \, &amp; | \end{bmatrix} \cdot \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}.
+\end{align} \end{split}\]</div>
+<p>В свою очередь, <span class="math notranslate nohighlight">\(\mathbf{T} \left( \mathbf{e_n} \right)\)</span> – вектор. Таким образом, линейное преобразование любого вектора может быть представлено в виде произведения матрицы на этот же вектор:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{T} \left( \mathbf{x} \right) = \mathbf{A} \mathbf{x}. \]</div>
+<p>Такая матрица <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> называется матрицей преобразования по отношению к рассматриваемому (<em>стандартному</em>) базису.</p>
+</div>
+<p>Однако один и тот же вектор может быть представлен в различных базисах. Пусть имеется вектор <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>, координаты которого выражены через базис <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>. Это может быть записано следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<p>Тогда вектор <span class="math notranslate nohighlight">\(\mathbf{T} \left( \mathbf{x} \right)\)</span> также выражается через координаты базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B}. \]</div>
+<p>При этом, линейное преобразование <span class="math notranslate nohighlight">\(\mathbf{T}\)</span> по-прежнему устанавливает связь между этими двумя векторами, поэтому можно записать:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<p>Такая матрица <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> называется матрицей преобразования по отношению к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>. Известно, что любой базис определяется через <span class="math notranslate nohighlight">\(n\)</span> базисных векторов:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{B} = \begin{Bmatrix} \mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_n} \end{Bmatrix}. \]</div>
+<p>При этом, любой вектор <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">можно представить</span></a> в виде суммы произведений координат данного вектора и базисных векторов. Если имеется вектор <span class="math notranslate nohighlight">\(\begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}\)</span>, представленный в виде координат <span class="math notranslate nohighlight">\(\begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}_\mathbf{B}\)</span>, отнесенных к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, то:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = x_1 \cdot \mathbf{v_1} + x_2 \cdot \mathbf{v_2} + \ldots + x_n \cdot \mathbf{v_n}. \]</div>
+<p>Рассмотрим пример. Пусть базис <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> задан векторами <span class="math notranslate nohighlight">\(\mathbf{v_1} = \begin{bmatrix} 2 \\ 1 \end{bmatrix}\)</span> и <span class="math notranslate nohighlight">\(\mathbf{v_2} = \begin{bmatrix} 1 \\ 2 \end{bmatrix}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{B} = \begin{Bmatrix} \mathbf{v_1}, \mathbf{v_2}\end{Bmatrix}. \]</div>
+<p>Рассмотрим вектор:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{x} = 3 \cdot \mathbf{v_1} + 2 \cdot \mathbf{v_2} = 3 \cdot \begin{bmatrix} 2 \\ 1 \end{bmatrix} + 2 \cdot \begin{bmatrix} 1 \\ 2 \end{bmatrix} = \begin{bmatrix} 8 \\ 7 \end{bmatrix}. \end{split}\]</div>
+<div class="cell tag_remove-input docutils container">
+<div class="cell_output docutils container">
+<img alt="../../_images/b4cf584c5300a1e9134cda9647eb16de0563e2fee06d762c0f67219bdcf4c31f.png" src="../../_images/b4cf584c5300a1e9134cda9647eb16de0563e2fee06d762c0f67219bdcf4c31f.png" />
+</div>
+</div>
+<p>Тогда вектор <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> относительно базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = \begin{bmatrix} 3 \\ 2 \end{bmatrix}_\mathbf{B}. \end{split}\]</div>
+<p>Таким образом, вектор <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> в стандартном базисе может быть выражен в виде произведения матрицы (назовем ее <span class="math notranslate nohighlight">\(\mathbf{C}^{-1}\)</span>), составленной из базисных векторов другого базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, на данный вектор, представленный в базисе <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{x} = \begin{bmatrix} \mathbf{v_1} &amp; \mathbf{v_2} &amp; \ldots &amp; \mathbf{v_n} \end{bmatrix} \cdot \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = \mathbf{C}^{-1} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+<span class="n">C_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">C_inv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_B</span><span class="p">)</span>
+<span class="n">x</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[8],
+       [7]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>И, наоборот, если у нас есть координаты вектора <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> в стандтартном базисе, то определить его координаты относительно базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> можно следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = \mathbf{C} \mathbf{x}. \]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">C_inv</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[3.],
+       [2.]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Из этого следует, что любой переход от одного базиса к другому можно записать в виде матричного произведения.</p>
+<p>Итак, линейное преобразование <span class="math notranslate nohighlight">\(\mathbf{T}\)</span> в базисе <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, устанавливающее связь между вектором <span class="math notranslate nohighlight">\(\begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}\)</span> и вектором <span class="math notranslate nohighlight">\(\begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<p>Однако линейное преобразование <span class="math notranslate nohighlight">\(\mathbf{T} \left( \mathbf{x} \right)\)</span> может быть выражено в виде матричного произведения:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{T} \left( \mathbf{x} \right) = \mathbf{A} \mathbf{x}. \]</div>
+<p>Тогда:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = \begin{bmatrix} \mathbf{A} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<p>В свою очередь, переход от базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> к стандартному может быть записан в виде матричного произведения. Поэтому:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{A} \mathbf{x} \end{bmatrix}_\mathbf{B} = \mathbf{C} \mathbf{A} \mathbf{x}. \]</div>
+<p>Подставляя это равенство в выражение выше, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = \begin{bmatrix} \mathbf{A} \mathbf{x} \end{bmatrix}_\mathbf{B} = \mathbf{C} \mathbf{A} \mathbf{x}. \]</div>
+<p>В свою очередь, вектор <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> в базисе <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> может быть записан следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{x} = \mathbf{C}^{-1} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<p>Тогда:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = \begin{bmatrix} \mathbf{A} \mathbf{x} \end{bmatrix}_\mathbf{B} = \mathbf{C} \mathbf{A} \mathbf{x} = \mathbf{C} \mathbf{A}  \mathbf{C}^{-1} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
+<p>Итак, матрица <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> линейного преобразования <span class="math notranslate nohighlight">\(\mathbf{T}\)</span> по отношению к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{D} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1}, \]</div>
+<p>где: <span class="math notranslate nohighlight">\(\mathbf{C}\)</span> – матрица перехода от стандартного базиса к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> – матрица линейного преобразования вектора <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> по отношению к стандартному базису.</p>
+<p>Пусть матрица <span class="math notranslate nohighlight">\(\mathbf{C}^{-1}\)</span> составлена из координат собственных векторов <span class="math notranslate nohighlight">\(\mathbf{v_1}\)</span>, <span class="math notranslate nohighlight">\(\mathbf{v_2}\)</span>, <span class="math notranslate nohighlight">\(\ldots\)</span> матрицы <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{C}^{-1} = \begin{bmatrix} \vert &amp; \vert &amp;  \\ \mathbf{v_1} &amp; \mathbf{v_2} &amp; \ldots \\ \vert &amp; \vert &amp;  \end{bmatrix}. \end{split}\]</div>
+<p>Умножим левую и правую части равенства <span class="math notranslate nohighlight">\(\mathbf{D} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1}\)</span> на единичный вектор <span class="math notranslate nohighlight">\(\mathbf{e_i}\)</span>, сонаправленный с собственным вектором <span class="math notranslate nohighlight">\(\mathbf{v_i}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i}. \]</div>
+<p>Поскольку матрица <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> задана относительно базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, определенного собственными векторами матрицы <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>, то результатом произведения матрицы <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> на единичный вектор <span class="math notranslate nohighlight">\(\mathbf{e_i}\)</span> будет <span class="math notranslate nohighlight">\(i\)</span>-ый столбец матрицы. Например:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[2],
+       [4],
+       [8]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Произведение матрицы <span class="math notranslate nohighlight">\(\mathbf{C}^{-1}\)</span> на единичный вектор <span class="math notranslate nohighlight">\(\mathbf{e_i}\)</span> даст <span class="math notranslate nohighlight">\(i\)</span>-ый собственный вектор:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{v_i}. \]</div>
+<p>Тогда:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i}. \]</div>
+<p>По <a class="reference internal" href="LAB-7-Eigenvalues-Eigenvectors.html#math-lab-eigen"><span class="std std-ref">определению собственного вектора матрицы</span></a> данное выражение преобразуется в:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i}= \mathbf{C} \lambda_i \mathbf{v_i}. \]</div>
+<p>С учетом того, что <span class="math notranslate nohighlight">\(\mathbf{e_i} = \mathbf{C} \mathbf{v_i}\)</span>, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i} = \mathbf{C} \lambda_i \mathbf{v_i} = \lambda_i \mathbf{e_i}. \]</div>
+<p>Таким образом, вертикальный столбец матрицы <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> представляет собой произведение единичного вектора на скаляр, следовательно, если в качестве базиса выбрать собственные векторы матрицы <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>, то матрица <span class="math notranslate nohighlight">\(D\)</span> будет являться диагонализированной матрицей <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> относительно базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>.</p>
+<p>Рассмотрим данное свойство на следующем примере:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{A} = \begin{bmatrix} -1 &amp; 3 &amp; -1 \\ -3 &amp; 5 &amp; -1 \\ -3 &amp; 3 &amp; 1 \end{bmatrix}. \end{split}\]</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="n">Lambda</span><span class="p">,</span> <span class="n">C_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="n">C_inv</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 0.57735027,  0.57013378,  0.16222142],
+       [ 0.57735027,  0.70867096, -0.16222142],
+       [ 0.57735027,  0.41561154, -0.97332853]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">C_inv</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(-0.11977103697194431)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определитель матрицы, составленной из координат собственных векторов, не равен нулю, следовательно, собственные векторы матрицы <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> образуют базис.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">C_inv</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">C_inv</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 1.00000000e+00, -2.89448969e-15, -6.94794103e-16],
+       [ 1.06216225e-15,  2.00000000e+00, -3.99272379e-16],
+       [-1.07463280e-16, -5.70009031e-16,  2.00000000e+00]])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./0-Math\0-LAB"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="LAB-7-Eigenvalues-Eigenvectors.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Собственные векторы и значения матриц</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../1-OM/OM-0-Introduction.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Методы оптимизации функций</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Daniel Skorov
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
