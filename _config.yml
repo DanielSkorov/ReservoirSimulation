@@ -8,11 +8,6 @@ execute:
 
 only_build_toc_files: true
 
-# exclude_patterns: ["#TEST/*"]
-
-# repository:
-#   url: "https://github.com/DanielSkorov/Basics-of-Modelling"
-#   branch: "main"
-
-# launch_buttons:
-#   thebe: true
+repository:
+  url: "https://github.com/DanielSkorov/ReservoirSimulation"
+  branch: "main"
