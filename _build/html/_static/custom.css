@@ -1,0 +1,138 @@
+:root {
+    --pst-page-max-width: 88rem;
+    --pst-page-min-width: none;
+    --pst-sidebar-toggle-display: inline-block;
+    --pst-div-full-width: 136%;
+}
+
+
+
+
+
+/* Prevents scrolling of an empty page when the sidebar is expanded */
+body {
+    margin-top: -1px;
+}
+
+.bd-sidebar-primary {
+    overflow-y: hidden;
+    overflow-x: hidden;
+    max-width: 275px;
+    min-width: 275px;
+}
+
+.bd-sidebar-primary:hover {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.bd-sidebar-primary .sidebar-primary-items__start {
+    max-width: 230px;
+    min-width: 230px;
+}
+
+.bd-sidebar-primary .sidebar-primary-items__end {
+    display: none;
+}
+
+.bd-page-width {
+    width: 100%;
+    max-width: var(--pst-page-max-width);
+    min-width: var(--pst-page-min-width);
+}
+
+aside.sidebar.margin {
+    width: 16rem;
+    margin-right: -18rem;
+    @media (max-width: 1199px) {
+        margin-right: 0;
+    }
+}
+
+aside.sidebar {
+    border: 0px;
+}
+
+/* Hides the sidebar toggle button when the full mode is activating */
+/* Bug: unexpected behaviour of sidebar hiding in the full mode */
+button.sidebar-toggle.primary-toggle {
+    display: var(--pst-sidebar-toggle-display);
+    @media (max-width: 959px) {
+        display: inline-block;
+    }
+}
+
+div.full-width {
+    max-width: var(--pst-div-full-width);
+    width: var(--pst-div-full-width);
+}
+
+
+
+html[data-theme="dark"] {
+    --pst-proof-border-left-color: #ffffff;
+    --pst-exercise-border-left-color: #d1aee8;
+    --pst-exercise-title-background-color: #4b1b6b;
+    --pst-solution-border-left-color: #11f58e;
+    --pst-algorithm-border-color: #ced6dd;
+    --pst-algorithm-background-color: #222832;
+    --pst-comment-color: #a6acab;
+}
+
+html[data-theme="light"] {
+    --pst-proof-border-left-color: #000000;
+    --pst-exercise-border-left-color: #4b1b6b;
+    --pst-exercise-title-background-color: #e1c4f5;
+    --pst-solution-border-left-color: #039151;
+    --pst-algorithm-border-color: #ced6dd;
+    --pst-algorithm-background-color: #ffffff;
+    --pst-comment-color: #474747;
+}
+
+
+
+div.proof {
+    border-left-color: var(--pst-proof-border-left-color);
+}
+div.proof .admonition-title {
+    display: none;
+}
+
+
+
+div.exercise {
+    border-left-color: var(--pst-exercise-border-left-color);
+}
+div.exercise .admonition-title {
+    background-color: var(--pst-exercise-title-background-color);
+}
+div.exercise .admonition-title:after {
+    display: none;
+}
+
+
+
+div.algorithm {
+    border: none;
+    background-color: var(--pst-algorithm-background-color);
+    border-bottom: .15rem solid var(--pst-algorithm-border-color);
+}
+div.algorithm .admonition-title {
+    border-top: .15rem solid var(--pst-algorithm-border-color);
+    border-bottom: .15rem solid var(--pst-algorithm-border-color);
+    background-color: var(--pst-algorithm-background-color);
+}
+div.algorithm .admonition-title:after {
+    display: none;
+}
+
+
+
+.comment {
+    color: var(--pst-comment-color);
+    float: right;
+    font-size: 0.8em;
+    margin-top: 0.2em;
+    font-style: italic;
+}
+

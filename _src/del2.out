@@ -1,0 +1,205 @@
+         ********************************************************************************
+         *                                                                              *
+         *                               WINPROP  2021.10                               *
+         *                          EOS Phase Property Program                          *
+         *                         General Release for Win x64                          *
+         *                            2021-Nov-18   16:34:07                            *
+         *                                                                              *
+         *                          (c) Copyright 1977 - 2021                           *
+         *                Computer Modelling Group Ltd., Calgary, Canada                *
+         *                             All Rights Reserved                              *
+         *                                                                              *
+         ********************************************************************************
+
+
+         Command-line Arguments:  -dd
+                                  -f del2.dat
+
+ Maximum Dimensions:
+    Component                = 200
+    SCN Group in + Fractions = 200;   Lab. Calculation points  = 300
+    Streams in Process       = 300;   Units in Process         =  20
+    Regression variables     = 150;   Regression data points   = 10000
+ 
+ **FILE NAME:     del2.dat
+ *FILENAMES *OUTPUT *SRFOUT *REGLUMPSPLIT *NONE *GEMOUT *NONE
+            *STARSKV *NONE *GEMZDEPTH *NONE *IMEXPVT *NONE
+ *WINPROP     2021.10
+ 
+ **=-=-=Titles/EOS/Units
+ **REM
+ *TITLE1 ''
+ *TITLE2 ''
+ *TITLE3 ''
+ *UNIT *SI
+ *INFEED *MOLE
+ *MODEL *PR *1978
+ 
+ **=-=-=Component Selection/Properties
+ **REM
+ *NC 2 2
+ *TRANSLATION    1
+ *EXCESSPROP  *EOS
+ 
+ *COMPNAME
+ 'CH4'  'FC8'
+ 
+ *HCFLAG
+ 1  1
+ 
+ *PCRIT
+ 45.4  29.12
+ 
+ *TCRIT
+ 190.6  570.5
+ 
+ *AC
+ 0.008  0.351327
+ 
+ *MW
+ 16.043  107.0
+ 
+ *VSHIFT
+ 0.0  0.0
+ 
+ *VSHIF1
+ 0.0  0.0
+ 
+ *TREFVS
+ 15.556  15.556
+ 
+ *ZRA
+ 0.2876  0.264117010222
+ 
+ *VCRIT
+ 0.099  0.421
+ 
+ *VISVC
+ 0.099  0.421
+ 
+ *OMEGA
+ 0.457235528921  0.457235528921
+ 
+ *OMEGB
+ 0.0777960739039  0.0777960739039
+ 
+ *BETA_LFU
+ 1.0  1.0
+ 
+ *SG
+ 0.3  0.749
+ 
+ *TB
+ -161.45  116.85
+ 
+ *PCHOR
+ 77.0  309.0222
+ 
+ *IGHCOEF
+ -2.83857  0.538285  -0.000211409  3.39276e-07  -1.164322e-10  1.389612e-14  -0.602869
+ 0.0  -0.0458538958894  0.000429313066981  -6.45422435909e-08  0.0  0.0  0.0
+ 
+ *HEATING_VALUES
+ 844.290010539  5224.64006678
+ 
+ *IDCOMP
+ 3  12
+ 
+ *VISCOR   *HZYT
+ *MIXVC   1.0
+ 
+ *VISCOEFF
+ 0.1023  0.023364  0.058533  -0.040758  0.0093324
+ *HREFCOR   *HARVEY
+ 
+ *PVC3    1.2
+ 
+ 
+ **=-=-=Composition
+ **REM
+ *COMPOSITION   *PRIMARY
+ 0.5   0.5
+ 
+ **=-=-=Two-phase Flash
+ *FLASH
+ **NC 2 2
+ *LABEL    ''
+ *FEED  *MIXED 1.0
+ *KVALUE  *INTERNAL
+ *LEVEL 1
+ *OUTPUT 1
+ *TYPE  *QNSS
+ *PRES 5000.0
+ *TEMP 20.0
+ *DELP 0.0
+ *DELT 0.0
+ *STEPP 1
+ *STEPT 1
+ *DELZ 0.0
+ *STEPZ 1
+ 
+ **=-=-=     END
+1
+  **************************************************
+  *                                                *
+  *                WINPROP  2021.10                *
+  *             2021-Nov-18   16:34:07             *
+  * Computer Modelling Group Ltd., Calgary, Canada *
+  *                        1                       *
+  **************************************************
+  Multiphase flash calculation
+  2-Phase EOS Flash: QNSS Method
+
+  Equilibrium Properties at   5000.000    kPa and   20.000 deg C
+      Phase Split: Liquid-Vapour                      
+
+  Peng-Robinson Equations of State
+
+                               mole percent
+                       -------------------------------
+           component      Feed     Phase01    Phase02
+
+           CH4          50.00000   20.23963   99.82237
+           FC8          50.00000   79.76037    0.17763
+ 
+           component       ln (fug, atm)     K-values w.r.t. phase 1
+                                            --------------------------
+                                            Phase01/02       Phase02
+ 
+           CH4               3.78406E+00    2.02756E-01    4.93202E+00
+           FC8              -3.73714E+00    4.49021E+02    2.22707E-03
+
+                                   liquid    vapour
+ Z-factor                           0.2541     0.8906
+ Molar vol, m3/kmol     0.23990   0.12387   0.43414
+ MW, g/mol               61.522     88.59     16.20
+ Ideal H,    J/mol    15594.331  19022.61   9854.99
+ Enthalpy,    J/mol   -4593.481 -12651.15   8896.01
+ Ideal Cp,   J/mol-K              133.4328    36.1644
+ Cp,   J/mol-K                    176.2267    42.3737
+ Ideal S,   J/mol-K                85.7730   178.9112
+ Entropy,   J/mol-K                24.3724   176.5973
+ Density, Kg/m3                   715.1857    37.3256
+ Viscosity, cp                      0.3678     0.0118
+ IFT (Ref: Liquid    ), dyne/cm               14.0858
+Phase Volume %                    32.3257   67.6743
+Phase Mole %                      62.6045   37.3955
+
+ Enthalpy is zero for ideal gas at absolute zero
+ Interfacial tension, IFT, is referenced to phase 1
+
+ Convergence status :
+    Total iterations in phase equilibrium calculation       5
+    Total iterations in phase split calculation             8
+    Residual sum of squares error                 3.94430E-30
+
+
+ WinProp 2021.10 
+ Total EOS calls without derivatives =        11
+ Total EOS calls with    derivatives =         6
+ Total calculations performed        =         3
+
+  CPU seconds used            :    0.03
+
+  Date and Time of End of Run:  Oct 22, 2024  19:45:07
+

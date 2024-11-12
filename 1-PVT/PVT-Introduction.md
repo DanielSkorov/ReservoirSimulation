@@ -3,22 +3,18 @@ jupytext:
   text_representation:
     extension: .md
     format_name: myst
-    format_version: 0.13
-    jupytext_version: 1.10.3
+    format_version: 3.0.1
+    jupytext_version: 1.16.3
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
 
-<a id='pvt'></a>
+(pvt)=
 # PVT-моделирование
 
-+++
-
 Изучение вопросов PVT-моделирования позволяет понять, как постоянно изменяющиеся условия (термобарические, химические и т.д.) в процессе разработки залежей углеводородов влияют на свойства флюидов. Понимание взаимовлияния параметров многокомпонентных систем необходимо для моделирования их течения в поровом (и не только) пространстве. Следовательно, рассмотрение вопросов гидродинамического моделирования рекомендуется начать с изучения PVT-моделирования.
-
-+++
 
 **Содержание:**
 * ***[Основы термодинамики](./1-TD/TD-0-Introduction.md)***
@@ -40,24 +36,10 @@ kernelspec:
 * ***[Уравнения состояния](./2-EOS/EOS-0-Introduction.md)***
     * [Уравнение состояния Ван-дер-Ваальса](./2-EOS/EOS-1-VanDerWaals.md)
     * [Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона](./2-EOS/EOS-2-SRK-PR.md)
-    * [Уравнение состояния Сорейде-Уитсона](./2-EOS/EOS-3-SW.md)
-    * [Теория SAFT](./2-EOS/EOS-4-SAFT.md)
-    * [Уравнение состояния PC-SAFT](./2-EOS/EOS-5-PCSAFT.md)
-    * [Кубическое уравнение состояния с учетом ассоциации молекул](./2-EOS/EOS-6-CPA.md)
+    * [Кубическое уравнение состояния с учетом ассоциации молекул](./2-EOS/EOS-3-CPA.md)
     * [Приложение A. Частные производные летучести компонентов](./2-EOS/EOS-Appendix-A-PD.md)
     * [Приложение B. Универсальный расчет коэффициентов попарного взаимодействия](./2-EOS/EOS-Appendix-B-BIP.md)
-* ***[Определение параметров систем с использованием уравнений состояния](./3-Parameters/Parameters-0-Introduction.md)***
-    * [Внутренняя энергия](./3-Parameters/Parameters-1-InternalEnergy.md)
-    * [Энтальпия](./3-Parameters/Parameters-2-Enthalpy.md)
-    * [Энтропия](./3-Parameters/Parameters-3-Entropy.md)
-    * [Теплоемкость](./3-Parameters/Parameters-4-HeatCapacity.md)
-    * [Химический потенциал](./3-Parameters/Parameters-5-ChemicalPotential.md)
-    * [Энергия Гиббса](./3-Parameters/Parameters-6-GibbsEnergy.md)
-    * [Энергия Гельмгольца](./3-Parameters/Parameters-7-HelmholtzEnergy.md)
-    * [Коэффициент сжимаемости. Коэффициент термического расширения](./3-Parameters/Parameters-8-Compressibility-ThermalExpansion.md)
-    * [Коэффициент Джоуля-Томсона](./3-Parameters/Parameters-9-JouleThomsonCoefficient.md)
-    * [Приложение A. Частные производные термодинамических параметров](./3-Parameters/Parameters-Appendix-A-PD.md)
-* ***[Равновесие. Стабильность. Критическое состояние](./4-ESC/ESC-0-Introduction.md)***
-    * [Определение равновесного состояния системы](./4-ESC/ESC-1-Equilibrium.md)
-    * [Определение стабильности фазового состояния системы](./4-ESC/ESC-2-Stability.md)
-    * [Определение критического состояния системы](./4-ESC/ESC-3-Criticality.md)
+* ***[Стабильность. Равновесие. Критическое состояние](./3-SEC/SEC-0-Introduction.md)***
+    * [Определение стабильности фазового состояния системы](./3-SEC/SEC-1-Stability.md)
+    * [Определение равновесного состояния системы](./3-SEC/SEC-2-Equilibrium.md)
+    <!-- * [Определение критического состояния системы](./3-SEC/SEC-3-Criticality.md) -->
