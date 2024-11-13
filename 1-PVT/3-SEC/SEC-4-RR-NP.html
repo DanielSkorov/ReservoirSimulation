@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Стабильность. Равновесие. Критическое состояние &#8212; Основы моделирования пластовых систем</title>
+    <title>Уравнение Речфорда-Райса для многофазных систем &#8212; Основы моделирования пластовых систем</title>
   
   
   
@@ -58,14 +58,12 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-0-Introduction';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-4-RR-NP';</script>
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Определение стабильности фазового состояния системы" href="SEC-1-Stability.html" />
-    <link rel="prev" title="Универсальный расчет коэффициентов попарного взаимодействия" href="../2-EOS/EOS-Appendix-B-BIP.html" />
+    <link rel="next" title="Определение равновесного состояния системы" href="SEC-5-Equilibrium.html" />
+    <link rel="prev" title="Уравнение Речфорда-Райса для двухфазных систем" href="SEC-3-RR-2P.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -222,11 +220,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SEC-2-RR.html">Уравнение Речфорда-Райса</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SEC-3-RR-2P.html">Уравнение Речфорда-Райса для двухфазных систем</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-4-RR-NP.html">Уравнение Речфорда-Райса для многофазных систем</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Уравнение Речфорда-Райса для многофазных систем</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SEC-5-Equilibrium.html">Определение равновесного состояния системы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SEC-6-Saturation.html">Определение насыщенного состояния системы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SEC-7-Criticality.html">Определение критического состояния системы</a></li>
@@ -286,7 +284,7 @@
       
       
       
-      <li><a href="../../_sources/1-PVT/3-SEC/SEC-0-Introduction.md" target="_blank"
+      <li><a href="../../_sources/1-PVT/3-SEC/SEC-4-RR-NP.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -368,7 +366,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Стабильность. Равновесие. Критическое состояние</h1>
+    <h1>Уравнение Речфорда-Райса для многофазных систем</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -382,28 +380,9 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="pvt-sec">
-<span id="id1"></span><h1>Стабильность. Равновесие. Критическое состояние<a class="headerlink" href="#pvt-sec" title="Link to this heading">#</a></h1>
-<p>В данном разделе будут рассматриваться основные вопросы, связанные с определением стабильности фаз, равновесного состояния, а также критического состояния системы.</p>
-<p>Пусть имеется система, состоящая из нескольких компонентов и находящаяся в равновесном состоянии. При этом, такая система может быть разделена на фазы.</p>
-<div class="tip admonition">
-<p class="admonition-title">Определение</p>
-<p>Фаза – гомогенная часть гетерогенной системы, ограниченная поверхностью раздела.</p>
-</div>
-<p>На границе раздела могут скачкообразно меняться какие-либо <a class="reference internal" href="../1-TD/TD-1-Basics.html#pvt-td-basics-observables"><span class="std std-ref">термодинамические параметры</span></a> фаз, например, плотность, компонентный состав, вязкость или даже давление. Рассмотренные в рамках <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html"><span class="std std-doc">предыдущего раздела</span></a> уравнения состояния могут быть использованы для определения соотношений между параметрами фаз. Кроме того, необходимо напомнить, что термодинамические параметры макроскопических систем (фаз), строго говоря, относятся только к равновесным состояниям. Таким образом, настоящий раздел посвящен рассмотрению вопросов определения термодинамических параметров в равновесном состоянии и самого равновесного состояния системы с использованием уравнений состояния.</p>
-<p>В рамках данного раздела будут рассмотрены как теоретические аспекты, так и численные особенности алгоритмов определения количества фаз в ходе анализа стабильности системы (<em>stability analysis</em>), расчета равновесного состояния фаз (<em>flash calculations</em>), а также исследования критического состояния системы, характеризующегося отсутствием различия между фазами (<em>criticality analysis</em>). При этом, первые два раздела (определение стабильности системы и расчет равновесного состояния) являются основными для любого композиционного моделирования пластовых систем.</p>
-<p><strong>Содержание:</strong></p>
-<ul class="simple">
-<li><p><a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">Определение стабильности фазового состояния системы</span></a></p></li>
-<li><p><a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">Уравнение Речфорда-Райса</span></a></p></li>
-<li><p><a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">Уравнение Речфорда-Райса для двухфазных систем</span></a></p></li>
-<li><p><a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">Уравнение Речфорда-Райса для многофазных систем</span></a></p></li>
-<li><p><a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">Определение равновесного состояния системы</span></a></p></li>
-<li><p><a class="reference internal" href="SEC-6-Saturation.html"><span class="std std-doc">Определение насыщенного состояния системы</span></a></p></li>
-<li><p><a class="reference internal" href="SEC-7-Criticality.html"><span class="std std-doc">Определение критического состояния системы</span></a></p></li>
-</ul>
-<div class="toctree-wrapper compound">
-</div>
+  <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-rr-np">
+<span id="id1"></span><h1>Уравнение Речфорда-Райса для многофазных систем<a class="headerlink" href="#pvt-esc-rr-np" title="Link to this heading">#</a></h1>
+<p><a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">Следующий раздел</span></a> будет посвящен определению равновесного состояния, проводимому, если в результате <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">проверки стабильности</span></a> рассматриваемое фазовое состояние системы оказалось нестабильным.</p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -437,20 +416,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../2-EOS/EOS-Appendix-B-BIP.html"
+       href="SEC-3-RR-2P.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Универсальный расчет коэффициентов попарного взаимодействия</p>
+        <p class="prev-next-title">Уравнение Речфорда-Райса для двухфазных систем</p>
       </div>
     </a>
     <a class="right-next"
-       href="SEC-1-Stability.html"
+       href="SEC-5-Equilibrium.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Определение стабильности фазового состояния системы</p>
+        <p class="prev-next-title">Определение равновесного состояния системы</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
