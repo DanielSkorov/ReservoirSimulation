@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Определение равновесного состояния системы &#8212; Основы моделирования пластовых систем</title>
+    <title>Уравнение Речфорда-Райса для двухфазных систем &#8212; Основы моделирования пластовых систем</title>
   
   
   
@@ -32,10 +32,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=2db6e6e7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -60,11 +60,12 @@
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-2-Equilibrium';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-3-RR-2P';</script>
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="prev" title="Определение стабильности фазового состояния системы" href="SEC-1-Stability.html" />
+    <link rel="next" title="Уравнение Речфорда-Райса для многофазных систем" href="SEC-4-RR-NP.html" />
+    <link rel="prev" title="Уравнение Речфорда-Райса" href="SEC-2-RR.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -223,7 +224,12 @@
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Определение равновесного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-2-RR.html">Уравнение Речфорда-Райса</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Уравнение Речфорда-Райса для двухфазных систем</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-4-RR-NP.html">Уравнение Речфорда-Райса для многофазных систем</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-5-Equilibrium.html">Определение равновесного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-6-Saturation.html">Определение насыщенного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-7-Criticality.html">Определение критического состояния системы</a></li>
 </ul>
 </details></li>
 </ul>
@@ -280,7 +286,7 @@
       
       
       
-      <li><a href="../../_sources/1-PVT/3-SEC/SEC-2-Equilibrium.md" target="_blank"
+      <li><a href="../../_sources/1-PVT/3-SEC/SEC-3-RR-2P.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -351,9 +357,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -364,24 +368,11 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Определение равновесного состояния системы</h1>
+    <h1>Уравнение Речфорда-Райса для двухфазных систем</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Уравнение Речфорда-Райса</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Уравнение Речфорда-Райса для двухфазных систем</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Уравнение Речфорда-Райса для многофазных систем</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -391,113 +382,13 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-equilibrium">
-<span id="id1"></span><h1>Определение равновесного состояния системы<a class="headerlink" href="#pvt-esc-equilibrium" title="Link to this heading">#</a></h1>
-<p>В <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">предыдущем разделе</span></a> были подробно представлены особенности проверки стабильности фазового состояния системы. Данный раздел посвящен расчету равновесного фазового состояния, проводимому в том случае, если по результатам анализа стабильности текущее фазовое состояние оказалось нестабильным. Как и в случае анализа стабильности, расчет равновесного состояния также имеет различные формулировки (<a class="reference internal" href="#pvt-esc-equilibrium-pt">PT-термодинамика</a>, <a class="reference internal" href="#pvt-esc-equilibrium-vt"><span class="xref myst">VT-термодинамика</span></a>).</p>
-<section id="id2">
-<h2>Уравнение Речфорда-Райса<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
-<p>Рассмотрим многофазную (<span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз) многокомпонентную (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) систему с количеством вещества в системе <span class="math notranslate nohighlight">\(n\)</span>. Количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе обозначим <span class="math notranslate nohighlight">\(n_i\)</span>, причем сумма количеств вещества всех компонентов будет составлять количество вещества всей системы:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} n_i = n. \]</div>
-<p>Пусть количество вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы будет <span class="math notranslate nohighlight">\(n^j\)</span>, тогда сумма количеств вещества всех фаз также будет составлять количество вещества всей системы:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} n^j = n. \]</div>
-<p>Обозначим количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе <span class="math notranslate nohighlight">\(n_i^j\)</span>, следовательно:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} n_i^j &amp;= n^j, \; j = 1 \, \ldots \, N_p, \\
-\sum_{j=1}^{N_p} n_i^j &amp;= n_i, \; i = 1 \, \ldots \, N_c, \\
-\sum_{i=1}^{N_c} \sum_{j=1}^{N_p} n_i^j &amp;= n.
-\end{align} \end{split}\]</div>
-<p>Пусть мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе в целом обозначается <span class="math notranslate nohighlight">\(y_i\)</span> и характеризует отношение количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента к количеству вещества всей системы, то есть:</p>
-<div class="math notranslate nohighlight">
-\[ y_i = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Причем,</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i = 1. \]</div>
-<p>Пусть мольная доля <span class="math notranslate nohighlight">\(j\)</span>-й фазы в системе обозначается <span class="math notranslate nohighlight">\(F^j\)</span> и соответствует следующему выражению:</p>
-<div class="math notranslate nohighlight">
-\[ F^j = \frac{n^j}{n}, \; j = 1 \, \ldots \, N_p. \]</div>
-<p>То есть мольная доля <span class="math notranslate nohighlight">\(j\)</span>-й фазы характеризует отношение количества вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы к количеству вещества всей систеы. При этом,</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} F^j = 1. \]</div>
-<p>Пусть мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе обозначается <span class="math notranslate nohighlight">\(y_i^j\)</span>, характеризует отношение количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе к количеству вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы. Математически это записывается следующим образом:</p>
-<div class="math notranslate nohighlight">
-\[ y_i^j = \frac{n_i^j}{n^j}, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Причем,</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i^j = 1, \; j = 1 \, \ldots \, N_p. \]</div>
-<p>Введем понятие константы фазового равновесия (<em>k-value</em>):</p>
-<div class="tip admonition">
-<p class="admonition-title">Определение</p>
-<p><em><strong>Константа фазового равновесия</strong></em> <span class="math notranslate nohighlight">\(i\)</span>-го компонента характеризует отношение мольной доли компонента в фазе <span class="math notranslate nohighlight">\(j\)</span> к мольной доли этого же компонета в референсной фазе <span class="math notranslate nohighlight">\(R\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[ K_i^{jR} = \frac{y_i^j}{y_i^R}, \; j = \left\{ 1 \, \ldots \, N_p \right\} - \left\{ R \right\}. \]</div>
-</div>
-<p>При этом,</p>
-<div class="math notranslate nohighlight">
-\[ K_i^{RR} = \frac{y_i^R}{y_i^R} = 1. \]</div>
-<p>Кроме того, необходимо отметить, что референсной фазой может быть любая. Рассмотрим следующее соотношение:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} n_i^k = n_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Разделим левую и правую части данного выражения на количество вещества системы <span class="math notranslate nohighlight">\(n\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} \frac{n_i^k}{n} = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>В левой части выражения домножим числитель и знаменатель каждого слагаемого на количество вещества соответствующей <span class="math notranslate nohighlight">\(k\)</span>-й фазы <span class="math notranslate nohighlight">\(n^k\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} \frac{n_i^k}{n} \frac{n^k}{n^k} = \sum_{k=1}^{N_p} \frac{n_i^k}{n^k} \frac{n^k}{n} = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>С учетом представленных выше соотношений, данное выражение преобразуется к следующему:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} y_i^k F^k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>В левой части выражения выразим <span class="math notranslate nohighlight">\(y_i^k\)</span> через константу фазового равновесия:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} K_i^{kR} y_i^R F^k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Поскольку <span class="math notranslate nohighlight">\(y_i^R\)</span> в левой части выражения не зависит от индекса суммирования <span class="math notranslate nohighlight">\(k\)</span>, то ее можно вынести за знак суммирования:</p>
-<div class="math notranslate nohighlight">
-\[ y_i^R \sum_{k=1}^{N_p} K_i^{kR} F^k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Тогда:</p>
-<div class="math notranslate nohighlight">
-\[ y_i^R = \frac{y_i}{\sum_{k=1}^{N_p} K_i^{kR} F^k}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Поскольку <span class="math notranslate nohighlight">\(y_i^j = K_i^{jR} y_i^R, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1\)</span>, то:</p>
-<div class="math notranslate nohighlight">
-\[ y_i^j = \frac{y_i K_i^{jR}}{\sum_{k=1}^{N_p} K_i^{kR} F^k}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1. \]</div>
-<p>Здесь и далее в качестве референсной фазы принята фаза с индексом <span class="math notranslate nohighlight">\(j = N_p\)</span>. Учитывая</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i^j = 1, \; j = 1 \, \ldots \, N_p, \]</div>
-<p>можно записать следующую систему уравнений:</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i^j - \sum_{i=1}^{N_c} y_i^R = 0, \; j = 1 \, \ldots \, N_p - 1. \]</div>
-<p>Подставляя полученные ранее выражения для мольной доли <span class="math notranslate nohighlight">\(i\)</span>-го компонента в фазе <span class="math notranslate nohighlight">\(j\)</span> и референсной фазе <span class="math notranslate nohighlight">\(R\)</span>, получим:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} y_i^j - \sum_{i=1}^{N_c} y_i^R &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \left( y_i^j - y_i^R \right) &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \left( \frac{y_i K_i^{jR}}{\sum_{k=1}^{N_p} K_i^{kR} F^k} - \frac{y_i}{\sum_{k=1}^{N_p} K_i^{kR} F^k} \right) &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p} K_i^{kR} F^k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1.
-\end{align} \end{split}\]</div>
-<p>С учетом <span class="math notranslate nohighlight">\(\sum_{k=1}^{N_p} F^k = 1\)</span> представленную выше систему уравнений можно преобразовать следующим образом:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p} K_i^{kR} F^k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} K_i^{kR} F^k + K_i^{RR} F^R} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} K_i^{kR} F^k + 1 - \sum_{k=1}^{N_p-1} F^k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} F^k \left( K_i^{kR} - 1 \right) + 1} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1. \\
-\end{align} \end{split}\]</div>
-<p>Таким образом, система уравнений</p>
-<div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} F^k \left( K_i^{kR} - 1 \right) + 1} = 0, \; j = 1 \, \ldots \, N_p - 1, \]</div>
-<p>называется системой уравнений Речфорда-Райса. Она содержит <span class="math notranslate nohighlight">\(N_p - 1\)</span> уравнений и разрешается относительно <span class="math notranslate nohighlight">\(F^k, \; k = 1 \, \ldots \, N_p - 1,\)</span> неизвестных. После определения мольных долей фаз мольные доли компонентов в них определяются с использованием полученных ранее выражений:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align}
-y_i^R &amp;= \frac{y_i}{\sum_{k=1}^{N_p-1} F^k \left( K_i^{kR} - 1 \right) + 1}, \\
-y_i^j &amp;=  K_i^{jR} y_i^R, \; j = 1 \, \ldots \, N_p - 1. \\
-\end{align} \end{split}\]</div>
-<section id="id3">
-<h3>Уравнение Речфорда-Райса для двухфазных систем<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+  <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-rr-2p">
+<span id="id1"></span><h1>Уравнение Речфорда-Райса для двухфазных систем<a class="headerlink" href="#pvt-esc-rr-2p" title="Link to this heading">#</a></h1>
+<p>В предыдущем <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">разделе</span></a> был представлен вывод уравнения Речфорда-Райса (уравнения фазовых концентраций). Данный раздел посвящен подходам к решению данного уравнения для двухфазных систем.</p>
 <p>Рассмотрим двухфазную систему. Для такого случая уравнение Речфорда-Райса записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ R \left( F \right) = \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) + 1} = 0, \]</div>
-<p>где <span class="math notranslate nohighlight">\(F\)</span> – мольная доля нереференсной фазы.</p>
+<p>где <span class="math notranslate nohighlight">\(F\)</span> – мольная доля нереференсной фазы, <span class="math notranslate nohighlight">\(y_i\)</span> – мольная доля компонента в системе, <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе, <span class="math notranslate nohighlight">\(K_i\)</span> – константа фазового равновесия (отношение мольной доли компонента в нереференсной фазе к мольной доли этого же компонента в референсной).</p>
 <p>С математической точки зрения уравнение Речфорда-Райса представляет собой сумму гипербол, поэтому наличие точки перегиба, то есть невыпуклый вид функции, осложняет применение численных методов для решения данного уравнения. Кроме того, одной из особенностей уравнения Речфорда-Райса является наличие <a class="reference external" href="https://en.wikipedia.org/wiki/Zeros_and_poles">полюсов</a> в точках, где знаменатель равен нулю:</p>
 <div class="math notranslate nohighlight">
 \[ F \left( K_i - 1 \right) + 1 = 0 \Rightarrow F = -\frac{1}{K_i - 1}, \; i = 1 \, \ldots \, N_c. \]</div>
@@ -510,7 +401,7 @@ y_i^j &amp;=  K_i^{jR} y_i^R, \; j = 1 \, \ldots \, N_p - 1. \\
 <span class="n">kvi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Необходимо найти мольные доли фаз для заданной системы.</p>
+<p>Необходимо найти мольную долю нереференсной фазы для заданной системы.</p>
 </div>
 <p>Построим график функции Речфорда-Райса.</p>
 <div class="cell docutils container">
@@ -552,9 +443,9 @@ y_i^j &amp;=  K_i^{jR} y_i^R, \; j = 1 \, \ldots \, N_p - 1. \\
 </div>
 </div>
 <p>Анализируя полученные результаты, можно отметить, что помимо корня, находящегося в области физичных значений мольной доли фазы, то есть на отрезке <span class="math notranslate nohighlight">\(\left[0, \, 1 \right]\)</span>, существуют также и другие корни. Естественно, численные методы решения нелинейных уравнений, применяемые для такого вида функций, не могут гарантировать быстрый и надежный поиск нужного корня, поэтому прежде чем переходить к рассмотрению алгоритмов решения уравнения Речфорда-Райса для двухфазных систем, необходимо выполнить ряд преобразований, позволяющих видоизменить функцию для получения выпуклого вида.</p>
-<p>Прежде всего, необходимо отметить, что у данной задачи есть несколько подходов к решению. Одним из таких подходов является выбор в качестве основной переменной мольной доли компонента в некоторой фазе, а не мольной доли фазы. Согласно [<a class="reference external" href="https://doi.org/10.1016/S0378-3812(97)00179-9">Wang and Orr, 1997</a>], мольная доля фазы может принимать различные значения при решении уравнения Речфорда-Райса (что продемонстрировано на рисунке выше), в то время как мольные доли компонентов в фазах ограничены отрезком от нуля до единицы. Другой подход, изложенный в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(92)85069-K">Leibovici and Neoschil, 1992</a>], основан на преобразовании уравнения Речфорда-Райса, позволяющему сделать функцию более линейной в определенном интервале, содержащем корень. Третий подход предполагает выбор других основных переменных (количества вещества компонентов в фазах) для нахождения равновесного состония, позволяющий вообще убрать необходимость решения уравнения Речфорда-Райса, однако об этом речь пойдет в следующих подразделах. Подход к решению уравнения Речфорда-Райса, представленный далее, основан на работах [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.05.030">Nichita and Leibovici, 2013</a>], [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2017.08.020">Nichita and Leibovici, 2017</a>].</p>
+<p>Прежде всего, необходимо отметить, что у данной задачи есть несколько подходов к решению. Одним из таких подходов является выбор в качестве основной переменной мольной доли компонента в некоторой фазе, а не мольной доли фазы. Согласно [<a class="reference external" href="https://doi.org/10.1016/S0378-3812(97)00179-9">Wang and Orr, 1997</a>], мольная доля фазы может принимать различные значения при решении уравнения Речфорда-Райса (что продемонстрировано на рисунке выше), в то время как мольные доли компонентов в фазах ограничены отрезком от нуля до единицы. Другой подход, изложенный в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(92)85069-K">Leibovici and Neoschil, 1992</a>], основан на преобразовании уравнения Речфорда-Райса, позволяющему сделать функцию более линейной в определенном интервале, содержащем корень. Третий подход предполагает выбор других основных переменных (количества вещества компонентов в фазах) для нахождения равновесного состония, позволяющий вообще убрать необходимость решения уравнения Речфорда-Райса, однако об этом речь пойдет в <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">разделе</span></a>, посвященном  определению равновесного состояния. Подход к решению уравнения Речфорда-Райса, представленный далее, основан на работах [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.05.030">Nichita and Leibovici, 2013</a>], [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2017.08.020">Nichita and Leibovici, 2017</a>].</p>
 <p>Для начала необходимо описать тот результат, который необходимо получить. Поскольку численные методы решения нелинейных уравнений, в том числе метод Ньютона, показывают свою эффективность для выпуклых функций, а уравнение Речфорда-Райса не является таковым, то необходимо путем замены переменных преобразовать рассматриваемую функцию в выпуклую на интервале, содержащем искомый корень.</p>
-<p>Сначала необходимо отметить, что для того чтобы уравнение Речфорда-Райса имело хотя бы один корень, необходимо, чтобы хотя бы одно из слагаемых суммы</p>
+<p>Стоит отметить, что для того чтобы уравнение Речфорда-Райса имело хотя бы один корень, необходимо, чтобы хотя бы одно из слагаемых суммы</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) + 1} \]</div>
 <p>было отрицательным и хотя бы одно было положительным. Это возможно в том случае, если хотя бы одна из констант фазового равновесия будет меньше единицы, и хотя бы одна константа фазового равновесия будет больше единицы. Таким образом, дальнейшее рассмотрение справедливо с учетом сформулированного условия.</p>
@@ -1235,7 +1126,7 @@ a^G_{k+1}
 <p>Таким образом, значение приближения на <span class="math notranslate nohighlight">\(\left(k+1\right)\)</span>-й итерации решения уравнения <span class="math notranslate nohighlight">\(G \left( a \right) = 0\)</span> может быть получено путем преобразования приближения на <span class="math notranslate nohighlight">\(\left(k+1\right)\)</span>-й итерации решения уравнения <span class="math notranslate nohighlight">\(D \left( a \right) = 0\)</span> без дополнительных вычислений функции <span class="math notranslate nohighlight">\(G \left( a \right)\)</span> и ее производной. Аналогичная связь может быть получена для приближений на <span class="math notranslate nohighlight">\(\left(k+1\right)\)</span>-й итерациях решений уравнений <span class="math notranslate nohighlight">\(D \left( a \right) = 0\)</span> и <span class="math notranslate nohighlight">\(H \left( a \right) = 0\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ a_{k+1}^H = a_{k+1}^D + \frac{h^2}{h + a_k + 1}. \]</div>
-<p>Таким образом, можно сформулировать численный алгоритм решения уравнения Речфорда-Райса [<a class="reference external" href="https://doi.org/10.1016/j.compchemeng.2014.10.006">Nichita and Leibovici, 2014</a>], гарантирующий сходимость к корню в нужном интервале и являющийся эффективным (использующий преимущество линеаризации):</p>
+<p>Итак, можно сформулировать численный алгоритм решения уравнения Речфорда-Райса [<a class="reference external" href="https://doi.org/10.1016/j.compchemeng.2014.10.006">Nichita and Leibovici, 2014</a>], гарантирующий сходимость к корню в нужном интервале и являющийся эффективным (использующий преимущество линеаризации):</p>
 <div class="algorithm admonition">
 <p class="admonition-title">Алгоритм. Решение уравнения Речфорда-Райса для двухфазной системы</p>
 <p><strong>Дано:</strong> Отсортированный по убыванию вектор констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{k}\)</span>; вектор компонентного состава системы <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, соответствующий вектору констант фазового равновесия; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность решения уравнения <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
@@ -1632,14 +1523,7 @@ a^G_{k+1}
     </button></div>
 </div>
 </div></div>
-</details></section>
-<section id="id4">
-<h3>Уравнение Речфорда-Райса для многофазных систем<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
-</section>
-</section>
-<section id="pt">
-<span id="pvt-esc-equilibrium-pt"></span><h2>PT-термодинамика<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
-</section>
+</details><p>Таким образом, в данном разделе представлен подход к решению уравнения Речфорда-Райса для двухфазных систем. В <a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">следующем разделе</span></a> речь пойдет про многофазные системы с количеством фаз три и более.</p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -1673,13 +1557,22 @@ a^G_{k+1}
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="SEC-1-Stability.html"
+       href="SEC-2-RR.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Определение стабильности фазового состояния системы</p>
+        <p class="prev-next-title">Уравнение Речфорда-Райса</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="SEC-4-RR-NP.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Уравнение Речфорда-Райса для многофазных систем</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -1687,26 +1580,6 @@ a^G_{k+1}
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Уравнение Речфорда-Райса</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Уравнение Речфорда-Райса для двухфазных систем</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Уравнение Речфорда-Райса для многофазных систем</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

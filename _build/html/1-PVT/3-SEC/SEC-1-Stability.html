@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=2db6e6e7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -64,7 +64,7 @@
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Определение равновесного состояния системы" href="SEC-2-Equilibrium.html" />
+    <link rel="next" title="Уравнение Речфорда-Райса" href="SEC-2-RR.html" />
     <link rel="prev" title="Стабильность. Равновесие. Критическое состояние" href="SEC-0-Introduction.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -224,7 +224,12 @@
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Определение стабильности фазового состояния системы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-2-Equilibrium.html">Определение равновесного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-2-RR.html">Уравнение Речфорда-Райса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-3-RR-2P.html">Уравнение Речфорда-Райса для двухфазных систем</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-4-RR-NP.html">Уравнение Речфорда-Райса для многофазных систем</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-5-Equilibrium.html">Определение равновесного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-6-Saturation.html">Определение насыщенного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SEC-7-Criticality.html">Определение критического состояния системы</a></li>
 </ul>
 </details></li>
 </ul>
@@ -1005,7 +1010,7 @@ D \left( \mathbf{r} \right)
 </div><p class="sd-card-text">Реализованный алгоритм проверки стабильности уже для первого начального приближения нашел решение системы нелинейных уравнений, характеризующееся отрицательным значением функции TPD, следовательно, однофазное состояние не является стабильным.</p>
 </div>
 </details><p>Представленный выше алгоритм можно использовать для проверки стабильности однофазного состояния системы. Для проверки стабильности многофазной системы также можно использовать представленный выше алгоритм: для этого достаточно проверить стабильность любой из фаз.</p>
-<p>Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>. <a class="reference internal" href="SEC-2-Equilibrium.html"><span class="std std-doc">Следующий раздел</span></a> будет посвящен второму из двух последовательных шагов к определению равновесного состояния, проводимому, если в результате проверки стабильности рассматриваемое фазовое состояние системы оказалось нестабильным.</p>
+<p>Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>. <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">Следующие разделы</span></a> будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).</p>
 </section>
 <section id="vt">
 <span id="pvt-sec-stability-vt"></span><h2>VT-термодинамика<a class="headerlink" href="#vt" title="Link to this heading">#</a></h2>
@@ -1052,11 +1057,11 @@ D \left( \mathbf{r} \right)
       </div>
     </a>
     <a class="right-next"
-       href="SEC-2-Equilibrium.html"
+       href="SEC-2-RR.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Определение равновесного состояния системы</p>
+        <p class="prev-next-title">Уравнение Речфорда-Райса</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
