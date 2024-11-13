@@ -744,9 +744,9 @@ def update(
     ki *= np.exp(dlnki)
     ni = ki * yi
     gi = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd *= -dlnki.dot(gi_) / dlnki.dot(gi - gi_)
-    if np.abs(lmbd) > 30.:
-        lmbd = np.sign(lmbd) * 30.
+    lmbd *= np.abs(dlnki.dot(gi_) / dlnki.dot(gi - gi_))
+    if lmbd > 30.:
+        lmbd = 30.
     return c + 1, ki, gi, lmbd
 ```
 
@@ -839,9 +839,9 @@ def update(
     ki *= np.exp(dlnki)
     ni = ki * yi
     gi = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd *= -dlnki.dot(gi_) / dlnki.dot(gi - gi_)
-    if np.abs(lmbd) > 30.:
-        lmbd = np.sign(lmbd) * 30.
+    lmbd *= np.abs(dlnki.dot(gi_) / dlnki.dot(gi - gi_))
+    if lmbd > 30.:
+        lmbd = 30.
     return c + 1, ki, gi, lmbd
 
 hi = pr.get_lnphii(P, T, yi) + np.log(yi)

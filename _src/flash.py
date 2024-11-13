@@ -32,15 +32,16 @@ class stabilityPT(object):
     self,
     P: np.float64,
     T: np.float64,
-    yi: np.float64,
+    yi: npt.NDArray[np.float64],
   ) -> tuple[bool, npt.NDArray[np.float64] | None]:
     # print(f'*** Stability Test ***\n{P = }\n{T = }\n{yi = }')
     kvji = self.eos.get_kvguess(P, T)
-    hi = self.eos.get_lnphii(P, T, yi) + np.log(yi)
+    hi = self.eos.get_lnphii(P, T, yi, False) + np.log(yi)
     plnphii = partial(self.eos.get_lnphii, P=P, T=T, check_input=False)
     pcondit = partial(self._condit, tol=self.tol, Niter=self.Niter)
     pupdate = partial(self._update, hi=hi, yi=yi, plnphii=plnphii)
     # print('Sarting the kv-loop...')
+    kvi: npt.NDArray[np.float64]
     for j, kvi in enumerate(kvji):
       # print(f'\n\tThe kv-loop iteration number = {j}')
       # print(f'\tInitial k-values = {kvi}')
@@ -48,7 +49,7 @@ class stabilityPT(object):
       gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
       # print(f'\t{gi = }')
       # print(f'\tTPD = {-np.log(ni.sum())}')
-      carry = (1, kvi, gi, 1.)
+      carry = (1, kvi, gi, np.float64(1.))
       # print('\tStarting the solution loop...')
       while pcondit(carry):
         carry = pupdate(carry)
@@ -119,6 +120,6 @@ class stabilityPT(object):
     # print(f'\t\tTPD = {-np.log(ni.sum())}')
     lmbd *= np.abs(dlnkvi.dot(gi_) / dlnkvi.dot(gi - gi_))
     if lmbd > 30.:
-      lmbd = 30.
+      lmbd = np.float64(30.)
     return i + 1, kvi, gi, lmbd
 
