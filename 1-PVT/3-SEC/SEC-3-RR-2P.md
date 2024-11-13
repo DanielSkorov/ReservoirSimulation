@@ -246,10 +246,10 @@ import numpy.typing as npt
 from functools import partial
 
 def G_val_grad(
-    a: np.floating,
-    yi: npt.NDArray[np.floating],
-    di: npt.NDArray[np.floating],
-) -> tuple[np.floating, np.floating]:
+    a: np.float64,
+    yi: npt.NDArray[np.float64],
+    di: npt.NDArray[np.float64],
+) -> tuple[np.float64, np.float64]:
     denom = 1. / (di + a * (1. + di))
     return (1. + a) * yi.dot(denom), -1. * yi.dot(denom * denom)
 
@@ -260,8 +260,8 @@ pG = partial(G_val_grad, yi=yi, di=di)
 
 ```{code-cell} python
 def condit(
-    carry: tuple[int, np.floating, np.floating, np.floating],
-    tol: np.floating,
+    carry: tuple[int, np.float64, np.float64, np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     i, a, _, eq = carry
@@ -276,9 +276,9 @@ pcondit = partial(condit, tol=np.float64(1e-8), Niter=50)
 from typing import Callable
 
 def update(
-    carry: tuple[int, np.floating, np.floating, np.floating],
-    pF: Callable[[np.floating], tuple[np.floating, np.floating]],
-) -> tuple[int, np.floating, np.floating, np.floating]:
+    carry: tuple[int, np.float64, np.float64, np.float64],
+    pF: Callable[[np.float64], tuple[np.float64, np.float64]],
+) -> tuple[int, np.float64, np.float64, np.float64]:
     i, a_, da_, _ = carry
     a = a_ - da_
     eq, grad = pF(a)
@@ -568,10 +568,10 @@ ax4.grid(zorder=1)
 
 ```{code-cell} python
 def H_val_grad(
-    a: np.floating,
-    yi: npt.NDArray[np.floating],
-    di: npt.NDArray[np.floating],
-) -> tuple[np.floating, np.floating]:
+    a: np.float64,
+    yi: npt.NDArray[np.float64],
+    di: npt.NDArray[np.float64],
+) -> tuple[np.float64, np.float64]:
     denom = 1. / (di + a * (1. + di))
     G = (1. + a) * yi.dot(denom)
     dGda = -1. * yi.dot(denom * denom)
@@ -794,10 +794,10 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 ``` python
 def fD(
-    a: np.floating,
-    yi: npt.NDArray[np.floating],
-    di: npt.NDArray[np.floating],
-) -> tuple[np.floating, np.floating]:
+    a: np.float64,
+    yi: npt.NDArray[np.float64],
+    di: npt.NDArray[np.float64],
+) -> tuple[np.float64, np.float64]:
     denom = 1. / (di * (a + 1.) + a)
     return (
         yi[0] + a * yi[1:-1].dot(denom) - yi[-1] * a,
@@ -811,8 +811,8 @@ pD = partial(fD, yi=yi, di=di)
 
 ``` python
 def condit(
-    carry: tuple[int, np.floating, np.floating, np.floating],
-    tol: np.floating,
+    carry: tuple[int, np.float64, np.float64, np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     i, a, _, D = carry
@@ -825,9 +825,9 @@ pcondit = partial(condit, tol=np.float64(1e-10), Niter=50)
 
 ``` python
 def update(
-    carry: tuple[int, np.floating, np.floating, np.floating],
-    pD: Callable[[np.floating], tuple[np.floating, np.floating]],
-) -> tuple[int, np.floating, np.floating, np.floating]:
+    carry: tuple[int, np.float64, np.float64, np.float64],
+    pD: Callable[[np.float64], tuple[np.float64, np.float64]],
+) -> tuple[int, np.float64, np.float64, np.float64]:
     i, a_, h_, D_ = carry
     print(f'\nIteration #{i}:')
     a = a_ - h_
@@ -888,10 +888,10 @@ ci = 1. / (1. - kvi)
 di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 def fD(
-    a: np.floating,
-    yi: npt.NDArray[np.floating],
-    di: npt.NDArray[np.floating],
-) -> tuple[np.floating, np.floating]:
+    a: np.float64,
+    yi: npt.NDArray[np.float64],
+    di: npt.NDArray[np.float64],
+) -> tuple[np.float64, np.float64]:
     denom = 1. / (di * (a + 1.) + a)
     return (
         yi[0] + a * yi[1:-1].dot(denom) - yi[-1] * a,
@@ -901,8 +901,8 @@ def fD(
 pD = partial(fD, yi=yi, di=di)
 
 def condit(
-    carry: tuple[int, np.floating, np.floating, np.floating],
-    tol: np.floating,
+    carry: tuple[int, np.float64, np.float64, np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     i, a, _, D = carry
@@ -911,9 +911,9 @@ def condit(
 pcondit = partial(condit, tol=np.float64(1e-10), Niter=50)
 
 def update(
-    carry: tuple[int, np.floating, np.floating, np.floating],
-    pD: Callable[[np.floating], tuple[np.floating, np.floating]],
-) -> tuple[tuple[int, np.floating, np.floating, np.floating], str]:
+    carry: tuple[int, np.float64, np.float64, np.float64],
+    pD: Callable[[np.float64], tuple[np.float64, np.float64]],
+) -> tuple[tuple[int, np.float64, np.float64, np.float64], str]:
     i, a_, h_, D_ = carry
     out = f'\n\nIteration #{i}:'
     a = a_ - h_

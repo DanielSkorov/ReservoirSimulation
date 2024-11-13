@@ -1,7 +1,9 @@
 import numpy as np
 import numpy.typing as npt
 
-from check_inputs import check_PTyi
+from check_inputs import (
+  check_PTyi,
+)
 
 
 R = 8.3144598 # Universal gas constant [J/mol/K]
@@ -10,9 +12,9 @@ R = 8.3144598 # Universal gas constant [J/mol/K]
 class vdw(object):
   def __init__(
     self,
-    Pci: npt.NDArray[np.floating],
-    Tci: npt.NDArray[np.floating],
-    dij: npt.NDArray[np.floating],
+    Pci: npt.NDArray[np.float64],
+    Tci: npt.NDArray[np.float64],
+    dij: npt.NDArray[np.float64],
   ) -> None:
     """
     Allows to calculate component fugacities and the compressibility
@@ -21,11 +23,11 @@ class vdw(object):
 
     Arguments:
       Pci : critical pressures of components [Pa].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
       Tci : critical temperatures of components [K].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
       dij : the lower triangle of the binary interaction coefficients
-        matrix expressed as a numpy.ndarray[numpy.floating] with the
+        matrix expressed as a numpy.ndarray[numpy.float64] with the
         shape of `(Nc * (Nc - 1) // 2,)`.
     """
     args = (Pci, Tci, dij)
@@ -34,9 +36,9 @@ class vdw(object):
         "Types of all input arrays must be numpy.ndarray, but"
         f"\n\t{type(Pci)=},\n\t{type(Tci)=},\n\t{type(dij)=}."
       )
-    if not all(map(lambda a: np.issubdtype(a.dtype, np.floating), args)):
+    if not all(map(lambda a: np.issubdtype(a.dtype, np.float64), args)):
       raise TypeError(
-        "Data types of all input arrays must be numpy.floating, but"
+        "Data types of all input arrays must be numpy.float64, but"
         f"\n\t{Pci.dtype=},\n\t{Tci.dtype=},\n\t{dij.dtype=}."
       )
     if not all(map(lambda a: a.ndim == 1, args)):
@@ -91,20 +93,20 @@ class vdw(object):
 
   def get_Z(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> np.floating:
+  ) -> np.float64:
     """
     Calculates the compressibility factor using the van der Waals
     equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       The compressibility factor.
@@ -121,20 +123,20 @@ class vdw(object):
 
   def get_lnphii(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> npt.NDArray[np.floating]:
+  ) -> npt.NDArray[np.float64]:
     """
     Calculates component fugacity coefficients using the van der Waals
     equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       A numpy array containing the natural logarithm of fugacity
@@ -152,20 +154,20 @@ class vdw(object):
 
   def get_lnphii_Z(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[np.floating], np.floating]:
+  ) -> tuple[npt.NDArray[np.float64], np.float64]:
     """
     Calculates component fugacity coefficients using the van der Waals
     equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       A tuple containing a numpy array with the natural logarithm of
@@ -187,20 +189,20 @@ class vdw(object):
 
   def get_lnfi(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> npt.NDArray[np.floating]:
+  ) -> npt.NDArray[np.float64]:
     """
     Calculates component fugacities using the van der Waals
     equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       A numpy array containing the natural logarithm of fugacities
@@ -212,9 +214,9 @@ class vdw(object):
 
   @staticmethod
   def solve_eos(
-    A: np.floating,
-    B: np.floating,
-  ) -> np.floating:
+    A: np.float64,
+    B: np.float64,
+  ) -> np.float64:
     """
     Solves the Van-der-Waals equation of state using the Cardano's
     method, and selectes an appropriate root based on the comparison
@@ -222,9 +224,9 @@ class vdw(object):
 
     Arguments:
       A: the coefficient in the cubic form of the Van-der-Waals
-        equation of state. Must be a scalar of numpy.floating.
+        equation of state. Must be a scalar of numpy.float64.
       B: the coefficient in the cubic form of the Van-der-Waals
-        equation of state. Must be a scalar of numpy.floating.
+        equation of state. Must be a scalar of numpy.float64.
 
     Returns:
       The solution of the Van-der-Waals equation of state.
@@ -270,11 +272,11 @@ class vdw(object):
 class pr78(object):
   def __init__(
     self,
-    Pci: npt.NDArray[np.floating],
-    Tci: npt.NDArray[np.floating],
-    wi: npt.NDArray[np.floating],
-    vsi: npt.NDArray[np.floating],
-    dij: npt.NDArray[np.floating],
+    Pci: npt.NDArray[np.float64],
+    Tci: npt.NDArray[np.float64],
+    wi: npt.NDArray[np.float64],
+    vsi: npt.NDArray[np.float64],
+    dij: npt.NDArray[np.float64],
   ) -> None:
     """
     Allows to calculate the fugacities of components and
@@ -283,15 +285,15 @@ class pr78(object):
 
     Arguments:
       Pci: critical pressures of components [Pa].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
       Tci: critical temperatures of components [K].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
       wi: acentric factors of components.
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
       vsi: volume shift parameters of components.
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
       dij: the lower triangle of the binary interaction coefficients
-        matrix expressed as a numpy.ndarray[numpy.floating] with
+        matrix expressed as a numpy.ndarray[numpy.float64] with
         the shape of `(Nc * (Nc - 1) // 2,)`.
     """
     args = (Pci, Tci, wi, vsi, dij)
@@ -304,9 +306,9 @@ class pr78(object):
         f"\n\t{type(vsi)=},"
         f"\n\t{type(dij)=}."
       )
-    if not all(map(lambda a: np.issubdtype(a.dtype, np.floating), args)):
+    if not all(map(lambda a: np.issubdtype(a.dtype, np.float64), args)):
       raise TypeError(
-        "Data types of all input arrays must be numpy.floating, but"
+        "Data types of all input arrays must be numpy.float64, but"
         f"\n\t{Pci.dtype=},"
         f"\n\t{Tci.dtype=},"
         f"\n\t{wi.dtype=},"
@@ -378,6 +380,9 @@ class pr78(object):
       raise ValueError(
         "Acentric factors of all components must be greater than zero."
       )
+    self.Pci = Pci
+    self.Tci = Tci
+    self.wi = wi
     self._Tci = np.sqrt(1. / Tci)
     self.bi = 0.07779607390388849 * R * Tci / Pci
     self.sqrtai = 0.6761919320144113 * R * Tci / np.sqrt(Pci)
@@ -396,20 +401,20 @@ class pr78(object):
 
   def get_Z(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> np.floating:
+  ) -> np.float64:
     """
     Calculates the compressibility factor using
     the Peng-Robinson equation of state (1978).
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       The compressibility factor.
@@ -429,20 +434,20 @@ class pr78(object):
 
   def get_lnphii(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> npt.NDArray[np.floating]:
+  ) -> npt.NDArray[np.float64]:
     """
     Calculates fugacity coefficients of components using
     the Peng-Robinson equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       A numpy array containing the natural logarithm of fugacity
@@ -466,21 +471,21 @@ class pr78(object):
 
   def get_lnphii_Z(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[np.floating], np.floating]:
+  ) -> tuple[npt.NDArray[np.float64], np.float64]:
     """
     Calculates fugacity coefficients of components and
     the compressibility factor using the Peng-Robinson
     equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       A tuple containing a numpy array with the natural logarithm of
@@ -506,23 +511,58 @@ class pr78(object):
       Z - PRT * yi.dot(self.vsi_bi),
     )
 
+  def get_Zj(
+    self,
+    P: np.float64,
+    T: np.float64,
+    yji: npt.NDArray[np.float64],
+    check_input: bool = True,
+  ) -> npt.NDArray[np.float64]:
+    """
+    Calculates the compressibility factor for each given component
+    composition using the Peng-Robinson equation of state.
+
+    Arguments:
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
+      yji: mole fraction for each component [fr.].
+        Must be a numpy.ndarray[numpy.float64] with the shape
+        equals to `(Np, Nc)`, where Np is a number of phases and
+        Nc is a number of components.
+
+    Returns:
+      A  numpy array of compressibility factors for each phase.
+    """
+    # if check_input:
+    #   check_PTyi(P, T, yji, self.Nc)
+    PRT = P / R / T
+    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Sji = sqrtalphai * (yji * sqrtalphai).dot(self.D)
+    alphamj = np.sum(yji * Sji, axis=1)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRT / R / T
+    Bj = bmj * PRT
+    Zj = np.vectorize(self.solve_eos)(Aj, Bj) - yji.dot(self.vsi_bi) * PRT
+    return Zj
+
   def get_lnphiji_Zj(
     self,
-    P: np.floating,
-    T: np.floating,
-    yji: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yji: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[np.floating], np.floating]:
+  ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """
     Calculates fugacity coefficients of components and
     the compressibility factor for each given component composition
     using the Peng-Robinson equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yji: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.floating] with the shape
+        Must be a numpy.ndarray[numpy.float64] with the shape
         equals to `(Np, Nc)`, where Np is a number of phases and
         Nc is a number of components.
 
@@ -553,20 +593,20 @@ class pr78(object):
 
   def get_lnfi(
     self,
-    P: np.floating,
-    T: np.floating,
-    yi: npt.NDArray[np.floating],
+    P: np.float64,
+    T: np.float64,
+    yi: npt.NDArray[np.float64],
     check_input: bool = True,
-  ) -> npt.NDArray[np.floating]:
+  ) -> npt.NDArray[np.float64]:
     """
     Calculates fugacities of components using the Peng-Robinson
     equation of state.
 
     Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.floating.
-      T: temperature [K]. Must be a scalar of numpy.floating.
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
       yi: mole fraction for each component [fr.].
-      Must be a numpy.ndarray[numpy.floating] with the shape `(Nc,)`.
+      Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
 
     Returns:
       A numpy array containing natural logarithms of fugacities
@@ -576,11 +616,32 @@ class pr78(object):
       check_PTyi(P, T, yi, self.Nc)
     return self.get_lnphii(P, T, yi, False) + np.log(P * yi)
 
+  def get_kvguess(
+    self,
+    P: np.float64,
+    T: np.float64,
+    # level: int,
+  ) -> npt.NDArray[np.float64]:
+    """
+    Calculates initial guess of k-values for given pressure P, temperature T
+    using the Wilson's correlation.
+
+    Arguments:
+      P: pressure [Pa]. Must be a scalar of numpy.float64.
+      T: temperature [K]. Must be a scalar of numpy.float64.
+
+    Returns:
+      A numpy array containing two vectors of initial k-values calculated
+      using the Wilson's correlation and inverse Wilson's correlation.
+    """
+    kvi = self.Pci * np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / T)) / P
+    return np.vstack([kvi, 1. / kvi])
+
   @staticmethod
   def solve_eos(
-    A: np.floating,
-    B: np.floating,
-  ) -> np.floating:
+    A: np.float64,
+    B: np.float64,
+  ) -> np.float64:
     """
     Solves the Peng-Robinson equation of state using the Cardano's
     method, and selectes an appropriate root based on the comparison
@@ -588,9 +649,9 @@ class pr78(object):
 
     Arguments:
       A: the coefficient in the cubic form of the Peng-Robinson
-        equation of state. Must be a scalar of numpy.floating.
+        equation of state. Must be a scalar of numpy.float64.
       B: the coefficient in the cubic form of the Peng-Robinson
-        equation of state. Must be a scalar of numpy.floating.
+        equation of state. Must be a scalar of numpy.float64.
 
     Returns:
       The solution of the Peng-Robinson equation of state.

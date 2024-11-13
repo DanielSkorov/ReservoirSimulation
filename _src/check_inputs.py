@@ -3,15 +3,15 @@ import numpy.typing as npt
 
 
 def check_PTyi(
-  P: np.floating,
-  T: np.floating,
-  yi: npt.NDArray[np.floating],
+  P: np.float64,
+  T: np.float64,
+  yi: npt.NDArray[np.float64],
   Nc: int,
   allow_negative_yi: bool = False,
 ) -> None:
-  if not all(map(lambda a: isinstance(a, np.floating), (P, T))):
+  if not all(map(lambda a: isinstance(a, np.float64), (P, T))):
     raise TypeError(
-      "Type of P and T must be numpy.floating, but"
+      "Type of P and T must be numpy.float64, but"
       f"\n\t{type(P)=},\n\t{type(T)=}."
     )
   if not isinstance(yi, np.ndarray):
@@ -19,9 +19,9 @@ def check_PTyi(
       "Type of the mole fraction array (yi) must be numpy.ndarray, but"
       f"\n\t{type(yi)=}."
     )
-  if not all(map(lambda a: np.issubdtype(a.dtype, np.floating), (P, T, yi))):
+  if not all(map(lambda a: np.issubdtype(a.dtype, np.float64), (P, T, yi))):
     raise TypeError(
-      f"Data types of all input arguments must be numpy.floating, but"
+      f"Data types of all input arguments must be numpy.float64, but"
       f"\n\t{P.dtype=},\n\t{T.dtype=},\n\t{yi.dtype=}."
     )
   if not yi.shape == (Nc,):

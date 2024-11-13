@@ -658,12 +658,12 @@ $\mathbf{h} := \ln \phi \left(P, \, T, \, \mathbf{z} \right) + \ln \mathbf{z}$  
 &emsp;&emsp;&emsp;$\lambda := \lambda \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка длины шага`  
 &emsp;&emsp;&emsp;$\mathbf{\Delta \ln k} := \mathbf{\Delta \ln k} \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка вектора направления поиска решения`  
 &emsp;&emsp;**end if**  
-&emsp;&emsp;$\mathbf{g}^{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
+&emsp;&emsp;$\mathbf{g}_{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
 &emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
 &emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
 &emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
 &emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( P, \, T, \, \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
-&emsp;&emsp;$\lambda := -\frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}^{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}^{\left( -1 \right)} \right)} \lambda$ {comment}`# Новое значение коэффициента релаксации`  
+&emsp;&emsp;$\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|$ {comment}`# Новое значение коэффициента релаксации`  
 &emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
 &emsp;**end while**  
 &emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$ {comment}`# Расчет значения функции TPD`  
@@ -715,8 +715,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 import numpy.typing as npt
 
 def condit(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    tol: np.floating,
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     c, ki, gi, lmbd = carry
@@ -729,11 +729,11 @@ def condit(
 from typing import Callable
 
 def update(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    hi: npt.NDArray[np.floating],
-    yi: npt.NDArray[np.floating],
-    plnphi: Callable[[npt.NDArray[np.floating]], npt.NDArray[np.floating]],
-) -> tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating]:
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    hi: npt.NDArray[np.float64],
+    yi: npt.NDArray[np.float64],
+    plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
     c, ki, gi_, lmbd = carry
     dlnki = -lmbd * gi_
     max_dlnki = np.abs(dlnki).max()
@@ -814,8 +814,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 import numpy.typing as npt
 
 def condit(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    tol: np.floating,
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     c, ki, gi, lmbd = carry
@@ -824,11 +824,11 @@ def condit(
 from typing import Callable
 
 def update(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    hi: npt.NDArray[np.floating],
-    yi: npt.NDArray[np.floating],
-    plnphi: Callable[npt.NDArray[np.floating], npt.NDArray[np.floating]],
-) -> tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating]:
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    hi: npt.NDArray[np.float64],
+    yi: npt.NDArray[np.float64],
+    plnphi: Callable[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
     c, ki, gi_, lmbd = carry
     dlnki = -lmbd * gi_
     max_dlnki = np.abs(dlnki).max()
