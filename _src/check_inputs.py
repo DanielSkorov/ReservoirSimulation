@@ -1,11 +1,14 @@
 import numpy as np
-import numpy.typing as npt
 
+from custom_types import (
+  ScalarType,
+  VectorType,
+)
 
 def check_PTyi(
-  P: np.float64,
-  T: np.float64,
-  yi: npt.NDArray[np.float64],
+  P: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
   Nc: int,
   allow_negative_yi: bool = False,
 ) -> None:

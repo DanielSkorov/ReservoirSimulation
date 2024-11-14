@@ -1,39 +1,46 @@
 import numpy as np
-import numpy.typing as npt
 
 from check_inputs import (
   check_PTyi,
 )
 
+from custom_types import (
+  ScalarType,
+  VectorType,
+  MatrixType,
+)
 
-R = 8.3144598 # Universal gas constant [J/mol/K]
+R: ScalarType = np.float64(8.3144598)  # Universal gas constant [J/mol/K]
 
 
 class vdw(object):
+  """Van der Waals equation of state.
+
+  Computes fugacities of `Nc` components and the compressibility
+  factor of a mixture using the van der Waals equation of state.
+
+  Arguments
+  ---------
+    Pci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Critical pressures of `(Nc,)` components [Pa].
+
+    Tci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Critical temperatures of `(Nc,)` components [K].
+
+    dij : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      The lower triangle matrix of binary interaction coefficients
+      expressed as a numpy.array of the shape `(Nc * (Nc - 1) // 2,)`.
+  """
   def __init__(
     self,
-    Pci: npt.NDArray[np.float64],
-    Tci: npt.NDArray[np.float64],
-    dij: npt.NDArray[np.float64],
+    Pci: VectorType,
+    Tci: VectorType,
+    dij: VectorType,
   ) -> None:
-    """
-    Allows to calculate component fugacities and the compressibility
-    factor of a mixture of `Nc` components using the van der Waals
-    equation of state.
-
-    Arguments:
-      Pci : critical pressures of components [Pa].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
-      Tci : critical temperatures of components [K].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
-      dij : the lower triangle of the binary interaction coefficients
-        matrix expressed as a numpy.ndarray[numpy.float64] with the
-        shape of `(Nc * (Nc - 1) // 2,)`.
-    """
     args = (Pci, Tci, dij)
     if not all(map(lambda a: isinstance(a, np.ndarray), args)):
       raise TypeError(
-        "Types of all input arrays must be numpy.ndarray, but"
+        "Types of all input arrays must be numpy.array, but"
         f"\n\t{type(Pci)=},\n\t{type(Tci)=},\n\t{type(dij)=}."
       )
     if not all(map(lambda a: np.issubdtype(a.dtype, np.float64), args)):
@@ -93,23 +100,26 @@ class vdw(object):
 
   def get_Z(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> np.float64:
-    """
-    Calculates the compressibility factor using the van der Waals
-    equation of state.
+  ) -> ScalarType:
+    """Computes the compressiblity factor of a mixture.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      The compressibility factor.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns the compressibility factor of a mixture calculated using
+    the van der Waals equation of state.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -123,24 +133,26 @@ class vdw(object):
 
   def get_lnphii(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> npt.NDArray[np.float64]:
-    """
-    Calculates component fugacity coefficients using the van der Waals
-    equation of state.
+  ) -> VectorType:
+    """Computes fugacity coefficients of components.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A numpy array containing the natural logarithm of fugacity
-      coefficients for each component.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns an array with the natural logarithm of the fugacity
+    coefficient of each component.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -154,25 +166,28 @@ class vdw(object):
 
   def get_lnphii_Z(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[np.float64], np.float64]:
-    """
-    Calculates component fugacity coefficients using the van der Waals
-    equation of state.
+  ) -> tuple[VectorType, ScalarType]:
+    """Computes fugacity coefficients of components and
+    the compressiblity factor of a mixture.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A tuple containing a numpy array with the natural logarithm of
-      fugacity coefficients for each component, and the compressibility
-      factor of a mixture.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns a tuple containing an array with the natural logarithm of
+    the fugacity coefficient of each component, and the compressibility
+    factor of a mixture.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -189,47 +204,51 @@ class vdw(object):
 
   def get_lnfi(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> npt.NDArray[np.float64]:
-    """
-    Calculates component fugacities using the van der Waals
-    equation of state.
+  ) -> VectorType:
+    """Computes fugacities of components.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A numpy array containing the natural logarithm of fugacities
-      for each component.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns an array with the natural logarithm of the fugacity of
+    each component.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
     return self.get_lnphii(P, T, yi, False) + np.log(P * yi)
 
   @staticmethod
-  def solve_eos(
-    A: np.float64,
-    B: np.float64,
-  ) -> np.float64:
-    """
-    Solves the Van-der-Waals equation of state using the Cardano's
-    method, and selectes an appropriate root based on the comparison
-    of the Gibbs energy difference.
+  def solve_eos(A: ScalarType, B: ScalarType) -> ScalarType:
+    """Solves the Van-der-Waals equation of state.
+
+    This method implements the Cardano's method to solve the cubic form
+    of the van der Waals equation of state, and selectes an appropriate
+    root based on the comparison of the Gibbs energy difference.
 
     Arguments:
-      A: the coefficient in the cubic form of the Van-der-Waals
-        equation of state. Must be a scalar of numpy.float64.
-      B: the coefficient in the cubic form of the Van-der-Waals
-        equation of state. Must be a scalar of numpy.float64.
+    ----------
+      A : numpy.float64
+        Coefficient in the cubic form of the van der Waals
+        equation of state.
 
-    Returns:
-      The solution of the Van-der-Waals equation of state.
+      B : numpy.float64
+        Coefficient in the cubic form of the van der Waals
+        equation of state.
+
+    Returns the solution of the van der Waals equation of state
+    corresponding to the lowest Gibb's energy.
     """
     b = -1. - B
     c = A
@@ -270,36 +289,42 @@ class vdw(object):
 
 
 class pr78(object):
+  """Peng-Robinson (1978) equation of state.
+
+  Computes fugacities of `Nc` components and the compressibility
+  factor of a mixture using the modified Peng-Robinson equation
+  of state.
+
+  Arguments
+  ---------
+    Pci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Critical pressures of `(Nc,)` components [Pa].
+
+    Tci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Critical temperatures of `(Nc,)` components [K].
+
+    wi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Acentric factors of `(Nc,)` components.
+
+    vsi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Volume shift parameters of `(Nc,)` components
+
+    dij : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      The lower triangle matrix of binary interaction coefficients
+      expressed as a numpy.array of the shape `(Nc * (Nc - 1) // 2,)`.
+  """
   def __init__(
     self,
-    Pci: npt.NDArray[np.float64],
-    Tci: npt.NDArray[np.float64],
-    wi: npt.NDArray[np.float64],
-    vsi: npt.NDArray[np.float64],
-    dij: npt.NDArray[np.float64],
+    Pci: VectorType,
+    Tci: VectorType,
+    wi: VectorType,
+    vsi: VectorType,
+    dij: VectorType,
   ) -> None:
-    """
-    Allows to calculate the fugacities of components and
-    the compressibility factor of a mixture of `Nc` components
-    using the Peng-Robinson (1978) equation of state.
-
-    Arguments:
-      Pci: critical pressures of components [Pa].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
-      Tci: critical temperatures of components [K].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
-      wi: acentric factors of components.
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
-      vsi: volume shift parameters of components.
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
-      dij: the lower triangle of the binary interaction coefficients
-        matrix expressed as a numpy.ndarray[numpy.float64] with
-        the shape of `(Nc * (Nc - 1) // 2,)`.
-    """
     args = (Pci, Tci, wi, vsi, dij)
     if not all(map(lambda a: isinstance(a, np.ndarray), args)):
       raise TypeError(
-        "Types of all input arrays must be numpy.ndarray, but"
+        "Types of all input arrays must be numpy.array, but"
         f"\n\t{type(Pci)=},"
         f"\n\t{type(Tci)=},"
         f"\n\t{type(wi)=},"
@@ -401,23 +426,26 @@ class pr78(object):
 
   def get_Z(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> np.float64:
-    """
-    Calculates the compressibility factor using
-    the Peng-Robinson equation of state (1978).
+  ) -> ScalarType:
+    """Computes the compressiblity factor of a mixture.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      The compressibility factor.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns the compressibility factor of a mixture calculated using
+    the modified Peng-Robinson equation of state.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -434,24 +462,26 @@ class pr78(object):
 
   def get_lnphii(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> npt.NDArray[np.float64]:
-    """
-    Calculates fugacity coefficients of components using
-    the Peng-Robinson equation of state.
+  ) -> VectorType:
+    """Computes fugacity coefficients of components.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A numpy array containing the natural logarithm of fugacity
-      coefficients for each component.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns an array with the natural logarithm of the fugacity
+    coefficient of each component.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -471,26 +501,28 @@ class pr78(object):
 
   def get_lnphii_Z(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[np.float64], np.float64]:
-    """
-    Calculates fugacity coefficients of components and
-    the compressibility factor using the Peng-Robinson
-    equation of state.
+  ) -> tuple[VectorType, ScalarType]:
+    """Computes fugacity coefficients of components and
+    the compressiblity factor of a mixture.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A tuple containing a numpy array with the natural logarithm of
-      fugacity coefficients for each component, and the compressibility
-      factor of a mixture.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns a tuple containing an array with the natural logarithm of
+    the fugacity coefficient of each component, and the compressibility
+    factor of a mixture.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -513,25 +545,26 @@ class pr78(object):
 
   def get_Zj(
     self,
-    P: np.float64,
-    T: np.float64,
-    yji: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yji: MatrixType,
     check_input: bool = True,
-  ) -> npt.NDArray[np.float64]:
-    """
-    Calculates the compressibility factor for each given component
-    composition using the Peng-Robinson equation of state.
+  ) -> VectorType:
+    """Computes the compressibility factor for each composition
+    of `Np` phases.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yji: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape
-        equals to `(Np, Nc)`, where Np is a number of phases and
-        Nc is a number of components.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A  numpy array of compressibility factors for each phase.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yji : numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]
+        mole fractions array of shape `(Np, Nc)`.
+
+    Returns an array of the compressibility factor for each phase.
     """
     # if check_input:
     #   check_PTyi(P, T, yji, self.Nc)
@@ -548,28 +581,28 @@ class pr78(object):
 
   def get_lnphiji_Zj(
     self,
-    P: np.float64,
-    T: np.float64,
-    yji: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yji: MatrixType,
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-    """
-    Calculates fugacity coefficients of components and
-    the compressibility factor for each given component composition
-    using the Peng-Robinson equation of state.
+  ) -> tuple[MatrixType, VectorType]:
+    """Computes fugacity coefficients of components and
+    the compressiblity factor for each composition of `Np` phases.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yji: mole fraction for each component [fr.].
-        Must be a numpy.ndarray[numpy.float64] with the shape
-        equals to `(Np, Nc)`, where Np is a number of phases and
-        Nc is a number of components.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A tuple containing a numpy array of the natural logarithm of
-      fugacity coefficients for each component in each phase, and
-      a numpy array of compressibility factors for each phase.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yji : numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]
+        mole fractions array of shape `(Np, Nc)`.
+
+    Returns a tuple with an array of the natural logarithm of fugacity
+    coefficients for each component in each phase, and an array of
+    compressibility factors for each phase.
     """
     # if check_input:
     #   check_PTyi(P, T, yji, self.Nc)
@@ -593,24 +626,26 @@ class pr78(object):
 
   def get_lnfi(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> npt.NDArray[np.float64]:
-    """
-    Calculates fugacities of components using the Peng-Robinson
-    equation of state.
+  ) -> VectorType:
+    """Computes fugacities of components.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
-      yi: mole fraction for each component [fr.].
-      Must be a numpy.ndarray[numpy.float64] with the shape `(Nc,)`.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A numpy array containing natural logarithms of fugacities
-      of each component.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns an array with the natural logarithm of the fugacity
+    of each component.
     """
     if check_input:
       check_PTyi(P, T, yi, self.Nc)
@@ -618,21 +653,24 @@ class pr78(object):
 
   def get_kvguess(
     self,
-    P: np.float64,
-    T: np.float64,
+    P: ScalarType,
+    T: ScalarType,
     # level: int,
-  ) -> npt.NDArray[np.float64]:
-    """
-    Calculates initial guess of k-values for given pressure P, temperature T
-    using the Wilson's correlation.
+  ) -> MatrixType:
+    """Computes initial guess of k-values for given pressure `P` and
+    temperature `T` using the Wilson's correlation.
 
-    Arguments:
-      P: pressure [Pa]. Must be a scalar of numpy.float64.
-      T: temperature [K]. Must be a scalar of numpy.float64.
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
 
-    Returns:
-      A numpy array containing two vectors of initial k-values calculated
-      using the Wilson's correlation and inverse Wilson's correlation.
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+    Returns a matrix containing two vectors of initial k-values
+    calculated using the Wilson's correlation and inverse Wilson's
+    correlation.
     """
     kvi = self.Pci * np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / T)) / P
     return np.vstack([kvi, 1. / kvi])
@@ -642,19 +680,25 @@ class pr78(object):
     A: np.float64,
     B: np.float64,
   ) -> np.float64:
-    """
-    Solves the Peng-Robinson equation of state using the Cardano's
-    method, and selectes an appropriate root based on the comparison
-    of the Gibbs energy difference.
+    """Solves the modified Peng-Robinson equation of state.
+
+    This method implements the Cardano's method to solve the cubic form
+    of the modified Peng-Robinson equation of state, and selectes an
+    appropriate root based on the comparison of the Gibbs energy
+    difference.
 
     Arguments:
-      A: the coefficient in the cubic form of the Peng-Robinson
-        equation of state. Must be a scalar of numpy.float64.
-      B: the coefficient in the cubic form of the Peng-Robinson
-        equation of state. Must be a scalar of numpy.float64.
+    ----------
+      A : numpy.float64
+        Coefficient in the cubic form of the modified Peng-Robinson
+        equation of state.
 
-    Returns:
-      The solution of the Peng-Robinson equation of state.
+      B : numpy.float64
+        Coefficient in the cubic form of the modified Peng-Robinson
+        equation of state.
+
+    Returns the solution of the modified Peng-Robinson equation of state
+    corresponding to the lowest Gibb's energy.
     """
     b = B - 1.
     c = A - 2. * B - 3. * B * B

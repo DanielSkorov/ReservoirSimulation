@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.typing as npt
 
 from functools import (
   partial,
@@ -9,15 +8,20 @@ from typing import (
   Callable,
 )
 
+from custom_types import (
+  ScalarType,
+  VectorType,
+)
+
 
 def fD(
-  a: np.float64,
-  yi: npt.NDArray[np.float64],
-  di: npt.NDArray[np.float64],
-  yidi: npt.NDArray[np.float64],
-  y0: np.float64,
-  yN: np.float64,
-) -> tuple[np.float64, np.float64]:
+  a: ScalarType,
+  yi: VectorType,
+  di: VectorType,
+  yidi: VectorType,
+  y0: ScalarType,
+  yN: ScalarType,
+) -> tuple[ScalarType, ScalarType]:
   denom = 1. / (di * (a + 1.) + a)
   return (
     y0 + a * yi.dot(denom) - yN * a,
@@ -26,12 +30,12 @@ def fD(
 
 
 def fG(
-  a: np.float64,
-  yi: npt.NDArray[np.float64],
-  di: npt.NDArray[np.float64],
-  y0: np.float64,
-  yN: np.float64,
-) -> tuple[np.float64, np.float64]:
+  a: ScalarType,
+  yi: VectorType,
+  di: VectorType,
+  y0: ScalarType,
+  yN: ScalarType,
+) -> tuple[ScalarType, ScalarType]:
   denom = 1. / (di * (a + 1.) + a)
   return (
     (a + 1.) * (y0 / a + yi.dot(denom) - yN),
@@ -40,12 +44,12 @@ def fG(
 
 
 def fH(
-  a: np.float64,
-  yi: npt.NDArray[np.float64],
-  di: npt.NDArray[np.float64],
-  y0: np.float64,
-  yN: np.float64,
-) -> tuple[np.float64, np.float64]:
+  a: ScalarType,
+  yi: VectorType,
+  di: VectorType,
+  y0: ScalarType,
+  yN: ScalarType,
+) -> tuple[ScalarType, ScalarType]:
   denom = 1. / (di * (a + 1.) + a)
   G = (1. + a) * (y0 / a + yi.dot(denom) - yN)
   dGda = -y0 / (a * a) - yi.dot(denom * denom) - yN
@@ -53,25 +57,30 @@ def fH(
 
 
 def solve2p_FGH(
-  kvi: npt.NDArray[np.float64],
-  yi: npt.NDArray[np.float64],
-  tol: np.float64 = np.float64(1e-10),
+  kvi: VectorType,
+  yi: VectorType,
+  tol: ScalarType = np.float64(1e-10),
   Niter: int = 50,
-) -> np.float64:
-  """
-  Solves the Rachford-rice equation for two-phase systems using
+) -> ScalarType:
+  """Solves the Rachford-rice equation for two-phase systems using
   the FGH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
-  Arguments:
-    kvi: k-values of components. Must be a numpy.ndarray[numpy.float64]
-      with the shape `(Nc,)`.
-    yi: mole fractions of components. Must be a numpy.ndarray[numpy.float64]
-      with the shape `(Nc,)`.
-    tol: tolerance. Must be a scalar of numpy.float64.
-    Niter: maximum number of iterations. Must be a scalar of integer.
+  Arguments
+  ---------
 
-  Returns:
-    Mole fraction of the non-reference phase in a system.
+    kvi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      K-values of `(Nc,)` components.
+
+    yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Mole fractions of `(Nc,)` components.
+
+    tol : numpy.float64
+      Tolerance.
+
+    Niter : int
+      Maximum number of iterations.
+
+  Returns a mole fraction of the non-reference phase in a system.
   """
   idx = kvi.argsort()[::-1]
   yi = yi[idx]
@@ -95,8 +104,8 @@ def solve2p_FGH(
 
 
 def _solve2p_FGH_condit(
-  carry: tuple[int, np.float64, np.float64, np.float64],
-  tol: np.float64,
+  carry: tuple[int, ScalarType, ScalarType, ScalarType],
+  tol: ScalarType,
   Niter: int,
 ) -> bool:
   i, a, _, D = carry
@@ -104,9 +113,9 @@ def _solve2p_FGH_condit(
 
 
 def _solve2p_FGH_update(
-  carry: tuple[int, np.float64, np.float64, np.float64],
-  pD: Callable[[np.float64], tuple[np.float64, np.float64]],
-) -> tuple[int, np.float64, np.float64, np.float64]:
+  carry: tuple[int, ScalarType, ScalarType, ScalarType],
+  pD: Callable[[ScalarType], tuple[ScalarType, ScalarType]],
+) -> tuple[int, ScalarType, ScalarType, ScalarType]:
   i, a_, h_, D_ = carry
   a = a_ - h_
   print(f'{i}: {a = }')
@@ -122,25 +131,30 @@ def _solve2p_FGH_update(
 
 
 def solve2p_GH(
-  kvi: npt.NDArray[np.float64],
-  yi: npt.NDArray[np.float64],
-  tol: np.float64 = 1e-10,
+  kvi: VectorType,
+  yi: VectorType,
+  tol: ScalarType = np.float64(1e-10),
   Niter: int = 50,
-) -> np.float64:
-  """
-  Solves the Rachford-rice equation for two-phase systems using
+) -> ScalarType:
+  """Solves the Rachford-rice equation for two-phase systems using
   the GH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
-  Arguments:
-    kvi: k-values of components. Must be a numpy.ndarray[numpy.float64]
-      with the shape `(Nc,)`.
-    yi: mole fractions of components. Must be a numpy.ndarray[numpy.float64]
-      with the shape `(Nc,)`.
-    tol: tolerance. Must be a scalar of numpy.float64.
-    Niter: maximum number of iterations. Must be a scalar of integer.
+  Arguments
+  ---------
 
-  Returns:
-    Mole fraction of the non-reference phase in a system.
+    kvi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      K-values of `(Nc,)` components.
+
+    yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+      Mole fractions of `(Nc,)` components.
+
+    tol : numpy.float64
+      Tolerance.
+
+    Niter : int
+      Maximum number of iterations.
+
+  Returns a mole fraction of the non-reference phase in a system.
   """
   idx = kvi.argsort()[::-1]
   yi = yi[idx]
@@ -173,9 +187,9 @@ def solve2p_GH(
   return (ci[0] + a * ci[-1]) / (1. + a)
 
 def _solve2p_GH_update(
-  carry: tuple[int, np.float64, np.float64, np.float64],
-  pF: Callable[[np.float64], tuple[np.float64, np.float64]],
-) -> tuple[int, np.float64, np.float64, np.float64]:
+  carry: tuple[int, ScalarType, ScalarType, ScalarType],
+  pF: Callable[[ScalarType], tuple[ScalarType, ScalarType]],
+) -> tuple[int, ScalarType, ScalarType, ScalarType]:
   i, a_, da_, _ = carry
   a = a_ + da_
   eq, grad = pF(a)

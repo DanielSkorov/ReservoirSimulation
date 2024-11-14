@@ -1,51 +1,57 @@
+import numpy as np
+
 from typing import (
   Protocol,
+  TypeVar,
 )
 
-from numpy import (
-  typing as npt,
-  float64,
-)
+DType = TypeVar('DType', bound=np.float64)
+
+ScalarType = np.float64
+
+VectorType = np.ndarray[tuple[int], np.dtype[DType]]
+
+MatrixType = np.ndarray[tuple[int, int], np.dtype[DType]]
 
 
-class EOS_PT(Protocol):
+class EosptType(Protocol):
 
   def get_Z(
     self,
-    P: float64,
-    T: float64,
-    yi: npt.NDArray[float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> float64: ...
+  ) -> ScalarType: ...
 
   def get_lnphii(
     self,
-    P: float64,
-    T: float64,
-    yi: npt.NDArray[float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> npt.NDArray[float64]: ...
+  ) -> VectorType: ...
 
   def get_lnphii_Z(
     self,
-    P: float64,
-    T: float64,
-    yi: npt.NDArray[float64],
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[float64], float64]: ...
+  ) -> tuple[VectorType, ScalarType]: ...
 
   def get_lnphiji_Zj(
     self,
-    P: float64,
-    T: float64,
-    yji: npt.NDArray[float64],
+    P: ScalarType,
+    T: ScalarType,
+    yji: MatrixType,
     check_input: bool = True,
-  ) -> tuple[npt.NDArray[float64], npt.NDArray[float64]]: ...
+  ) -> tuple[MatrixType, VectorType]: ...
 
   def get_kvguess(
     self,
-    P: float64,
-    T: float64,
+    P: ScalarType,
+    T: ScalarType,
     # level: int,
-  ) -> npt.NDArray[float64]: ...
+  ) -> MatrixType: ...
 

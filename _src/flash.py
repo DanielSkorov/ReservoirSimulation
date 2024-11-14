@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.typing as npt
 
 from functools import (
   partial,
@@ -10,16 +9,29 @@ from typing import (
 )
 
 from custom_types import (
-  EOS_PT,
+  ScalarType,
+  VectorType,
+  MatrixType,
+  EosptType,
 )
 
 
 class stabilityPT(object):
+  """Stability test based on the Gibbs energy analysis.
+
+  Checks the tangent-plane distance (TPD) in local minima of
+  the Gibbs energy function.
+
+  Arguments
+  ---------
+  eos : EosptType
+    An initialized instance of a PT-based equation of state.
+  """
   def __init__(
     self,
-    eos: EOS_PT,
-    eps: np.float64 = np.float64(1e-4),
-    tol: np.float64 = np.float64(1e-6),
+    eos: EosptType,
+    eps: ScalarType = np.float64(1e-4),
+    tol: ScalarType = np.float64(1e-6),
     Niter: int = 50,
   ) -> None:
     self.eos = eos
@@ -28,20 +40,42 @@ class stabilityPT(object):
     self.Niter = Niter
     pass
 
-  def get_stability(
+  def check_qnss(
     self,
-    P: np.float64,
-    T: np.float64,
-    yi: npt.NDArray[np.float64],
-  ) -> tuple[bool, npt.NDArray[np.float64] | None]:
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> tuple[bool, MatrixType | None]:
+    """QNSS-method for stability test
+
+    Performs the quasi-Newton successive substitution (QNSS) method to
+    find local minima of the Gibbs energy function from different
+    initial guesses. Calculates the TPD value at found local minima.
+    For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
+
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
+
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+    Returns a tuple of a boolean (True if a system is stable, False
+    otherwise) and an array of k-values at a local minima that can be
+    used as an initial guess for flash calculations.
+    """
     # print(f'*** Stability Test ***\n{P = }\n{T = }\n{yi = }')
     kvji = self.eos.get_kvguess(P, T)
     hi = self.eos.get_lnphii(P, T, yi, False) + np.log(yi)
     plnphii = partial(self.eos.get_lnphii, P=P, T=T, check_input=False)
-    pcondit = partial(self._condit, tol=self.tol, Niter=self.Niter)
-    pupdate = partial(self._update, hi=hi, yi=yi, plnphii=plnphii)
+    pcondit = partial(self._condit_qnss, tol=self.tol, Niter=self.Niter)
+    pupdate = partial(self._update_qnss, hi=hi, yi=yi, plnphii=plnphii)
     # print('Sarting the kv-loop...')
-    kvi: npt.NDArray[np.float64]
+    kvi: VectorType
     for j, kvi in enumerate(kvji):
       # print(f'\n\tThe kv-loop iteration number = {j}')
       # print(f'\tInitial k-values = {kvi}')
@@ -62,8 +96,7 @@ class stabilityPT(object):
         # print(f'The one-phase state is stable: False')
         # print('*** End of Stability Test ***')
         xi = ni / ni.sum()
-        kvi_guess = np.vstack([xi / yi, yi / xi])
-        return False, kvi_guess
+        return False, np.vstack([xi / yi, yi / xi])
     else:
       # print(f'The final kv-loop iteration number = {j}')
       # print(f'{TPD = }')
@@ -72,36 +105,21 @@ class stabilityPT(object):
       return True, None
 
   @staticmethod
-  def _condit(
-    carry: tuple[
-      int,
-      npt.NDArray[np.float64],
-      npt.NDArray[np.float64],
-      np.float64,
-    ],
-    tol: np.float64,
+  def _condit_qnss(
+    carry: tuple[int, VectorType, VectorType, ScalarType],
+    tol: ScalarType,
     Niter: int,
-  ) -> bool:
+  ) -> np.bool:
     i, ki, gi, _ = carry
     return (i < Niter) & (np.linalg.norm(gi) > tol)
 
   @staticmethod
-  def _update(
-    carry: tuple[
-      int,
-      npt.NDArray[np.float64],
-      npt.NDArray[np.float64],
-      np.float64,
-    ],
-    hi: npt.NDArray[np.float64],
-    yi: npt.NDArray[np.float64],
-    plnphii: Callable[[npt.NDArray[np.floating]], npt.NDArray[np.floating]],
-  ) -> tuple[
-    int,
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
-    np.float64,
-  ]:
+  def _update_qnss(
+    carry: tuple[int, VectorType, VectorType, ScalarType],
+    hi: VectorType,
+    yi: VectorType,
+    plnphii: Callable[[VectorType], VectorType],
+  ) -> tuple[int, VectorType, VectorType, ScalarType]:
     i, kvi, gi_, lmbd = carry
     # print(f'\n\t\tIteration #{i}')
     dlnkvi = -lmbd * gi_
