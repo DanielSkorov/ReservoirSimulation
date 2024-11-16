@@ -283,6 +283,7 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
 wi = np.array([.225, .008]) # Acentric factors
+mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([.025]) # Binary interaction parameters
 ```
@@ -293,7 +294,7 @@ dij = np.array([.025]) # Binary interaction parameters
 import sys
 sys.path.append('../../_src/')
 from eos import pr78
-pr = pr78(Pci, Tci, wi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 
 Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов воспользуемся методом `get_lnphiji_Zj`, принимающего в качестве аргументов давление, температуру и набор компонентных составов в виде двумерного массива, и возвращающего соответствующие коэффициенты летучести компонентов в виде двумерного массива и коэффициенты сверхсжимаемости в виде одномерного массива. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
@@ -370,13 +371,14 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
 wi = np.array([.225, .008]) # Acentric factors
+mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([.025]) # Binary interaction parameters
 
 import sys
 sys.path.append('../../_src/')
 from eos import pr78
-pr = pr78(Pci, Tci, wi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
 yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 yji = np.vstack([yj1, 1. - yj1]).T
@@ -658,12 +660,12 @@ $\mathbf{h} := \ln \phi \left(P, \, T, \, \mathbf{z} \right) + \ln \mathbf{z}$  
 &emsp;&emsp;&emsp;$\lambda := \lambda \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка длины шага`  
 &emsp;&emsp;&emsp;$\mathbf{\Delta \ln k} := \mathbf{\Delta \ln k} \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка вектора направления поиска решения`  
 &emsp;&emsp;**end if**  
-&emsp;&emsp;$\mathbf{g}^{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
+&emsp;&emsp;$\mathbf{g}_{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
 &emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
 &emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
 &emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
 &emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( P, \, T, \, \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
-&emsp;&emsp;$\lambda := -\frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}^{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}^{\left( -1 \right)} \right)} \lambda$ {comment}`# Новое значение коэффициента релаксации`  
+&emsp;&emsp;$\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|$ {comment}`# Новое значение коэффициента релаксации`  
 &emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
 &emsp;**end while**  
 &emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$ {comment}`# Расчет значения функции TPD`  
@@ -715,8 +717,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 import numpy.typing as npt
 
 def condit(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    tol: np.floating,
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     c, ki, gi, lmbd = carry
@@ -729,11 +731,11 @@ def condit(
 from typing import Callable
 
 def update(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    hi: npt.NDArray[np.floating],
-    yi: npt.NDArray[np.floating],
-    plnphi: Callable[[npt.NDArray[np.floating]], npt.NDArray[np.floating]],
-) -> tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating]:
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    hi: npt.NDArray[np.float64],
+    yi: npt.NDArray[np.float64],
+    plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
     c, ki, gi_, lmbd = carry
     dlnki = -lmbd * gi_
     max_dlnki = np.abs(dlnki).max()
@@ -744,9 +746,9 @@ def update(
     ki *= np.exp(dlnki)
     ni = ki * yi
     gi = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd *= -dlnki.dot(gi_) / dlnki.dot(gi - gi_)
-    if np.abs(lmbd) > 30.:
-        lmbd = np.sign(lmbd) * 30.
+    lmbd *= np.abs(dlnki.dot(gi_) / dlnki.dot(gi - gi_))
+    if lmbd > 30.:
+        lmbd = 30.
     return c + 1, ki, gi, lmbd
 ```
 
@@ -814,8 +816,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 import numpy.typing as npt
 
 def condit(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    tol: np.floating,
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    tol: np.float64,
     Niter: int,
 ) -> bool:
     c, ki, gi, lmbd = carry
@@ -824,11 +826,11 @@ def condit(
 from typing import Callable
 
 def update(
-    carry: tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating],
-    hi: npt.NDArray[np.floating],
-    yi: npt.NDArray[np.floating],
-    plnphi: Callable[npt.NDArray[np.floating], npt.NDArray[np.floating]],
-) -> tuple[int, npt.NDArray[np.floating], npt.NDArray[np.floating], np.floating]:
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
+    hi: npt.NDArray[np.float64],
+    yi: npt.NDArray[np.float64],
+    plnphi: Callable[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
     c, ki, gi_, lmbd = carry
     dlnki = -lmbd * gi_
     max_dlnki = np.abs(dlnki).max()
@@ -839,9 +841,9 @@ def update(
     ki *= np.exp(dlnki)
     ni = ki * yi
     gi = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd *= -dlnki.dot(gi_) / dlnki.dot(gi - gi_)
-    if np.abs(lmbd) > 30.:
-        lmbd = np.sign(lmbd) * 30.
+    lmbd *= np.abs(dlnki.dot(gi_) / dlnki.dot(gi - gi_))
+    if lmbd > 30.:
+        lmbd = 30.
     return c + 1, ki, gi, lmbd
 
 hi = pr.get_lnphii(P, T, yi) + np.log(yi)
@@ -1011,7 +1013,7 @@ glue('glued_out2', MultilineText(out2))
 
 Представленный выше алгоритм можно использовать для проверки стабильности однофазного состояния системы. Для проверки стабильности многофазной системы также можно использовать представленный выше алгоритм: для этого достаточно проверить стабильность любой из фаз.
 
-Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py). [Следующий раздел](SEC-2-Equilibrium.md) будет посвящен второму из двух последовательных шагов к определению равновесного состояния, проводимому, если в результате проверки стабильности рассматриваемое фазовое состояние системы оказалось нестабильным.
+Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
 
 (pvt-sec-stability-vt)=
 ## VT-термодинамика
