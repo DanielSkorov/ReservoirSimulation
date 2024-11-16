@@ -1,14 +1,15 @@
+import logging
 import numpy as np
-
-from check_inputs import (
-  check_PTyi,
-)
 
 from custom_types import (
   ScalarType,
   VectorType,
   MatrixType,
 )
+
+
+logger = logging.getLogger('pvt')
+
 
 R: ScalarType = np.float64(8.3144598)  # Universal gas constant [J/mol/K]
 
@@ -37,59 +38,9 @@ class vdw(object):
     Tci: VectorType,
     dij: VectorType,
   ) -> None:
-    args = (Pci, Tci, dij)
-    if not all(map(lambda a: isinstance(a, np.ndarray), args)):
-      raise TypeError(
-        "Types of all input arrays must be numpy.array, but"
-        f"\n\t{type(Pci)=},\n\t{type(Tci)=},\n\t{type(dij)=}."
-      )
-    if not all(map(lambda a: np.issubdtype(a.dtype, np.float64), args)):
-      raise TypeError(
-        "Data types of all input arrays must be numpy.float64, but"
-        f"\n\t{Pci.dtype=},\n\t{Tci.dtype=},\n\t{dij.dtype=}."
-      )
-    if not all(map(lambda a: a.ndim == 1, args)):
-      raise ValueError(
-        "Dimensions of all input arrays must be equal 1, but"
-        f"\n\t{Pci.ndim=},\n\t{Tci.ndim=},\n\t{dij.ndim=}."
-      )
     self.Nc = Pci.shape[0]
-    if not all(map(lambda a: a.shape == (self.Nc,), args[:-1])):
-      raise ValueError(
-        f"The shape of Pci and Tci arrays must be equal to ({self.Nc},), but"
-        f"\n\t{Pci.shape=},\n\t{Tci.shape=}."
-      )
-    if dij.shape != (self.Nc * (self.Nc - 1) // 2,):
-      raise ValueError(
-        f"The shape of the dij must be ({self.Nc*(self.Nc-1)//2,}), but"
-        f"\n\t{dij.shape=}."
-      )
-    if not np.isfinite(Pci).all():
-      where = np.where(1 - np.isfinite(Pci))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"\nPci have values: {Pci[where]}\n\tat indices: {where}."
-      )
-    if not np.isfinite(Tci).all():
-      where = np.where(1 - np.isfinite(Tci))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"\n\tTci have values: {Tci[where]}\n\tat indices: {where}."
-      )
-    if not np.isfinite(dij).all():
-      where = np.where(1 - np.isfinite(dij))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"\n\tdij have values: {dij[where]}\n\tat indices: {where}."
-      )
-    if (Pci <= 0.).any():
-      raise ValueError(
-        "Critical pressures of all components must be greater than zero."
-      )
-    if (Tci <= 0.).any():
-      raise ValueError(
-        "Critical temperatures of all components must be greater than zero."
-      )
+    self.Pci = Pci
+    self.Tci = Tci
     self.sqrtai = .649519052838329 * R * Tci / np.sqrt(Pci)
     self.bi = .125 * R * Tci / Pci
     D = np.zeros(shape=(self.Nc, self.Nc), dtype=Pci.dtype)
@@ -103,7 +54,6 @@ class vdw(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> ScalarType:
     """Computes the compressiblity factor of a mixture.
 
@@ -121,8 +71,6 @@ class vdw(object):
     Returns the compressibility factor of a mixture calculated using
     the van der Waals equation of state.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
     Si = self.sqrtai * (yi * self.sqrtai).dot(self.D)
     am = yi.dot(Si)
     bm = yi.dot(self.bi)
@@ -136,7 +84,6 @@ class vdw(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> VectorType:
     """Computes fugacity coefficients of components.
 
@@ -154,8 +101,6 @@ class vdw(object):
     Returns an array with the natural logarithm of the fugacity
     coefficient of each component.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
     Si = self.sqrtai * (yi * self.sqrtai).dot(self.D)
     am = yi.dot(Si)
     bm = yi.dot(self.bi)
@@ -169,7 +114,6 @@ class vdw(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> tuple[VectorType, ScalarType]:
     """Computes fugacity coefficients of components and
     the compressiblity factor of a mixture.
@@ -189,8 +133,6 @@ class vdw(object):
     the fugacity coefficient of each component, and the compressibility
     factor of a mixture.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
     Si = self.sqrtai * (yi * self.sqrtai).dot(self.D)
     am = yi.dot(Si)
     bm = yi.dot(self.bi)
@@ -207,7 +149,6 @@ class vdw(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> VectorType:
     """Computes fugacities of components.
 
@@ -225,9 +166,31 @@ class vdw(object):
     Returns an array with the natural logarithm of the fugacity of
     each component.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
-    return self.get_lnphii(P, T, yi, False) + np.log(P * yi)
+    return self.get_lnphii(P, T, yi) + np.log(P * yi)
+
+  def get_kvguess(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    # level: int,
+  ) -> MatrixType:
+    """Computes initial guess of k-values for given pressure `P` and
+    temperature `T` using the Wilson's correlation.
+
+    Arguments
+    ---------
+      P : numpy.float64
+        Pressure of a mixture [Pa].
+
+      T : numpy.float64
+        Temperature of a mixture [K].
+
+    Returns a matrix containing two vectors of initial k-values
+    calculated using the Wilson's correlation and inverse Wilson's
+    correlation.
+    """
+    kvi = self.Pci * np.exp(5.3727 * (1. - self.Tci / T)) / P
+    return np.vstack([kvi, 1. / kvi])
 
   @staticmethod
   def solve_eos(A: ScalarType, B: ScalarType) -> ScalarType:
@@ -318,96 +281,15 @@ class pr78(object):
     Pci: VectorType,
     Tci: VectorType,
     wi: VectorType,
+    mwi: VectorType,
     vsi: VectorType,
     dij: VectorType,
   ) -> None:
-    args = (Pci, Tci, wi, vsi, dij)
-    if not all(map(lambda a: isinstance(a, np.ndarray), args)):
-      raise TypeError(
-        "Types of all input arrays must be numpy.array, but"
-        f"\n\t{type(Pci)=},"
-        f"\n\t{type(Tci)=},"
-        f"\n\t{type(wi)=},"
-        f"\n\t{type(vsi)=},"
-        f"\n\t{type(dij)=}."
-      )
-    if not all(map(lambda a: np.issubdtype(a.dtype, np.float64), args)):
-      raise TypeError(
-        "Data types of all input arrays must be numpy.float64, but"
-        f"\n\t{Pci.dtype=},"
-        f"\n\t{Tci.dtype=},"
-        f"\n\t{wi.dtype=},"
-        f"\n\t{vsi.dtype=},"
-        f"\n\t{dij.dtype=}."
-      )
-    if not all(map(lambda a: a.ndim == 1, args)):
-      raise ValueError(
-        "Dimensions of all input arrays must be equal 1, but"
-        f"\n\t{Pci.ndim=},"
-        f"\n\t{Tci.ndim=},"
-        f"\n\t{wi.ndim=},"
-        f"\n\t{vsi.ndim=},"
-        f"\n\t{dij.ndim=}."
-      )
     self.Nc = Pci.shape[0]
-    if not all(map(lambda a: a.shape == (self.Nc,), args[:-1])):
-      raise ValueError(
-        f"The shape of Pci, Tci, wi and vsi arrays must be ({self.Nc},), but"
-        f"\n\t{Pci.shape=},"
-        f"\n\t{Tci.shape=},"
-        f"\n\t{wi.shape=},"
-        f"\n\t{vsi.shape=}."
-      )
-    if dij.shape != (self.Nc * (self.Nc - 1) // 2,):
-      raise ValueError(
-        f"The shape of the dij array must be ({self.Nc*(self.Nc-1)//2,}), but"
-        f"\n\t{dij.shape=}."
-      )
-    if not np.isfinite(Pci).all():
-      where = np.where(1 - np.isfinite(Pci))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"\n\tPci have values: {Pci[where]}\n\tat indices: {where}."
-      )
-    if not np.isfinite(Tci).all():
-      where = np.where(1 - np.isfinite(Tci))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"\n\tTci have values: {Tci[where]}\n\tat indices: {where}."
-      )
-    if not np.isfinite(wi).all():
-      where = np.where(1 - np.isfinite(wi))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"\n\twi have values: {wi[where]}\n\tat indices: {where}."
-      )
-    if not np.isfinite(vsi).all():
-      where = np.where(1 - np.isfinite(vsi))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"vsi have values: {vsi[where]}\n\tat indices: {where}."
-      )
-    if not np.isfinite(dij).all():
-      where = np.where(1 - np.isfinite(dij))
-      raise ValueError(
-        "All input arrays must contain finite values, but"
-        f"dij have values: {dij[where]}\n\tat indices: {where}."
-      )
-    if (Pci <= 0.).any():
-      raise ValueError(
-        "Critical pressures of all components must be greater than zero."
-      )
-    if (Tci <= 0.).any():
-      raise ValueError(
-        "Critical temperatures of all components must be greater than zero."
-      )
-    if (wi <= 0.).any():
-      raise ValueError(
-        "Acentric factors of all components must be greater than zero."
-      )
     self.Pci = Pci
     self.Tci = Tci
     self.wi = wi
+    self.mwi = mwi
     self._Tci = np.sqrt(1. / Tci)
     self.bi = 0.07779607390388849 * R * Tci / Pci
     self.sqrtai = 0.6761919320144113 * R * Tci / np.sqrt(Pci)
@@ -429,7 +311,6 @@ class pr78(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> ScalarType:
     """Computes the compressiblity factor of a mixture.
 
@@ -447,8 +328,6 @@ class pr78(object):
     Returns the compressibility factor of a mixture calculated using
     the modified Peng-Robinson equation of state.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
     PRT = P / R / T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
@@ -465,7 +344,6 @@ class pr78(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> VectorType:
     """Computes fugacity coefficients of components.
 
@@ -483,8 +361,6 @@ class pr78(object):
     Returns an array with the natural logarithm of the fugacity
     coefficient of each component.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
     PRT = P / R / T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
@@ -504,7 +380,6 @@ class pr78(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> tuple[VectorType, ScalarType]:
     """Computes fugacity coefficients of components and
     the compressiblity factor of a mixture.
@@ -524,8 +399,6 @@ class pr78(object):
     the fugacity coefficient of each component, and the compressibility
     factor of a mixture.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
     PRT = P / R / T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
@@ -548,7 +421,6 @@ class pr78(object):
     P: ScalarType,
     T: ScalarType,
     yji: MatrixType,
-    check_input: bool = True,
   ) -> VectorType:
     """Computes the compressibility factor for each composition
     of `Np` phases.
@@ -566,8 +438,6 @@ class pr78(object):
 
     Returns an array of the compressibility factor for each phase.
     """
-    # if check_input:
-    #   check_PTyi(P, T, yji, self.Nc)
     PRT = P / R / T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
@@ -584,7 +454,6 @@ class pr78(object):
     P: ScalarType,
     T: ScalarType,
     yji: MatrixType,
-    check_input: bool = True,
   ) -> tuple[MatrixType, VectorType]:
     """Computes fugacity coefficients of components and
     the compressiblity factor for each composition of `Np` phases.
@@ -604,8 +473,6 @@ class pr78(object):
     coefficients for each component in each phase, and an array of
     compressibility factors for each phase.
     """
-    # if check_input:
-    #   check_PTyi(P, T, yji, self.Nc)
     PRT = P / R / T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
@@ -629,7 +496,6 @@ class pr78(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> VectorType:
     """Computes fugacities of components.
 
@@ -647,9 +513,7 @@ class pr78(object):
     Returns an array with the natural logarithm of the fugacity
     of each component.
     """
-    if check_input:
-      check_PTyi(P, T, yi, self.Nc)
-    return self.get_lnphii(P, T, yi, False) + np.log(P * yi)
+    return self.get_lnphii(P, T, yi,) + np.log(P * yi)
 
   def get_kvguess(
     self,

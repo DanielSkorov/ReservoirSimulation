@@ -15,13 +15,13 @@ MatrixType = np.ndarray[tuple[int, int], np.dtype[DType]]
 
 
 class EosptType(Protocol):
+  mwi: VectorType
 
   def get_Z(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> ScalarType: ...
 
   def get_lnphii(
@@ -29,7 +29,6 @@ class EosptType(Protocol):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> VectorType: ...
 
   def get_lnphii_Z(
@@ -37,7 +36,6 @@ class EosptType(Protocol):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    check_input: bool = True,
   ) -> tuple[VectorType, ScalarType]: ...
 
   def get_lnphiji_Zj(
@@ -45,7 +43,6 @@ class EosptType(Protocol):
     P: ScalarType,
     T: ScalarType,
     yji: MatrixType,
-    check_input: bool = True,
   ) -> tuple[MatrixType, VectorType]: ...
 
   def get_kvguess(

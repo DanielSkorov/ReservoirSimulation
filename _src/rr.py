@@ -1,12 +1,10 @@
-import numpy as np
+import logging
 
 from functools import (
   partial,
 )
 
-from typing import (
-  Callable,
-)
+import numpy as np
 
 from custom_types import (
   ScalarType,
@@ -14,19 +12,7 @@ from custom_types import (
 )
 
 
-def fD(
-  a: ScalarType,
-  yi: VectorType,
-  di: VectorType,
-  yidi: VectorType,
-  y0: ScalarType,
-  yN: ScalarType,
-) -> tuple[ScalarType, ScalarType]:
-  denom = 1. / (di * (a + 1.) + a)
-  return (
-    y0 + a * yi.dot(denom) - yN * a,
-    yidi.dot(denom * denom) - yN,
-  )
+logger = logging.getLogger('rr')
 
 
 def fG(
@@ -56,18 +42,31 @@ def fH(
   return -a * G, -G - a * dGda
 
 
+def fD(
+  a: ScalarType,
+  yi: VectorType,
+  di: VectorType,
+  yidi: VectorType,
+  y0: ScalarType,
+  yN: ScalarType,
+) -> tuple[ScalarType, ScalarType]:
+  denom = 1. / (di * (a + 1.) + a)
+  return y0 + a * yi.dot(denom) - yN * a, yidi.dot(denom * denom) - yN
+
+
 def solve2p_FGH(
   kvi: VectorType,
   yi: VectorType,
   tol: ScalarType = np.float64(1e-10),
   Niter: int = 50,
 ) -> ScalarType:
-  """Solves the Rachford-rice equation for two-phase systems using
+  """FGH-method for solving the Rachford-Rice equation.
+
+  Solves the Rachford-rice equation for two-phase systems using
   the FGH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
   Arguments
   ---------
-
     kvi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
       K-values of `(Nc,)` components.
 
@@ -82,6 +81,9 @@ def solve2p_FGH(
 
   Returns a mole fraction of the non-reference phase in a system.
   """
+  logger.debug(
+    'Solving RR-equation using FGH-method\n\tkvi = %s\n\tyi = %s', kvi, yi,
+  )
   idx = kvi.argsort()[::-1]
   yi = yi[idx]
   kvi = kvi[idx]
@@ -91,43 +93,26 @@ def solve2p_FGH(
   yN = yi[-1]
   yi = yi[1:-1]
   pD = partial(fD, yi=yi, di=di, yidi=yi*di, y0=y0, yN=yN)
-  a = y0 / yN
-  D, dDda = pD(a)
-  print(f'0: {a = }, {D = }')
-  pcondit = partial(_solve2p_FGH_condit, tol=tol, Niter=Niter)
-  pupdate = partial(_solve2p_FGH_update, pD=pD)
-  carry = (1, a, D / dDda, D)
-  while pcondit(carry):
-    carry = pupdate(carry)
-  a = carry[1]
-  return (ci[0] + a * ci[-1]) / (1. + a)
-
-
-def _solve2p_FGH_condit(
-  carry: tuple[int, ScalarType, ScalarType, ScalarType],
-  tol: ScalarType,
-  Niter: int,
-) -> bool:
-  i, a, _, D = carry
-  return (i < Niter) & (np.abs(D) > tol)
-
-
-def _solve2p_FGH_update(
-  carry: tuple[int, ScalarType, ScalarType, ScalarType],
-  pD: Callable[[ScalarType], tuple[ScalarType, ScalarType]],
-) -> tuple[int, ScalarType, ScalarType, ScalarType]:
-  i, a_, h_, D_ = carry
-  a = a_ - h_
-  print(f'{i}: {a = }')
-  if a < 0.:
-    if D_ > 0.:
-      a += h_ * h_ / (h_ - a_ * (a_ + 1.))
-    else:
-      a += h_ * h_ / (h_ + a_ + 1.)
-  D, dDda = pD(a)
-  print(f'{i}: {a = }, {D = }')
-  return i + 1, a, D / dDda, D
-
+  k = 0
+  ak = y0 / yN
+  D, dDda = pD(ak)
+  hk = D / dDda
+  logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', 0, ak, D)
+  while (np.abs(D) > tol) & (k < Niter):
+    akp1 = ak - hk
+    if akp1 < 0.:
+      if D > 0.:
+        akp1 += hk * hk / (hk - ak * (ak + 1.))
+      else:
+        akp1 += hk * hk / (hk + ak + 1.)
+    k += 1
+    ak = akp1
+    D, dDda = pD(ak)
+    logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', k, ak, D)
+    hk = D / dDda
+  F = (ci[0] + ak * ci[-1]) / (1. + ak)
+  logger.debug('Solution:\n\tF = %s\n', F)
+  return F
 
 
 def solve2p_GH(
@@ -136,7 +121,9 @@ def solve2p_GH(
   tol: ScalarType = np.float64(1e-10),
   Niter: int = 50,
 ) -> ScalarType:
-  """Solves the Rachford-rice equation for two-phase systems using
+  """GH-method for solving the Rachford-Rice equation.
+
+  Solves the Rachford-rice equation for two-phase systems using
   the GH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
   Arguments
@@ -156,6 +143,9 @@ def solve2p_GH(
 
   Returns a mole fraction of the non-reference phase in a system.
   """
+  logger.debug(
+    'Solving RR-equation using GH-method\n\tkvi = %s\n\tyi = %s', kvi, yi,
+  )
   idx = kvi.argsort()[::-1]
   yi = yi[idx]
   kvi = kvi[idx]
@@ -164,35 +154,29 @@ def solve2p_GH(
   y0 = yi[0]
   yN = yi[-1]
   yi = yi[1:-1]
-  a = y0 / yN
-  denom = 1. / (di * (a + 1.) + a)
-  G = (a + 1.) * (y0 / a + yi.dot(denom) - yN)
-  dGda = -y0 / (a * a) - yi.dot(denom * denom) - yN
-  if G > 0.:
-    pG = partial(fG, yi=yi, di=di, y0=y0, yN=yN)
-    da = -G / dGda
-    carry = (1, a, da, G)
-    pupdate = partial(_solve2p_GH_update, pF=pG)
+  k = 0
+  ak = y0 / yN
+  denom = 1. / (di * (ak + 1.) + ak)
+  eq = (ak + 1.) * (y0 / ak + yi.dot(denom) - yN)
+  deqda = -y0 / (ak * ak) - yi.dot(denom * denom) - yN
+  if eq > 0.:
+    logger.debug('Use G-formulation')
+    peq = partial(fG, yi=yi, di=di, y0=y0, yN=yN)
   else:
-    pH = partial(fH, yi=yi, di=di, y0=y0, yN=yN)
-    H = -a * G
-    dHda = -G - a * dGda
-    da = -H / dHda
-    carry = (1, a, da, H)
-    pupdate = partial(_solve2p_GH_update, pF=pH)
-  pcondit = partial(_solve2p_FGH_condit, tol=tol, Niter=Niter)
-  while pcondit(carry):
-    carry = pupdate(carry)
-  a = carry[1]
-  return (ci[0] + a * ci[-1]) / (1. + a)
-
-def _solve2p_GH_update(
-  carry: tuple[int, ScalarType, ScalarType, ScalarType],
-  pF: Callable[[ScalarType], tuple[ScalarType, ScalarType]],
-) -> tuple[int, ScalarType, ScalarType, ScalarType]:
-  i, a_, da_, _ = carry
-  a = a_ + da_
-  eq, grad = pF(a)
-  da = -eq / grad
-  return i + 1, a, da, eq
+    logger.debug('Use H-formulation')
+    peq = partial(fH, yi=yi, di=di, y0=y0, yN=yN)
+    deqda = -eq - ak * deqda
+    eq *= -ak
+  hk = eq / deqda
+  logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', 0, ak, eq)
+  while (eq > tol) & (k < Niter):
+    akp1 = ak - hk
+    k +=1
+    ak = akp1
+    eq, deqda = peq(ak)
+    logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', k, ak, eq)
+    hk = eq / deqda
+  F = (ci[0] + ak * ci[-1]) / (1. + ak)
+  logger.debug('Solution:\n\tF = %s\n', F)
+  return F
 

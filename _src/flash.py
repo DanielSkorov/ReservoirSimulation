@@ -1,11 +1,17 @@
-import numpy as np
+import logging
 
 from functools import (
   partial,
 )
 
-from typing import (
-  Callable,
+import numpy as np
+
+from stability import (
+  stabilityPT,
+)
+
+from rr import (
+  solve2p_FGH,
 )
 
 from custom_types import (
@@ -16,128 +22,144 @@ from custom_types import (
 )
 
 
-class stabilityPT(object):
-  """Stability test based on the Gibbs energy analysis.
+logger = logging.getLogger('flash')
 
-  Checks the tangent-plane distance (TPD) in local minima of
-  the Gibbs energy function.
+
+class flash2pPT(object):
+  """Performs ...
 
   Arguments
   ---------
-  eos : EosptType
-    An initialized instance of a PT-based equation of state.
+
+  Returns ....
+
+  Raises ...
   """
   def __init__(
     self,
     eos: EosptType,
-    eps: ScalarType = np.float64(1e-4),
     tol: ScalarType = np.float64(1e-6),
     Niter: int = 50,
+    skip_stab: bool = False,
   ) -> None:
     self.eos = eos
-    self.eps = -eps
     self.tol = tol
     self.Niter = Niter
+    self.skip_stab = skip_stab
+    self.stability = stabilityPT(eos)
     pass
 
-  def check_qnss(
+  def run(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-  ) -> tuple[bool, MatrixType | None]:
-    """QNSS-method for stability test
-
-    Performs the quasi-Newton successive substitution (QNSS) method to
-    find local minima of the Gibbs energy function from different
-    initial guesses. Calculates the TPD value at found local minima.
-    For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
-
-    Arguments
-    ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
-
-      T : numpy.float64
-        Temperature of a mixture [K].
-
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        mole fractions of `(Nc,)` components.
-
-    Returns a tuple of a boolean (True if a system is stable, False
-    otherwise) and an array of k-values at a local minima that can be
-    used as an initial guess for flash calculations.
-    """
-    # print(f'*** Stability Test ***\n{P = }\n{T = }\n{yi = }')
-    kvji = self.eos.get_kvguess(P, T)
-    hi = self.eos.get_lnphii(P, T, yi, False) + np.log(yi)
-    plnphii = partial(self.eos.get_lnphii, P=P, T=T, check_input=False)
-    pcondit = partial(self._condit_qnss, tol=self.tol, Niter=self.Niter)
-    pupdate = partial(self._update_qnss, hi=hi, yi=yi, plnphii=plnphii)
-    # print('Sarting the kv-loop...')
-    kvi: VectorType
-    for j, kvi in enumerate(kvji):
-      # print(f'\n\tThe kv-loop iteration number = {j}')
-      # print(f'\tInitial k-values = {kvi}')
-      ni = kvi * yi
-      gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
-      # print(f'\t{gi = }')
-      # print(f'\tTPD = {-np.log(ni.sum())}')
-      carry = (1, kvi, gi, np.float64(1.))
-      # print('\tStarting the solution loop...')
-      while pcondit(carry):
-        carry = pupdate(carry)
-      i, kvi, gi, _ = carry
-      ni = kvi * yi
-      TPD = -np.log(ni.sum())
-      if (TPD < self.eps) & (i < self.Niter):
-        # print(f'The final kv-loop iteration number = {j}')
-        # print(f'{TPD = }')
-        # print(f'The one-phase state is stable: False')
-        # print('*** End of Stability Test ***')
-        xi = ni / ni.sum()
-        return False, np.vstack([xi / yi, yi / xi])
+    method: str = 'qnss',
+  ) -> tuple[VectorType, MatrixType, VectorType]:
+    if method == 'qnss':
+      return self._run_qnss(P, T, yi)
+    elif method == 'bfgs':
+      return self._run_bfgs(P, T, yi)
     else:
-      # print(f'The final kv-loop iteration number = {j}')
-      # print(f'{TPD = }')
-      # print(f'The one-phase state is stable: True')
-      # print('*** End of Stability Test ***')
-      return True, None
+      raise ValueError(f'The unknown method: {method}.')
 
-  @staticmethod
-  def _condit_qnss(
-    carry: tuple[int, VectorType, VectorType, ScalarType],
-    tol: ScalarType,
-    Niter: int,
-  ) -> np.bool:
-    i, ki, gi, _ = carry
-    return (i < Niter) & (np.linalg.norm(gi) > tol)
-
-  @staticmethod
-  def _update_qnss(
-    carry: tuple[int, VectorType, VectorType, ScalarType],
-    hi: VectorType,
+  def _run_bfgs(
+    self,
+    P: ScalarType,
+    T: ScalarType,
     yi: VectorType,
-    plnphii: Callable[[VectorType], VectorType],
-  ) -> tuple[int, VectorType, VectorType, ScalarType]:
-    i, kvi, gi_, lmbd = carry
-    # print(f'\n\t\tIteration #{i}')
-    dlnkvi = -lmbd * gi_
-    max_dlnkvi = np.abs(dlnkvi).max()
-    if max_dlnkvi > 6.:
-      relax = 6. / max_dlnkvi
-      lmbd *= relax
-      dlnkvi *= relax
-    # print(f'\t\t{lmbd = }')
-    # print(f'\t\t{dlnkvi = }')
-    kvi *= np.exp(dlnkvi)
-    # print(f'\t\t{kvi = }')
-    ni = kvi * yi
-    gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
-    # print(f'\t\t{gi = }')
-    # print(f'\t\tTPD = {-np.log(ni.sum())}')
-    lmbd *= np.abs(dlnkvi.dot(gi_) / dlnkvi.dot(gi - gi_))
-    if lmbd > 30.:
-      lmbd = np.float64(30.)
-    return i + 1, kvi, gi, lmbd
+  ) -> tuple[VectorType, MatrixType, VectorType]:
+    raise NotImplementedError(
+      'The BFGS-method for stability testing is not implemented yet.'
+    )
+    return (
+      np.array([0., 0.]),
+      np.zeros(shape=(self.eos.Nc, self.eos.Nc), dtype=yi.dtype),
+      np.array([0., 0.]),
+    )
+
+  def _run_qnss(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> tuple[VectorType, MatrixType, VectorType]:
+    logger.debug(
+      'Flash Calculation (QNSS-method)'
+      '\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
+      P, T, yi,
+    )
+    if self.skip_stab:
+      kvji = self.eos.get_kvguess(P, T)
+    else:
+      stab, kvji, Z = self.stability._run_qnss(P, T, yi)
+      if stab:
+        return (
+          np.array([1., 0.]),
+          np.vstack([yi, np.zeros_like(yi)]),
+          np.array([Z, 0.]),
+        )
+    plnphii = partial(self.eos.get_lnphii_Z, P=P, T=T)
+    kvik: VectorType
+    for i, kvik in enumerate(kvji):
+      logger.debug('The kv-loop iteration number = %s', i)
+      k = 0
+      Fv = solve2p_FGH(kvik, yi)
+      yli = yi / ((kvik - 1.) * Fv + 1.)
+      yvi = yli * kvik
+      lnphili, Zl = plnphii(yi=yli)
+      lnphivi, Zv = plnphii(yi=yvi)
+      gi = np.log(kvik) + lnphivi - lnphili
+      gnorm = np.linalg.norm(gi)
+      logger.debug(
+        'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s\n\tlmbd = %s',
+        0, kvik, gi, Fv, 1.,
+      )
+      lmbd = 1.
+      while (gnorm > self.tol) & (k < self.Niter):
+        dlnkvi = -lmbd * gi
+        max_dlnkvi = np.abs(dlnkvi).max()
+        if max_dlnkvi > 6.:
+          relax = 6. / max_dlnkvi
+          lmbd *= relax
+          dlnkvi *= relax
+        k += 1
+        tkm1 = dlnkvi.dot(gi)
+        kvik *= np.exp(dlnkvi)
+        Fv = solve2p_FGH(kvik, yi)
+        yli = yi / ((kvik - 1.) * Fv + 1.)
+        yvi = yli * kvik
+        lnphili, Zl = plnphii(yi=yli)
+        lnphivi, Zv = plnphii(yi=yvi)
+        gi = np.log(kvik) + lnphivi - lnphili
+        gnorm = np.linalg.norm(gi)
+        logger.debug(
+          'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s\n\tlmbd = %s',
+          k, kvik, gi, Fv, lmbd,
+        )
+        if (gnorm < self.tol):
+          break
+        lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+        if lmbd > 30.:
+          lmbd = 30.
+      if k < self.Niter:
+        rhol = yli.dot(self.eos.mwi) / Zl
+        rhov = yvi.dot(self.eos.mwi) / Zv
+        if rhov < rhol:
+          return (
+            np.array([Fv, 1. - Fv]),
+            np.vstack([yvi, yli]),
+            np.array([Zv, Zl]),
+          )
+        else:
+          return (
+            np.array([1. - Fv, Fv]),
+            np.vstack([yli, yvi]),
+            np.array([Zl, Zv]),
+          )
+    raise ValueError(
+      "The solution of the equilibrium was not found. "
+      "Try to increase the number of iterations or choose an another method."
+    )
+
 

@@ -283,6 +283,7 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
 wi = np.array([.225, .008]) # Acentric factors
+mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([.025]) # Binary interaction parameters
 ```
@@ -293,7 +294,7 @@ dij = np.array([.025]) # Binary interaction parameters
 import sys
 sys.path.append('../../_src/')
 from eos import pr78
-pr = pr78(Pci, Tci, wi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 
 Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов воспользуемся методом `get_lnphiji_Zj`, принимающего в качестве аргументов давление, температуру и набор компонентных составов в виде двумерного массива, и возвращающего соответствующие коэффициенты летучести компонентов в виде двумерного массива и коэффициенты сверхсжимаемости в виде одномерного массива. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
@@ -370,13 +371,14 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
 wi = np.array([.225, .008]) # Acentric factors
+mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([.025]) # Binary interaction parameters
 
 import sys
 sys.path.append('../../_src/')
 from eos import pr78
-pr = pr78(Pci, Tci, wi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
 yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 yji = np.vstack([yj1, 1. - yj1]).T
@@ -1011,7 +1013,7 @@ glue('glued_out2', MultilineText(out2))
 
 Представленный выше алгоритм можно использовать для проверки стабильности однофазного состояния системы. Для проверки стабильности многофазной системы также можно использовать представленный выше алгоритм: для этого достаточно проверить стабильность любой из фаз.
 
-Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py). [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
+Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
 
 (pvt-sec-stability-vt)=
 ## VT-термодинамика
