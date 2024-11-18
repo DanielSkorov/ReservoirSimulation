@@ -742,11 +742,10 @@ $$ a_{k+1}^H = a_{k+1}^D + \frac{h^2}{h + a_k + 1}. $$
 $c_i := 1 \, / \left( 1 - k_i \right), \; i = 1 \, \ldots \, N_c$  
 $d_i := \left( c_1 - c_i \right) \, / \left( c_{N_c} - c_1 \right), \; i = 2 \, \ldots \, N_c - 1$  
 $a := y_1 \, / \, y_{N_c}$ {comment}`# Начальное приближение`  
-**function**$\; fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Функция D(a)`  
+**def**$\; fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Функция D(a)`  
 &emsp;$D := y_1 + a \sum_{i=2}^{N_c-1} y_i \, / \left( d_i + a \left( d_i + 1 \right) \right) - y_{N_c} a$ {comment}`# Значение функции в точке a`  
 &emsp;$D' := \sum_{i=2}^{N_c-1} y_i d_i \, / \left( d_i + a \left( d_i + 1 \right) \right)^2 - y_{N_c}$  {comment}`# Значение производной функции в точке a`  
 &emsp;**return** $D, \; D'$  
-**end function**  
 $\left( D, \; D' \right) := fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции D(a) и ее градиента для начального приближения`  
 $h := D \, / \, D'$ {comment}`# Длина шага`  
 $i := 1$ {comment}`# Номер итерации`  

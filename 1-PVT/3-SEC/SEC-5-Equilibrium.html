@@ -58,6 +58,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-5-Equilibrium';</script>
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -230,6 +232,7 @@
 <li class="toctree-l2"><a class="reference internal" href="SEC-7-Criticality.html">Определение критического состояния системы</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
 </ul>
 
     </div>
@@ -396,6 +399,292 @@ document.write(`
 <p>В предыдущих разделах были представлены особенности проверки <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">стабильности фазового состояния системы</span></a>, а также получено <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a> и рассмотрены численные методы его решения для <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">двухфазной</span></a> и <a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">многофазной</span></a> систем. Данный раздел посвящен расчету равновесного фазового состояния, проводимому в том случае, если по результатам анализа стабильности текущее фазовое состояние оказалось нестабильным. Как и в случае анализа стабильности, расчет равновесного состояния также имеет различные формулировки (<a class="reference internal" href="#pvt-esc-equilibrium-pt">PT-термодинамика</a>, <a class="reference internal" href="#pvt-esc-equilibrium-vt">VT-термодинамика</a>).</p>
 <section id="pt">
 <span id="pvt-esc-equilibrium-pt"></span><h2>PT-термодинамика<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
+<p>Задача поиска равновесного состояния многокомпонентной (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) многофазной (<span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз) системы для фиксированных давления <span class="math notranslate nohighlight">\(P\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span>, количеств вещества компонентов в системе <span class="math notranslate nohighlight">\(n_i, \; i = 1 \, \ldots \, N_c\)</span> достаточно хорошо изучена и проработана. <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html"><span class="std std-doc">Ранее</span></a> было показано, что равновесное состояние характеризуется минимумом энергии Гиббса. При этом, необходимым условием равновесного состояния является равенство химических потенциалов (или летучестей) соответствующих компонентов в фазах. Это условие определяет положение стационарных точек функции энергии Гиббса, <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">называемых</span></a> стационарными состояниями системы.</p>
+<p>В результате решения задачи поиска равновесного состояния системы требуется определить количества вещества компонентов в фазах, всего <span class="math notranslate nohighlight">\(N_c \times \left( N_p - 1 \right)\)</span> неизвестных с учетом ограничения <span class="math notranslate nohighlight">\(\sum_{j=1}^{N_p} n_i^j = n_i\)</span>, соответствующих положению минимума функции энергии Гиббса. Существует два основных направления решения данной задачи. Первое направление включает широкую группу подходов, основанных на <em><strong>методе последовательных подстановок</strong></em> <em>(successive (direct) substitution method)</em>. Данный метод, по сути, эквивалентен <a class="reference external" href="https://en.wikipedia.org/wiki/Gradient_descent">методу градиентного спуска</a> с длиной шага, равной единице, с точки зрения минимизации энергии Гиббса. Преимуществом данного метода является его относительная простота, поскольку нет необходимости в расчете многомерных матриц и вторых частных производных функции энергии Гиббса. Недостатком данного метода является необходимость сравнительно большого количества итераций для нахождения решения, при этом, данный метод может сходиться к стационарным точкам функции. Метод последовательных подстановок подробно представлен в работах [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85002-4">Michelsen, 1982b</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(83)80115-0">Heidemann, 1983</a>; <a class="reference external" href="https://doi.org/10.1002/cjce.5450610414">Mehra et al, 1983</a>]. Другим направлением решения задачи поиска равновесного состояния является совокупность <a class="reference external" href="https://en.wikipedia.org/wiki/Global_optimization">методов глобальной оптимизации</a> функции энергии Гиббса, частично представленная в работах [<a class="reference external" href="https://doi.org/10.1016/S0098-1354(02)00144-8">Nichita et al, 2002</a>; <a class="reference external" href="https://doi.org/10.2118/04-05-TN2">Nichita et al, 2004</a>, <a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.08.039">Petitfrere and Nichita, 2014</a>]. В рамках данного курса подробно остановимся на методах определения равновесного состояния, относящихся к первому направлению.</p>
+<p>Отношение мольной доли <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, где <span class="math notranslate nohighlight">\(j = 1 \, \ldots \, N_p-1\)</span>, к мольной доли этого же компонента в референсной фазе (поскольку референсной фазой может быть любая, то здесь и далее под референсной фазой понимается фаза с индексом <span class="math notranslate nohighlight">\(N_p\)</span>) называется <em>константой фазового равновесия</em>:</p>
+<div class="math notranslate nohighlight">
+\[ K_i^j = \frac{y_i^j}{y_i^{N_p}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Данный параметр также использовался при выводе <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнения Речфорда-Райса</span></a>.</p>
+<p>Ключевой особенностью метода последовательных подстановок является итеративное обновление констант фазового равновесия в процессе поиска равновесного состояния, осуществляемое с использованием следующего выражения:</p>
+<div class="math notranslate nohighlight">
+\[ {K_i^j}_{k+1} = {K_i^j}_{k} \frac{f_i \left( P, \, T, \, y_i^{N_p} \right)}{f_i \left( P, \, T, \, y_i^j \right)}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>где <span class="math notranslate nohighlight">\({K_i^j}_{k+1}\)</span> – константа фазового равновесия <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации, <span class="math notranslate nohighlight">\({K_i^j}_{k}\)</span> – константа фазового равновесия <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе на <span class="math notranslate nohighlight">\(k\)</span>-й итерации, <span class="math notranslate nohighlight">\(f_i \left( P, \, T, \, y_i^j \right)\)</span> – летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, <span class="math notranslate nohighlight">\(f_i \left( P, \, T, \, y_i^{N_p} \right)\)</span> – летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в референсной фазе.</p>
+<p>Преобразуем данное выражение к следующему виду:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\ln {K_i^j}_{k+1} &amp;= \ln {K_i^j}_{k} + \ln f_i  \left( P, \, T, \, y_i^{N_p} \right) - \ln f_i \left( P, \, T, \, y_i^j \right), \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
+\Delta \ln {K_i^j}_{k} &amp;= \ln f_i  \left( P, \, T, \, y_i^j \right) - \ln f_i \left( P, \, T, \, y_i^{N_p} \right), \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
+\Delta \ln {K_i^j}_{k} &amp;= \ln {K_i^j}_{k} + \ln \varphi_i \left( P, \, T, \, y_i^j \right) - \ln \varphi_i  \left( P, \, T, \, y_i^{N_p} \right), \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>Тогда итеративное обновление констант фазового равновесия в методе последовательных подстановок записывается в следующем виде:</p>
+<div class="math notranslate nohighlight">
+\[ \ln {K_i^j}_{k+1} = \ln {K_i^j}_{k} - \Delta \ln {K_i^j}_{k}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>В свою очередь, метод градиентного спуска для минимизации функции энергии Гиббса с выбранными в качестве основных переменных логарифмами констант фазового равновесия:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\ln {K_i^j}_{k+1}
+&amp;= \ln {K_i^j}_{k} - \lambda \left( \frac{\partial \bar{G}}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
+&amp;= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \frac{\partial \bar{G}}{\partial n_l^m} \right)_{P, \, T, \, n_i^j \neq n_l^m} \left( \frac{\partial n_l^m}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
+&amp;= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \ln f_l \left( P, \, T, \, y_l^m \right) - \ln f_l \left( P, \, T, \, y_l^{N_p} \right) \right) U_{lmij}.
+\end{align} \end{split}\]</div>
+<p>В представленном выражении параметр <span class="math notranslate nohighlight">\(\lambda\)</span> характеризует длину шага, а <span class="math notranslate nohighlight">\(\bar{G} = G / \left(RT\right)\)</span> – приведенная энергия Гиббса системы. При преобразовании данного выражения учитывалось <a class="reference external" href="https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs">правило дифференциирования сложной функции от нескольких переменных</a>. Если принять</p>
+<div class="math notranslate nohighlight">
+\[ \lambda = 1, \]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split} U_{lmij} = \delta_{lmij} = \begin{cases} 1, \; l = i, \; m = j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1, \\ 0, \; \mathrm{otherwise}, \end{cases} \end{split}\]</div>
+<p>тогда метод последовательных подстановок будет эквивалентен методу градиентного спуска для минимизации функции энергии Гиббса. Таким образом, метод последовательных подстановок является своеобразным упрощением метода градиентного спуска для минимизации функции энергии Гиббса.</p>
+<!-- Добавить анализ матрицы U_{lmij}. См. https://doi.org/10.1002/cjce.5450610414, https://doi.org/10.1002/aic.690330606, https://doi.org/10.1016/j.fluid.2014.11.017 -->
+<p>Рассмотрим алгоритм метода последовательных подстановок.</p>
+<div class="algorithm admonition">
+<p class="admonition-title">Алгоритм. Метод последовательных подстановок для определения равновесного состояния</p>
+<p><strong>Дано:</strong> Вектор компонентного состава исследуемой системы <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span>; термобарические условия <span class="math notranslate nohighlight">\(P\)</span> и <span class="math notranslate nohighlight">\(T\)</span>; количество вещества в системе <span class="math notranslate nohighlight">\(n=1 \, моль\)</span>; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; количество фаз в системе <span class="math notranslate nohighlight">\(N_p\)</span>; набор (тензор) начальных приближений констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K}_0 \in {\rm I\!R}^{N \times \left( N_p - 1 \right) \times N_c}\)</span>; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность <span class="math notranslate nohighlight">\(\epsilon\)</span>; длина шага <span class="math notranslate nohighlight">\(\lambda = 1\)</span>.</p>
+<p><strong>Определить:</strong> Компонентные составы фаз <span class="math notranslate nohighlight">\(\mathbf{Y} \in {\rm I\!R}^{ \left( N_p - 1 \right) \times N_c}\)</span> и мольные доли фаз <span class="math notranslate nohighlight">\(\mathbf{F} \in {\rm I\!R}^{N_p-1}\)</span> в системе, соответствующие равновесному состоянию.</p>
+<p><strong>Псевдокод:</strong><br />
+<strong>def</strong> <span class="math notranslate nohighlight">\(\phi \left( \mathbf{Y} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}, \, \ldots \right) \rightarrow \mathbf{\Phi} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}\)</span> <span class="comment"># Функция для расчета матрицы коэф-тов летучести</span><br />
+<strong>def</strong> <span class="math notranslate nohighlight">\(R \left( \mathbf{K} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}, \, \mathbf{z} \right) \rightarrow \mathbf{F} \in {\rm I\!R}^{N_p-1}\)</span> <span class="comment"># Функция для решения уравнения Речфорда-Райса</span><br />
+<strong>for</strong> <span class="math notranslate nohighlight">\(i := 1\)</span> <strong>to</strong> <span class="math notranslate nohighlight">\(N\)</span> <strong>do</strong> <span class="comment"># Цикл перебора начальных приближений</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{K} := \mathbf{K}_0 \left[ i,:,: \right]\)</span> <span class="comment"># Матрица начальных приближений констант фазового равновесия</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{F} := R \left( \mathbf{K}, \, \mathbf{z} \right)\)</span> <span class="comment"># Вектор мольных долей фаз для начального приближения</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{x} := \mathbf{z} \, / \left( \mathbf{F}^\top \left(\mathbf{K} - 1 \right) + 1 \right)\)</span> <span class="comment"># Компонентный состав референсной фазы</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{Y} := \mathbf{K} \cdot \mathbf{x}\)</span> <span class="comment"># Матрица компонентных составов нереференсных фаз</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{\Phi} := \phi \left( \mathbf{Y} \right)\)</span> <span class="comment"># Матрица коэффициентов летучести компонентов в нереференсных фазах</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{\varphi} := \phi \left( \mathbf{x} \right)\)</span> <span class="comment"># Вектор коэффициентов летучести компонентов в референсной фазе</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{K} + \ln \mathbf{\Phi} - \ln \mathbf{\varphi}\)</span> <span class="comment"># Матрица невязок</span><br />
+ <span class="math notranslate nohighlight">\(k := 1\)</span> <span class="comment"># Счетчик итераций</span><br />
+ <strong>while</strong> <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2 &gt; \epsilon\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(k &lt; N_{iter}\)</span> <strong>do</strong> <span class="comment"># Цикл решения системы нелинейных уравнений</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{K} := \mathbf{K} \cdot \exp \left( - \lambda \mathbf{g} \right)\)</span>  <span class="comment"># Обновление матрицы основных переменных</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{F} := R \left( \mathbf{K}, \, \mathbf{z} \right)\)</span> <span class="comment"># Вектор мольных долей фаз</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{x} := \mathbf{z} \, / \left( \mathbf{F}^\top \left(\mathbf{K} - 1 \right) + 1 \right)\)</span> <span class="comment"># Компонентный состав референсной фазы</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{Y} := \mathbf{K} \cdot \mathbf{x}\)</span> <span class="comment"># Матрица компонентных составов нереференсных фаз</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{\Phi} := \phi \left( \mathbf{Y} \right)\)</span> <span class="comment"># Матрица коэффициентов летучести компонентов в нереференсных фазах</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{\varphi} := \phi \left( \mathbf{x} \right)\)</span> <span class="comment"># Вектор коэффициентов летучести компонентов в референсной фазе</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{K} + \ln \mathbf{\Phi} - \ln \mathbf{\varphi}\)</span> <span class="comment"># Матрица невязок</span><br />
+  <span class="math notranslate nohighlight">\(k := k + 1\)</span> <span class="comment"># Обновление счетчика итераций</span><br />
+ <strong>end while</strong><br />
+<strong>end for</strong></p>
+</div>
+<p>В качестве начальных приближений констант фазового равновесия для расчета равновесного состояния можно использовать тот же набор начальных приближений, что и для <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">проверки стабильности системы</span></a>. Кроме того, в качестве начального приближения к определению равновесного состояния можно использовать результаты анализа стабильности, одним из которых является вектор <span class="math notranslate nohighlight">\(Y_i, \; i = 1 \, \ldots \, N_c\)</span>, интерепретируемый как вектор количеств вещества компонентов в системе. Тогда вектор</p>
+<div class="math notranslate nohighlight">
+\[ y_i = \frac{Y_i}{\sum_{j=1}^{N_c} Y_j}, \; i = 1 \, \ldots \, N_c, \]</div>
+<p>представляет собой вектор мольных долей компонентов в системе. Следовательно, набор начальных приближений для расчета равновесного состояния:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{K}_0 = \left\{ y_i \, / \, z_i, \; z_i  \, / \, y_i, \; i = 1 \, \ldots \, N_c \right\}. \]</div>
+<p>После определения равновесного состояния для <span class="math notranslate nohighlight">\(N_p\)</span>-фазной постановки задачи выполняется анализ стабильности системы. Если анализ стабильности показывает, что <span class="math notranslate nohighlight">\(N_p\)</span>-фазный компонентный состав не является стабильным, то выполняется поиск равновесного состояния для <span class="math notranslate nohighlight">\(\left( N_p+1 \right)\)</span>-фазной постановки.</p>
+<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>.</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана и диоксида углерода при температуре <span class="math notranslate nohighlight">\(10 \; ^{\circ} C\)</span> и давлении <span class="math notranslate nohighlight">\(6 \; МПа\)</span> с мольной долей метана <span class="math notranslate nohighlight">\(0.1\)</span>. Необходимо определить равновесное состояние системы.</p>
+</div>
+<p>Зададим исходные термобарические условия и компонентный состав.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">6e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Также зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon\)</span>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Niter</span> <span class="o">=</span> <span class="mi">50</span> <span class="c1"># Number of iterations</span>
+<span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Выполним анализ стабильности однофазного состояния. В <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном проверке стабильности, было рассмотрено применение численного алгоритма QNSS для этого примера. В данном разделе для проверки стабильности также будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">реализация</a> теста стабильности с использованием QNSS.</p>
+<p>Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Pci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">7.37646</span><span class="p">,</span> <span class="mf">4.600155</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="c1"># Critical pressures [Pa]</span>
+<span class="n">Tci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">304.2</span><span class="p">,</span> <span class="mf">190.6</span><span class="p">])</span> <span class="c1"># Critical temperatures [K]</span>
+<span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.225</span><span class="p">,</span> <span class="mf">.008</span><span class="p">])</span> <span class="c1"># Acentric factors</span>
+<span class="n">mwi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.04401</span><span class="p">,</span> <span class="mf">0.016043</span><span class="p">])</span> <span class="c1"># Molar mass [kg/gmole]</span>
+<span class="n">vsi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span> <span class="c1"># Volume shift parameters</span>
+<span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.025</span><span class="p">])</span> <span class="c1"># Binary interaction parameters</span>
+<span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
+<span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: False.
+</pre></div>
+</div>
+</div>
+</div>
+<p>В результате проверки стабильности (путем вызова метода <code class="docutils literal notranslate"><span class="pre">run</span></code>) однофазное состояние системы оказалось нестабильным. Кроме того, был получен набор начальных приближений для проведения расчета равновесного состояния.</p>
+<p>Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений. Проиницилизируем данную функцию.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="k">def</span> <span class="nf">condit</span><span class="p">(</span>
+    <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span>
+    <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="n">Niter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">kvi</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+
+<span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации. На каждой итерации необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a> в двухфазной постановке. Для этого будем использовать <span class="xref myst">метод FGH</span>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+    <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span>
+    <span class="n">yi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">plnphi</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">kvi_k</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">gi_k</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">kvi_kp1</span> <span class="o">=</span> <span class="n">kvi_k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">gi_k</span><span class="p">)</span>
+    <span class="n">Fv</span> <span class="o">=</span> <span class="n">solve2p_FGH</span><span class="p">(</span><span class="n">kvi_kp1</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+    <span class="n">yli</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">Fv</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi_kp1</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">yvi</span> <span class="o">=</span> <span class="n">yli</span> <span class="o">*</span> <span class="n">kvi_kp1</span>
+    <span class="n">lnphili</span> <span class="o">=</span> <span class="n">plnphi</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">yli</span><span class="p">)</span>
+    <span class="n">lnphivi</span> <span class="o">=</span> <span class="n">plnphi</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">yvi</span><span class="p">)</span>
+    <span class="n">gi_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">kvi_kp1</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphivi</span> <span class="o">-</span> <span class="n">lnphili</span>
+    <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kvi_kp1</span><span class="p">,</span> <span class="n">Fv</span><span class="p">,</span> <span class="n">gi_kp1</span>
+
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Найдем равновесное состояние с использованием метода последовательных подстановок:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">kvi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kv0</span><span class="p">):</span>
+    <span class="n">Fv</span> <span class="o">=</span> <span class="n">solve2p_FGH</span><span class="p">(</span><span class="n">kvi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+    <span class="n">yli</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">Fv</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">yvi</span> <span class="o">=</span> <span class="n">yli</span> <span class="o">*</span> <span class="n">kvi</span>
+    <span class="n">lnphili</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yli</span><span class="p">)</span>
+    <span class="n">lnphivi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yvi</span><span class="p">)</span>
+    <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">kvi</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphivi</span> <span class="o">-</span> <span class="n">lnphili</span>
+    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">kvi</span><span class="p">,</span> <span class="n">Fv</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
+        <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">kvi</span><span class="p">,</span> <span class="n">Fv</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">:</span>
+        <span class="n">yli</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">Fv</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">yvi</span> <span class="o">=</span> <span class="n">yli</span> <span class="o">*</span> <span class="n">kvi</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;For the initial guess #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">phase compositions:</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">yvi</span><span class="si">}</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">yli</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">phase mole fractions: </span><span class="si">{</span><span class="n">Fv</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="mf">1.</span><span class="o">-</span><span class="n">Fv</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>For the initial guess #0:
+	tolerance of equations: 4.4933782279399514e-07
+	number of iterations: 10
+	phase compositions:
+		[0.81827116 0.18172884]
+		[0.9176069 0.0823931]
+	phase mole fractions: 0.17724634561906258, 0.8227536543809374
+</pre></div>
+</div>
+</div>
+</div>
+<p>Выполним проверку стабильности найденного решения:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_stable</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yvi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: True.
+</pre></div>
+</div>
+</div>
+</div>
+<p>Тест стабильности показал, что найденное решение соответствует равновесному состоянию. Проиллюстрируем данный пример графически. Для этого построим зависимость функции энергии Гиббса для первой фазы от компонентного состава и проведем касательную в точке с найденным равновесным составом этой фазы. Значения функции энергии Гиббса:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yj1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">yji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yj1</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yj1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+<span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Уравнение касательной:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yvi</span><span class="p">)</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Построение графиков функции энергии Гиббса и касательной:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Количество вещества диоксида углерода в системе, моль&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">axins1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">([</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.89</span><span class="p">],</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.975</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">14.5</span><span class="p">,</span> <span class="mf">15.1</span><span class="p">),</span>
+                        <span class="n">xticklabels</span><span class="o">=</span><span class="p">[],</span> <span class="n">yticklabels</span><span class="o">=</span><span class="p">[])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">indicate_inset_zoom</span><span class="p">(</span><span class="n">axins1</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yvi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">yvi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">),</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yli</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">yli</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">),</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">yvi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">yvi</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="n">yvi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">yli</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">yli</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="n">yli</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">14.55</span><span class="p">,</span> <span class="s1">&#39;$y_</span><span class="si">{CO_2}</span><span class="s1"> = 0.818$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">14.55</span><span class="p">,</span> <span class="s1">&#39;$y_</span><span class="si">{CO_2}</span><span class="s1"> = 0.918$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mf">0.8</span><span class="p">])</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mf">14.6</span><span class="p">,</span> <span class="mf">14.8</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">])</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/ec82f3f436818f24ca3a0cf2ad602afe91eff837c652dc3fd96b47c3c02ac06e.png" src="../../_images/ec82f3f436818f24ca3a0cf2ad602afe91eff837c652dc3fd96b47c3c02ac06e.png" />
+</div>
+</div>
+<p>Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>.</p>
+<p>Таким образом, метод последовательных подстановок может быть использован для определения равновесного состояния системы. Недостатком данного метода является большое количество итераций, необходимых для нахождения решения. Существует множество работ, посвященных “ускорению” метода последовательных подстановок. Так, например, в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>] предлагается использовать <em>quasi-Newton succesive substitution (QNSS)</em> для поиска равновесного состояния. Реализация данного метода представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>.</p>
+<p>Рассмотрим следующий пример.</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана, гексана и воды при температуре <span class="math notranslate nohighlight">\(20 \; ^{\circ} C\)</span> и давлении <span class="math notranslate nohighlight">\(1 \; атм\)</span> с мольными долями компонентов <span class="math notranslate nohighlight">\(0.3, \, 0.4, \, 0.3\)</span> соответственно. Необходимо определить равновесное состояние системы.</p>
+</div>
 </section>
 <section id="vt">
 <span id="pvt-esc-equilibrium-vt"></span><h2>VT-термодинамика<a class="headerlink" href="#vt" title="Link to this heading">#</a></h2>

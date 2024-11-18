@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Соотношения Максвелла &#8212; Основы моделирования пластовых систем</title>
+    <title>Моделирование лабораторных исследований &#8212; Основы моделирования пластовых систем</title>
   
   
   
@@ -58,14 +58,11 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/1-TD/TD-13-MaxwellRelations';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/4-LAB/LAB-0-Introduction';</script>
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Свободная энергия и фазовое равновесие" href="TD-14-PhaseEquilibrium.html" />
-    <link rel="prev" title="Уравнение Гиббса-Дюгема" href="TD-12-GibbsDuhemEquation.html" />
+    <link rel="prev" title="Определение критического состояния системы" href="../3-SEC/SEC-7-Criticality.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -196,22 +193,22 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">PVT-моделирование</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../PVT-Introduction.html">Введение</a></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="TD-0-Introduction.html">Основы термодинамики</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="TD-1-Basics.html">Введение в термодинамику</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-4-HeatCapacity.html">Теплоемкость</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-5-Enthalpy.html">Энтальпия</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-7-ChemicalPotential.html">Химический потенциал</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Соотношения Максвелла</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
-<li class="toctree-l2"><a class="reference internal" href="TD-15-Fugacity.html">Летучесть</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../1-TD/TD-0-Introduction.html">Основы термодинамики</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-1-Basics.html">Введение в термодинамику</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">Теплоемкость</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">Энтальпия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">Химический потенциал</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-15-Fugacity.html">Летучесть</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../2-EOS/EOS-0-Introduction.html">Уравнения состояния</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -232,7 +229,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../3-SEC/SEC-7-Criticality.html">Определение критического состояния системы</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Моделирование лабораторных исследований</a></li>
 </ul>
 
     </div>
@@ -287,7 +284,7 @@
       
       
       
-      <li><a href="../../_sources/1-PVT/1-TD/TD-13-MaxwellRelations.md" target="_blank"
+      <li><a href="../../_sources/1-PVT/4-LAB/LAB-0-Introduction.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -369,7 +366,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Соотношения Максвелла</h1>
+    <h1>Моделирование лабораторных исследований</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -383,77 +380,10 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="pvt-td-maxwellrelations">
-<span id="id1"></span><h1>Соотношения Максвелла<a class="headerlink" href="#pvt-td-maxwellrelations" title="Link to this heading">#</a></h1>
-<p>Существует множество соотношений между частными производными термодинамических параметров систем, называемые <em><strong>соотношения Максвелла</strong></em>. Все они основаны на следующих свойствах дифференциала и частных производных. Пусть имеется некоторая функция <span class="math notranslate nohighlight">\(\phi \left( x, y \right)\)</span>, при этом ее дифференциал записывается следующим образом:</p>
-<div class="math notranslate nohighlight">
-\[ d \phi \left( x, y \right) = M \left( x, y \right) dx + N \left( x, y \right) dy. \]</div>
-<p>Следовательно, можно записать, что:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} M \left( x, y \right) = \left( \frac{\partial \phi \left( x, y \right)}{\partial x} \right)_y; \\ N \left( x, y \right) = \left( \frac{\partial \phi \left( x, y \right)}{\partial y} \right)_x. \end{split}\]</div>
-<p>Запишем выражение для второй частной производной функции <span class="math notranslate nohighlight">\(\phi \left( x, y \right)\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[ \frac{\partial^2 \phi \left( x, y \right)}{\partial x \partial y} = \left( \frac{\partial}{\partial x} \left( \frac{\partial \phi \left( x, y \right)}{\partial y} \right)_x \right)_y = \left( \frac{\partial}{\partial y} \left( \frac{\partial \phi \left( x, y \right) }{\partial x} \right)_y \right)_x. \]</div>
-<p>Преобразуя, получим:</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial N \left( x, y \right)}{\partial x} \right)_y = \left( \frac{\partial M \left( x, y \right)}{\partial y} \right)_x. \]</div>
-<p>Используя данное свойство, рассмотрим вывод соотношений Максвелла.</p>
-<p><a id='pvt-td-maxwellrelations-first'></a>
-Допустим, что вторая частная производная внутренней энергии <span class="math notranslate nohighlight">\(U\)</span> по энтропии <span class="math notranslate nohighlight">\(S\)</span> и объему <span class="math notranslate nohighlight">\(V\)</span> непрерывна и определена. <a class="reference external" href="https://en.wikipedia.org/wiki/Symmetry_of_second_derivatives#Theorem_of_Schwarz">Тогда</a> можно записать следующее соотношение:</p>
-<div class="math notranslate nohighlight">
-\[ \frac{\partial^2 U}{\partial S \partial V} = \left( \frac{\partial}{\partial S} \left( \frac{\partial U}{\partial V} \right)_{S,N} \right)_{V,N} = \left( \frac{\partial}{\partial V} \left( \frac{\partial U}{\partial S} \right)_{V,N} \right)_{S,N}. \]</div>
-<p>При выводе <a class="reference internal" href="TD-6-Entropy.html#pvt-td-entropy-thermodynamicidentity"><span class="std std-ref">thermodynamic identity</span></a> было показано, что:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align} \left( \frac{\partial U}{\partial S} \right)_{V, N} &amp;= T; \\ \left( \frac{\partial U}{\partial V} \right)_{S, N} &amp;= -P. \end{align} \end{split}\]</div>
-<p>С учетом этого можно заключить, что:</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial T}{\partial V} \right)_{S, N} = - \left( \frac{\partial P}{\partial S} \right)_{V, N}. \]</div>
-<p>С учетом <a class="reference external" href="https://en.wikipedia.org/wiki/Inverse_functions_and_differentiation">производной обратной функции</a> данное выражение преобразуется к следующему:</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial V}{\partial T} \right)_{S, N} = - \left( \frac{\partial S}{\partial P} \right)_{V, N}. \]</div>
-<p>Данное выражение называется <em><strong>первым соотношением Максвелла</strong></em>.</p>
-<p><a id='pvt-td-maxwellrelations-second'></a>
-Получим второе соотношение Максвелла. Для этого применим правило симметрии для второй частной производной энергии Гельмгольца <span class="math notranslate nohighlight">\(F\)</span> по температуре <span class="math notranslate nohighlight">\(T\)</span> и объему <span class="math notranslate nohighlight">\(V\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[ \frac{\partial^2 F}{\partial T \partial V} = \left( \frac{\partial}{\partial T} \left( \frac{\partial F}{\partial V} \right)_{T, N} \right)_{V, N} = \left( \frac{\partial}{\partial V} \left( \frac{\partial F}{\partial T} \right)_{V, N} \right)_{T, N}. \]</div>
-<p>При выводе <a class="reference internal" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtzgibbs-helmholtzpartials"><span class="std std-ref">дифференциала энергии Гельмгольца</span></a> было показано, что</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \left( \frac{\partial F}{\partial T} \right)_{V, N} = -S; \\ \left( \frac{\partial F}{\partial V} \right)_{T, N} = -P. \end{split}\]</div>
-<p>Отсюда следует, что</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial S}{\partial V} \right)_{T, N} = \left( \frac{\partial P}{\partial T} \right)_{V, N}. \]</div>
-<p>Данное выражение является <em><strong>вторым соотношением Максвелла</strong></em>.</p>
-<p><a id='pvt-td-maxwellrelations-third'></a>
-Для получения третьего соотношения Максвелла запишем дифференциал <a class="reference internal" href="TD-5-Enthalpy.html#pvt-td-enthalpy"><span class="std std-ref">энтальпии</span></a>:</p>
-<div class="math notranslate nohighlight">
-\[ dH = dU + P dV + V dP. \]</div>
-<p>С учетом выражения <a class="reference internal" href="TD-6-Entropy.html#pvt-td-entropy-thermodynamicidentity"><span class="std std-ref">thermodynamic identity</span></a> его можно преобразовать к следующему виду:</p>
-<div class="math notranslate nohighlight">
-\[ dH = T dS + V dP. \]</div>
-<p>Следовательно,</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \left( \frac{\partial H}{\partial S} \right)_{P, N} = T; \\ \left( \frac{\partial H}{\partial P} \right)_{S, N} = V. \end{split}\]</div>
-<p>Применим правило симметрии для второй частной производной энтальпии по энтропии и давлению:</p>
-<div class="math notranslate nohighlight">
-\[ \frac{\partial^2 H}{\partial S \partial P} = \left( \frac{\partial}{\partial S} \left( \frac{\partial H}{\partial P} \right)_{S, N} \right)_{P, N} = \left( \frac{\partial}{\partial P} \left( \frac{\partial H}{\partial S} \right)_{P,N} \right)_{S,N}. \]</div>
-<p>Следовательно,</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial T}{\partial P} \right)_{S, N} = \left( \frac{\partial V}{\partial S} \right)_{P, N}. \]</div>
-<p>Или с учетом производной обратной функции:</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial P}{\partial T} \right)_{S, N} = \left( \frac{\partial S}{\partial V} \right)_{P, N}. \]</div>
-<p>Данное выражение является <em><strong>третьим соотношением Максвелла</strong></em>.</p>
-<p><a id='pvt-td-maxwellrelations-fourth'></a>
-Наконец, для получения четвертого соотношения Максвелла запишем правило симметрии для второй частной производной энергии Гиббса <span class="math notranslate nohighlight">\(G\)</span> по температуре <span class="math notranslate nohighlight">\(T\)</span> и давлению <span class="math notranslate nohighlight">\(P\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[ \frac{\partial^2 G}{\partial T \partial P} = \left( \frac{\partial}{\partial T} \left( \frac{\partial G}{\partial P} \right)_{T, N} \right)_{P, N} = \left( \frac{\partial}{\partial P} \left( \frac{\partial G}{\partial T} \right)_{P, N} \right)_{T, N}. \]</div>
-<p>При выводе <a class="reference internal" href="TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtzgibbs-gibbspartials"><span class="std std-ref">дифференциала энергии Гиббса</span></a> было показано, что</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \begin{align*} \left( \frac{\partial G}{\partial T} \right)_{P, N} &amp;= -S; \\ \left( \frac{\partial G}{\partial P} \right)_{T, N} &amp;= V. \end{align*} \end{split}\]</div>
-<p>С учетом этого получим:</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial S}{\partial P} \right)_{T, N} = - \left( \frac{\partial V}{\partial T} \right)_{P, N}. \]</div>
-<p>Данное выражение является <em><strong>четвертым соотношением Максвелла</strong></em>.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="pvt-lab">
+<span id="id1"></span><h1>Моделирование лабораторных исследований<a class="headerlink" href="#pvt-lab" title="Link to this heading">#</a></h1>
+<p>В данном разделе будут рассматриваться подходы к моделированию лабораторных PVT-исследований, а также способы адаптации флюидных моделей на результаты лабораторных экспериментов.</p>
+<p><strong>Содержание:</strong></p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -469,7 +399,7 @@ document.write(`
         },
         kernelOptions: {
             name: "python3",
-            path: "./1-PVT\1-TD"
+            path: "./1-PVT\4-LAB"
         },
         predefinedOutput: true
     }
@@ -487,22 +417,13 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="TD-12-GibbsDuhemEquation.html"
+       href="../3-SEC/SEC-7-Criticality.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Уравнение Гиббса-Дюгема</p>
+        <p class="prev-next-title">Определение критического состояния системы</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="TD-14-PhaseEquilibrium.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Свободная энергия и фазовое равновесие</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
