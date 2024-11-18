@@ -232,6 +232,7 @@
 <li class="toctree-l2"><a class="reference internal" href="SEC-7-Criticality.html">Определение критического состояния системы</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
 </ul>
 
     </div>
@@ -1135,11 +1136,10 @@ a^G_{k+1}
 <span class="math notranslate nohighlight">\(c_i := 1 \, / \left( 1 - k_i \right), \; i = 1 \, \ldots \, N_c\)</span><br />
 <span class="math notranslate nohighlight">\(d_i := \left( c_1 - c_i \right) \, / \left( c_{N_c} - c_1 \right), \; i = 2 \, \ldots \, N_c - 1\)</span><br />
 <span class="math notranslate nohighlight">\(a := y_1 \, / \, y_{N_c}\)</span> <span class="comment"># Начальное приближение</span><br />
-<strong>function</strong><span class="math notranslate nohighlight">\(\; fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)\)</span> <span class="comment"># Функция D(a)</span><br />
+<strong>def</strong><span class="math notranslate nohighlight">\(\; fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)\)</span> <span class="comment"># Функция D(a)</span><br />
  <span class="math notranslate nohighlight">\(D := y_1 + a \sum_{i=2}^{N_c-1} y_i \, / \left( d_i + a \left( d_i + 1 \right) \right) - y_{N_c} a\)</span> <span class="comment"># Значение функции в точке a</span><br />
  <span class="math notranslate nohighlight">\(D' := \sum_{i=2}^{N_c-1} y_i d_i \, / \left( d_i + a \left( d_i + 1 \right) \right)^2 - y_{N_c}\)</span>  <span class="comment"># Значение производной функции в точке a</span><br />
  <strong>return</strong> <span class="math notranslate nohighlight">\(D, \; D'\)</span><br />
-<strong>end function</strong><br />
 <span class="math notranslate nohighlight">\(\left( D, \; D' \right) := fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)\)</span> <span class="comment"># Расчет значения функции D(a) и ее градиента для начального приближения</span><br />
 <span class="math notranslate nohighlight">\(h := D \, / \, D'\)</span> <span class="comment"># Длина шага</span><br />
 <span class="math notranslate nohighlight">\(i := 1\)</span> <span class="comment"># Номер итерации</span><br />

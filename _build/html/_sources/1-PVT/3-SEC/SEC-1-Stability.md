@@ -640,19 +640,20 @@ $$ k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, & i = \mathrm{sp
 ```{admonition} Алгоритм. Анализ стабильности с использованием QNSS
 :class: algorithm
 
-**Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z}$; термобарические условия $P$ и $T$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций $N_{iter}$; точность решения системы нелинейных уравнений $\epsilon_1$; численная погрешность расчета $0 < \epsilon_2 \leq 10^{-4}$.
+**Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z} \in {\rm I\!R}^{N_c}$; термобарические условия $P$ и $T$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций $N_{iter}$; точность решения системы нелинейных уравнений $\epsilon_1$; численная погрешность расчета $0 < \epsilon_2 \leq 10^{-4}$.
 
 **Определить:** Является ли однофазное состояние системы с компонентным составом $\mathbf{y}$ при давлении $P$ и температуре $T$ стабильным.
 
 **Псевдокод:**  
-$\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}$ {comment}`# Инициализация набора начальных приближений`  
-$\mathbf{h} := \ln \phi \left(P, \, T, \, \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`# Расчет коэффициентов летучести для начального состава`  
-**for** $i := 0$ **to** $N$ **do** {comment}`# Цикл перебора начальных приближений`  
+**def** $\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \mathbf{\varphi} \in {\rm I\!R}^{N_c}$ {comment}`# Функция для расчета вектора коэффициентов летучести`  
+$\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}$ {comment}`# Инициализация набора (матрицы) начальных приближений`  
+$\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`# Расчет коэффициентов летучести для начального состава`  
+**for** $i := 1$ **to** $N$ **do** {comment}`# Цикл перебора начальных приближений`  
 &emsp;$\mathbf{k} := \mathbf{K}\left[ i \right]$ {comment}`# Вектор основных переменных`  
 &emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
 &emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
-&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( P, \, T, \, \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
-&emsp;$c := 0$ {comment}`# Счетчик итераций решения системы нелинейных уравнений`  
+&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
+&emsp;$c := 1$ {comment}`# Счетчик итераций решения системы нелинейных уравнений`  
 &emsp;$\lambda := 1$ {comment}`# Коэффициент релаксации (длина шага)`  
 &emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do** {comment}`# Цикл решения системы нелинейных уравнений`  
 &emsp;&emsp;$\mathbf{\Delta \ln k} := -\lambda \cdot \mathbf{g}$ {comment}`# Вектор направления поиска решения`  
@@ -664,7 +665,7 @@ $\mathbf{h} := \ln \phi \left(P, \, T, \, \mathbf{z} \right) + \ln \mathbf{z}$  
 &emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
 &emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
 &emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
-&emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( P, \, T, \, \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
+&emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
 &emsp;&emsp;$\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|$ {comment}`# Новое значение коэффициента релаксации`  
 &emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
 &emsp;**end while**  
@@ -721,8 +722,8 @@ def condit(
     tol: np.float64,
     Niter: int,
 ) -> bool:
-    c, ki, gi, lmbd = carry
-    return (c < Niter) & (np.linalg.norm(gi) > tol)
+    k, ki, gi, lmbd = carry
+    return (k < Niter) & (np.linalg.norm(gi) > tol)
 ```
 
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации:
@@ -736,20 +737,21 @@ def update(
     yi: npt.NDArray[np.float64],
     plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
 ) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
-    c, ki, gi_, lmbd = carry
-    dlnki = -lmbd * gi_
+    k, ki_k, gi_k, lmbd_k = carry
+    dlnki = -lmbd_k * gi_k
     max_dlnki = np.abs(dlnki).max()
     if max_dlnki > 6.:
         relax = 6. / max_dlnki
-        lmbd *= relax
         dlnki *= relax
-    ki *= np.exp(dlnki)
-    ni = ki * yi
-    gi = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd *= np.abs(dlnki.dot(gi_) / dlnki.dot(gi - gi_))
-    if lmbd > 30.:
-        lmbd = 30.
-    return c + 1, ki, gi, lmbd
+    else:
+        relax = 1.
+    ki_kp1 = ki_k * np.exp(dlnki)
+    ni = ki_kp1 * yi
+    gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
+    lmbd_kp1 = (lmbd_k * relax) * np.abs(dlnki.dot(gi_k) / dlnki.dot(gi_kp1 - gi_k))
+    if lmbd_kp1 > 30.:
+        lmbd_kp1 = 30.
+    return k + 1, ki_kp1, gi_kp1, lmbd_kp1
 ```
 
 Выполним расчет коэффициентов летучести для начального компонентного состава:
@@ -820,8 +822,8 @@ def condit(
     tol: np.float64,
     Niter: int,
 ) -> bool:
-    c, ki, gi, lmbd = carry
-    return (c < Niter) & (np.linalg.norm(gi) > tol)
+    k, ki, gi, lmbd = carry
+    return (k < Niter) & (np.linalg.norm(gi) > tol)
 
 from typing import Callable
 
@@ -829,22 +831,23 @@ def update(
     carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
     hi: npt.NDArray[np.float64],
     yi: npt.NDArray[np.float64],
-    plnphi: Callable[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+    plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
 ) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
-    c, ki, gi_, lmbd = carry
-    dlnki = -lmbd * gi_
+    k, ki_k, gi_k, lmbd_k = carry
+    dlnki = -lmbd_k * gi_k
     max_dlnki = np.abs(dlnki).max()
     if max_dlnki > 6.:
         relax = 6. / max_dlnki
-        lmbd *= relax
         dlnki *= relax
-    ki *= np.exp(dlnki)
-    ni = ki * yi
-    gi = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd *= np.abs(dlnki.dot(gi_) / dlnki.dot(gi - gi_))
-    if lmbd > 30.:
-        lmbd = 30.
-    return c + 1, ki, gi, lmbd
+    else:
+        relax = 1.
+    ki_kp1 = ki_k * np.exp(dlnki)
+    ni = ki_kp1 * yi
+    gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
+    lmbd_kp1 = (lmbd_k * relax) * np.abs(dlnki.dot(gi_k) / dlnki.dot(gi_kp1 - gi_k))
+    if lmbd_kp1 > 30.:
+        lmbd_kp1 = 30.
+    return k + 1, ki_kp1, gi_kp1, lmbd_kp1
 
 hi = pr.get_lnphii(P, T, yi) + np.log(yi)
 

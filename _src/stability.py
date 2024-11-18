@@ -27,13 +27,25 @@ class stabilityPT(object):
   ---------
   eos : EosptType
     An initialized instance of a PT-based equation of state.
+
+  tol : numpy.float64
+    Tolerance. When the norm of an equilibrium equations vector
+    reduces below the tolerance, the system of non-linear equations
+    is considered solved. The default is `tol = 1e-6`.
+
+  Niter : int
+    Maximum number of solver iterations. The default is `Niter = 50`.
+
+  eps : numpy.float64
+    The system will be considered unstable when `TPD < -eps`.
+    The default value is `eps = 1e-4`.
   """
   def __init__(
     self,
     eos: EosptType,
-    eps: ScalarType = np.float64(1e-4),
     tol: ScalarType = np.float64(1e-6),
     Niter: int = 50,
+    eps: ScalarType = np.float64(1e-4),
   ) -> None:
     self.eos = eos
     self.eps = -eps
@@ -64,7 +76,7 @@ class stabilityPT(object):
 
       method : str
         The method that will be used to find local minima of the Gibbs
-        energy function. The default is 'qnss'.
+        energy function. The default is `'qnss'`.
 
     Returns a tuple of a boolean (True if a system is stable, False
     otherwise), an array of k-values at a local minima that can be

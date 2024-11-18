@@ -21,4 +21,5 @@ kernelspec:
     * [Основы термодинамики](./1-PVT/1-TD/TD-0-Introduction.md)
     * [Уравнения состояния](./1-PVT/2-EOS/EOS-0-Introduction.md)
     * [Стабильность. Равновесие. Критическое состояние](./1-PVT/3-SEC/SEC-0-Introduction.md)
+    * [Моделирование лабораторных исследований](./1-PVT/4-LAB/LAB-0-Introduction.md)
 

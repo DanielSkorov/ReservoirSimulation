@@ -53,3 +53,4 @@ parts:
           - file: 1-PVT/3-SEC/SEC-5-Equilibrium
           - file: 1-PVT/3-SEC/SEC-6-Saturation
           - file: 1-PVT/3-SEC/SEC-7-Criticality
+      - file: 1-PVT/4-LAB/LAB-0-Introduction
