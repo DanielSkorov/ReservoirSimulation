@@ -427,13 +427,13 @@ document.write(`
 &amp;= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \frac{\partial \bar{G}}{\partial n_l^m} \right)_{P, \, T, \, n_i^j \neq n_l^m} \left( \frac{\partial n_l^m}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
 &amp;= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \ln f_l \left( P, \, T, \, y_l^m \right) - \ln f_l \left( P, \, T, \, y_l^{N_p} \right) \right) U_{lmij}.
 \end{align} \end{split}\]</div>
-<p>В представленном выражении параметр <span class="math notranslate nohighlight">\(\lambda\)</span> характеризует длину шага, а <span class="math notranslate nohighlight">\(\bar{G} = G / \left(RT\right)\)</span> – приведенная энергия Гиббса системы. При преобразовании данного выражения учитывалось <a class="reference external" href="https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs">правило дифференциирования сложной функции от нескольких переменных</a>. Если принять</p>
+<p>В представленном выражении параметр <span class="math notranslate nohighlight">\(\lambda\)</span> характеризует длину шага, а <span class="math notranslate nohighlight">\(\bar{G} = G / \left(RT\right)\)</span> – приведенная энергия Гиббса системы. При преобразовании данного выражения учитывалось <a class="reference external" href="https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs">правило дифференцирования сложной функции от нескольких переменных</a>. Если принять</p>
 <div class="math notranslate nohighlight">
 \[ \lambda = 1, \]</div>
 <div class="math notranslate nohighlight">
 \[\begin{split} U_{lmij} = \delta_{lmij} = \begin{cases} 1, \; l = i, \; m = j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1, \\ 0, \; \mathrm{otherwise}, \end{cases} \end{split}\]</div>
 <p>тогда метод последовательных подстановок будет эквивалентен методу градиентного спуска для минимизации функции энергии Гиббса. Таким образом, метод последовательных подстановок является своеобразным упрощением метода градиентного спуска для минимизации функции энергии Гиббса.</p>
-<!-- Добавить анализ матрицы U_{lmij}. См. https://doi.org/10.1002/cjce.5450610414, https://doi.org/10.1002/aic.690330606, https://doi.org/10.1016/j.fluid.2014.11.017 -->
+<!-- TODO: добавить анализ матрицы U_{lmij}. См. 10.1002/cjce.5450610414, 10.1002/aic.690330606, 10.1016/j.fluid.2014.11.017 -->
 <p>Рассмотрим алгоритм метода последовательных подстановок.</p>
 <div class="algorithm admonition">
 <p class="admonition-title">Алгоритм. Метод последовательных подстановок для определения равновесного состояния</p>
@@ -461,8 +461,12 @@ document.write(`
   <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{K} + \ln \mathbf{\Phi} - \ln \mathbf{\varphi}\)</span> <span class="comment"># Матрица невязок</span><br />
   <span class="math notranslate nohighlight">\(k := k + 1\)</span> <span class="comment"># Обновление счетчика итераций</span><br />
  <strong>end while</strong><br />
+ <strong>if</strong> <span class="math notranslate nohighlight">\(k &lt; N_{iter}\)</span> <strong>then</strong><br />
+  <strong>exit for</strong><br />
+ <strong>end if</strong><br />
 <strong>end for</strong></p>
 </div>
+<p>Таким образом, метод последовательных подстановок характеризуется наличием двух <code class="docutils literal notranslate"><span class="pre">while</span></code>-циклов: внутренний цикл используется для решения уравнения Речфорда-Райса при фиксированных константах фазового равновесия, внешний цикл – для обновления констант фазового равновесия, исходя из необходимого условия равновесия.</p>
 <p>В качестве начальных приближений констант фазового равновесия для расчета равновесного состояния можно использовать тот же набор начальных приближений, что и для <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">проверки стабильности системы</span></a>. Кроме того, в качестве начального приближения к определению равновесного состояния можно использовать результаты анализа стабильности, одним из которых является вектор <span class="math notranslate nohighlight">\(Y_i, \; i = 1 \, \ldots \, N_c\)</span>, интерепретируемый как вектор количеств вещества компонентов в системе. Тогда вектор</p>
 <div class="math notranslate nohighlight">
 \[ y_i = \frac{Y_i}{\sum_{j=1}^{N_c} Y_j}, \; i = 1 \, \ldots \, N_c, \]</div>
@@ -470,7 +474,18 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[ \mathbf{K}_0 = \left\{ y_i \, / \, z_i, \; z_i  \, / \, y_i, \; i = 1 \, \ldots \, N_c \right\}. \]</div>
 <p>После определения равновесного состояния для <span class="math notranslate nohighlight">\(N_p\)</span>-фазной постановки задачи выполняется анализ стабильности системы. Если анализ стабильности показывает, что <span class="math notranslate nohighlight">\(N_p\)</span>-фазный компонентный состав не является стабильным, то выполняется поиск равновесного состояния для <span class="math notranslate nohighlight">\(\left( N_p+1 \right)\)</span>-фазной постановки.</p>
-<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>.</p>
+<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>. Кроме того, для проверки стабильности стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Также на каждой итерации метода последовательных подстановок необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a>. Для решения уравнения в двухфазной постановке будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">реализация</a> <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">метода FGH</span></a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../_src/&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">eos</span> <span class="kn">import</span> <span class="n">pr78</span>
+<span class="kn">from</span> <span class="nn">stability</span> <span class="kn">import</span> <span class="n">stabilityPT</span>
+<span class="kn">from</span> <span class="nn">rr</span> <span class="kn">import</span> <span class="n">solve2p_FGH</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
 <p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана и диоксида углерода при температуре <span class="math notranslate nohighlight">\(10 \; ^{\circ} C\)</span> и давлении <span class="math notranslate nohighlight">\(6 \; МПа\)</span> с мольной долей метана <span class="math notranslate nohighlight">\(0.1\)</span>. Необходимо определить равновесное состояние системы.</p>
@@ -495,7 +510,6 @@ document.write(`
 </div>
 </div>
 </div>
-<p>Выполним анализ стабильности однофазного состояния. В <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном проверке стабильности, было рассмотрено применение численного алгоритма QNSS для этого примера. В данном разделе для проверки стабильности также будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">реализация</a> теста стабильности с использованием QNSS.</p>
 <p>Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -525,7 +539,20 @@ document.write(`
 </div>
 </div>
 </div>
-<p>В результате проверки стабильности (путем вызова метода <code class="docutils literal notranslate"><span class="pre">run</span></code>) однофазное состояние системы оказалось нестабильным. Кроме того, был получен набор начальных приближений для проведения расчета равновесного состояния.</p>
+<p>В результате проверки стабильности (путем вызова метода <code class="docutils literal notranslate"><span class="pre">run</span></code>) однофазное состояние системы оказалось нестабильным. В <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном тесту стабильности, применение метода QNSS для данного примера было представлено подробнее. Также был получен набор начальных приближений для проведения расчета равновесного состояния.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kv0</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[0.86345279, 2.06584343],
+       [1.12067466, 0.46840417]])
+</pre></div>
+</div>
+</div>
+</div>
 <p>Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений. Проиницилизируем данную функцию.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -533,7 +560,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
 <span class="k">def</span> <span class="nf">condit</span><span class="p">(</span>
-    <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span>
+    <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span>
     <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
     <span class="n">Niter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -545,7 +572,7 @@ document.write(`
 </div>
 </div>
 </div>
-<p>Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации. На каждой итерации необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a> в двухфазной постановке. Для этого будем использовать <span class="xref myst">метод FGH</span>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
+<p>Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
@@ -680,7 +707,7 @@ document.write(`
 </div>
 <p>Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>.</p>
 <p>Таким образом, метод последовательных подстановок может быть использован для определения равновесного состояния системы. Недостатком данного метода является большое количество итераций, необходимых для нахождения решения. Существует множество работ, посвященных “ускорению” метода последовательных подстановок. Так, например, в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>] предлагается использовать <em>quasi-Newton succesive substitution (QNSS)</em> для поиска равновесного состояния. Реализация данного метода представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>.</p>
-<p>Рассмотрим следующий пример.</p>
+<p>На примере, представленном выше, было рассмотрено применение метода последовательных подстановок для расчета равновесного состояния в двухфазной постановке. Однако этот метод может применяться и для многофазного случая. Рассмотрим следующий пример.</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
 <p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана, гексана и воды при температуре <span class="math notranslate nohighlight">\(20 \; ^{\circ} C\)</span> и давлении <span class="math notranslate nohighlight">\(1 \; атм\)</span> с мольными долями компонентов <span class="math notranslate nohighlight">\(0.3, \, 0.4, \, 0.3\)</span> соответственно. Необходимо определить равновесное состояние системы.</p>
