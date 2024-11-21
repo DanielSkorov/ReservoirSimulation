@@ -57,7 +57,7 @@ def fD(
 def solve2p_FGH(
   kvi: VectorType,
   yi: VectorType,
-  tol: ScalarType = np.float64(1e-10),
+  tol: ScalarType = np.float64(1e-8),
   Niter: int = 50,
 ) -> ScalarType:
   """FGH-method for solving the Rachford-Rice equation.
@@ -85,14 +85,14 @@ def solve2p_FGH(
     'Solving RR-equation using FGH-method\n\tkvi = %s\n\tyi = %s', kvi, yi,
   )
   idx = kvi.argsort()[::-1]
-  yi = yi[idx]
-  kvi = kvi[idx]
-  ci = 1. / (1. - kvi)
+  ysi = yi[idx]
+  kvsi = kvi[idx]
+  ci = 1. / (1. - kvsi)
   di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
-  y0 = yi[0]
-  yN = yi[-1]
-  yi = yi[1:-1]
-  pD = partial(fD, yi=yi, di=di, yidi=yi*di, y0=y0, yN=yN)
+  y0 = ysi[0]
+  yN = ysi[-1]
+  ysi = ysi[1:-1]
+  pD = partial(fD, yi=ysi, di=di, yidi=ysi*di, y0=y0, yN=yN)
   k = 0
   ak = y0 / yN
   D, dDda = pD(ak)
@@ -118,7 +118,7 @@ def solve2p_FGH(
 def solve2p_GH(
   kvi: VectorType,
   yi: VectorType,
-  tol: ScalarType = np.float64(1e-10),
+  tol: ScalarType = np.float64(1e-8),
   Niter: int = 50,
 ) -> ScalarType:
   """GH-method for solving the Rachford-Rice equation.
@@ -147,32 +147,31 @@ def solve2p_GH(
     'Solving RR-equation using GH-method\n\tkvi = %s\n\tyi = %s', kvi, yi,
   )
   idx = kvi.argsort()[::-1]
-  yi = yi[idx]
-  kvi = kvi[idx]
-  ci = 1. / (1. - kvi)
+  ysi = yi[idx]
+  kvsi = kvi[idx]
+  ci = 1. / (1. - kvsi)
   di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
-  y0 = yi[0]
-  yN = yi[-1]
-  yi = yi[1:-1]
+  y0 = ysi[0]
+  yN = ysi[-1]
+  ysi = ysi[1:-1]
   k = 0
   ak = y0 / yN
   denom = 1. / (di * (ak + 1.) + ak)
-  eq = (ak + 1.) * (y0 / ak + yi.dot(denom) - yN)
-  deqda = -y0 / (ak * ak) - yi.dot(denom * denom) - yN
+  eq = (ak + 1.) * (y0 / ak + ysi.dot(denom) - yN)
+  deqda = -y0 / (ak * ak) - ysi.dot(denom * denom) - yN
   if eq > 0.:
     logger.debug('Use G-formulation')
-    peq = partial(fG, yi=yi, di=di, y0=y0, yN=yN)
+    peq = partial(fG, yi=ysi, di=di, y0=y0, yN=yN)
   else:
     logger.debug('Use H-formulation')
-    peq = partial(fH, yi=yi, di=di, y0=y0, yN=yN)
+    peq = partial(fH, yi=ysi, di=di, y0=y0, yN=yN)
     deqda = -eq - ak * deqda
     eq *= -ak
   hk = eq / deqda
   logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', 0, ak, eq)
   while (eq > tol) & (k < Niter):
-    akp1 = ak - hk
     k +=1
-    ak = akp1
+    ak -= hk
     eq, deqda = peq(ak)
     logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', k, ak, eq)
     hk = eq / deqda
