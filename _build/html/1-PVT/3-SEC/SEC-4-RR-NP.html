@@ -463,16 +463,16 @@ F \left( \mathbf{f} \right)
 \[ \mathbf{x}^\top \mathbf{H} \mathbf{x} \geq 0, \; \forall \, \mathbf{x} \in {\rm I\!R}^{\left( N_p - 1 \right)}. \]</div>
 <p>Для доказательства данного неравенства для гессиана полученной ранее функции преобразуем выражение для элемента матрицы гессиана к следующему виду:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial r_j}{\partial f_l} = \sum_{i=1}^{N_c} \frac{y_i \left( 1 - K_{ji} \right) \left( 1 - K_{li} \right)}{t_i^2} = \sum_{i=1}^{N_c} \frac{\sqrt{y_i} \left( 1 - K_{ji} \right)}{t_i} \frac{\sqrt{y_i} \left( 1 - K_{li} \right)}{t_i} = \sum_{i=1}^{N_c} A_{ji} A_{li}. \]</div>
-<p>Таким образом, гессиан рассматриваемой функции может быть представлен в виде произведения некой матрицы <span class="math notranslate nohighlight">\(\mathbf{A} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}\)</span> и ее транспонированного вида:</p>
+\[ \frac{\partial r_j}{\partial f_l} = \sum_{i=1}^{N_c} \frac{y_i \left( 1 - K_{ji} \right) \left( 1 - K_{li} \right)}{t_i^2} = \sum_{i=1}^{N_c} \frac{\sqrt{y_i} \left( 1 - K_{ji} \right)}{t_i} \frac{\sqrt{y_i} \left( 1 - K_{li} \right)}{t_i} = \sum_{i=1}^{N_c} P_{ji} P_{li}. \]</div>
+<p>Таким образом, гессиан рассматриваемой функции может быть представлен в виде произведения матрицы <span class="math notranslate nohighlight">\(\mathbf{P} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}\)</span> и ее транспонированного вида:</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{H} = \mathbf{A} \mathbf{A}^\top. \]</div>
+\[ \mathbf{H} = \mathbf{P} \mathbf{P}^\top. \]</div>
 <p>Тогда</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{x}^\top \mathbf{H} \mathbf{x} = \mathbf{x}^\top \mathbf{A} \mathbf{A}^\top \mathbf{x} = \left( \mathbf{A}^\top \mathbf{x} \right)^\top \left( \mathbf{A}^\top \mathbf{x} \right) = \mathbf{v}^\top \mathbf{v} = \sum_{i=1}^{N_c} v_i^2 \geq 0. \]</div>
+\[ \mathbf{x}^\top \mathbf{H} \mathbf{x} = \mathbf{x}^\top \mathbf{P} \mathbf{P}^\top \mathbf{x} = \left( \mathbf{P}^\top \mathbf{x} \right)^\top \left( \mathbf{P}^\top \mathbf{x} \right) = \mathbf{v}^\top \mathbf{v} = \sum_{i=1}^{N_c} v_i^2 \geq 0. \]</div>
 <p>В процессе данного преобразования было использовано свойство транспонирования произведения:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \mathbf{A} \mathbf{B} \right)^\top = \mathbf{B}^\top \mathbf{A}^\top, \]</div>
+\[ \left( \mathbf{P} \mathbf{B} \right)^\top = \mathbf{B}^\top \mathbf{P}^\top, \]</div>
 <p>доказанное <a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html"><span class="std std-doc">ранее</span></a>.</p>
 </div>
 <p>Таким образом, было показано, что гессиан функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span> является положительно полуопределенной матрицей, а сама функция – выпуклой. Следовательно, задачу решения системы уравнений Речфорда-Райса можно переформулировать с точки зрения минимизации функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span>. Однако, данная функция, как и в случае <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">двухфазной постановки</span></a>, характеризуется наличием <span class="math notranslate nohighlight">\(N_c\)</span> полюсов, определяемых выражением <span class="math notranslate nohighlight">\(t_i = 0, \; i = 1 \, \ldots \, N_c\)</span>. Таким образом, для устойчивого нахождения минимума функции необходимо определить <a class="reference external" href="https://en.wikipedia.org/wiki/Feasible_region">область допустимых решений</a>. Эта область, как и в случае с двухфазной постановкой, определяется <em>negative flash window (NF-window)</em>, формулируемая из условия неотрицательности мольных долей компонентов в фазах, но допускающая существование отрицательных мольных долей фаз.</p>
@@ -497,7 +497,7 @@ t_i \geq y_i K_{ji} \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1.
 \sum_{k=1}^{N_p-1} f_k \left( 1 - K_{ki} \right) \leq 1 - y_i, \; i = 1 \, \ldots \, N_c, \\
 \sum_{k=1}^{N_p-1} f_k \left( 1 - K_{ki} \right) \leq 1 - K_{ji} y_i,  \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1.
 \end{cases} \end{split}\]</div>
-<p>Левую часть в данных неравенствах можно представить в виде вектора, <span class="math notranslate nohighlight">\(i\)</span>-ый элемент которого определяется выражением <span class="math notranslate nohighlight">\(\mathbf{f}^\top \mathbf{a}_i\)</span>, где <span class="math notranslate nohighlight">\(\mathbf{a}_i\)</span> представляет собой <span class="math notranslate nohighlight">\(i\)</span>-ый столбец матрицы <span class="math notranslate nohighlight">\(\left( 1 - K_{ji} \right)\)</span>. Кроме того, <span class="math notranslate nohighlight">\(i\)</span>-ыe элементы этого вектора, согласно записанной выше системе неравенств, должны быть меньше (или равны) соответствующих значений <span class="math notranslate nohighlight">\(\left( 1 - y_i \right)\)</span> и меньше (или равны) соотвутствующих значений <span class="math notranslate nohighlight">\(\left( 1 - K_{ji} y_i \right)\)</span> среди всех фаз, за исключением референсной, то есть <span class="math notranslate nohighlight">\(j = 1 \, \ldots \, N_p - 1\)</span>. Поскольку <span class="math notranslate nohighlight">\(i\)</span>-ыe элементы этого вектора должны быть меньше (или равны) соотвутствующих значений <span class="math notranslate nohighlight">\(\left( 1 - K_{ji} y_i \right)\)</span> среди всех фаз, следовательно, они должны быть меньше или равны минимальных соотвутствующих значений среди вседи всех фаз, то есть <span class="math notranslate nohighlight">\(\min_j \left\{ 1 - K_{ji} y_i \right\}\)</span>. С учетом этого, систему неравенств можно записать следующим образом:</p>
+<p>Левую часть в данных неравенствах можно представить в виде вектора, <span class="math notranslate nohighlight">\(i\)</span>-ый элемент которого определяется выражением <span class="math notranslate nohighlight">\(\mathbf{f}^\top \mathbf{a}_i\)</span>, где <span class="math notranslate nohighlight">\(\mathbf{a}_i \in {\rm I\!R}^{\left( N_p - 1 \right)}, \, i = 1 \, \ldots \, N_c,\)</span> представляет собой <span class="math notranslate nohighlight">\(i\)</span>-ый столбец матрицы <span class="math notranslate nohighlight">\(\mathbf{A} = \left( 1 - K_{ji} \right), \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c\)</span>. Кроме того, <span class="math notranslate nohighlight">\(i\)</span>-ыe элементы этого вектора, согласно записанной выше системе неравенств, должны быть меньше (или равны) соответствующих значений <span class="math notranslate nohighlight">\(\left( 1 - y_i \right)\)</span> и меньше (или равны) соотвутствующих значений <span class="math notranslate nohighlight">\(\left( 1 - K_{ji} y_i \right)\)</span> среди всех фаз, за исключением референсной, то есть <span class="math notranslate nohighlight">\(j = 1 \, \ldots \, N_p - 1\)</span>. Поскольку <span class="math notranslate nohighlight">\(i\)</span>-ыe элементы этого вектора должны быть меньше (или равны) соответствующих значений <span class="math notranslate nohighlight">\(\left( 1 - K_{ji} y_i \right)\)</span> среди всех фаз, следовательно, они должны быть меньше или равны минимальных соответствующих значений среди вседи всех фаз, то есть <span class="math notranslate nohighlight">\(\min_j \left\{ 1 - K_{ji} y_i \right\}\)</span>. С учетом этого, систему неравенств можно записать следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ \mathbf{f}^\top \mathbf{a}_i \leq b_i = \min \left\{ 1 - y_i, \, \min_j \left\{ 1 - K_{ji} y_i \right\} \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Таким образом, решение системы уравнений Речфорда-Райса можно эквивалентно заменить задачей оптимизации:</p>
@@ -506,17 +506,17 @@ t_i \geq y_i K_{ji} \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1.
 \mathrm{min} &amp; \;\;\;\;\;\;\; &amp;&amp; F \left( \mathbf{f} \right) \\
 \mathrm{subject\,to} &amp;&amp;&amp; \mathrm{f}^\top \mathrm{a}_i \leq b_i, \, i = 1 \, \ldots \, N_c
 \end{alignat} \end{split}\]</div>
-<p>Стоит отметить, что полученная область допустимых решений, определяемая <span class="math notranslate nohighlight">\(\mathbf{f}^\top \mathbf{a}_i \leq b_i, \; i = 1 \, \ldots \, N_c\)</span>, меньше области допустимых решений, используемой в работе [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2008.03.006">Leibovici and Nichita, 2008</a>] и определямой условием <span class="math notranslate nohighlight">\(t_i \geq 0\)</span>.</p>
+<p>Стоит отметить, что полученная область допустимых решений, определяемая <span class="math notranslate nohighlight">\(\mathbf{f}^\top \mathbf{a}_i \leq b_i, \; i = 1 \, \ldots \, N_c\)</span>, не содержит полюсы (<span class="math notranslate nohighlight">\(t_i = 0, \, i = 1 \, \ldots \, N_c\)</span>) и меньше области допустимых решений, используемой в работе [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2008.03.006">Leibovici and Nichita, 2008</a>] и определямой условием <span class="math notranslate nohighlight">\(t_i \geq 0\)</span>.</p>
 <p>Прежде чем переходить к формулированию алгоритма, рассмотрим следующий пример.</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
 <p>Пусть матрица констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}\)</span> и вектор глобального компонентного состава системы <span class="math notranslate nohighlight">\(\mathbf{y} \in {\rm I\!R}^{N_c}\)</span> заданы следующим образом:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+<span class="n">Kji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
     <span class="p">[</span><span class="mf">2.64675</span><span class="p">,</span> <span class="mf">1.16642</span><span class="p">,</span> <span class="mf">1.25099E-03</span><span class="p">],</span>
     <span class="p">[</span><span class="mf">1.83256</span><span class="p">,</span> <span class="mf">1.64847</span><span class="p">,</span> <span class="mf">1.08723E-02</span><span class="p">],</span>
 <span class="p">])</span> <span class="c1"># K-values</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span> <span class="c1"># Global component composition</span>
+<span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span> <span class="c1"># Global component composition</span>
 </pre></div>
 </div>
 <p>Необходимо отобразить область допустимых решений для задачи оптимизации функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span>.</p>
@@ -531,7 +531,7 @@ f_1 \left( 1 - K_{11} \right) + f_2 \left( 1 - K_{21} \right) \leq b_1, \\
 f_1 \left( 1 - K_{12} \right) + f_2 \left( 1 - K_{22} \right) \leq b_2, \\
 f_1 \left( 1 - K_{13} \right) + f_2 \left( 1 - K_{23} \right) \leq b_3. \\
 \end{cases} \end{split}\]</div>
-<p>Для рассматриваемого примера значения матрицы <span class="math notranslate nohighlight">\(\left( 1 - \mathbf{K} \right)\)</span>:</p>
+<p>Для рассматриваемого примера значения матрицы <span class="math notranslate nohighlight">\(\mathbf{A} = \left( 1 - \mathbf{K} \right)\)</span>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Aji</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">Kji</span>
@@ -580,16 +580,16 @@ b_3 = \min \left\{ 1 - y_3, \, \min \left\{ 1 - K_{13} y_3, \, 1 - K_{23} y_3 \r
 <p>Кроме того, вычислим значения функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span> для рассматриваемой задачи с целью последующего отображения на графике в виде контуров:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f1s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">f2s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">fs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">f1s</span><span class="p">,</span> <span class="n">f2s</span><span class="p">))</span>
-<span class="n">tis</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
-<span class="n">Fs</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tis</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fs1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fs2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fssj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">fs1</span><span class="p">,</span> <span class="n">fs2</span><span class="p">))</span>
+<span class="n">tssi</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fssj</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
+<span class="n">Fss</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tssi</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Как было отмечено ранее, эта функция характеризуется наличием полюсов, определяемых уравнением <span class="math notranslate nohighlight">\(t_i = 0, \, i = 1 \, \ldots \, N_c\)</span>$. Получим координаты прямых, представляющих собой эти полюсы:</p>
+<p>Как было отмечено ранее, эта функция характеризуется наличием полюсов, определяемых уравнением <span class="math notranslate nohighlight">\(t_i = 0, \, i = 1 \, \ldots \, N_c\)</span>. Получим координаты прямых, представляющих собой эти полюсы:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">])</span>
@@ -613,7 +613,7 @@ b_3 = \min \left\{ 1 - y_3, \, \min \left\{ 1 - K_{13} y_3, \, 1 - K_{23} y_3 \r
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Полюс #2&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Полюс #3&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mf">0.162565</span><span class="p">,</span> <span class="mf">0.125678</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Решение&#39;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">fs</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">fs</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">Fs</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">fssj</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">fssj</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">Fss</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$f_1$&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">)</span>
@@ -626,6 +626,201 @@ b_3 = \min \left\{ 1 - y_3, \, \min \left\{ 1 - K_{13} y_3, \, 1 - K_{23} y_3 \r
 <div class="cell_output docutils container">
 <img alt="../../_images/127ec60bbdacf52a7cbdd2533df4dc8b35903c069186d608c440f69112680229.png" src="../../_images/127ec60bbdacf52a7cbdd2533df4dc8b35903c069186d608c440f69112680229.png" />
 </div>
+</div>
+<p>Серый треугольник в центре, ограниченный сплошными прямыми является областью допустимых решений, определяемой выражением <span class="math notranslate nohighlight">\(\mathbf{f}^\top \mathbf{a}_i \leq b_i, \, i = 1 \, \ldots \, N_c\)</span>, причем эта область не содержит полюсы и несколько меньше области допустимых решений (треугольника), ограниченной пунктирными линиями и определяемой выражением <span class="math notranslate nohighlight">\(t_i \geq 0, \, i = 1 \, \ldots \, N_c\)</span>.</p>
+<p>Рассмотрим одну итерацию оптимизации функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span> для рассматриваемого примера:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{f}_{k+1} = \mathbf{f}_k - \lambda \mathbf{H}^{-1} \nabla F \left( \mathbf{f}_k \right). \]</div>
+<p>Пусть длина шага <span class="math notranslate nohighlight">\(\lambda = 1\)</span>, а значения мольных долей фаз на <span class="math notranslate nohighlight">\(k\)</span>-й итерации <span class="math notranslate nohighlight">\(\mathbf{f}_k\)</span> заданы следующим вектором:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fjk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>В этой точке значение функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f}_k \right)\)</span>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ti</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fjk</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
+<span class="n">F</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ti</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+<span class="n">F</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.07610118311141709)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим значения вектора мольных долей фаз на <span class="math notranslate nohighlight">\(\left( k + 1 \right)\)</span>-й итерации. Для этого вычислим значения градиента минимизируемой функции:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dFj</span> <span class="o">=</span> <span class="n">Aji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="n">ti</span><span class="p">)</span>
+<span class="n">dFj</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0.13038645, 0.28805392])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Получим значения гессиана:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Pji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span> <span class="o">/</span> <span class="n">ti</span> <span class="o">*</span> <span class="n">Aji</span>
+<span class="n">Hjl</span> <span class="o">=</span> <span class="n">Pji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Pji</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">Hjl</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[2.78139167, 2.26595438],
+       [2.26595438, 2.03270276]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим направление оптимизации <span class="math notranslate nohighlight">\(\Delta \mathbf{f} = -\mathbf{H}^{-1} \nabla F \left( \mathbf{f}_k \right)\)</span>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dfj</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Hjl</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dFj</span><span class="p">)</span>
+<span class="n">dfj</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([ 0.74669718, -0.97409012])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Тогда значения мольных долей фаз на <span class="math notranslate nohighlight">\(\left( k + 1 \right)\)</span>-й итерации:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fjkp1</span> <span class="o">=</span> <span class="n">fjk</span> <span class="o">+</span> <span class="n">dfj</span>
+<span class="n">fjkp1</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([-0.00330282,  0.37590988])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Отобразим эту итерацию графически:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Ограничение #1&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Ограничение #2&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Ограничение #3&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Полюс #1&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Полюс #2&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Полюс #3&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mf">0.162565</span><span class="p">,</span> <span class="mf">0.125678</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Решение&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">fjk</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_j^k$&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">fjkp1</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+         <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$f_j^{k+1}$ $\left(\lambda = 1\right)$&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fjk</span><span class="p">,</span> <span class="n">fjkp1</span><span class="p">,</span> <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s1">&#39;&lt;-&#39;</span><span class="p">))</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$f_1$&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/f7efc03fbdee2319ec3888aff7a9a20ffd7f612fae3e49c8dcf7d41d66460f5a.png" src="../../_images/f7efc03fbdee2319ec3888aff7a9a20ffd7f612fae3e49c8dcf7d41d66460f5a.png" />
+</div>
+</div>
+<p>Из данного графика видно, что при несколько большей длине шага в этом же направлении можно еще лучше приблизиться к искомому решению – минимуму функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span>. Действительно, построим зависимость этой функции от длины шага в выбранном направлении. Зададимся диапазоном значений длины шага:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lmbds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Вычислим значения функции <span class="math notranslate nohighlight">\(F \left( \mathbf{f} \right)\)</span> для каждой длины шага итерации:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fsjkp1</span> <span class="o">=</span> <span class="n">fjk</span> <span class="o">+</span> <span class="n">dfj</span> <span class="o">*</span> <span class="n">lmbds</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span>
+<span class="n">tsi</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fsjkp1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
+<span class="n">Fs</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tsi</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Построим график:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lmbds</span><span class="p">,</span> <span class="n">Fs</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\lambda$&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$F \left( \lambda \right)$&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/bbf20e55cbebcb0b1bd6a797932895ab958e338c75d58b844d89eba520779afb.png" src="../../_images/bbf20e55cbebcb0b1bd6a797932895ab958e338c75d58b844d89eba520779afb.png" />
+</div>
+</div>
+<p>Видно, что при <span class="math notranslate nohighlight">\(\lambda \approx 1.25\)</span> значения функции меньше всего. Таким образом, ньютоновскую итерацию можно дополнить <em>процедурой поиска длины шага (line search)</em>, исходя из условия минимизации искомой функции для заданного направления. При этом, необходимо соблюдать ограничения области допустимых решений. Это позволит, с одной стороны, сократить количество ньютоновских итераций, с другой стороны, поможет избежать “перелета” в тех случаях, когда минимум функции близок к границам области допустимых решений. Получим максимальное значение длины шага. Для этого подставим выражение для мольных долей фаз на <span class="math notranslate nohighlight">\(\left( k + 1 \right)\)</span>-й итерации <span class="math notranslate nohighlight">\(\mathbf{f}_{k+1} = \mathbf{f}_k + \Delta \mathbf{f}\)</span> в систему <span class="math notranslate nohighlight">\(N_c\)</span> неравенств, определяющих область допустимых решений:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\mathbf{f}_{k+1}^\top \mathbf{a}_i &amp; \leq b_i, \; i = 1 \, \ldots \, N_c, \\
+\left( \mathbf{f}_k + \lambda \Delta \mathbf{f} \right)^\top \mathbf{a}_i &amp; \leq b_i, \; i = 1 \, \ldots \, N_c, \\
+\mathbf{f}_k^\top \mathbf{a}_i + \lambda \Delta \mathbf{f}^\top \mathbf{a}_i &amp; \leq b_i, \; i = 1 \, \ldots \, N_c, \\
+\lambda \Delta \mathbf{f}^\top \mathbf{a}_i &amp; \leq b_i - \mathbf{f}_k^\top \mathbf{a}_i, \; i = 1 \, \ldots \, N_c. \\
+\end{align} \end{split}\]</div>
+<p>С учетом знака <span class="math notranslate nohighlight">\(i\)</span>-ого значения <span class="math notranslate nohighlight">\(\Delta \mathbf{f}^\top \mathbf{a}_i, \, i = 1 \, \ldots \, N_c,\)</span> данная система неравенств преобразуется к системе двойных неравенств, определяющих допустимые значения длины шага, исходя из условий области допустимых решений. Поскольку величина длины шага должна быть больше всех значений <span class="math notranslate nohighlight">\(i\)</span>, удовлетворяющих условию <span class="math notranslate nohighlight">\(\Delta \mathbf{f}^\top \mathbf{a}_i &lt; 0\)</span>, то величина длины шага должна быть больше максимального среди всех значений, удовлетворяющих данному условию. Поскольку величина длины шага должна быть меньше всех значений <span class="math notranslate nohighlight">\(i\)</span>, удовлетворяющих условию <span class="math notranslate nohighlight">\(\Delta \mathbf{f}^\top \mathbf{a}_i &gt; 0\)</span>, то величина длины шага должна быть меньше минимального среди всех значений, удовлетворяющих данному условию. Иными словами, длина шага итерации находится на следующем отрезке:</p>
+<div class="math notranslate nohighlight">
+\[ \max_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i &lt; 0 \right\} \leq \lambda \leq \min_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i &gt; 0 \right\}. \]</div>
+<p>Символ двоеточия в данном выражении заменяет фразу “такие, что” или “удовлетворяющие условию”.</p>
+<p>Получим минимальное и максимальное значения длины шага для рассматриваемого примера:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lmbdi</span> <span class="o">=</span> <span class="p">(</span><span class="n">bi</span> <span class="o">-</span> <span class="n">fjk</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">dfj</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">))</span>
+<span class="n">where_max</span> <span class="o">=</span> <span class="n">dfj</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.</span>
+<span class="n">where_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">where_max</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lmbdi</span><span class="p">[</span><span class="n">where_max</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">lmbdi</span><span class="p">[</span><span class="n">where_min</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.22661381481569384), np.float64(2.1506214393304166))
+</pre></div>
+</div>
+</div>
+</div>
+<p>Для минимизации функции <span class="math notranslate nohighlight">\(F \left( \lambda \right)\)</span> также можно использовать метод Ньютона:</p>
+<div class="math notranslate nohighlight">
+\[ \lambda_{l+1} = \lambda_l - \frac{F'_\lambda \left( \lambda_l \right)}{F''_{\lambda \lambda} \left( \lambda_l \right)}. \]</div>
+<p>Значения первой и второй производных:</p>
+<p>Таким образом, сформулируем алгоритм решения системы уравнений Речфорда-Райса.</p>
+<div class="algorithm admonition">
+<p class="admonition-title">Алгоритм. Решение системы уравнений Речфорда-Райса для многофазных систем</p>
+<p><strong>Дано:</strong> Матрица констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}\)</span>; вектор компонентного состава системы <span class="math notranslate nohighlight">\(\mathbf{y} \in {\rm I\!R}^{N_c}\)</span>; вектор начальных приближений мольных долей фаз <span class="math notranslate nohighlight">\(\mathbf{f}_0 \in {\rm I\!R}^{N_p - 1}\)</span>; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность решения уравнения <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
+<p><strong>Определить:</strong> Вектор мольных долей фаз, удовлетворяющий NF-window и являющийся корнем системы уравнений Речфорда-Райса.</p>
+<p><strong>Псевдокод:</strong><br />
+<span class="math notranslate nohighlight">\(\mathbf{f} := \mathbf{f}_0\)</span> <span class="comment"># Начальное приближение</span><br />
+<span class="math notranslate nohighlight">\(\mathbf{A} := 1 - \mathbf{K}\)</span><br />
+<span class="math notranslate nohighlight">\(\mathbf{t} := 1 - \mathbf{f}^\top \mathbf{A}\)</span><br />
+<span class="math notranslate nohighlight">\(\nabla F := A \left( \mathbf{y} \oslash \mathbf{t} \right)\)</span> <span class="comment"># Градиент</span><br />
+<span class="math notranslate nohighlight">\(\mathbf{P} := A \left( \sqrt{\mathbf{y}} \oslash \mathbf{t} \right)\)</span><br />
+<span class="math notranslate nohighlight">\(\mathbf{H} := \mathbf{P} \mathbf{P}^\top\)</span> <span class="comment"># Гессиан</span><br />
+<span class="math notranslate nohighlight">\(\Delta \mathbf{f} := - \mathbf{H}^{-1} \nabla F\)</span> <span class="comment"># Направление итерации</span><br />
+ </p>
 </div>
 <p><a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">Следующий раздел</span></a> будет посвящен определению равновесного состояния, проводимому, если в результате <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">проверки стабильности</span></a> рассматриваемое фазовое состояние системы оказалось нестабильным.</p>
 </section>

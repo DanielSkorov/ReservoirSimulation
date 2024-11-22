@@ -62,7 +62,7 @@ def solve2p_FGH(
 ) -> ScalarType:
   """FGH-method for solving the Rachford-Rice equation.
 
-  Solves the Rachford-rice equation for two-phase systems using
+  Solves the Rachford-Rice equation for two-phase systems using
   the FGH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
   Arguments

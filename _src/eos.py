@@ -442,7 +442,7 @@ class pr78(object):
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
     Sji = sqrtalphai * (yji * sqrtalphai).dot(self.D)
-    alphamj = np.sum(yji * Sji, axis=1)
+    alphamj = np.vecdot(yji, Sji)
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRT / R / T
     Bj = bmj * PRT
@@ -477,7 +477,7 @@ class pr78(object):
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
     Sji = sqrtalphai * (yji * sqrtalphai).dot(self.D)
-    alphamj = np.sum(yji * Sji, axis=1)
+    alphamj = np.vecdot(yji, Sji)
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRT / R / T
     Bj = bmj * PRT

@@ -114,19 +114,19 @@ $$ \mathbf{x}^\top \mathbf{H} \mathbf{x} \geq 0, \; \forall \, \mathbf{x} \in {\
 
 Для доказательства данного неравенства для гессиана полученной ранее функции преобразуем выражение для элемента матрицы гессиана к следующему виду:
 
-$$ \frac{\partial r_j}{\partial f_l} = \sum_{i=1}^{N_c} \frac{y_i \left( 1 - K_{ji} \right) \left( 1 - K_{li} \right)}{t_i^2} = \sum_{i=1}^{N_c} \frac{\sqrt{y_i} \left( 1 - K_{ji} \right)}{t_i} \frac{\sqrt{y_i} \left( 1 - K_{li} \right)}{t_i} = \sum_{i=1}^{N_c} A_{ji} A_{li}. $$
+$$ \frac{\partial r_j}{\partial f_l} = \sum_{i=1}^{N_c} \frac{y_i \left( 1 - K_{ji} \right) \left( 1 - K_{li} \right)}{t_i^2} = \sum_{i=1}^{N_c} \frac{\sqrt{y_i} \left( 1 - K_{ji} \right)}{t_i} \frac{\sqrt{y_i} \left( 1 - K_{li} \right)}{t_i} = \sum_{i=1}^{N_c} P_{ji} P_{li}. $$
 
-Таким образом, гессиан рассматриваемой функции может быть представлен в виде произведения некой матрицы $\mathbf{A} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}$ и ее транспонированного вида:
+Таким образом, гессиан рассматриваемой функции может быть представлен в виде произведения матрицы $\mathbf{P} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}$ и ее транспонированного вида:
 
-$$ \mathbf{H} = \mathbf{A} \mathbf{A}^\top. $$
+$$ \mathbf{H} = \mathbf{P} \mathbf{P}^\top. $$
 
 Тогда
 
-$$ \mathbf{x}^\top \mathbf{H} \mathbf{x} = \mathbf{x}^\top \mathbf{A} \mathbf{A}^\top \mathbf{x} = \left( \mathbf{A}^\top \mathbf{x} \right)^\top \left( \mathbf{A}^\top \mathbf{x} \right) = \mathbf{v}^\top \mathbf{v} = \sum_{i=1}^{N_c} v_i^2 \geq 0. $$
+$$ \mathbf{x}^\top \mathbf{H} \mathbf{x} = \mathbf{x}^\top \mathbf{P} \mathbf{P}^\top \mathbf{x} = \left( \mathbf{P}^\top \mathbf{x} \right)^\top \left( \mathbf{P}^\top \mathbf{x} \right) = \mathbf{v}^\top \mathbf{v} = \sum_{i=1}^{N_c} v_i^2 \geq 0. $$
 
 В процессе данного преобразования было использовано свойство транспонирования произведения:
 
-$$ \left( \mathbf{A} \mathbf{B} \right)^\top = \mathbf{B}^\top \mathbf{A}^\top, $$
+$$ \left( \mathbf{P} \mathbf{B} \right)^\top = \mathbf{B}^\top \mathbf{P}^\top, $$
 
 доказанное [ранее](../../0-Math/1-OM/OM-0-Introduction.md).
 
@@ -160,7 +160,7 @@ $$ \begin{cases}
 \sum_{k=1}^{N_p-1} f_k \left( 1 - K_{ki} \right) \leq 1 - K_{ji} y_i,  \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1.
 \end{cases} $$
 
-Левую часть в данных неравенствах можно представить в виде вектора, $i$-ый элемент которого определяется выражением $\mathbf{f}^\top \mathbf{a}_i$, где $\mathbf{a}_i$ представляет собой $i$-ый столбец матрицы $\left( 1 - K_{ji} \right)$. Кроме того, $i$-ыe элементы этого вектора, согласно записанной выше системе неравенств, должны быть меньше (или равны) соответствующих значений $\left( 1 - y_i \right)$ и меньше (или равны) соотвутствующих значений $\left( 1 - K_{ji} y_i \right)$ среди всех фаз, за исключением референсной, то есть $j = 1 \, \ldots \, N_p - 1$. Поскольку $i$-ыe элементы этого вектора должны быть меньше (или равны) соотвутствующих значений $\left( 1 - K_{ji} y_i \right)$ среди всех фаз, следовательно, они должны быть меньше или равны минимальных соотвутствующих значений среди вседи всех фаз, то есть $\min_j \left\{ 1 - K_{ji} y_i \right\}$. С учетом этого, систему неравенств можно записать следующим образом:
+Левую часть в данных неравенствах можно представить в виде вектора, $i$-ый элемент которого определяется выражением $\mathbf{f}^\top \mathbf{a}_i$, где $\mathbf{a}_i \in {\rm I\!R}^{\left( N_p - 1 \right)}, \, i = 1 \, \ldots \, N_c,$ представляет собой $i$-ый столбец матрицы $\mathbf{A} = \left( 1 - K_{ji} \right), \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c$. Кроме того, $i$-ыe элементы этого вектора, согласно записанной выше системе неравенств, должны быть меньше (или равны) соответствующих значений $\left( 1 - y_i \right)$ и меньше (или равны) соотвутствующих значений $\left( 1 - K_{ji} y_i \right)$ среди всех фаз, за исключением референсной, то есть $j = 1 \, \ldots \, N_p - 1$. Поскольку $i$-ыe элементы этого вектора должны быть меньше (или равны) соответствующих значений $\left( 1 - K_{ji} y_i \right)$ среди всех фаз, следовательно, они должны быть меньше или равны минимальных соответствующих значений среди вседи всех фаз, то есть $\min_j \left\{ 1 - K_{ji} y_i \right\}$. С учетом этого, систему неравенств можно записать следующим образом:
 
 $$ \mathbf{f}^\top \mathbf{a}_i \leq b_i = \min \left\{ 1 - y_i, \, \min_j \left\{ 1 - K_{ji} y_i \right\} \right\}, \; i = 1 \, \ldots \, N_c. $$
 
@@ -171,7 +171,7 @@ $$ \begin{alignat}{1}
 \mathrm{subject\,to} &&& \mathrm{f}^\top \mathrm{a}_i \leq b_i, \, i = 1 \, \ldots \, N_c
 \end{alignat} $$
 
-Стоит отметить, что полученная область допустимых решений, определяемая $\mathbf{f}^\top \mathbf{a}_i \leq b_i, \; i = 1 \, \ldots \, N_c$, меньше области допустимых решений, используемой в работе \[[Leibovici and Nichita, 2008](https://doi.org/10.1016/j.fluid.2008.03.006)\] и определямой условием $t_i \geq 0$.
+Стоит отметить, что полученная область допустимых решений, определяемая $\mathbf{f}^\top \mathbf{a}_i \leq b_i, \; i = 1 \, \ldots \, N_c$, не содержит полюсы ($t_i = 0, \, i = 1 \, \ldots \, N_c$) и меньше области допустимых решений, используемой в работе \[[Leibovici and Nichita, 2008](https://doi.org/10.1016/j.fluid.2008.03.006)\] и определямой условием $t_i \geq 0$.
 
 Прежде чем переходить к формулированию алгоритма, рассмотрим следующий пример.
 
@@ -181,11 +181,11 @@ $$ \begin{alignat}{1}
 
 ``` python
 import numpy as np
-K = np.array([
+Kji = np.array([
     [2.64675, 1.16642, 1.25099E-03],
     [1.83256, 1.64847, 1.08723E-02],
 ]) # K-values
-y = np.array([0.3, 0.4, 0.3]) # Global component composition
+yi = np.array([0.3, 0.4, 0.3]) # Global component composition
 ```
 
 Необходимо отобразить область допустимых решений для задачи оптимизации функции $F \left( \mathbf{f} \right)$.
@@ -214,7 +214,7 @@ f_1 \left( 1 - K_{12} \right) + f_2 \left( 1 - K_{22} \right) \leq b_2, \\
 f_1 \left( 1 - K_{13} \right) + f_2 \left( 1 - K_{23} \right) \leq b_3. \\
 \end{cases} $$
 
-Для рассматриваемого примера значения матрицы $\left( 1 - \mathbf{K} \right)$:
+Для рассматриваемого примера значения матрицы $\mathbf{A} = \left( 1 - \mathbf{K} \right)$:
 
 ```{code-cell} python
 Aji = 1. - Kji
@@ -253,14 +253,14 @@ f2 = (-Aji[0] / Aji[1])[:,None] * f1 + (bi / Aji[1])[:,None]
 Кроме того, вычислим значения функции $F \left( \mathbf{f} \right)$ для рассматриваемой задачи с целью последующего отображения на графике в виде контуров:
 
 ```{code-cell} python
-f1s = np.linspace(-3., 4., 100, endpoint=True)
-f2s = np.linspace(-3., 4., 100, endpoint=True)
-fs = np.dstack(np.meshgrid(f1s, f2s))
-tis = 1. - fs.dot(Aji)
-Fs = - np.log(np.abs(tis)).dot(yi)
+fs1 = np.linspace(-3., 4., 100, endpoint=True)
+fs2 = np.linspace(-3., 4., 100, endpoint=True)
+fssj = np.dstack(np.meshgrid(fs1, fs2))
+tssi = 1. - fssj.dot(Aji)
+Fss = - np.log(np.abs(tssi)).dot(yi)
 ```
 
-Как было отмечено ранее, эта функция характеризуется наличием полюсов, определяемых уравнением $t_i = 0, \, i = 1 \, \ldots \, N_c$$. Получим координаты прямых, представляющих собой эти полюсы:
+Как было отмечено ранее, эта функция характеризуется наличием полюсов, определяемых уравнением $t_i = 0, \, i = 1 \, \ldots \, N_c$. Получим координаты прямых, представляющих собой эти полюсы:
 
 ```{code-cell} python
 p1 = np.array([-3., 4.])
@@ -282,7 +282,7 @@ ax1.plot(p1, p2[0], ls='--', lw=2.5, c='b', zorder=4, label='Полюс #1')
 ax1.plot(p1, p2[1], ls='--', lw=2.5, c='m', zorder=4, label='Полюс #2')
 ax1.plot(p1, p2[2], ls='--', lw=2.5, c='g', zorder=4, label='Полюс #3')
 ax1.plot(0.162565, 0.125678, 'o', mec='r', mfc='r', ms=4., lw=0., zorder=4, label='Решение')
-ax1.contour(fs[:,:,0], fs[:,:,1], Fs, 15, linewidths=0.5, zorder=2)
+ax1.contour(fssj[:,:,0], fssj[:,:,1], Fss, 15, linewidths=0.5, zorder=2)
 ax1.set_xlabel('$f_1$')
 ax1.set_xlim(-3., 4.)
 ax1.set_ylabel('$f_2$')
@@ -290,5 +290,159 @@ ax1.set_ylim(-3., 4.)
 ax1.legend(loc=1, fontsize=9)
 ax1.grid(zorder=1)
 ```
+
+Серый треугольник в центре, ограниченный сплошными прямыми является областью допустимых решений, определяемой выражением $\mathbf{f}^\top \mathbf{a}_i \leq b_i, \, i = 1 \, \ldots \, N_c$, причем эта область не содержит полюсы и несколько меньше области допустимых решений (треугольника), ограниченной пунктирными линиями и определяемой выражением $t_i \geq 0, \, i = 1 \, \ldots \, N_c$.
+
+Рассмотрим одну итерацию оптимизации функции $F \left( \mathbf{f} \right)$ для рассматриваемого примера:
+
+$$ \mathbf{f}_{k+1} = \mathbf{f}_k - \lambda \mathbf{H}^{-1} \nabla F \left( \mathbf{f}_k \right). $$
+
+Пусть длина шага $\lambda = 1$, а значения мольных долей фаз на $k$-й итерации $\mathbf{f}_k$ заданы следующим вектором:
+
+```{code-cell} python
+fjk = np.array([-0.75, 1.35])
+```
+
+В этой точке значение функции $F \left( \mathbf{f}_k \right)$:
+
+```{code-cell} python
+ti = 1. - fjk.dot(Aji)
+F = - np.log(np.abs(ti)).dot(yi)
+F
+```
+
+Определим значения вектора мольных долей фаз на $\left( k + 1 \right)$-й итерации. Для этого вычислим значения градиента минимизируемой функции:
+
+```{code-cell} python
+dFj = Aji.dot(yi / ti)
+dFj
+```
+
+Получим значения гессиана:
+
+```{code-cell} python
+Pji = np.sqrt(yi) / ti * Aji
+Hjl = Pji.dot(Pji.T)
+Hjl
+```
+
+Определим направление оптимизации $\Delta \mathbf{f} = -\mathbf{H}^{-1} \nabla F \left( \mathbf{f}_k \right)$:
+
+```{code-cell} python
+dfj = -np.linalg.inv(Hjl).dot(dFj)
+dfj
+```
+
+Тогда значения мольных долей фаз на $\left( k + 1 \right)$-й итерации:
+
+```{code-cell} python
+fjkp1 = fjk + dfj
+fjkp1
+```
+
+Отобразим эту итерацию графически:
+
+```{code-cell} python
+fig2, ax2 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
+ax2.plot(f1, f2[0], lw=2.5, c='b', zorder=2, label='Ограничение #1')
+ax2.plot(f1, f2[1], lw=2.5, c='m', zorder=2, label='Ограничение #2')
+ax2.plot(f1, f2[2], lw=2.5, c='g', zorder=2, label='Ограничение #3')
+ax2.plot(p1, p2[0], ls='--', lw=2.5, c='b', zorder=2, label='Полюс #1')
+ax2.plot(p1, p2[1], ls='--', lw=2.5, c='m', zorder=2, label='Полюс #2')
+ax2.plot(p1, p2[2], ls='--', lw=2.5, c='g', zorder=2, label='Полюс #3')
+ax2.plot(0.162565, 0.125678, 'o', mec='r', mfc='r', ms=4., lw=0., zorder=4, label='Решение')
+ax2.plot(*fjk, 'o', mec='c', mfc='c', ms=4., lw=0., zorder=4, label='$f_j^k$')
+ax2.plot(*fjkp1, 'o', mec='m', mfc='m', ms=4., lw=0., zorder=4,
+         label=r'$f_j^{k+1}$ $\left(\lambda = 1\right)$')
+ax2.annotate('', fjk, fjkp1, arrowprops=dict(arrowstyle='<-'))
+ax2.set_xlabel('$f_1$')
+ax2.set_xlim(-2., 2.)
+ax2.set_ylabel('$f_2$')
+ax2.set_ylim(-2., 3.)
+ax2.legend(loc=1, fontsize=9)
+ax2.grid(zorder=1)
+```
+
+Из данного графика видно, что при несколько большей длине шага в этом же направлении можно еще лучше приблизиться к искомому решению – минимуму функции $F \left( \mathbf{f} \right)$. Действительно, построим зависимость этой функции от длины шага в выбранном направлении. Зададимся диапазоном значений длины шага:
+
+```{code-cell} python
+lmbds = np.linspace(0., 2., 100, endpoint=True)
+```
+
+Вычислим значения функции $F \left( \mathbf{f} \right)$ для каждой длины шага итерации:
+
+```{code-cell} python
+fsjkp1 = fjk + dfj * lmbds[:,None]
+tsi = 1. - fsjkp1.dot(Aji)
+Fs = - np.log(np.abs(tsi)).dot(yi)
+```
+
+Построим график:
+
+```{code-cell} python
+fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
+ax3.plot(lmbds, Fs, lw=2., c='y', zorder=2)
+ax3.set_xlim(0., 2.)
+ax3.set_xlabel(r'$\lambda$')
+ax3.set_ylim(-0.04, 0.1)
+ax3.set_ylabel(r'$F \left( \lambda \right)$')
+ax3.grid(zorder=1)
+```
+
+Видно, что при $\lambda \approx 1.25$ значения функции меньше всего. Таким образом, ньютоновскую итерацию можно дополнить *процедурой поиска длины шага (line search)*, исходя из условия минимизации искомой функции для заданного направления. При этом, необходимо соблюдать ограничения области допустимых решений. Это позволит, с одной стороны, сократить количество ньютоновских итераций, с другой стороны, поможет избежать "перелета" в тех случаях, когда минимум функции близок к границам области допустимых решений. Получим максимальное значение длины шага. Для этого подставим выражение для мольных долей фаз на $\left( k + 1 \right)$-й итерации $\mathbf{f}_{k+1} = \mathbf{f}_k + \Delta \mathbf{f}$ в систему $N_c$ неравенств, определяющих область допустимых решений:
+
+$$ \begin{align}
+\mathbf{f}_{k+1}^\top \mathbf{a}_i & \leq b_i, \; i = 1 \, \ldots \, N_c, \\
+\left( \mathbf{f}_k + \lambda \Delta \mathbf{f} \right)^\top \mathbf{a}_i & \leq b_i, \; i = 1 \, \ldots \, N_c, \\
+\mathbf{f}_k^\top \mathbf{a}_i + \lambda \Delta \mathbf{f}^\top \mathbf{a}_i & \leq b_i, \; i = 1 \, \ldots \, N_c, \\
+\lambda \Delta \mathbf{f}^\top \mathbf{a}_i & \leq b_i - \mathbf{f}_k^\top \mathbf{a}_i, \; i = 1 \, \ldots \, N_c. \\
+\end{align} $$
+
+С учетом знака $i$-ого значения $\Delta \mathbf{f}^\top \mathbf{a}_i, \, i = 1 \, \ldots \, N_c,$ данная система неравенств преобразуется к системе двойных неравенств, определяющих допустимые значения длины шага, исходя из условий области допустимых решений. Поскольку величина длины шага должна быть больше всех значений $i$, удовлетворяющих условию $\Delta \mathbf{f}^\top \mathbf{a}_i < 0$, то величина длины шага должна быть больше максимального среди всех значений, удовлетворяющих данному условию. Поскольку величина длины шага должна быть меньше всех значений $i$, удовлетворяющих условию $\Delta \mathbf{f}^\top \mathbf{a}_i > 0$, то величина длины шага должна быть меньше минимального среди всех значений, удовлетворяющих данному условию. Иными словами, длина шага итерации находится на следующем отрезке:
+
+$$ \max_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i < 0 \right\} \leq \lambda \leq \min_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i > 0 \right\}. $$
+
+Символ двоеточия в данном выражении заменяет фразу "такие, что" или "удовлетворяющие условию".
+
+Получим минимальное и максимальное значения длины шага для рассматриваемого примера:
+
+```{code-cell} python
+lmbdi = (bi - fjk.dot(Aji)) / (dfj.dot(Aji))
+where_max = dfj.dot(Aji) < 0.
+where_min = np.logical_not(where_max)
+np.max(lmbdi[where_max]), np.min(lmbdi[where_min])
+```
+
+Для минимизации функции $F \left( \lambda \right)$ также можно использовать метод Ньютона:
+
+$$ \lambda_{l+1} = \lambda_l - \frac{F'_\lambda \left( \lambda_l \right)}{F''_{\lambda \lambda} \left( \lambda_l \right)}. $$
+
+Значения первой и второй производных:
+
+Таким образом, сформулируем алгоритм решения системы уравнений Речфорда-Райса.
+
+```{eval-rst}
+.. role:: comment
+    :class: comment
+```
+
+```{admonition} Алгоритм. Решение системы уравнений Речфорда-Райса для многофазных систем
+:class: algorithm
+
+**Дано:** Матрица констант фазового равновесия $\mathbf{K} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}$; вектор компонентного состава системы $\mathbf{y} \in {\rm I\!R}^{N_c}$; вектор начальных приближений мольных долей фаз $\mathbf{f}_0 \in {\rm I\!R}^{N_p - 1}$; максимальное число итераций $N_{iter}$; точность решения уравнения $\epsilon$.
+
+**Определить:** Вектор мольных долей фаз, удовлетворяющий NF-window и являющийся корнем системы уравнений Речфорда-Райса.
+
+**Псевдокод:**  
+$\mathbf{f} := \mathbf{f}_0$ {comment}`# Начальное приближение`  
+$\mathbf{A} := 1 - \mathbf{K}$  
+$\mathbf{t} := 1 - \mathbf{f}^\top \mathbf{A}$  
+$\nabla F := A \left( \mathbf{y} \oslash \mathbf{t} \right)$ {comment}`# Градиент`  
+$\mathbf{P} := A \left( \sqrt{\mathbf{y}} \oslash \mathbf{t} \right)$  
+$\mathbf{H} := \mathbf{P} \mathbf{P}^\top$ {comment}`# Гессиан`  
+$\Delta \mathbf{f} := - \mathbf{H}^{-1} \nabla F$ {comment}`# Направление итерации`  
+&emsp;
+```
+
 
 [Следующий раздел](SEC-5-Equilibrium.md) будет посвящен определению равновесного состояния, проводимому, если в результате [проверки стабильности](SEC-1-Stability.md) рассматриваемое фазовое состояние системы оказалось нестабильным.
