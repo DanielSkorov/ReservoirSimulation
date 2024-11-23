@@ -389,7 +389,7 @@ ax3.set_ylabel(r'$F \left( \lambda \right)$')
 ax3.grid(zorder=1)
 ```
 
-Видно, что при $\lambda \approx 1.25$ значения функции меньше всего. Таким образом, ньютоновскую итерацию можно дополнить *процедурой поиска длины шага (line search)*, исходя из условия минимизации искомой функции для заданного направления. При этом, необходимо соблюдать ограничения области допустимых решений. Это позволит, с одной стороны, сократить количество ньютоновских итераций, с другой стороны, поможет избежать "перелета" в тех случаях, когда минимум функции близок к границам области допустимых решений. Получим максимальное значение длины шага. Для этого подставим выражение для мольных долей фаз на $\left( k + 1 \right)$-й итерации $\mathbf{f}_{k+1} = \mathbf{f}_k + \Delta \mathbf{f}$ в систему $N_c$ неравенств, определяющих область допустимых решений:
+Видно, что при $\lambda \approx 1.25$ значения функции меньше всего. Таким образом, ньютоновскую итерацию можно дополнить *процедурой поиска длины шага (line search)*, исходя из условия минимизации искомой функции для заданного направления. При этом, необходимо соблюдать ограничения области допустимых решений. Это позволит, с одной стороны, сократить количество ньютоновских итераций, с другой, поможет избежать "перелета" в тех случаях, когда минимум функции близок к границам области допустимых решений. Получим максимальное значение длины шага. Для этого подставим выражение для мольных долей фаз на $\left( k + 1 \right)$-й итерации $\mathbf{f}_{k+1} = \mathbf{f}_k + \Delta \mathbf{f}$ в систему $N_c$ неравенств, определяющих область допустимых решений:
 
 $$ \begin{align}
 \mathbf{f}_{k+1}^\top \mathbf{a}_i & \leq b_i, \; i = 1 \, \ldots \, N_c, \\
@@ -417,7 +417,14 @@ np.max(lmbdi[where_max]), np.min(lmbdi[where_min])
 
 $$ \lambda_{l+1} = \lambda_l - \frac{F'_\lambda \left( \lambda_l \right)}{F''_{\lambda \lambda} \left( \lambda_l \right)}. $$
 
-Значения первой и второй производных:
+Значения первой и второй производных получены с использованием [правила нахождения производной сложной функции](https://en.wikipedia.org/wiki/Chain_rule):
+
+$$ \begin{align}
+F'_\lambda &= \nabla F^\top \Delta \mathbf{f}, \\
+F''_{\lambda \lambda} &= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}.
+\end{align} $$
+
+Стоит отметить, что процедура поиска оптимальной длины шага может применяться не на каждой итерации, а только тогда, когда искомое решение находится вблизи границ области допустимых решений, и в процессе приближения к нему есть риск выйти за эти границы. Учитывая выпуклость оптимизируемой функции, для проверки данного случая достаточно вычислить знак производной $F'_\lambda$ для начального приближения $\lambda = 1$. Если $F'_{\lambda=1} < 0$, то в этом, более консервативном, подходе поиск оптимальной длины шага не выполняется, и принимается $\lambda = 1$.
 
 Таким образом, сформулируем алгоритм решения системы уравнений Речфорда-Райса.
 
@@ -434,15 +441,50 @@ $$ \lambda_{l+1} = \lambda_l - \frac{F'_\lambda \left( \lambda_l \right)}{F''_{\
 **Определить:** Вектор мольных долей фаз, удовлетворяющий NF-window и являющийся корнем системы уравнений Речфорда-Райса.
 
 **Псевдокод:**  
-$\mathbf{f} := \mathbf{f}_0$ {comment}`# Начальное приближение`  
+**def** $\,linesearch \left( \Delta \mathbf{f}, \, \nabla F, \, \mathbf{H}, \, \lambda_{max}, \, \lambda_{min} \right) \rightarrow \lambda$ {comment}`# Функция поиска оптимальной длины шага`  
 $\mathbf{A} := 1 - \mathbf{K}$  
+$\mathbf{f} := \mathbf{f}_0$ {comment}`# Начальное приближение`  
 $\mathbf{t} := 1 - \mathbf{f}^\top \mathbf{A}$  
 $\nabla F := A \left( \mathbf{y} \oslash \mathbf{t} \right)$ {comment}`# Градиент`  
 $\mathbf{P} := A \left( \sqrt{\mathbf{y}} \oslash \mathbf{t} \right)$  
 $\mathbf{H} := \mathbf{P} \mathbf{P}^\top$ {comment}`# Гессиан`  
 $\Delta \mathbf{f} := - \mathbf{H}^{-1} \nabla F$ {comment}`# Направление итерации`  
-&emsp;
+$b_i := \min \left\{ 1 - y_i, \, \min_j \left\{ 1 - K_{ji} y_i \right\} \right\}, \, i := 1 \, \ldots \, N_c$  
+$\lambda_{min} := \max_i \left\{ \left( b_i - \mathbf{f}_k^\top \mathbf{a}_i \right) \oslash \left( \Delta \mathbf{f}^\top \mathbf{a}_i \right) \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i < 0 \right\}$ {comment}`# Минимальное значение длины шага`  
+$\lambda_{max} := \min_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i > 0 \right\}$ {comment}`# Максимальное значение длины шага`  
+$\lambda := linesearch \left( \Delta \mathbf{f}, \, \nabla F, \, \mathbf{H}, \, \lambda_{max}, \, \lambda_{min} \right)$ {comment}`# Определение оптимальной длины шага`  
+$k := 1$ {comment}`# Счетчик итерации`  
+**while** $\lVert \nabla F \rVert > \epsilon$ **and** $k < N_{iter}$ **do**  
+&emsp;$\mathbf{f} := \mathbf{f} + \lambda \Delta \mathbf{f}$  
+&emsp;$\mathbf{t} := 1 - \mathbf{f}^\top \mathbf{A}$  
+&emsp;$\nabla F := A \left( \mathbf{y} \oslash \mathbf{t} \right)$ {comment}`# Градиент`  
+&emsp;$\mathbf{P} := A \left( \sqrt{\mathbf{y}} \oslash \mathbf{t} \right)$  
+&emsp;$\mathbf{H} := \mathbf{P} \mathbf{P}^\top$ {comment}`# Гессиан`  
+&emsp;$\Delta \mathbf{f} := - \mathbf{H}^{-1} \nabla F$ {comment}`# Направление итерации`  
+&emsp;$\lambda := linesearch \left( \Delta \mathbf{f}, \, \nabla F, \, \mathbf{H} \right)$ {comment}`# Определение оптимальной длины шага`  
+&emsp;$k := k + 1$ {comment}`# Счетчик итерации`  
 ```
+
+Рассмотрим реализацию данного алгоритма.
+
+```{code-cell} python
+import numpy.typing as npt
+
+def solveNp(
+    Kji: npt.NDArray[np.float64],
+    yi: npt.NDArray[np.float64],
+    fj0: npt.NDArray[np.float64],
+    tol: np.float64 = np.float64(1e-6),
+    Niter: int = 30,
+):
+    Aji = 1. - Kji
+    fjk = fj0
+    ti = 1. - fjk.dot(Aji)
+
+```
+
+
+
 
 
 [Следующий раздел](SEC-5-Equilibrium.md) будет посвящен определению равновесного состояния, проводимому, если в результате [проверки стабильности](SEC-1-Stability.md) рассматриваемое фазовое состояние системы оказалось нестабильным.
