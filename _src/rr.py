@@ -9,6 +9,7 @@ import numpy as np
 from custom_types import (
   ScalarType,
   VectorType,
+  MatrixType,
 )
 
 
@@ -82,7 +83,8 @@ def solve2p_FGH(
   Returns a mole fraction of the non-reference phase in a system.
   """
   logger.debug(
-    'Solving RR-equation using FGH-method\n\tkvi = %s\n\tyi = %s', kvi, yi,
+    'Solving the RR-equation using the FGH-method\n\tkvi = %s\n\tyi = %s',
+    kvi, yi,
   )
   idx = kvi.argsort()[::-1]
   ysi = yi[idx]
@@ -144,7 +146,8 @@ def solve2p_GH(
   Returns a mole fraction of the non-reference phase in a system.
   """
   logger.debug(
-    'Solving RR-equation using GH-method\n\tkvi = %s\n\tyi = %s', kvi, yi,
+    'Solving the RR-equation using the GH-method\n\tkvi = %s\n\tyi = %s',
+    kvi, yi,
   )
   idx = kvi.argsort()[::-1]
   ysi = yi[idx]
@@ -179,3 +182,92 @@ def solve2p_GH(
   logger.debug('Solution:\n\tF = %s\n', F)
   return F
 
+
+# TODO: replace the Newton's optimization in the LS-procedure
+# with the Brent's method
+def solveNp(
+  Kji: MatrixType,
+  yi: VectorType,
+  fj0: VectorType,
+  tol: ScalarType = np.float64(1e-6),
+  Niter: int = 30,
+  tol_ls: ScalarType = np.float64(1e-5),
+  Niter_ls: int = 10,
+):
+  logger.debug(
+    "Solving the system of RR-equations using the Okuno's method"
+    "\n\tkvji = %s\n\tyi = %s",
+    Kji, yi,
+  )
+  Aji = 1. - Kji
+  Bji = np.sqrt(yi) * Aji
+  bi = np.vstack([Kji * yi, yi]).max(axis=0)
+  fjk = fj0
+  ti = 1. - fjk.dot(Aji)
+  gj = Aji.dot(yi / ti)
+  gnorm = np.linalg.norm(gj)
+  if gnorm < tol:
+    return fjk
+  logger.debug(
+    'Iteration #0:\n\tFj = %s\n\tgnorm = %s', fjk, gnorm,
+  )
+  k: int = 1
+  while (gnorm > tol) & (k < Niter):
+    Pji = Bji / ti
+    Hjl = Pji.dot(Pji.T)
+    # TODO: replace with a "solve"-method depending on the number of phases
+    dfj = -np.linalg.inv(Hjl).dot(gj)
+    denom = dfj.dot(Aji)
+    where = denom > 0.
+    lmbdi = ((ti - bi) / denom)[where]
+    idx = np.argmin(lmbdi)
+    lmbdmax = lmbdi[idx]
+    if lmbdmax < 1.:
+      plmbdmax = (ti / denom)[where][idx]
+      lmbdn = lmbdmax / 2.
+      fjkp1 = fjk + lmbdn * dfj
+      ti = 1. - fjkp1.dot(Aji)
+      gj = Aji.dot(yi / ti)
+      dFdlmbd = dfj.dot(gj)
+      n: int = 1
+      logger.debug(
+        '\tLS-Iteration #%s:\n\t\tlmbd = %s\n\t\tdfdlmbd = %s',
+        n, lmbdn, dFdlmbd,
+      )
+      while (np.abs(dFdlmbd) > tol_ls) & (n < Niter_ls):
+        Pji = Bji / ti
+        Hjl = Pji.dot(Pji.T)
+        d2Flmbd2 = dfj.dot(Hjl).dot(dfj)
+        dlmbd = -dFdlmbd / d2Flmbd2
+        lmbdnp1 = lmbdn + dlmbd
+        if lmbdnp1 > plmbdmax:
+          logger.debug(
+            '\tPerform the bisection step: lmbd_np1 = %s > lmbd_max = %s',
+            lmbdnp1, plmbdmax,
+          )
+          lmbdnp1 = (lmbdn + plmbdmax) / 2.
+        elif lmbdnp1 < 0:
+          logger.debug(
+            '\tPerform the bisection step: lmbd_np1 = %s < 0', lmbdnp1,
+          )
+          lmbdnp1 = lmbdn / 2.
+        n += 1
+        lmbdn = lmbdnp1
+        fjkp1 = fjk + lmbdnp1 * dfj
+        ti = 1. - fjkp1.dot(Aji)
+        gj = Aji.dot(yi / ti)
+        dFdlmbd = dfj.dot(gj)
+        logger.debug(
+          '\tLS-Iteration #%s:\n\t\tlmbd = %s\n\t\tdfdlmbd = %s',
+          n, lmbdn, dFdlmbd,
+        )
+      gnorm = np.linalg.norm(gj)
+      fjk = fjkp1
+    else:
+      fjk += dfj
+      ti = 1. - fjk.dot(Aji)
+      gj = Aji.dot(yi / ti)
+      gnorm = np.linalg.norm(gj)
+    logger.debug('Iteration #%s:\n\tFj = %s\n\tgnorm = %s', k, fjk, gnorm)
+    k += 1
+  return fjk
