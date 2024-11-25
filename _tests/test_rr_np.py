@@ -40,11 +40,8 @@ class rr_solveNp(unittest.TestCase):
     ])
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
-    # Niter = 5
     Niter = 6
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -57,9 +54,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 6
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -73,11 +68,8 @@ class rr_solveNp(unittest.TestCase):
     ])
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
-    # Niter = 4
     Niter = 5
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -91,11 +83,8 @@ class rr_solveNp(unittest.TestCase):
     ])
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
-    # Niter = 4
     Niter = 6
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -108,9 +97,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 8
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -125,9 +112,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 4
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -141,11 +126,8 @@ class rr_solveNp(unittest.TestCase):
     ])
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
-    # Niter = 5
     Niter = 7
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -160,9 +142,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 4
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -175,9 +155,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 5
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -190,9 +168,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 5
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -205,9 +181,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.3333, 0.3333])
     tol = np.float64(1e-6)
     Niter = 5
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -223,9 +197,7 @@ class rr_solveNp(unittest.TestCase):
     Fj0 = np.array([0.25, 0.25, 0.25])
     tol = np.float64(1e-6)
     Niter = 6
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
@@ -240,11 +212,8 @@ class rr_solveNp(unittest.TestCase):
     ])
     Fj0 = np.array([0.25, 0.25, 0.25])
     tol = np.float64(1e-6)
-    # Niter = 5
     Niter = 6
-    tol_ls = np.float64(1e-5)
-    Niter_ls = 10
-    Fj = solveNp(kvji, yi, Fj0, tol, Niter, tol_ls, Niter_ls)
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
