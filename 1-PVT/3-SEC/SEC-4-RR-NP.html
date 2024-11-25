@@ -802,6 +802,14 @@ b_3 = \min \left\{ 1 - y_3, \, \min \left\{ 1 - K_{13} y_3, \, 1 - K_{23} y_3 \r
 </div>
 </div>
 </div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="admonition- admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Необходимо отметить, что существуют также безградиентные методы оптимизации функции, которые могут успешно применяться для рассматриваемой задачи. К таковым, например, относится <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.brent.html">метод Брента</a>. Однако зачастую такие методы требуют значительно больше количество итераций для достижения той же точности, что и метод Ньютона.</p>
+<p>Кроме того, для процедуры поиска длины шага нет необходимости с большой точностью определять минимум функции – достаточно найти такое значение <span class="math notranslate nohighlight">\(\lambda\)</span> при котором значение функции на следующей итерации будет достачным для удовлетворения определенных <em>условий</em>. Зачастую такие условия включают условие необходимой степени минимизации функции и условие, не допускающее выполнение слишком малых шагов. К таковым, например, относятся <a class="reference external" href="https://en.wikipedia.org/wiki/Wolfe_conditions">условия Вольфе</a> и <a class="reference external" href="https://en.wikipedia.org/wiki/Backtracking_line_search">условия Голдштейна</a>. Первые чаще применяются при использовании квази-Ньютоновских методов оптимизации, вторые – для метода Ньютона. Стоит отметить, что неточное нахождение длины шага итерации может приводить к увеличению количества ньютоновских итераций основного цикла (однако для рассматриваемой в рамках данного раздела задачи это увеличение составляет всего 1 – 2 ньютоновские итерации). Подробнее процедура поиска длины шага рассматривалась в <a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html"><span class="std std-doc">разделе</span></a>, посвященном методам оптимизации функций.</p>
+</div>
+</aside>
 <p>Для минимизации функции <span class="math notranslate nohighlight">\(F \left( \lambda \right)\)</span> также можно использовать метод Ньютона:</p>
 <div class="math notranslate nohighlight">
 \[ \lambda_{l+1} = \lambda_l - \frac{F'_\lambda \left( \lambda_l \right)}{F''_{\lambda \lambda} \left( \lambda_l \right)}. \]</div>
@@ -811,13 +819,6 @@ b_3 = \min \left\{ 1 - y_3, \, \min \left\{ 1 - K_{13} y_3, \, 1 - K_{23} y_3 \r
 F'_\lambda &amp;= \nabla F^\top \Delta \mathbf{f}, \\
 F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}.
 \end{align} \end{split}\]</div>
-<aside class="margin sidebar">
-<p class="sidebar-title"></p>
-<div class="admonition- admonition">
-<p class="admonition-title">Дополнительно</p>
-<p>Необходимо отметить, что существуют также безградиентные методы оптимизации функции, которые могут успешно применяться для рассматриваемой задачи. К таковым, например, относится <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.brent.html">метод Брента</a>.</p>
-</div>
-</aside>
 <p>Стоит отметить, что выполнение такой процедуры поиска оптимальной длины шага на каждой итерации может быть излишне ресурсоемким, поскольку предполагает итеративное вычисление градиента и гессиана оптимизируемой функции. Поэтому авторы работы [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>] предлагают более консервативное применение процедуры поиска оптимальной длины только в том случае, когда искомое решение находится вблизи границ области допустимых решений, и в процессе приближения к нему есть риск выйти за эти границы. Учитывая выпуклость оптимизируемой функции, для проверки данного случая можно вычислить знак производной <span class="math notranslate nohighlight">\(F'_\lambda\)</span> для начального приближения <span class="math notranslate nohighlight">\(\lambda = 1\)</span>. Если <span class="math notranslate nohighlight">\(F'_{\lambda=1} &gt; 0\)</span> (то есть если функция <span class="math notranslate nohighlight">\(F \left( \lambda \right)\)</span> при <span class="math notranslate nohighlight">\(\lambda = 1\)</span> возрастающая, что возможно в том случае, когда при <span class="math notranslate nohighlight">\(\lambda = 1\)</span> произойдет “перелет”), то осуществляется коррекция длины шага, исходя из условия минимизации. В противном случае, когда <span class="math notranslate nohighlight">\(F'_{\lambda=1} \leq 0\)</span> процедура <em>line search</em> не выполняется, и принимается <span class="math notranslate nohighlight">\(\lambda = 1\)</span>. Однако такая проверка все равно может привести к “перелету” в том случае, когда шаг итерации с длиной <span class="math notranslate nohighlight">\(\lambda = 1\)</span> пересекает полюс функции. Для иллюстрации данного сценария рассмотрим следующий пример [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>].</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
@@ -1032,7 +1033,7 @@ F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}
  <span class="math notranslate nohighlight">\(\mathbf{g} := A \left( \mathbf{y} \oslash \mathbf{t} \right)\)</span> <span class="comment"># Градиент</span><br />
  <span class="math notranslate nohighlight">\(k := k + 1\)</span> <span class="comment"># Счетчик итерации</span></p>
 </div>
-<p>Рассмотрим реализацию данного алгоритма. Процедура поиска оптимальной длины шага выполняется исходя из условия минимизации оптимизируемой функции в заданном направлении методом Ньютона в соответствии с [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>]. Применение безградиентного метода Брента для процедуры <em>line search</em> реализовано <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
+<p>Рассмотрим реализацию данного алгоритма. Процедура поиска оптимальной длины шага выполняется исходя из условия минимизации оптимизируемой функции в заданном направлении методом Ньютона в соответствии с [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>]. Применение процедуры <em>line search</em> методом обратного хода с учетом условий Голдштейна реализовано <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
