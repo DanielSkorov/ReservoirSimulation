@@ -172,7 +172,7 @@ class vdw(object):
     self,
     P: ScalarType,
     T: ScalarType,
-    # level: int,
+    level: int = 0,
   ) -> MatrixType:
     """Computes initial guess of k-values for given pressure `P` and
     temperature `T` using the Wilson's correlation.
@@ -184,6 +184,13 @@ class vdw(object):
 
       T : numpy.float64
         Temperature of a mixture [K].
+
+      level : int
+        Regulates an output of this function. The default is 0, which
+        means that Wilson's and inverse Wilson's equations are used to
+        generate initial k-values. Available options are:
+
+        0 - Wilson's and inverse Wilson's equations.
 
     Returns a matrix containing two vectors of initial k-values
     calculated using the Wilson's correlation and inverse Wilson's
@@ -519,7 +526,8 @@ class pr78(object):
     self,
     P: ScalarType,
     T: ScalarType,
-    # level: int,
+    yi: VectorType,
+    level: int = 0,
   ) -> MatrixType:
     """Computes initial guess of k-values for given pressure `P` and
     temperature `T` using the Wilson's correlation.
@@ -532,12 +540,30 @@ class pr78(object):
       T : numpy.float64
         Temperature of a mixture [K].
 
+      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+        mole fractions of `(Nc,)` components.
+
+      level : int
+        Regulates an output of this function. The default is 0, which
+        means that Wilson's and inverse Wilson's equations are used to
+        generate initial k-values. Available options are:
+
+        0 - Wilson's and inverse Wilson's equations;
+        1 - previous + the first and last pure components.
+
     Returns a matrix containing two vectors of initial k-values
     calculated using the Wilson's correlation and inverse Wilson's
     correlation.
     """
     kvi = self.Pci * np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / T)) / P
-    return np.vstack([kvi, 1. / kvi])
+    if level == 0:
+      return np.vstack([kvi, 1. / kvi])
+    elif level == 1:
+      u1i = np.full_like(yi, 1e-5)
+      u1i[0] = 1. / yi[0]
+      uNi = np.full_like(yi, 1e-5)
+      uNi[-1] = 1. / yi[-1]
+      return np.vstack([uNi, u1i, kvi, 1. / kvi])
 
   @staticmethod
   def solve_eos(

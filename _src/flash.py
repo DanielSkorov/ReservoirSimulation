@@ -173,11 +173,11 @@ class flash2pPT(object):
       lnphivi, Zv = plnphii(yi=yvi)
       gi = np.log(kvik) + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
+      lmbd: np.float64 = np.float64(1.)
       logger.debug(
         'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s\n\tlmbd = %s',
-        0, kvik, gi, Fv, 1.,
+        0, kvik, gi, Fv, lmbd,
       )
-      lmbd = 1.
       while (gnorm > self.tol) & (k < self.Niter):
         dlnkvi = -lmbd * gi
         max_dlnkvi = np.abs(dlnkvi).max()

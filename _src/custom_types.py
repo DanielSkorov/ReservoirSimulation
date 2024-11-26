@@ -49,6 +49,7 @@ class EosptType(Protocol):
     self,
     P: ScalarType,
     T: ScalarType,
-    # level: int,
+    yi: VectorType,
+    level: int,
   ) -> MatrixType: ...
 

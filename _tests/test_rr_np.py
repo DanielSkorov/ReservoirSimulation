@@ -217,6 +217,19 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
+  def test_case_14(self):
+    yi = np.array([0.1, 0.6, 0.3])
+    kvji = np.array([
+      [5.99851495e-07, 8.55110173e-21, 3.06823756e+03],
+      [6.95031119e+00, 7.78822910e-03, 2.29742520e+00],
+    ])
+    Fj0 = np.array([0.29977181, 0.0])
+    tol = np.float64(1e-6)
+    Niter = 0
+    Fj = solveNp(kvji, yi, Fj0, tol, Niter)
+    self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
+    pass
+
 
 if __name__ == '__main__':
   unittest.main()

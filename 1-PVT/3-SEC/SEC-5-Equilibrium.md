@@ -120,14 +120,14 @@ $$ \mathbf{K}_0 = \left\{ y_i \, / \, z_i, \; z_i  \, / \, y_i, \; i = 1 \, \ldo
 
 После определения равновесного состояния для $N_p$-фазной постановки задачи выполняется анализ стабильности системы. Если анализ стабильности показывает, что $N_p$-фазный компонентный состав не является стабильным, то выполняется поиск равновесного состояния для $\left( N_p+1 \right)$-фазной постановки.
 
-Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться [уравнение состояние Пенга-Робинсона](../2-EOS/EOS-2-SRK-PR.md) и его [реализация](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py). Кроме того, для проверки стабильности стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен [ранее](SEC-1-Stability.md), реализованный [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). Также на каждой итерации метода последовательных подстановок необходимо решать [уравнение Речфорда-Райса](SEC-2-RR.md). Для решения уравнения в двухфазной постановке будет использоваться [реализация](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py) [метода FGH](SEC-3-RR-2P.md)
+Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться [уравнение состояние Пенга-Робинсона](../2-EOS/EOS-2-SRK-PR.md) и его [реализация](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py). Кроме того, для проверки стабильности стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен [ранее](SEC-1-Stability.md), реализованный [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). Также на каждой итерации метода последовательных подстановок необходимо решать [уравнение Речфорда-Райса](SEC-2-RR.md). Для решения уравнения в двухфазной постановке будет использоваться [реализация](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py) [метода FGH](SEC-3-RR-2P.md), для решения системы уравнений Речфорда-Райса – модифицированный метод \[[Okuno et al, 2010](https://doi.org/10.2118/117752-PA)\], реализация которого представлена [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py).
 
 ```{code-cell} python
 import sys
 sys.path.append('../../_src/')
 from eos import pr78
 from stability import stabilityPT
-from rr import solve2p_FGH
+from rr import solve2p_FGH, solveNp
 ```
 
 ```{admonition} Пример
@@ -171,7 +171,7 @@ is_stable, kv0, _ = stab.run(P, T, yi, method='qnss')
 print(f'The system is stable: {is_stable}.')
 ```
 
-В результате проверки стабильности (путем вызова метода `run`) однофазное состояние системы оказалось нестабильным. В [разделе](SEC-1-Stability.md), посвященном тесту стабильности, применение метода QNSS для данного примера было представлено подробнее. Также был получен набор начальных приближений для проведения расчета равновесного состояния.
+В результате проверки стабильности (путем вызова метода `run`) однофазное состояние системы оказалось нестабильным. В [разделе](SEC-1-Stability.md), посвященном тесту стабильности, применение метода QNSS для данного примера было представлено подробнее. Также был получен набор начальных приближений для проведения расчета равновесного состояния (принцип получения начальных приближений также подробнее был представлен в [разделе](SEC-1-Stability.md), посвященном проверке стабильности некоторого состояния системы):
 
 ```{code-cell} python
 kv0
@@ -199,53 +199,53 @@ pcondit = partial(condit, tol=eps, Niter=Niter)
 ```{code-cell} python
 from typing import Callable
 
-def update(
+def update_ssi_2p(
     carry: tuple[int, npt.NDArray[np.float64], np.float64, npt.NDArray[np.float64]],
     yi: npt.NDArray[np.float64],
     plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
 ) -> tuple[int, npt.NDArray[np.float64], np.float64, npt.NDArray[np.float64]]:
     k, kvi_k, _, gi_k = carry
     kvi_kp1 = kvi_k * np.exp(-gi_k)
-    Fv = solve2p_FGH(kvi_kp1, yi)
-    yli = yi / (Fv * (kvi_kp1 - 1.) + 1.)
-    yvi = yli * kvi_kp1
-    lnphili = plnphi(yi=yli)
-    lnphivi = plnphi(yi=yvi)
-    gi_kp1 = np.log(kvi_kp1) + lnphivi - lnphili
-    return k + 1, kvi_kp1, Fv, gi_kp1
+    F1 = solve2p_FGH(kvi_kp1, yi)
+    y2i = yi / (F1 * (kvi_kp1 - 1.) + 1.)
+    y1i = y2i * kvi_kp1
+    lnphi2i = plnphi(yi=y2i)
+    lnphi1i = plnphi(yi=y1i)
+    gi_kp1 = np.log(kvi_kp1) + lnphi1i - lnphi2i
+    return k + 1, kvi_kp1, F1, gi_kp1
 
-pupdate = partial(update, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
+pupdate_ssi_2p = partial(update_ssi_2p, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
 ```
 
 Найдем равновесное состояние с использованием метода последовательных подстановок:
 
 ```{code-cell} python
 for i, kvi in enumerate(kv0):
-    Fv = solve2p_FGH(kvi, yi)
-    yli = yi / (Fv * (kvi - 1.) + 1.)
-    yvi = yli * kvi
-    lnphili = pr.get_lnphii(P, T, yli)
-    lnphivi = pr.get_lnphii(P, T, yvi)
-    gi = np.log(kvi) + lnphivi - lnphili
-    carry = (1, kvi, Fv, gi)
+    F1 = solve2p_FGH(kvi, yi)
+    y2i = yi / (F1 * (kvi - 1.) + 1.)
+    y1i = y2i * kvi
+    lnphi2i = pr.get_lnphii(P, T, y2i)
+    lnphi1i = pr.get_lnphii(P, T, y1i)
+    gi = np.log(kvi) + lnphi1i - lnphi2i
+    carry = (1, kvi, F1, gi)
     while pcondit(carry):
-        carry = pupdate(carry)
-    k, kvi, Fv, gi = carry
+        carry = pupdate_ssi_2p(carry)
+    k, kvi, F1, gi = carry
     if k < Niter:
-        yli = yi / (Fv * (kvi - 1.) + 1.)
-        yvi = yli * kvi
+        y2i = yi / (F1 * (kvi - 1.) + 1.)
+        y1i = y2i * kvi
         print(f'For the initial guess #{i}:')
         print(f'\ttolerance of equations: {np.linalg.norm(gi)}')
         print(f'\tnumber of iterations: {k}')
-        print(f'\tphase compositions:\n\t\t{yvi}\n\t\t{yli}')
-        print(f'\tphase mole fractions: {Fv}, {1.-Fv}')
+        print(f'\tphase compositions:\n\t\t{y1i}\n\t\t{y2i}')
+        print(f'\tphase mole fractions: {F1}, {1.-F1}')
         break
 ```
 
 Выполним проверку стабильности найденного решения:
 
 ```{code-cell} python
-is_stable = stab.run(P, T, yvi, method='qnss')[0]
+is_stable = stab.run(P, T, y1i, method='qnss')[0]
 print(f'The system is stable: {is_stable}.')
 ```
 
@@ -262,7 +262,7 @@ Gj = np.sum(yji * lnfji, axis=1)
 Уравнение касательной:
 
 ```{code-cell} python
-lnfi = pr.get_lnfi(P, T, yvi)
+lnfi = pr.get_lnfi(P, T, y1i)
 Lj = np.sum(yji * lnfi, axis=1)
 ```
 
@@ -284,10 +284,10 @@ axins1 = ax1.inset_axes([0.04, 0.05, 0.5, 0.89], xlim=(0.65, 0.975), ylim=(14.5,
 ax1.indicate_inset_zoom(axins1, edgecolor='black')
 axins1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная энергия Гиббса')
 axins1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
-axins1.plot(yvi[0], yvi.dot(lnfi), 'o', lw=0., mfc='blue', mec='blue', ms=5., zorder=3)
-axins1.plot(yli[0], yli.dot(lnfi), 'o', lw=0., mfc='green', mec='green', ms=5., zorder=3)
-axins1.plot([yvi[0], yvi[0]], [0., yvi.dot(lnfi)], '--', lw=1., c='blue', zorder=2)
-axins1.plot([yli[0], yli[0]], [0., yli.dot(lnfi)], '--', lw=1., c='green', zorder=2)
+axins1.plot(y1i[0], y1i.dot(lnfi), 'o', lw=0., mfc='blue', mec='blue', ms=5., zorder=3)
+axins1.plot(y2i[0], y2i.dot(lnfi), 'o', lw=0., mfc='green', mec='green', ms=5., zorder=3)
+axins1.plot([y1i[0], y1i[0]], [0., y1i.dot(lnfi)], '--', lw=1., c='blue', zorder=2)
+axins1.plot([y2i[0], y2i[0]], [0., y2i.dot(lnfi)], '--', lw=1., c='green', zorder=2)
 axins1.text(0.8, 14.55, '$y_{CO_2} = 0.818$', fontsize=8, color='blue', rotation='vertical')
 axins1.text(0.9, 14.55, '$y_{CO_2} = 0.918$', fontsize=8, color='green', rotation='vertical')
 axins1.set_xticks([0.8])
@@ -304,9 +304,175 @@ axins1.grid(zorder=1)
 
 ```{admonition} Пример
 :class: exercise
-Пусть имеется $1 \; моль$ смеси из метана, гексана и воды при температуре $20 \; ^{\circ} C$ и давлении $1 \; атм$ с мольными долями компонентов $0.3, \, 0.4, \, 0.3$ соответственно. Необходимо определить равновесное состояние системы.
+Пусть имеется $1 \; моль$ смеси из метана, гексана и воды при температуре $20 \; ^{\circ} C$ и давлении $1 \; атм$ с мольными долями компонентов $0.1, \, 0.6, \, 0.3$ соответственно. Необходимо определить равновесное состояние системы.
 ```
 
+Зададим исходные термобарические условия и компонентный состав.
+
+```{code-cell} python
+P = np.float64(101325.) # Pressure [Pa]
+T = np.float64(20. + 273.15) # Temperature [K]
+yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
+```
+
+Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.
+
+```{code-cell} python
+Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6 # Critical pressures [Pa]
+Tci = np.array([190.6, 507.5, 647.3]) # Critical temperatures [K]
+wi = np.array([.008, .27504, .344]) # Acentric factors
+mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
+vsi = np.array([0., 0., 0.]) # Volume shift parameters
+dij = np.array([.0253, 0.4907, 0.48]) # Binary interaction parameters
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+```
+
+Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния:
+
+```{code-cell} python
+stab = stabilityPT(pr, level=1) # level=1 means more cases in a set of initial k-values
+is_stable, kv0, _ = stab.run(P, T, yi, method='qnss')
+print(f'The system is stable: {is_stable}.')
+```
+
+Однофазное состояние оказалось нестабильным, выполним расчет двухфазного равновесного состояния. Для этого сначала проинициализируем функцию `update_ssi_2p` для рассматриваемого примера. Поскольку точность расчета и максимальное количество итераций не изменилось, то будем использовать функцию `pcondit` из предыдущего примера:
+
+```{code-cell} python
+pupdate_ssi_2p = partial(update_ssi_2p, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
+```
+
+Перебирая различные начальные приближения констант фазового равновесия, полученные после проверки стабильности однофазного состояния, выполним расчет равновесного состояния в двухфазной постановке:
+
+```{code-cell} python
+for i, kvi in enumerate(kv0):
+    F1 = solve2p_FGH(kvi, yi)
+    y2i = yi / (F1 * (kvi - 1.) + 1.)
+    y1i = y2i * kvi
+    lnphi2i = pr.get_lnphii(P, T, y2i)
+    lnphi1i = pr.get_lnphii(P, T, y1i)
+    gi = np.log(kvi) + lnphi1i - lnphi2i
+    carry = (1, kvi, F1, gi)
+    while pcondit(carry):
+        carry = pupdate_ssi_2p(carry)
+    k, kvi, F1, gi = carry
+    if k < Niter:
+        y2i = yi / (F1 * (kvi - 1.) + 1.)
+        y1i = y2i * kvi
+        print(f'For the initial guess #{i}:')
+        print(f'\ttolerance of equations: {np.linalg.norm(gi)}')
+        print(f'\tnumber of iterations: {k}')
+        print(f'\tphase compositions:\n\t\t{y1i}\n\t\t{y2i}')
+        print(f'\tphase mole fractions: {F1}, {1.-F1}')
+        break
+```
+
+Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за пять итераций. Проверим, является ли двухфазное состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
+
+```{code-cell} python
+is_stable, kv0, _ = stab.run(P, T, y2i, method='qnss')
+print(f'The system is stable: {is_stable}.')
+```
+
+По результатам проверки стабильности двухфазное равновесное состояние оказалось нестабильным, следовательно, необходимо выполнить расчет для трехфазного равновесного состояния. Остановимся подробнее на задании начального приближения для многофазного расчета равновесного состояния. Результатом двухфазного расчета равновесного состояния является некоторое состояние системы, характеризующиеся равенством летучестей соответствующих компонентов, компонентными составами фаз $y^1_i$ и $y^2_i$, мольными долями фаз $F_1$ и $F_2$, а также константами фазого равновесия $K_i^{12} = y^1_i \, / \, y^2_i$. Затем был проведен тест стабильности компонентного состава $y^2_i$, показавший его нестабильность, в ходе которого удалось подобрать некоторую мнимую фазу *(trial phase)* с компонентным составом $x_i$ и константами фазового равновесия $K_i^{t2} = x_i \, / \, y^2_i$, также находящуюся в термодинамическом равновесии. Таким образом, набор констант фазового равновесия $\mathbf{K} = \left\{ K_i^{12}, \, K_i^{t2} \right\}$ является хорошим начальным приближением для расчета трехфазного равновесного состояния, согласно \[[Li and Firoozabadi, 2012](https://doi.org/10.1016/j.fluid.2012.06.021)\]. При этом, начальное приближение необходимо и для [алгоритма](SEC-4-RR-NP.md) решения системы уравнений Речфорда-Райса, в качестве которого может выступить вектор $\mathbf{F} = \left( F_1, \, 0 \right)$, поскольку мнимая фаза характеризуется пренебрежимо малой мольной долей.
+
+С учетом изложенного выше, сформируем матрицу констант фазового равновесия для первой итерации расчета трехфазного равновесного состояния:
+
+```{code-cell} python
+kvji = np.vstack([kvi, kv0[0]])
+kvji
+```
+
+Определим мольные доли фаз, соответствующие этому начальному приближению:
+
+```{code-cell} python
+Fj = solveNp(kvji, yi, np.array([F1, 0.]))
+Fj
+```
+
+Рассчитаем компонентные составы фаз:
+
+```{code-cell} python
+xi = yi / (Fj.dot(kvji - 1.) + 1.)
+yji = xi * kvji
+```
+Выполним расчет коэффициентов летучестей для каждого компонента в каждой из фаз. Для этого воспользуемся методом `get_lnphiji_Zj` класса `pr`:
+
+```{code-cell} python
+lnphiji, Zj = pr.get_lnphiji_Zj(P, T, np.vstack([yji, xi]))
+```
+
+Рассчитаем матрицу невязок:
+
+```{code-cell} python
+gji = np.log(kvji) + lnphiji[:-1] - lnphiji[-1]
+```
+
+Создадим функцию, которая будет получать на вход результаты предыдущей итерации и возвращать результаты следующей итерации метода последовательных подстановок:
+
+```{code-cell} python
+def update_ssi_Np(
+    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]],
+    yi: npt.NDArray[np.float64],
+    plnphi: Callable[[npt.NDArray[np.float64]], tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]],
+) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    k, kvji_k, Fj0, gji_k = carry
+    kvji_kp1 = kvji_k * np.exp(-gji_k)
+    Fj = solveNp(kvji_kp1, yi, Fj0)
+    xi = yi / (Fj.dot(kvji_kp1 - 1.) + 1.)
+    yji = xi * kvji_kp1
+    lnphiji, Zj = plnphi(yji=np.vstack([yji, xi]))
+    gji_kp1 = np.log(kvji_kp1) + lnphiji[:-1] - lnphiji[-1]
+    return k + 1, kvji_kp1, Fj, gji_kp1
+
+pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.get_lnphiji_Zj, P=P, T=T))
+```
+
+В цикле `while` выполним расчет трехфазного равновесного состояния:
+
+```{code-cell} python
+carry = (1, kvji, Fj, gji)
+
+while pcondit(carry):
+    carry = pupdate_ssi_Np(carry)
+
+k, kvji, Fj, gji = carry
+
+xi = yi / (Fj.dot(kvji - 1.) + 1.)
+yji = np.vstack([xi * kvji, xi])
+Fj = np.hstack([Fj, 1. - Fj.sum()])
+
+print(f'Tolerance of equations: {np.linalg.norm(gji)}')
+print(f'Number of iterations: {k}')
+print(f'Phase compositions:\n{yji}')
+print(f'Phase mole fractions: {Fj}')
+```
+
+Выполним проверку стабильности компонентного состава одной из фаз:
+
+```{code-cell} python
+is_stable, kv0, _ = stab.run(P, T, yji[1], method='qnss')
+print(f'The system is stable: {is_stable}.')
+```
+
+Таким образом, на представленных примерах было продемонстрировано применение метода последовательных подстановок для нахождения двух- и трехфазного равновесного состояния. Как уже было отмечено ранее, недостатком этого метода является сравнительно большое количество итераций и медленная сходимость для некоторых случаев. Для ускорения могут применяться различные модификации данного метода, а также квази-ньютоновские методы, например, *Accelerated Succesive Substitution* \[[Mehra et al, 1983](https://doi.org/10.1002/cjce.5450610414)\], *QNSS* \[[Nghiem and Li, 1984](https://doi.org/10.1016/0378-3812(84)80013-8)\], *BFGS* \[[Nichita and Petitfrere](https://doi.org/10.1016/j.fluid.2015.07.035)\] и другие. Стоит отметить, что в упомянутых работах эти методы представлены для двухфазных систем, однако могут быть распространены и на многофазные системы.
+
+Так, например, метод *Accelerated Succesive Substitution* предполагает введение коэффициента *длины шага итерации*, обозначенного в представленном выше алгоритме, как $\lambda$, и его расчет с использованием следующего выражения:
+
+$$ \lambda_{k} = \lambda_{k-1} \frac{\mathbf{g}_{k-1}^\top \mathbf{g}_{k-1}}{\mathbf{g}_{k-1}^\top \left( \mathbf{g}_{k-1} - \mathbf{g}_k \right)}, $$
+
+а итерация записывается следующим образом:
+
+$$ \ln \mathbf{k}_{k+1} = \ln \mathbf{k}_k - \lambda_k \mathbf{g}_k. $$
+
+В методе *Quasi-Newton Succesive Substitution* также вводится коэффициент длины шага итерации, но рассчитывается с использованием несколько другого выражения:
+
+$$ \lambda_{k} = -\lambda_{k-1} \frac{\Delta \ln \mathbf{k}_{k-1}^\top \mathbf{g}_{k-1}}{\Delta \ln \mathbf{k}_{k-1}^\top \left( \mathbf{g}_k - \mathbf{g}_{k-1} \right)}. $$
+
+Итерация записывается аналогичным образом. Стоит отметить, что в обоих случаях предполагается выполнение первой итерации с использованием метода последовательных подстановок, то есть $\lambda_0 = 1$. Оба метода могут быть распространены для многофазных систем. В этом случае, например, вектор $\mathbf{g}$ записывается следующим образом:
+
+$$ \mathbf{g} = \begin{bmatrix} \ln k_1^{1N_p} + \ln \phi_1^1 - \ln \phi_1^{N_p} \\ \ln k_2^{1N_p} + \ln \phi_2^1 - \ln \phi_2^{N_p} \\ \vdots \\ \ln k_{N_c}^{1N_p} + \ln \phi_{N_c}^1 - \ln \phi_{N_c}^{N_p} \\ \ln k_1^{2N_p} + \ln \phi_1^2 - \ln \phi_1^{N_p} \\ \ln k_2^{2N_p} + \ln \phi_2^2 - \ln \phi_2^{N_p} \\ \vdots \\ \ln k_{N_c}^{2N_p} + \ln \phi_{N_c}^2 - \ln \phi_{N_c}^{N_p} \\ \vdots \\ \ln k_{N_c}^{N_p-1,N_p} + \ln \phi_{N_c}^{N_p-1} - \ln \phi_{N_c}^{N_p} \end{bmatrix}. $$
+
+Работа \[[Nichita and Petitfrere](https://doi.org/10.1016/j.fluid.2015.07.035)\] посвящена применению [метода *BFGS*](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm), рассматриваемого ранее в [разделе](../../0-Math/1-OM/OM-0-Introduction.md), посвященном методам оптимизации функции.
 
 (pvt-esc-equilibrium-vt)=
 ## VT-термодинамика

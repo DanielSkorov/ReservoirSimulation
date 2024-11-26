@@ -612,7 +612,7 @@ $k := 1$ {comment}`# Счетчик итерации`
 &emsp;$\Delta \mathbf{f} := - \mathbf{H}^{-1} \nabla F$ {comment}`# Направление итерации`  
 &emsp;$\lambda_{max} := \min_i \left\{ \left( b_i - \mathbf{f}^\top \mathbf{a}_i \right) \oslash \left( \Delta \mathbf{f}^\top \mathbf{a}_i \right) \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i > 0 \right\}$ {comment}`# Максимальное значение шага итерации`  
 &emsp;**if** $\lambda_{max} < 1$ **then** {comment}`# Проверка выхода за пределы области допустимых решений`  
-&emsp;&emsp;$\lambda := linesearch \left( \mathbf{f}, \, \Delta \mathbf{f}, \, \mathbf{g}, \, \mathbf{H}, \, \lambda_{max} \right)$ {comment}`# Определение оптимальной длины шага`  
+&emsp;&emsp;$\lambda := linesearch \left( \mathbf{f}, \, \Delta \mathbf{f}, \, \mathbf{g}, \, \mathbf{H}, \, \lambda_{max} \right)$ {comment}`# Определение длины шага`  
 &emsp;**else**  
 &emsp;&emsp;$\lambda := 1$  
 &emsp;**end if**  

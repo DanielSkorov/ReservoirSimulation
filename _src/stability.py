@@ -39,6 +39,12 @@ class stabilityPT(object):
   eps : numpy.float64
     The system will be considered unstable when `TPD < -eps`.
     The default value is `eps = 1e-4`.
+
+  level : int
+    Regulates a set of initial k-values obtained by the method
+    `eos.get_kvguess(P, T, yi, level)`. The default is 0, which means
+    that the most simple approache are used to generate initial k-values
+    for the stability test.
   """
   def __init__(
     self,
@@ -46,11 +52,13 @@ class stabilityPT(object):
     tol: ScalarType = np.float64(1e-6),
     Niter: int = 50,
     eps: ScalarType = np.float64(1e-4),
+    level: int = 0,
   ) -> None:
     self.eos = eos
     self.eps = -eps
     self.tol = tol
     self.Niter = Niter
+    self.level = level
     pass
 
   def run(
@@ -137,7 +145,7 @@ class stabilityPT(object):
       '\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
       P, T, yi,
     )
-    kvji = self.eos.get_kvguess(P, T)
+    kvji = self.eos.get_kvguess(P, T, yi, self.level)
     lnphii, Z = self.eos.get_lnphii_Z(P, T, yi)
     hi = lnphii + np.log(yi)
     plnphii = partial(self.eos.get_lnphii, P=P, T=T)
@@ -181,8 +189,9 @@ class stabilityPT(object):
         logger.debug('TPD = %s\n\tThe system is unstable.\n', TPD)
         n = ni.sum()
         xi = ni / n
-        eta = (1. - self.eps) / n
-        kv0_flash = np.vstack([xi / yi, yi / xi]) * eta
+        # eta = (1. - self.eps) / n
+        # kv0_flash = np.vstack([xi / yi, yi / xi]) * eta
+        kv0_flash = np.vstack([xi / yi, yi / xi])
         return False, kv0_flash, Z
     else:
       logger.debug('TPD = %s\n\tThe system is stable.\n', TPD)
