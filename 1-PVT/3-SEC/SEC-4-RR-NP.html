@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
@@ -189,6 +189,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-9-Decomposition.html">Разложение матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html">Решение систем линейных уравнений</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-11-ConditionNumber.html">Число обусловленности</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-12-Preconditioner.html">Предобуславливание</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
@@ -1024,7 +1028,7 @@ F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}
  <span class="math notranslate nohighlight">\(\Delta \mathbf{f} := - \mathbf{H}^{-1} \nabla F\)</span> <span class="comment"># Направление итерации</span><br />
  <span class="math notranslate nohighlight">\(\lambda_{max} := \min_i \left\{ \left( b_i - \mathbf{f}^\top \mathbf{a}_i \right) \oslash \left( \Delta \mathbf{f}^\top \mathbf{a}_i \right) \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i &gt; 0 \right\}\)</span> <span class="comment"># Максимальное значение шага итерации</span><br />
  <strong>if</strong> <span class="math notranslate nohighlight">\(\lambda_{max} &lt; 1\)</span> <strong>then</strong> <span class="comment"># Проверка выхода за пределы области допустимых решений</span><br />
-  <span class="math notranslate nohighlight">\(\lambda := linesearch \left( \mathbf{f}, \, \Delta \mathbf{f}, \, \mathbf{g}, \, \mathbf{H}, \, \lambda_{max} \right)\)</span> <span class="comment"># Определение оптимальной длины шага</span><br />
+  <span class="math notranslate nohighlight">\(\lambda := linesearch \left( \mathbf{f}, \, \Delta \mathbf{f}, \, \mathbf{g}, \, \mathbf{H}, \, \lambda_{max} \right)\)</span> <span class="comment"># Определение длины шага</span><br />
  <strong>else</strong><br />
   <span class="math notranslate nohighlight">\(\lambda := 1\)</span><br />
  <strong>end if</strong><br />

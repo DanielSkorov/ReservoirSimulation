@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Определение критического состояния системы &#8212; Основы моделирования пластовых систем</title>
+    <title>Число обусловленности &#8212; Основы моделирования пластовых систем</title>
   
   
   
@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
@@ -58,12 +58,12 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-7-Criticality';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0-Math/0-LAB/LAB-11-ConditionNumber';</script>
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Моделирование лабораторных исследований" href="../4-LAB/LAB-0-Introduction.html" />
-    <link rel="prev" title="Определение насыщенного состояния системы" href="SEC-6-Saturation.html" />
+    <link rel="next" title="Предобуславливание" href="LAB-12-Preconditioner.html" />
+    <link rel="prev" title="Решение систем линейных уравнений" href="LAB-10-LinearSystems.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -176,65 +176,65 @@
             </li>
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Основы вычислительной математики</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../0-Math/Math-Introduction.html">Введение</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../0-Math/0-LAB/LAB-0-Introduction.html">Основы линейной алгебры</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-1-Vectors.html">Вектор. Координаты вектора</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-2-VectorOperations.html">Операции с векторами</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-4-Matrices.html">Матрицы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-9-Decomposition.html">Разложение матриц</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html">Решение систем линейных уравнений</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-11-ConditionNumber.html">Число обусловленности</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-12-Preconditioner.html">Предобуславливание</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../Math-Introduction.html">Введение</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="LAB-0-Introduction.html">Основы линейной алгебры</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="LAB-1-Vectors.html">Вектор. Координаты вектора</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-2-VectorOperations.html">Операции с векторами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-4-Matrices.html">Матрицы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-9-Decomposition.html">Разложение матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-10-LinearSystems.html">Решение систем линейных уравнений</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Число обусловленности</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-12-Preconditioner.html">Предобуславливание</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1-OM/OM-0-Introduction.html">Методы оптимизации функций</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">PVT-моделирование</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../PVT-Introduction.html">Введение</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../1-TD/TD-0-Introduction.html">Основы термодинамики</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-1-Basics.html">Введение в термодинамику</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-4-HeatCapacity.html">Теплоемкость</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-5-Enthalpy.html">Энтальпия</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-7-ChemicalPotential.html">Химический потенциал</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../1-TD/TD-15-Fugacity.html">Летучесть</a></li>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../1-PVT/PVT-Introduction.html">Введение</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/1-TD/TD-0-Introduction.html">Основы термодинамики</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-1-Basics.html">Введение в термодинамику</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-2-ThermalEquilibrium.html">Термическое равновесие. Температура. Нулевое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-3-Heat-Work.html">Количество теплоты и работа. Первое начало термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-4-HeatCapacity.html">Теплоемкость</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-5-Enthalpy.html">Энтальпия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-6-Entropy.html">Энтропия. Второе и третье начала термодинамики</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-7-ChemicalPotential.html">Химический потенциал</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-8-Helmholtz-Gibbs.html">Энергия Гельмгольца. Энергия Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-9-Observables.html">Интенсивные и экстенсивные параметры</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-10-MixtureGibbsEnergy.html">Энергия Гиббса многокомпонентной системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-11-GibbsPhaseRule.html">Правило фаз Гиббса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-12-GibbsDuhemEquation.html">Уравнение Гиббса-Дюгема</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-13-MaxwellRelations.html">Соотношения Максвелла</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-14-PhaseEquilibrium.html">Свободная энергия и фазовое равновесие</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/1-TD/TD-15-Fugacity.html">Летучесть</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../2-EOS/EOS-0-Introduction.html">Уравнения состояния</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-1-VanDerWaals.html">Уравнение состояния Ван-дер-Ваальса</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-0-Introduction.html">Уравнения состояния</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-1-VanDerWaals.html">Уравнение состояния Ван-дер-Ваальса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-2-SRK-PR.html">Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-2-RR.html">Уравнение Речфорда-Райса</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-3-RR-2P.html">Уравнение Речфорда-Райса для двухфазных систем</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-4-RR-NP.html">Уравнение Речфорда-Райса для многофазных систем</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-5-Equilibrium.html">Определение равновесного состояния системы</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SEC-6-Saturation.html">Определение насыщенного состояния системы</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Определение критического состояния системы</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-1-Stability.html">Определение стабильности фазового состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-2-RR.html">Уравнение Речфорда-Райса</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-3-RR-2P.html">Уравнение Речфорда-Райса для двухфазных систем</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-4-RR-NP.html">Уравнение Речфорда-Райса для многофазных систем</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-5-Equilibrium.html">Определение равновесного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-6-Saturation.html">Определение насыщенного состояния системы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../1-PVT/3-SEC/SEC-7-Criticality.html">Определение критического состояния системы</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../1-PVT/4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
 </ul>
 
     </div>
@@ -289,7 +289,7 @@
       
       
       
-      <li><a href="../../_sources/1-PVT/3-SEC/SEC-7-Criticality.md" target="_blank"
+      <li><a href="../../_sources/0-Math/0-LAB/LAB-11-ConditionNumber.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -371,7 +371,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Определение критического состояния системы</h1>
+    <h1>Число обусловленности</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -385,8 +385,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-criticality">
-<span id="id1"></span><h1>Определение критического состояния системы<a class="headerlink" href="#pvt-esc-criticality" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="math-lab-conditionnumber">
+<span id="id1"></span><h1>Число обусловленности<a class="headerlink" href="#math-lab-conditionnumber" title="Link to this heading">#</a></h1>
 </section>
 
     <script type="text/x-thebe-config">
@@ -402,7 +402,7 @@ document.write(`
         },
         kernelOptions: {
             name: "python3",
-            path: "./1-PVT\3-SEC"
+            path: "./0-Math\0-LAB"
         },
         predefinedOutput: true
     }
@@ -420,20 +420,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="SEC-6-Saturation.html"
+       href="LAB-10-LinearSystems.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Определение насыщенного состояния системы</p>
+        <p class="prev-next-title">Решение систем линейных уравнений</p>
       </div>
     </a>
     <a class="right-next"
-       href="../4-LAB/LAB-0-Introduction.html"
+       href="LAB-12-Preconditioner.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Моделирование лабораторных исследований</p>
+        <p class="prev-next-title">Предобуславливание</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
