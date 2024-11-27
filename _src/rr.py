@@ -198,7 +198,7 @@ def solveNp(
 ):
   """Solves the system of Rachford-Rice equations
 
-  Implemntation of Okuno's method for solving systems of Rachford-Rice
+  Implementation of Okuno's method for solving systems of Rachford-Rice
   equations. This method is based on Newton's method for optimization
   and the backtracking line search technique to prevent leaving
   the feasible region. For the details see 10.2118/117752-PA.

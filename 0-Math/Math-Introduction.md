@@ -25,5 +25,9 @@ kernelspec:
     * [Матричные уравнения](./0-LAB/LAB-6-MatrixEquation.md)
     * [Собственный вектор](./0-LAB/LAB-7-Eigenvalues-Eigenvectors.md)
     * [Линейные преобразования](./0-LAB/LAB-8-LinearTransformations.md)
+    * [Разложение матриц](./0-LAB/LAB-9-Decomposition.md)
+    * [Решение систем линейных уравнений](./0-LAB/LAB-10-LinearSystems.md)
+    * [Число обусловленности](./0-LAB/LAB-11-ConditionNumber.md)
+    * [Предобуславливание](./0-LAB/LAB-12-Preconditioner.md)
 * ***[Методы оптимизации функций](./1-OM/OM-0-Introduction.md)***
 

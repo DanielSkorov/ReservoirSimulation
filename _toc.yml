@@ -15,6 +15,10 @@ parts:
           - file: 0-Math/0-LAB/LAB-6-MatrixEquation
           - file: 0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors
           - file: 0-Math/0-LAB/LAB-8-LinearTransformations
+          - file: 0-Math/0-LAB/LAB-9-Decomposition
+          - file: 0-Math/0-LAB/LAB-10-LinearSystems
+          - file: 0-Math/0-LAB/LAB-11-ConditionNumber
+          - file: 0-Math/0-LAB/LAB-12-Preconditioner
       - file: 0-Math/1-OM/OM-0-Introduction
   - caption: "PVT-моделирование"
     chapters:
