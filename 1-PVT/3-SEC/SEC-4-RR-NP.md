@@ -108,7 +108,7 @@ F \left( \mathbf{f} \right)
 ```{admonition} Доказательство
 :class: proof
 
-Для того чтобы доказать, что функция от нескольких переменных является выпуклой, [необходимо](https://en.wikipedia.org/wiki/Convex_function#Functions_of_several_variables) доказать, что ее гессиан является [положительно полуопределенной матрицей](https://en.wikipedia.org/wiki/Definite_matrix). Матрица является положительно полуопределенной, если все ее [собственные значения](../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.md) неотрицательны, что [равносильно](../../0-Math/1-OM/OM-0-Introduction.md) следующему неравенству:
+Для того чтобы доказать, что функция от нескольких переменных является выпуклой, [необходимо](https://en.wikipedia.org/wiki/Convex_function#Functions_of_several_variables) доказать, что ее гессиан является [положительно полуопределенной матрицей](https://en.wikipedia.org/wiki/Definite_matrix). Матрица является [положительно полуопределенной](../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.md), если все ее [собственные значения](../../0-Math/0-LAB/LAB-6-Eigenvalues-Eigenvectors.md) неотрицательны, что [равносильно](../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.md) следующему неравенству:
 
 $$ \mathbf{x}^\top \mathbf{H} \mathbf{x} \geq 0, \; \forall \, \mathbf{x} \in {\rm I\!R}^{\left( N_p - 1 \right)}. $$
 
