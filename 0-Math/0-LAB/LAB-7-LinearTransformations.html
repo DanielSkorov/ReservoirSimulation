@@ -60,12 +60,12 @@
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '0-Math/0-LAB/LAB-8-LinearTransformations';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0-Math/0-LAB/LAB-7-LinearTransformations';</script>
     <script src="../../_static/custom.js?v=ebf3e302"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Разложение матриц" href="LAB-9-Decomposition.html" />
-    <link rel="prev" title="Собственные векторы и значения матриц" href="LAB-7-Eigenvalues-Eigenvectors.html" />
+    <link rel="next" title="Определенность матриц" href="LAB-8-MatrixDefiniteness.html" />
+    <link rel="prev" title="Собственные векторы и значения матриц" href="LAB-6-Eigenvalues-Eigenvectors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -186,9 +186,9 @@
 <li class="toctree-l2"><a class="reference internal" href="LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="LAB-4-Matrices.html">Матрицы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
-<li class="toctree-l2"><a class="reference internal" href="LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
-<li class="toctree-l2"><a class="reference internal" href="LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-6-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Линейные преобразования</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LAB-8-MatrixDefiniteness.html">Определенность матриц</a></li>
 <li class="toctree-l2"><a class="reference internal" href="LAB-9-Decomposition.html">Разложение матриц</a></li>
 <li class="toctree-l2"><a class="reference internal" href="LAB-10-LinearSystems.html">Решение систем линейных уравнений</a></li>
 <li class="toctree-l2"><a class="reference internal" href="LAB-11-ConditionNumber.html">Число обусловленности</a></li>
@@ -291,7 +291,7 @@
       
       
       
-      <li><a href="../../_sources/0-Math/0-LAB/LAB-8-LinearTransformations.md" target="_blank"
+      <li><a href="../../_sources/0-Math/0-LAB/LAB-7-LinearTransformations.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -592,7 +592,7 @@ document.write(`
 <p>Тогда:</p>
 <div class="math notranslate nohighlight">
 \[ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i}. \]</div>
-<p>По <a class="reference internal" href="LAB-7-Eigenvalues-Eigenvectors.html#math-lab-eigen"><span class="std std-ref">определению собственного вектора матрицы</span></a> данное выражение преобразуется в:</p>
+<p>По <a class="reference internal" href="LAB-6-Eigenvalues-Eigenvectors.html#math-lab-eigen"><span class="std std-ref">определению собственного вектора матрицы</span></a> данное выражение преобразуется в:</p>
 <div class="math notranslate nohighlight">
 \[ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i}= \mathbf{C} \lambda_i \mathbf{v_i}. \]</div>
 <p>С учетом того, что <span class="math notranslate nohighlight">\(\mathbf{e_i} = \mathbf{C} \mathbf{v_i}\)</span>, получим:</p>
@@ -678,7 +678,7 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="LAB-7-Eigenvalues-Eigenvectors.html"
+       href="LAB-6-Eigenvalues-Eigenvectors.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
@@ -687,11 +687,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="LAB-9-Decomposition.html"
+       href="LAB-8-MatrixDefiniteness.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Разложение матриц</p>
+        <p class="prev-next-title">Определенность матриц</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

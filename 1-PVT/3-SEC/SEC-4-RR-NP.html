@@ -186,9 +186,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-3-RotationAngles.html">Направляющие косинусы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-4-Matrices.html">Матрицы</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-5-Determinant-InverseMatrix.html">Определитель матрицы. Обратная матрица</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-6-MatrixEquation.html">Матричные уравнения</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-8-LinearTransformations.html">Линейные преобразования</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-6-Eigenvalues-Eigenvectors.html">Собственные векторы и значения матриц</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-7-LinearTransformations.html">Линейные преобразования</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.html">Определенность матриц</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-9-Decomposition.html">Разложение матриц</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html">Решение систем линейных уравнений</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../0-Math/0-LAB/LAB-11-ConditionNumber.html">Число обусловленности</a></li>
@@ -462,7 +462,7 @@ F \left( \mathbf{f} \right)
 </aside>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
-<p>Для того чтобы доказать, что функция от нескольких переменных является выпуклой, <a class="reference external" href="https://en.wikipedia.org/wiki/Convex_function#Functions_of_several_variables">необходимо</a> доказать, что ее гессиан является <a class="reference external" href="https://en.wikipedia.org/wiki/Definite_matrix">положительно полуопределенной матрицей</a>. Матрица является положительно полуопределенной, если все ее <a class="reference internal" href="../../0-Math/0-LAB/LAB-7-Eigenvalues-Eigenvectors.html"><span class="std std-doc">собственные значения</span></a> неотрицательны, что <a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html"><span class="std std-doc">равносильно</span></a> следующему неравенству:</p>
+<p>Для того чтобы доказать, что функция от нескольких переменных является выпуклой, <a class="reference external" href="https://en.wikipedia.org/wiki/Convex_function#Functions_of_several_variables">необходимо</a> доказать, что ее гессиан является <a class="reference external" href="https://en.wikipedia.org/wiki/Definite_matrix">положительно полуопределенной матрицей</a>. Матрица является <a class="reference internal" href="../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.html"><span class="std std-doc">положительно полуопределенной</span></a>, если все ее <a class="reference internal" href="../../0-Math/0-LAB/LAB-6-Eigenvalues-Eigenvectors.html"><span class="std std-doc">собственные значения</span></a> неотрицательны, что <a class="reference internal" href="../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.html"><span class="std std-doc">равносильно</span></a> следующему неравенству:</p>
 <div class="math notranslate nohighlight">
 \[ \mathbf{x}^\top \mathbf{H} \mathbf{x} \geq 0, \; \forall \, \mathbf{x} \in {\rm I\!R}^{\left( N_p - 1 \right)}. \]</div>
 <p>Для доказательства данного неравенства для гессиана полученной ранее функции преобразуем выражение для элемента матрицы гессиана к следующему виду:</p>

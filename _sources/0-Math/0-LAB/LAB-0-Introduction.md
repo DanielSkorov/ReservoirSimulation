@@ -24,14 +24,16 @@ The main thing that I know from my experience of teaching [this class](https://y
 
 В данном разделе будут использоваться стандартные библиотеки [*numpy*](https://numpy.org) для проведения операций над векторами и матрицами, а также [*matplotlib*](https://matplotlib.org) для построения графиков и отображения информации.
 
-При составлении данного раздела использовалась информация, изложенная в курсе линейной алгебры от [Khan Academy](https://www.youtube.com/playlist?list=PLFD0EB975BA0CC1E0).
-
 **Содержание:**
 * [Вектор. Координаты вектора](LAB-1-Vectors.md)
 * [Операции с векторами](LAB-2-VectorOperations.md)
 * [Направляющие косинусы](LAB-3-RotationAngles.md)
 * [Матрицы](LAB-4-Matrices.md)
 * [Определитель матрицы. Обратная матрица](LAB-5-Determinant-InverseMatrix.md)
-* [Матричные уравнения](LAB-6-MatrixEquation.md)
-* [Собственные векторы и значения матриц](LAB-7-Eigenvalues-Eigenvectors.md)
-* [Линейные преобразования](LAB-8-LinearTransformations.md)
+* [Собственные векторы и значения матриц](LAB-6-Eigenvalues-Eigenvectors.md)
+* [Линейные преобразования](LAB-7-LinearTransformations.md)
+* [Определенность матриц](LAB-8-MatrixDefiniteness.md)
+* [Разложение матриц](LAB-9-Decomposition.md)
+* [Решение систем линейных уравнений](LAB-10-LinearSystems.md)
+* [Число обусловленности](LAB-11-ConditionNumber.md)
+* [Предобуславливание](LAB-12-Preconditioner.md)

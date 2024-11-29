@@ -15,11 +15,10 @@ kernelspec:
 :tags: ['remove-input']
 
 import numpy as np
-from sympy import Matrix, Symbol
 ```
 
-(math-lab-matrixeq)=
-# Матричные уравнения
+(math-lab-linearsystems)=
+# Решение систем линейных уравнений
 
 Допустим, имеется следующая система линейных уравнений:
 

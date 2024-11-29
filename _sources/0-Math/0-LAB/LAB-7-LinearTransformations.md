@@ -279,7 +279,7 @@ $$ \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{v_i}. $$
 
 $$ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i}. $$
 
-По [определению собственного вектора матрицы](LAB-7-Eigenvalues-Eigenvectors.md#math-lab-eigen) данное выражение преобразуется в:
+По [определению собственного вектора матрицы](LAB-6-Eigenvalues-Eigenvectors.md#math-lab-eigen) данное выражение преобразуется в:
 
 $$ \mathbf{D} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{C}^{-1} \mathbf{e_i} = \mathbf{C} \mathbf{A} \mathbf{v_i}= \mathbf{C} \lambda_i \mathbf{v_i}. $$
 
