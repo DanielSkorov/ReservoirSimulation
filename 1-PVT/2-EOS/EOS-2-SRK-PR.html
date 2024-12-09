@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,7 +61,7 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/2-EOS/EOS-2-SRK-PR';</script>
-    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Кубическое уравнение состояние с учетом ассоциации молекул" href="EOS-3-CPA.html" />
@@ -224,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
 <li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
 <li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-C-HV.html">Правило смешивания Хьюрона-Видаля</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -237,6 +238,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5-ETC/ETC-0-Introduction.html">Применение PVT-моделирования для решения практических задач проектирования месторождений углеводородов</a></li>
 </ul>
 
     </div>
@@ -424,6 +426,13 @@ document.write(`
 Начнем с нахождения логарифма коэффициента летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента. Для этого преобразуем полученное <a class="reference internal" href="../1-TD/TD-15-Fugacity.html#pvt-td-fugacity-PT"><span class="std std-ref">ранее</span></a> выражение следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ \ln \phi_i = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln Z = \frac{\partial}{\partial n_i} \left( \int_V^\infty \left( \frac{P}{RT} - \frac{n}{V} \right) dV \right)_{V, T, n_{j \neq i}} - \ln Z. \]</div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="admonition- admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона, как и ранее уравнение состояния Ван-дер-Ваальса, позволяют явно выразить давление через известные объем <span class="math notranslate nohighlight">\(V\)</span> и температуру <span class="math notranslate nohighlight">\(P\)</span>, то есть являются <em>pressure-explicit</em>. Однако на практике в гидродинамическом моделировании чаще всего известными являются давление <span class="math notranslate nohighlight">\(P\)</span> и температура <span class="math notranslate nohighlight">\(T\)</span>.</p>
+</div>
+</aside>
 <p>Запишем рассматриваемые уравнения состояния относительно давления:</p>
 <div class="math notranslate nohighlight">
 \[ P = \frac{RT}{v - b_m} - \frac{\alpha_m}{v^2 + \left( c + 1 \right) b_m v - c b_m^2} = \frac{n R T}{V - n b_m} - \frac{\alpha_m n^2}{V^2 + \left( c + 1 \right) b_m n V - c b_m^2 n^2}. \]</div>

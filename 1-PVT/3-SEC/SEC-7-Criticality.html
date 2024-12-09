@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -58,8 +58,10 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-7-Criticality';</script>
-    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Моделирование лабораторных исследований" href="../4-LAB/LAB-0-Introduction.html" />
@@ -222,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-C-HV.html">Правило смешивания Хьюрона-Видаля</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -235,6 +238,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5-ETC/ETC-0-Introduction.html">Применение PVT-моделирования для решения практических задач проектирования месторождений углеводородов</a></li>
 </ul>
 
     </div>
@@ -387,6 +391,712 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-criticality">
 <span id="id1"></span><h1>Определение критического состояния системы<a class="headerlink" href="#pvt-esc-criticality" title="Link to this heading">#</a></h1>
+<p>Предыдущие разделы были посвящены различным задачам многофазной многокомпонентной термодинамики, а именно вопросам <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">стабильности</span></a> фазового состояния, расчету <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">равновесного</span></a> состояния, а также методам определения <a class="reference internal" href="SEC-6-Saturation.html"><span class="std std-doc">предельно насыщенных</span></a> состояний. Данный раздел является заключительным среди разделов, посвященных теоретическим аспектам PVT-моделирования. Он будет затрагивать методологические и алгоритмические аспекты нахождения критического состояния многокомпонентной системы.</p>
+<p>Данная заключительная проблема, как и все предыдущие, достаточно хорошо изучена на теоретическом и практическом уровнях. Впервые термодинамические условия существования критического состояния были получены <a class="reference external" href="https://en.wikisource.org/wiki/Page%3AScientific_Papers_of_Josiah_Willard_Gibbs.djvu/165">Гиббсом</a>. Среди последующих работ, посвященных численным методам определения критического состояния многокомпонентной системы, необходимо отметить следующие [<a class="reference external" href="https://doi.org/10.1002/aic.690230202">Peng and Robinson, 1977</a>, <a class="reference external" href="https://doi.org/10.1002/aic.690260510">Heidemann and Khalil, 1980</a>, <a class="reference external" href="https://doi.org/10.1016/0378-3812(80)80001-X">Michelsen, 1980</a>, <a class="reference external" href="https://doi.org/10.1002/aic.690270326">Michelsen and Heidemann, 1981</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(84)85021-9">Michelsen, 1984</a>].</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="admonition- admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Под критической состоянием понимается такое состояние системы, где исчезает различие между двумя фазами. Для однокомпонентных систем такое состояние представляет собой точку, то есть, согласно <a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html"><span class="std std-doc">правилу фаз Гиббса</span></a>, необходимо знать два параметра (например, давление и температуру), чтобы определить критическое состояние такой системы. Для двухкомпонентной системы количество степеней свободы будет равно трем, то есть такая система будет характеризоваться линией из критических состояний, каждое из которых соответствует своему компонентному составу, ограниченной с двух концов критическими точками чистых компонентов.</p>
+</div>
+</aside>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p>Под <em><strong>критическим состоянием</strong></em> многокомпонентной системы заданного состава понимается такое состояние, при котором этот состав и находящаяся с ним в равновесии фаза(ы) характеризуются одинаковыми компонентными составами и плотностями.</p>
+</div>
+<p>Однако, прежде чем переходить к рассмотрению алгоритма определения критического состояния многокомпонентной системы, необходимо сформулировать условия нахождения системы в критическом состоянии. Сразу отметим, что предположительно известные читателям выражения:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+T_c &amp;= \sum_{i=1}^{N_c} {T_c}_i, \\
+P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i, \; i = 1 \, \ldots \, N_c,
+\end{align} \end{split}\]</div>
+<p>где <span class="math notranslate nohighlight">\({T_c}_i, \, {P_c}_i\)</span> – критические свойства компонентов, представляют собой способ вычисления <em>псевдокритических</em> температуры и давления многокомпонентной системы, при которых система, на самом деле, может находиться в многофазном состоянии. Рассмотрим следующий пример.</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана и диоксида углерода с мольной долей метана <span class="math notranslate nohighlight">\(0.1\)</span>. Необходимо определить состояние системы при псевдокритических давлении и температуре.</p>
+</div>
+<p>Для решения данной задачи будем использовать <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализацию</a>. Кроме того, для проверки стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Для расчета <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">равновесного состояния</span></a> – также метод QNSS и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">реализацию</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../_src/&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">eos</span> <span class="kn">import</span> <span class="n">pr78</span>
+<span class="kn">from</span> <span class="nn">stability</span> <span class="kn">import</span> <span class="n">stabilityPT</span>
+<span class="kn">from</span> <span class="nn">flash</span> <span class="kn">import</span> <span class="n">flash2pPT</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Универсальная газовая постоянная:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">8.3144598</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Зададим свойства компонентов и инициализируем класс с уравнением состояния:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Pci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">7.37646e6</span><span class="p">,</span> <span class="mf">4.600155e6</span><span class="p">])</span> <span class="c1"># Critical pressures [Pa]</span>
+<span class="n">Tci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">304.2</span><span class="p">,</span> <span class="mf">190.6</span><span class="p">])</span> <span class="c1"># Critical temperatures [K]</span>
+<span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.225</span><span class="p">,</span> <span class="mf">.008</span><span class="p">])</span> <span class="c1"># Acentric factors</span>
+<span class="n">mwi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.04401</span><span class="p">,</span> <span class="mf">0.016043</span><span class="p">])</span> <span class="c1"># Molar mass [kg/gmole]</span>
+<span class="n">vsi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span> <span class="c1"># Volume shift parameters</span>
+<span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.025</span><span class="p">])</span> <span class="c1"># Binary interaction parameters</span>
+<span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Зададим компонентный состав и выполним расчет псевдокритических давления и температуры:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Pci</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Tci</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Pcmix = </span><span class="si">{</span><span class="n">P</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">}</span><span class="s1"> MPa, Tcmix = </span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">273.15</span><span class="si">}</span><span class="s1"> C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Pcmix = 7.0988295 MPa, Tcmix = 19.689999999999998 C
+</pre></div>
+</div>
+</div>
+</div>
+<p>Выполним проверку стабильности равновесного состояния:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
+<span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: False.
+</pre></div>
+</div>
+</div>
+</div>
+<p>Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
+<span class="n">Fj</span><span class="p">,</span> <span class="n">yji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">flash</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">vj</span> <span class="o">=</span> <span class="n">Zj</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">P</span>
+<span class="n">denj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mwi</span><span class="p">)</span> <span class="o">/</span> <span class="n">vj</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Phase mole fractions: </span><span class="si">{</span><span class="n">Fj</span><span class="si">}</span><span class="se">\n</span><span class="s1">Compositions:</span><span class="se">\n</span><span class="si">{</span><span class="n">yji</span><span class="si">}</span><span class="se">\n</span><span class="s1">Phase densities: </span><span class="si">{</span><span class="n">denj</span><span class="si">}</span><span class="s1"> kg/m3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase mole fractions: [0.42996619 0.57003381]
+Compositions:
+[[0.87389624 0.12610376]
+ [0.9196896  0.0803104 ]]
+Phase densities: [267.51409751 575.9898083 ] kg/m3
+</pre></div>
+</div>
+</div>
+</div>
+<p>Таким образом, при псевдокритических давлении и температуре рассматриваемая система представляет собой двухфазную систему, следовательно, эти термобарические условия не соответствуют определению критического состояния системы.</p>
+<p>Рассмотрим следующий пример. Пусть имеется вода при атмосферном давлении и температуре, например, <span class="math notranslate nohighlight">\(80 \, ^{\circ} C\)</span>. Если мы будем изобарно подводить к такой системе тепло, то мы ожидаем, что в определенный момент, а именно при температуре <span class="math notranslate nohighlight">\(100 \, ^{\circ} C\)</span>, начнется процесс фазового перехода – парообразование. Однако если бы мы могли подавить все центры нуклеации, то вполне можно было бы нагревать сплошную жидкую фазу и несколько выше температуры кипения. Такое состояние системы при температуре, превышающей, но близкой к температуре кипения, можно назвать перегретой жидкостью и является <em>метастабильным</em>.</p>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p><em><strong>Метастабильным состоянием</strong></em> системы называется состояние, являющееся устойчивым по отношению к небольшим возмущениям, но при достаточно больших изменениях термодинамических параметров нарушается, что сопровождается фазовым переходом в абсолютно стабильное состояние, характеризующееся глобальным минимумом <a class="reference external" href="https://en.wikipedia.org/wiki/Thermodynamic_potential">термодинамического потенциала</a>.</p>
+</div>
+<p>При дальнейшем увеличении температуры все легче было бы появляться центрам нуклеации и начаться процессу самопроизвольного фазового перехода. Существование метастабильных состояний было экспериментально подтверждено в 19 веке. Однако существуют границы существования метастабильного состояния, определяемые, с одной стороны, линией двухфазной области <em>(бинодалью)</em>, с другой – линией нестабильной области <em>(спинодалью)</em>. На рисунке ниже представлена <span class="math notranslate nohighlight">\(Pv\)</span>-диаграмма метана, построенная с использованием <a class="reference internal" href="../2-EOS/EOS-1-VanDerWaals.html"><span class="std std-doc">уравнения состояния Ван-дер-Ваальса</span></a>.</p>
+<div class="cell tag_remove-input docutils container">
+<div class="cell_output docutils container">
+<img alt="../../_images/cc3bf8e7ccb6522a8873423186d3514be725eee693599437ec6a211a61b9455d.png" src="../../_images/cc3bf8e7ccb6522a8873423186d3514be725eee693599437ec6a211a61b9455d.png" />
+</div>
+</div>
+<p>На данной диаграмме можно выделить несколько регионов (при рассмотрении слева направо). Слева от линии насыщения и до критического объема – область стабильной жидкой фазы. Между линией насыщения и спинодалью находится область перегретой жидкости, представляющей собой метастабильное состояние. Область, ограниченная спинодалью, является нестабильной <em>(нефизичной)</em> областью, что обуславливается отрицательной изотермической сжимаемостью в данном регионе (то есть с увеличением давления происходит увеличение молярного объема <span class="math notranslate nohighlight">\(\left( \frac{\partial P}{\partial v} \right)_{T,n} &gt; 0\)</span>). Затем от линии спинодали и до линии конденсации находится область переохлажденного газа, которая также является метастабильной. Наконец, от линии конденсации начинается область стабильной газовой фазы. При этом линия спинодали определеяется условием <span class="math notranslate nohighlight">\(\left( \frac{\partial P}{\partial v} \right)_{T,n} = 0\)</span>. Напомним, что линия бинодали является геометрическим местом точек с <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html"><span class="std std-doc">равными химическими потенциалами фаз</span></a>, иными словами, определяется выражением <span class="math notranslate nohighlight">\(\mu \left( v_l, \, T \right) = \mu \left( v_v, \, T \right)\)</span>. Другим подходом к расчету значений молярных объемов жидкой и газовой фаз на линиях насыщения и конденсации соответственно является <a class="reference external" href="https://en.wikipedia.org/wiki/Maxwell_construction">правило Максвелла</a>, устанавливающее равенство между площадьми под и над горизонтальной прямой, соединяемой эти значения.</p>
+<p>Проанализируем, зависимость потенциальной энергии на примере энергии Гельмгольца от молярного объема:</p>
+<div class="cell tag_remove-input docutils container">
+<div class="cell_output docutils container">
+<img alt="../../_images/08c90dba2aa8b02681340459fd4a89e1de421f8340c2ec4287bdad0dc2c58e94.png" src="../../_images/08c90dba2aa8b02681340459fd4a89e1de421f8340c2ec4287bdad0dc2c58e94.png" />
+</div>
+</div>
+<p>Касательная, проведенная к функции энергии Гельмгольца в точках насыщения и конденсации, по сути, показывает значения термодинамического потенциала в случае двухфазной формулировки. Напомним, поскольку энергия Гельмгольца является <a class="reference internal" href="../1-TD/TD-9-Observables.html"><span class="std std-doc">экстенсивным параметром</span></a>, то для многофазной системы значение термодинамического потенциала определяется средневзвешиванием на мольные доли фаз <span class="math notranslate nohighlight">\(f_j, \, j = 1 \, \ldots \, N_p,\)</span> то есть <span class="math notranslate nohighlight">\(\bar{F} = \sum_j \bar{F}_j f_j\)</span>. Таким образом, для двухфазной формулировки рассматриваемой системы значение термодинамического потенциала характеризуется меньшим значением, чем в однофазной формулировке, поэтому на данном отрезке двухфазное состояние является абсолютно стабильным состоянием.</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="admonition- admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Стоит отметить, что если критическая точка соответствует состоянию системы, при котором исчезает различие между двумя фазами, то существует такое состояние, называемое <a class="reference external" href="https://en.wikipedia.org/wiki/Tricritical_point"><em>трикритическим</em></a>, при котором исчезает различие между тремя фазами. Согласно <a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html"><span class="std std-doc">правилу фаз Гиббса</span></a>, трикритическое состояние возможно только для систем с количеством компонентов больше двух. Численные алгоритмы определения таких состояний не будут рассматриваться в рамках данного раздела. Подробнее с ними можно ознакомиться в работах [<a class="reference external" href="https://doi.org/10.1016/0378-3812(88)80003-7">Michelsen and Heidemann, 1988</a>; <a class="reference external" href="https://doi.org/10.1002/aic.690390714">Kohse and Heidemann, 1993</a>].</p>
+</div>
+</aside>
+<p><a class="reference internal" href="../1-TD/TD-11-GibbsPhaseRule.html"><span class="std std-doc">Правило фаз Гиббса</span></a> позволяет установить, какое количество соотношений (равное количеству степеней свободы) необходимо для однозначного определения критической точки. Так, например, однокомпонентная система в критической точке, где исчезает различие между фазами, иными словами, система становится однофазной, характеризуется двумя степенями свободы, то есть положение критической точки определяется двумя соотношениями. Для многокомпонентной системы с заданными <span class="math notranslate nohighlight">\(N_c  - 1\)</span> мольными долями компонентов также необходимо два соотношения для однозначного определения критической точки. Поскольку критическая точка принадлежит спинодали, то есть соответствует ее уравнению, то уравнение для спинодали является одним из необходимых соотношений для определения критической точки. Подробнее остановимся на получении данных соотношений для многокомпонентных систем.</p>
+<p>Рассмотрим функцию термодинамического потенциала (в данном случае будем рассматривать на примере энергии Гельмгольца, однако использование других потенциальных энергий, например, <a class="reference internal" href="../1-TD/TD-3-Heat-Work.html"><span class="std std-doc">внутренней энергии</span></a> или <a class="reference internal" href="../1-TD/TD-8-Helmholtz-Gibbs.html#pvt-td-helmholtzgibbs-gibbs"><span class="std std-ref">энергии Гиббса</span></a> также допустимо). Для каждой из фаз многокомпонентной системы энергию Гельмгольца <span class="math notranslate nohighlight">\(F\)</span> можно представить как функцию от параметров (объема <span class="math notranslate nohighlight">\(V\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span>, количества вещества компонентов <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c - 1,\)</span> а также количества вещества фазы <span class="math notranslate nohighlight">\(n\)</span>) каждой из фаз соответственно:</p>
+<div class="math notranslate nohighlight">
+\[ F = F \left( V, \, T, \, n_1, \, n_2, \, \ldots \, n_{N_c-1}, \, n \right). \]</div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="admonition- admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Допущение об отсутствии зависимости термодинамического потенциала от размеров системы не является универсальным и перестает работать для мелкодисперсных систем, где играет существенную роль поверхностное натяжение, или, наоборот, для массивных тел (например, звезд), при рассмотрении которых необходимо учитывать влияние гравитации.</p>
+</div>
+</aside>
+<p>Допуская, что стабильность каждой из фаз является внутренним свойством самой фазы, то есть принимая отсутствие зависимости термодинамических потенциалов от количества вещества системы, дифференциал энергии Гельмгольца записывается следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+dF
+&amp;= \frac{\partial F}{\partial V} \mathrm{d} V + \frac{\partial F}{\partial T} \mathrm{d} T + \sum_{i=1}^{N_c-1} \frac{\partial F}{\partial n_i} \mathrm{d} n_i \\
+&amp;= -P \mathrm{d} V - S \mathrm{d} T + \sum_{i=1}^{N_c-1} \mu_i \mathrm{d} n_i \\
+&amp;= \sum_{k=1}^r p_k \zeta_k.
+\end{align} \end{split}\]</div>
+<p>Обозначим вектором <span class="math notranslate nohighlight">\(\mathbf{x} = \left( V, \, T, \, n_1, \, n_2, \, \ldots \, n_{N_c-1} \right)^\top\)</span> набор независимых термодинамических параметров, а вектором <span class="math notranslate nohighlight">\(\mathbf{p} = \left( -P, \, -S, \, \mu_1, \, \mu_2, \, \ldots \, \mu_{N_c-1} \right)^\top\)</span> – набор коэффициентов перед их дифференциалами в представленном выше выражении, равные частным производным термодинамического потенциала по соответствующим параметрам. Причем <span class="math notranslate nohighlight">\(\mathbf{x} \in {\rm I\!R}^r, \, \mathbf{p} \in {\rm I\!R}^r, \, r = N_c + 1\)</span>. Тогда <span class="math notranslate nohighlight">\(\zeta_i = \delta x_i\)</span> будем называть мнимым изменением <em>(virtual displacement)</em> <span class="math notranslate nohighlight">\(i\)</span>-го термодинамического параметра системы.</p>
+<p>Здесь также необходимо пояснить, что под <em>мнимым изменением</em> термодинамического параметра понимается его изменение в <em><strong>мнимом процессе</strong></em>. Грубо говоря, под равновесным состоянием системы можно понимать такое состояние, при котором с этой системой ничего не происходит. При этом, в процессе достижения такого состояния, <em>релаксации</em>, энтропия достигает своего максимума, то есть изменение энтропии положительно <span class="math notranslate nohighlight">\(\Delta S &gt; 0\)</span>. Для мнимных процессов характерно <span class="math notranslate nohighlight">\(\Delta S &lt; 0\)</span>. Иными словами, под мнимым изменением <span class="math notranslate nohighlight">\(i\)</span>-го термодинамического параметра <span class="math notranslate nohighlight">\(\delta x_i\)</span> понимается локальные и произвольные его вариации (флуктуации), не приводящие к формированию нового равновесного состояния. Например, зафиксировав количество вещества (массу) изолированной системы, мы можем допустить наличие локальной произвольной вариации концентрации компонентов различной молекулярной массы (плотности), например, вследствие стохастического движения молекул.</p>
+<p>Пусть рассматриваемая многофазная и многокомпонентная система является изолированной и находится в равновесном состоянии. Тогда все мнимые процессы, протекающие в системе, должны характеризоваться отрицательным изменением энтропии (положительным изменением термодинамических потенциалов). Следовательно, энергия Гельмгольца в окрестности равновесного состояния может быть разложена в <a class="reference external" href="https://en.wikipedia.org/wiki/Taylor_series">ряд Тейлора</a>:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}
+\Delta F
+&amp;= \delta F + \frac{1}{2} \delta^2 F + \frac{1}{6} \delta^3 F + \ldots,
+\end{align} \]</div>
+<p>где:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\delta F &amp;= \sum_{k=1}^r \frac{\partial F}{\partial x_k} \delta x_k = \sum_{k=1}^r p_k \zeta_k, \\
+\delta^2 F &amp;= \sum_{k=1}^r \sum_{l=1}^r \frac{\partial^2 F}{\partial x_k \partial x_l} \delta x_k \delta x_l = \sum_{k=1}^r \sum_{l=1}^r p_{kl} \zeta_k \zeta_l, \\
+\delta^3 F &amp;= \sum_{k=1}^r \sum_{l=1}^r \sum_{m=1}^r \frac{\partial^3 F}{\partial x_k \partial x_l \partial x_m} \delta x_k \delta x_l \delta x_m = \sum_{k=1}^r \sum_{l=1}^r \sum_{m=1}^r p_{klm} \zeta_k \zeta_l \zeta_m.
+\end{align} \end{split}\]</div>
+<p>Поскольку рассматривается мнимый процесс для системы в равновесии, то <span class="math notranslate nohighlight">\(\delta F = 0\)</span> является <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">необходимым условием</span></a> нахождения системы в равновесном состоянии. Тогда в общей сложности необходимыми и достаточными условиями для описания мнимых процессов <span class="math notranslate nohighlight">\(\left( \Delta F &gt; 0 \right)\)</span> в равновесной системе являются:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\delta F &amp;= 0 &amp;&amp; \mathrm{and} \\
+\delta^2 F &amp; &gt; 0 &amp;&amp; \mathrm{but \, if} = 0, \, \mathrm{then} \\
+\delta^3 F &amp; &gt; 0 &amp;&amp; \mathrm{but \, if} = 0, \, \mathrm{then} \, \ldots \; \mathrm{until} \, \delta^m F &gt; 0.
+\end{align} \end{split}\]</div>
+<p>Кроме того, принцип изолированности рассматриваемой системы можно сформулировать в виде следующих выражений (на примере двухфазной постановки):</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
+\delta x_k^{\left( 1 \right)} + \delta x_k^{\left( 2 \right)} &amp;= 0, \\
+\zeta_k^{\left( 1 \right)} + \zeta_k^{\left( 2 \right)} &amp;= 0, \, k = 1 \, \ldots \, r.
+\end{align} \end{split}\]</div>
+<p>Подробнее остановимся на первых двух слагаемых в разложении функции энергии Гельмгольца. Квадратратичный элемент представленного выше разложения является доминирующим, принимая во внимание природу малых <em>мнимых</em> изменений термодинамических параметров. При этом, одним из сформулированных выше условий для описания мнимого процесса является:</p>
+<div class="math notranslate nohighlight">
+\[ \delta^2 F &gt; 0 \Leftrightarrow \sum_{k=1}^r \sum_{l=1}^r \frac{\partial^2 F}{\partial x_k \partial x_l} \delta x_k \delta x_l &gt; 0 \Leftrightarrow \mathbf{\zeta}^\top \mathbf{Q} \mathbf{\zeta} &gt; 0, \]</div>
+<p>где <span class="math notranslate nohighlight">\(\mathbf{Q} \in {\rm I\!R}^{r \times r}\)</span> представляет собой матрицу вторых частных производных термодинамического потенциала по независимым параметрам системы, а вектор <span class="math notranslate nohighlight">\(\mathbf{\zeta} \in {\rm I\!R}^r\)</span> представляет собой вектор мнимых изменений термодинамических параметров, удовлетворяющих условию изолированности. Следовательно, матрица <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> является <a class="reference internal" href="#../../0-Math/LAB-8-MatrixDefiniteness.md"><span class="xref myst">положительно определенной матрицей</span></a>, то есть наименьшее ее собственное значение должно быть положительным:</p>
+<div class="math notranslate nohighlight">
+\[ \lambda_{min} &gt; 0. \]</div>
+<p>Поскольку определитель матрицы <a class="reference external" href="https://en.wikipedia.org/wiki/Determinant#Eigenvalues_and_characteristic_polynomial">равен</a> произведению собственных значений, то граница метастабильной области (спинодаль) определяется следующим выражением:</p>
+<div class="math notranslate nohighlight">
+\[ \det \left( \mathbf{Q} \right) = 0. \]</div>
+<p>Равенство нулю определителя матрицы <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> означает, что такая матрица является <a class="reference external" href="https://en.wikipedia.org/wiki/Invertible_matrix#Properties"><em>вырожденной</em></a> (строки или столбцы такой матрицы линейно зависимы). Одним из свойств вырожденных матриц является наличие нетривиального <span class="math notranslate nohighlight">\(\left( \mathbf{\zeta} \neq 0 \right)\)</span> решения уравнения <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0\)</span>. Кроме того, поскольку <span class="math notranslate nohighlight">\(\lambda_{min} = 0\)</span>, то <a class="reference external" href="https://en.wikipedia.org/wiki/Rank_(linear_algebra)">ранг</a> матрицы <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> уменьшается с <span class="math notranslate nohighlight">\(r\)</span> до <span class="math notranslate nohighlight">\(r-1\)</span>, то есть имеется <span class="math notranslate nohighlight">\(r-1=N_c\)</span> независимых термодинамических параметров.</p>
+<p>Для однокомпонентной системы, находящейся в изотермическом процессе с постоянным количеством вещества, представленное выше условие можно преобразовать следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\delta^2 F &amp; &gt; 0, \\
+\sum_{k=1}^r \sum_{l=1}^r \frac{\partial^2 F}{\partial x_k \partial x_l} \delta x_k \delta x_l &amp; &gt; 0, \\
+\left( \frac{\partial^2 F}{\partial V^2} \right)_{T,n} \delta^2 V  &amp; &gt; 0, \\
+\left( \frac{\partial^2 F}{\partial V^2} \right)_{T,n} &amp; &gt; 0, \\
+-\left( \frac{\partial P}{\partial V} \right)_{T,n} &amp; &gt; 0, \\
+\left( \frac{\partial P}{\partial V} \right)_{T,n} &amp; &lt; 0. \\
+\end{align} \end{split}\]</div>
+<p>Таким образом, для участков изотермы однокомпонентной системы, характеризующихся отрицательным значением производной давления по объему, характерно протекаение <em>мнимых процессов</em>, не приводящих к формированию нового термодинамического состояния. А участки изотермы, характеризующиеся положительным значением производной давления по объему, являются нестабильными.</p>
+<p>Если вернуться к <span class="math notranslate nohighlight">\(Pv\)</span>-диаграмме для метана, можно отметить, что критическая точка не просто лежит на спинодали, определяемой условием <span class="math notranslate nohighlight">\(\left( \frac{\partial P}{\partial v} \right)_{T,n} = 0\)</span>, но и находится в ее максимуме (экстремуме), для которого справедливо <span class="math notranslate nohighlight">\(\left( \frac{\partial^2 P}{\partial v^2} \right)_{T,n} = 0\)</span>, или же с точки зрения изменения энергии Гельмгольца <span class="math notranslate nohighlight">\(\delta^3 F = 0\)</span>. Данное условие также можно получить, если рассматривать критическое равновесное состояние системы, при котором изменение энергии Гельмгольца вследствие мнимых процессов <span class="math notranslate nohighlight">\(\Delta F &gt; 0\)</span> с учетом условия стабильности <span class="math notranslate nohighlight">\(\delta^2 F = 0\)</span> и принимая во внимание <a class="reference external" href="https://en.wikipedia.org/wiki/Even_and_odd_functions">нечетность</a> функции <span class="math notranslate nohighlight">\(\delta^3 F\)</span>. Таким образом, система уравнений:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{cases}
+\det \left( \mathbf{Q} \right) = 0, \\
+\delta^3 F = 0,
+\end{cases} \end{split}\]</div>
+<p>может быть использована для определения объема (или давления, если в качестве термодинамического потенциала рассматривать энергию Гиббса) и температуры системы известного компонентного состава в критической точке. Решение аналогичной системы нелинейных уравнений было предложено авторами работы [<a class="reference external" href="https://doi.org/10.1002/aic.690260510">Heidemann and Khalil, 1980</a>] для нахождения параметров термодинамической системы в критическом состоянии. В качестве термодинамических параметров, относительно которых считаются матрица <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> и величина <span class="math notranslate nohighlight">\(\delta^3 F\)</span>, удобно использовать количества вещества компонентов, следовательно, одной из основных сложностей в алгоритме расчета критического состояния системы является расчет частных производных термодинамического потенциала по количеству вещества компонентов. Аналитические выражения частных производных логарифмов коэффициентов летучести компонентов с использованием кубических уравнений состояния были получены <a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html"><span class="std std-doc">ранее</span></a>. Кроме того, частные производные логарифмов коэффициентов летучести компонентов могут быть получены с использованием средств <a class="reference external" href="https://en.wikipedia.org/wiki/Automatic_differentiation">автоматического дифференцирования</a> при использовании, например, библиотеки <a class="reference external" href="https://jax.readthedocs.io/en/latest/index.html">JAX</a>. Численный подход для расчета <span class="math notranslate nohighlight">\(\delta^3 F\)</span> был предложен в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(80)80001-X">Michelsen, 1980</a>]:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\delta^3 F
+&amp;= \sum_{k=1}^{r-1} \sum_{l=1}^{r-1} \sum_{m=1}^{r-1} \frac{\partial^3 F}{\partial x_k \partial x_l \partial x_m} \zeta_k \zeta_l \zeta_m \\
+&amp;= \sum_{k=1}^{r-1} \sum_{l=1}^{r-1} \zeta_k \zeta_l \sum_{m=1}^{r-1} \zeta_m \frac{\partial^3 F}{\partial x_k \partial x_l \partial x_m} \\
+&amp;= \sum_{k=1}^{r-1} \sum_{l=1}^{r-1} \zeta_k \zeta_l \sum_{m=1}^{r-1} \zeta_m \frac{\partial}{\partial x_m} \left( \frac{\partial^2 F}{\partial x_k \partial x_l} \right) \\
+&amp;= \sum_{k=1}^{r-1} \sum_{l=1}^{r-1} \zeta_k \zeta_l \sum_{m=1}^{r-1} \zeta_m \frac{\partial \mathbf{Q}}{\partial x_m} \\
+&amp;\approx \sum_{k=1}^{r-1} \sum_{l=1}^{r-1} \zeta_k \zeta_l \sum_{m=1}^{r-1} \zeta_m \frac{\Delta \mathbf{Q}}{\delta x_m} \\
+&amp;\approx \sum_{k=1}^{r-1} \sum_{l=1}^{r-1} \zeta_k \zeta_l \mathbf{Q}^*,
+\end{align} \end{split}\]</div>
+<p>где</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{Q}^* = \frac{\mathbf{Q} \left( T, \, V, \, \mathbf{n} + \epsilon \mathbf{\zeta} \right) - \mathbf{Q} \left( T, \, V, \, \mathbf{n} \right)}{\epsilon}. \]</div>
+<p>Значение коэффициента <span class="math notranslate nohighlight">\(\epsilon\)</span> выбирается достаточно малым, например, <span class="math notranslate nohighlight">\(\epsilon = 10^{-6}\)</span>. Тогда выражение для величины <span class="math notranslate nohighlight">\(\delta^3 F\)</span> можно записать в следующем векторном виде:</p>
+<div class="math notranslate nohighlight">
+\[ \delta^3 F \approx \mathbf{\zeta}^\top \mathbf{Q}^* \mathbf{\zeta}. \]</div>
+<p>Таким образом, система уравнений может быть записана в следующем виде:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{cases}
+\det \left( \mathbf{Q} \right) = 0, \\
+\mathbf{\zeta}^\top \mathbf{Q}^* \mathbf{\zeta} = 0, \; \mathbf{Q} \mathbf{\zeta} = 0, \; \mathbf{\zeta}^\top \mathbf{\zeta} = 1.
+\end{cases} \end{split}\]</div>
+<p>Именно в такой формулировке была записана система уравнений автором работы [<a class="reference external" href="https://doi.org/10.1016/0378-3812(80)80001-X">Michelsen, 1980</a>] для нахождения критической точки. Однако ввиду влияния численной погрешности вместо использования определителя матрицы <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> надежнее использовать уравнение равенства нулю минимального собственного значения <span class="math notranslate nohighlight">\(\lambda_{min} = 0\)</span>. Кроме того, в последующей работе [<a class="reference external" href="https://doi.org/10.1002/aic.690270326">Michelsen and Heidemann, 1981</a>] были представлены аналитические выражения для расчета матрицы частных производных логарифма летучести и величины <span class="math notranslate nohighlight">\(C = \delta^3 F\)</span> с использованием <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">кубических уравнений состояния</span></a>:</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="admonition- admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>В оригинальной работе [<a class="reference external" href="https://doi.org/10.1002/aic.690270326">Michelsen and Heidemann, 1981</a>] в уравнении (18) – опечатка в последнем слагаемом.</p>
+</div>
+</aside>
+<div class="math notranslate nohighlight">
+\[ n^2 C = R T \left( -\sum_{i=1}^{N_c} \frac{\zeta_i^3}{y_i^2} + 3 \bar{\zeta} \left( \bar{\beta} F_1 \right)^2 + 2 \left( \bar{\beta} F_1 \right)^3 \right) + \frac{\alpha_m}{b_m} \left( 3 \bar{\beta}^2 \left( 2 \bar{\alpha} - \bar{\beta} \right) \left( F_3 + F_6 \right) - 2 \bar{\beta}^3 F_4 - 3 \bar{\beta} \bar{a} F_6 \right), \]</div>
+<p>где: <br />
+ <span class="math notranslate nohighlight">\(n\)</span> – количество вещества системы, моль; <br />
+ <span class="math notranslate nohighlight">\(C = \delta^3 F\)</span> – кубический элемент разложения энергии Гельмгольца в ряд Тейлора, Дж; <br />
+ <span class="math notranslate nohighlight">\(\mathbf{\zeta} \in {\rm I\!R}^{N_c}\)</span> – вектор изменений количеств вещества компонентов, <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0, \, \mathbf{\zeta}^\top \mathbf{\zeta} = 1\)</span>, моль; <br />
+ <span class="math notranslate nohighlight">\(\mathbf{y}\)</span> – вектор мольных долей компонентов в системе, д.ед.; <br />
+ <span class="math notranslate nohighlight">\(\bar{\zeta} = \sum_{i=1}^{N_c} \zeta_i\)</span>; <br />
+ <span class="math notranslate nohighlight">\(\bar{\beta} = \mathbf{\zeta}^\top \mathbf{\beta}\)</span>, где <span class="math notranslate nohighlight">\(\mathbf{\beta} \in {\rm I\!R}^{N_c} \, : \, \beta_i = b_i \, / \, b_m\)</span>; <br />
+ <span class="math notranslate nohighlight">\(\bar{\alpha} = \mathbf{\zeta}^\top \mathbf{\alpha}\)</span>, где <span class="math notranslate nohighlight">\(\mathbf{\alpha} \in {\rm I\!R}^{N_c} \, : \, \alpha_i = \left( \sum_{j=1}^{N_c} \alpha_{ij} y_j \right) \, / \, \alpha_m\)</span>; <br />
+ <span class="math notranslate nohighlight">\(\bar{a} = \sum_{i=1}^{N_c} \sum_{j=1}^{N_c} \alpha_{ij} \zeta_i \zeta_j\)</span>; <br />
+ <span class="math notranslate nohighlight">\(F_1 = 1 \, / \, \left( \kappa - 1 \right)\)</span>, где <span class="math notranslate nohighlight">\(\kappa = v \, / \, b_m\)</span>; <br />
+ <span class="math notranslate nohighlight">\(F_2 = 2 \left( \delta_1 \, / \left( \kappa + \delta_1 \right) - \delta_2 \, / \left( \kappa + \delta_2 \right) \right) \, / \left( \delta_1 - \delta_2 \right)\)</span>; <br />
+ <span class="math notranslate nohighlight">\(F_3 = \left( \left( \delta_1 \, / \left( \kappa + \delta_1 \right) \right)^2 - \left( \delta_2 \, / \left( \kappa + \delta_2 \right) \right)^2 \right) \, / \left( \delta_1 - \delta_2 \right)\)</span>; <br />
+ <span class="math notranslate nohighlight">\(F_4 = \left( \left( \delta_1 \, / \left( \kappa + \delta_1 \right) \right)^3 - \left( \delta_2 \, / \left( \kappa + \delta_2 \right) \right)^3 \right) \, / \left( \delta_1 - \delta_2 \right)\)</span>; <br />
+ <span class="math notranslate nohighlight">\(F_5 = 2 \ln \left( \left( \kappa + \delta_1 \right) \, / \left( \kappa + \delta_2 \right) \right) \, / \left( \delta_1 - \delta_2 \right)\)</span>; <br />
+ <span class="math notranslate nohighlight">\(F_6 = F_2 - F_5\)</span>.</p>
+<p>Остальные обозначения, в том числе <span class="math notranslate nohighlight">\(v, \, \delta_1, \, \delta_2, \, \alpha_{ij}, \, b_i, \, \alpha_m, \, b_m\)</span>, соответствуют обозначениям, используемым при рассмотрении <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">кубических уравнений состояния</span></a>.</p>
+<p>Для решения рассматриваемой системы нелинейных уравнений относительно основных переменных (объема и температуры или давления и температуры) будем использовать метод Ньютона. Для нахождения производных данных уравнений по основным переменным может быть применен численный подход. При этом, данная система уравнений может решаться как одновременно, так и с использованием вложенных циклов, то есть во внутреннем цикле решается первое уравнение, во внешнем – второе. Далее будет рассмотрен именно подход с использованием вложенных циклов. На <span class="math notranslate nohighlight">\(k\)</span>-й итерации внутреннего цикла первое нелинейное уравнение решается относительно температуры для заданного объема <span class="math notranslate nohighlight">\(V\)</span> (или давления), то есть изохорно ищется ближайшая точка на спинодали.</p>
+<div class="math notranslate nohighlight">
+\[ T_{k+1} = T_k - \frac{\lambda_{min} \left(V, \, T_k \right)}{\frac{\partial \lambda_{min} \left(V, \, T \right)}{\partial T} \bigg|_{T_k}}. \]</div>
+<p>На начальной итерации значение производной минимального собственного значения может быть определено численным способом, задавшись небольшим сдвигом по температуре <span class="math notranslate nohighlight">\(\delta T = 10^{-5} T\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial \lambda_{min} \left(V, \, T \right)}{\partial T} \bigg|_{T_k} \approx \frac{\lambda_{min} \left(V, \, T_k + \delta T \right) - \lambda_{min} \left(V, \, T_k \right)}{\delta T}. \]</div>
+<p>На последующих итерациях для нахождения этой производной используются значения с предыдущих итераций:</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial \lambda_{min} \left(V, \, T \right)}{\partial T} \bigg|_{T_k} \approx \frac{\lambda_{min} \left(V, \, T_k \right) - \lambda_{min} \left(V, \, T_{k-1} \right)}{T_k - T_{k-1}}. \]</div>
+<p>Такой квазиньютоновский подход к расчету температуры на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерациии позволяет рассчитывать минимальное собственное значение только один раз за итерацию. Начальное приближение для критической температуры смеси авторы работы [<a class="reference external" href="https://doi.org/10.1002/aic.690260510">Heidemann and Khalil, 1980</a>] рекомендуют рассчитывать с использованием следующего выражения:</p>
+<div class="math notranslate nohighlight">
+\[ T_0 = 1.5 \sum_{i=1}^{N_c} {T_c}_i y_i. \]</div>
+<p>В работе [<a class="reference external" href="https://doi.org/10.1002/aic.690270326">Michelsen and Heidemann, 1981</a>] было предложено использовать схожее начальное приближение, но с другим коэффициентом:</p>
+<div class="math notranslate nohighlight">
+\[ T_0 = 1.3 \sum_{i=1}^{N_c} {T_c}_i y_i. \]</div>
+<p>Стоит также отметить, что для нахождения минимального собственного значения матрицы <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> могут быть использованы различные итерационные методы, например, <a class="reference external" href="https://en.wikipedia.org/wiki/Inverse_iteration">обратный степенной метод</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Rayleigh_quotient_iteration">метод итераций Рэлея</a> или <a class="reference external" href="https://doi.org/10.2478/cmam-2003-0033">метод Ньютона</a>. В данном разделе будет применяться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/utils.py">реализация</a> метода итераций Рэлея, которая возвращает кортеж из количества затраченных итераций, единичного собственного вектора <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span> и соответствующего ему собственного значения <span class="math notranslate nohighlight">\(\lambda\)</span>. Поскольку в результате решения данного уравнения минимальное собственное значение становится равным нулю, <span class="math notranslate nohighlight">\(\lambda_{min} = 0\)</span>, то соответствующий собственный вектор <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span> будет являться нетривиальным решением уравнения <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0\)</span> и удовлетворять условию <span class="math notranslate nohighlight">\(\mathbf{\zeta}^\top \mathbf{\zeta} = 1\)</span>.</p>
+<p>Рассмотрим применение данного алгоритма для разрешения первого условия критического состояния на следующем примере:</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси следующего мольного состава:</p>
+<div class="pst-scrollable-table-container"><table class="table" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{CH_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{CH_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_2 H_6}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_3 H_8}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{n \mbox{-} C_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{n \mbox{-} C_5}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{n \mbox{-} C_6}\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>0.014</p></td>
+<td class="text-center"><p>0.943</p></td>
+<td class="text-center"><p>0.027</p></td>
+<td class="text-center"><p>0.0074</p></td>
+<td class="text-center"><p>0.0049</p></td>
+<td class="text-center"><p>0.001</p></td>
+<td class="text-center"><p>0.0027</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<br>
+<p>Необходимо определить критические давление и температуру смеси.</p>
+</div>
+<p>В данном примере будем использовать <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояния Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализацию</a>, позволяющую рассчитывать частные производные логарифмов летучести компонентов по их количеству вещества для известных объема и температуры. Зададим свойства компонентов, компонентный состав и инициализируем класс с уравнением состояния:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.014</span><span class="p">,</span> <span class="mf">0.943</span><span class="p">,</span> <span class="mf">0.027</span><span class="p">,</span> <span class="mf">0.0074</span><span class="p">,</span> <span class="mf">0.0049</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.0027</span><span class="p">])</span> <span class="c1"># Component composition [fr.]</span>
+<span class="n">Pci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">33.5</span><span class="p">,</span> <span class="mf">45.4</span><span class="p">,</span> <span class="mf">48.2</span><span class="p">,</span> <span class="mf">41.9</span><span class="p">,</span> <span class="mf">37.5</span><span class="p">,</span> <span class="mf">33.3</span><span class="p">,</span> <span class="mf">32.46</span><span class="p">])</span> <span class="o">*</span> <span class="mf">101325.</span> <span class="c1"># Critical pressures [Pa]</span>
+<span class="n">Tci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">126.2</span><span class="p">,</span> <span class="mf">190.6</span><span class="p">,</span> <span class="mf">305.4</span><span class="p">,</span> <span class="mf">369.8</span><span class="p">,</span> <span class="mf">425.2</span><span class="p">,</span> <span class="mf">469.6</span><span class="p">,</span> <span class="mf">507.5</span><span class="p">])</span> <span class="c1"># Critical temperatures [K]</span>
+<span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">,</span> <span class="mf">0.098</span><span class="p">,</span> <span class="mf">0.152</span><span class="p">,</span> <span class="mf">0.193</span><span class="p">,</span> <span class="mf">0.251</span><span class="p">,</span> <span class="mf">0.27504</span><span class="p">])</span> <span class="c1"># Acentric factors</span>
+<span class="n">mwi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">28.013</span><span class="p">,</span> <span class="mf">16.043</span><span class="p">,</span> <span class="mf">30.07</span><span class="p">,</span> <span class="mf">44.097</span><span class="p">,</span> <span class="mf">58.124</span><span class="p">,</span> <span class="mf">72.151</span><span class="p">,</span> <span class="mf">86.</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1e3</span> <span class="c1"># Molar mass [kg/gmole]</span>
+<span class="n">vsi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span> <span class="c1"># Volume shift coefficients</span>
+<span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">0.025</span><span class="p">,</span>
+    <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.09</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.095</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.11</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.11</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
+<span class="p">])</span> <span class="c1"># Binary interaction parameters</span>
+<span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Также импортируем <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/utils.py">реализацию</a> метода итераций Рэлея для нахождения минимального собственного значения:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">mineig_rayquot</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим объем, при котором необходимо найти температуру на спинодали:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mf">1.</span> <span class="c1"># Mixture mole number [gmole]</span>
+<span class="n">kappa</span> <span class="o">=</span> <span class="mf">3.5</span> <span class="c1"># Initial guess for the molar volume to repulsion parameter ratio</span>
+<span class="n">bm</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">bi</span><span class="p">)</span> <span class="c1"># Repulsion parameter [m3/gmole]</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">bm</span> <span class="o">*</span> <span class="n">n</span> <span class="c1"># Volume of the mixture [m3]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Вычилим начальное приближение для температуры:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Iteration count for the first critical condition</span>
+<span class="n">Tk</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">yi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Tci</span><span class="p">)</span> <span class="c1"># Initial estimate of temperature [K]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Получим матрицу частных производных логарифмов летучести компонентов по их количеству вещества <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> для заданных объема и начального приближения температуры:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Выполним расчет минимального собственного значения <span class="math notranslate nohighlight">\(\lambda\)</span> и соответствующего ему вектора <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span> для начальных приближений:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Nitrq</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">mineig_rayquot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rayleigh quotient iteration:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Nitrq</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">lmbdk</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rayleigh quotient iteration:
+	Nitrq = 2
+	lmbdk = np.float64(0.6398571449092917)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Для начального приближения минимальное собственное значение матрицы <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> получилось больше нуля, то есть начальное приближение не находится на спинодали рассматриваемой смеси. Определим такую темперутуру, решая уравнение <span class="math notranslate nohighlight">\(\lambda_{min} \left( T, \, V \right) = 0\)</span> с использованием представленного выше численного метода. На его первой итерации необходимо получить значение частной производной минимального собственного значения по температуре. Зададимся небольшим сдвигом температуры, определим матрицу частных производных для соответствующей температуры и ее минимальное собственное значение. Необходимо отметить, что во избежание влияния погрешности определения минимального собственного значения на его частную производную по температуре, будем использовать метод <code class="docutils literal notranslate"><span class="pre">np.linalg.eigvals</span></code> для определения собственных значений матрицы и метод <code class="docutils literal notranslate"><span class="pre">np.min</span></code> для выбора минимального из них. Данный подход будет использоваться только на начальной итерации:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dT</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="o">*</span> <span class="n">Tk</span>
+<span class="n">lmbdkdT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+<span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkdT</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
+<span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdk</span> <span class="o">/</span> <span class="n">dlmbddT</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Tk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">lmbdk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dT</span><span class="w"> </span><span class="si">= }</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
+	Tk = np.float64(255.33072500000003)
+	lmbdk = np.float64(0.6398571449092917)
+	dT = np.float64(-65.1196967145276)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Решим первое условие критического состояния с использованием чиленного подхода. Значения производных минимального собственного значения по температуре будем определять с использованием предложенного выше квазиньютоновского подхода.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">):</span>
+    <span class="n">Tkp1</span> <span class="o">=</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tkp1</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">Nitrq</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdkp1</span> <span class="o">=</span> <span class="n">mineig_rayquot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
+    <span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkp1</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
+    <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdkp1</span> <span class="o">/</span> <span class="n">dlmbddT</span>
+    <span class="n">Tk</span> <span class="o">=</span> <span class="n">Tkp1</span>
+    <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">lmbdkp1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Tk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">lmbdk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Nitrq</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dT</span><span class="w"> </span><span class="si">= }</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #1:
+	Tk = np.float64(190.21102828547242)
+	lmbdk = np.float64(-0.4481487912763601)
+	Nitrq = 2
+	dT = np.float64(26.822751972484657)
+
+Iteration #2:
+	Tk = np.float64(217.0337802579571)
+	lmbdk = np.float64(0.14190768490268374)
+	Nitrq = 2
+	dT = np.float64(-6.450831045500142)
+
+Iteration #3:
+	Tk = np.float64(210.58294921245695)
+	lmbdk = np.float64(0.024987107092158616)
+	Nitrq = 2
+	dT = np.float64(-1.3786076769868956)
+
+Iteration #4:
+	Tk = np.float64(209.20434153547006)
+	lmbdk = np.float64(-0.0017225441364141889)
+	Nitrq = 2
+	dT = np.float64(0.08890840805397715)
+
+Iteration #5:
+	Tk = np.float64(209.29324994352405)
+	lmbdk = np.float64(1.9501043496769302e-05)
+	Nitrq = 2
+	dT = np.float64(-0.0009952708188531272)
+
+Iteration #6:
+	Tk = np.float64(209.29225467270518)
+	lmbdk = np.float64(1.5043411261784545e-08)
+	Nitrq = 2
+	dT = np.float64(-7.683602678415313e-07)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Представленный алгоритм нашел решение за семь итераций (включая начальную). На каждой из них методу Рэлея для определения минимального собственного значения требовалось всего 2 – 3 итерации, поскольку в качестве начального приближения собственного вектора передавались результаты предыдущей итерации. Полученный вектор собственных значений является единичным:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">zetai</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">zetai</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.9999999999999999)
+</pre></div>
+</div>
+</div>
+</div>
+<p>А также является нетривиальным решением уравнение <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0\)</span>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">zetai</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(1.504341128768421e-08)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Для последующего использования оформим данный алгоритм в функцию <code class="docutils literal notranslate"><span class="pre">getV_Tspin</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
+
+
+<span class="k">class</span> <span class="nc">EOSVTType</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getVT_lnfi_dnj</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">V</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="n">yi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span> <span class="o">...</span>
+
+
+<span class="k">def</span> <span class="nf">getV_Tspin</span><span class="p">(</span>
+    <span class="n">V</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="n">yi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">eos</span><span class="p">:</span> <span class="n">EOSVTType</span><span class="p">,</span>
+    <span class="n">T0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">zeta0i</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">Niter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">T0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Tk</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">yi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">eos</span><span class="o">.</span><span class="n">Tci</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Tk</span> <span class="o">=</span> <span class="n">T0</span>
+    <span class="k">if</span> <span class="n">zeta0i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zeta0i</span> <span class="o">=</span> <span class="n">yi</span>
+    <span class="n">lnfi</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">eos</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+    <span class="n">Nitrq</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">mineig_rayquot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zeta0i</span><span class="p">)</span>
+    <span class="n">dT</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="o">*</span> <span class="n">Tk</span>
+    <span class="n">lmbdkdT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">eos</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkdT</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
+    <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdk</span> <span class="o">/</span> <span class="n">dlmbddT</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">):</span>
+        <span class="n">Tkp1</span> <span class="o">=</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tkp1</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">Nitrq</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdkp1</span> <span class="o">=</span> <span class="n">mineig_rayquot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
+        <span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkp1</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
+        <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdkp1</span> <span class="o">/</span> <span class="n">dlmbddT</span>
+        <span class="n">Tk</span> <span class="o">=</span> <span class="n">Tkp1</span>
+        <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">lmbdkp1</span>
+        <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">Q</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Стоит отметить, что, принимая во внимание неточность определения производной функции минимального собственного значения, а также численную погрешность итерационных методов расчета минимального собственного значения, для надежной работы представленного выше подхода необходимо достаточно хорошее начальное приближение к спинодальной температуре для заданного объема термодинамической системы. В качестве такого начального приближения может быть использована температура с предыдущей итерации внешнего цикла. Кроме того, решением уравнения <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0\)</span> является не только вектор <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span>, но также и вектор <span class="math notranslate nohighlight">\(-\mathbf{\zeta}\)</span>. Дискретная вариация знака в значениях вектора изменения количеств вещества компонентов на каждой <span class="math notranslate nohighlight">\(j\)</span>-й итерации внешнего цикла решения уравнения <span class="math notranslate nohighlight">\(C = \delta^3 F = 0\)</span> может приводить к плохой сходимости численного метода. В связи с этим, необходимо осуществлять проверку знака элементов решения уравнения <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0\)</span> и умножать вектор <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span> на <span class="math notranslate nohighlight">\(-1\)</span> на <span class="math notranslate nohighlight">\(j\)</span>-й итерации, если:</p>
+<div class="math notranslate nohighlight">
+\[ {\zeta_1}_{j} {\zeta_1}_{j-1} &lt; 0, \]</div>
+<p>где <span class="math notranslate nohighlight">\(\zeta_1\)</span> – первый элемент вектора <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span> на соответствующей итерации.</p>
+<p>После решения уравнения <span class="math notranslate nohighlight">\(\lambda_{min} = 0\)</span> выполняется <span class="math notranslate nohighlight">\(j\)</span>-я итерация внешнего цикла решения уравнения <span class="math notranslate nohighlight">\(C = \delta^3 F = 0\)</span>. Данное уравнение при использовании <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">кубических уравнений состояния</span></a> рекомендуется решать относительно безразмерного параметра <span class="math notranslate nohighlight">\(\kappa\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \kappa = \frac{v}{b_m}, \]</div>
+<p>где <span class="math notranslate nohighlight">\(v = V \, / \, n\)</span> – молярный объем системы, представляющий отношение объема <span class="math notranslate nohighlight">\(V\)</span> к количеству вещества системы <span class="math notranslate nohighlight">\(n\)</span>; <span class="math notranslate nohighlight">\(b_m\)</span> – параметр, определяющий объем полностью сжатой системы при бесконечно большом давлении и вычисляемый с использованием правил смешивания. Кроме того, для повышения надежности алгоритма авторы работы [<a class="reference external" href="https://doi.org/10.1002/aic.690260510">Heidemann and Khalil, 1980</a>] предложили заменить функцию <span class="math notranslate nohighlight">\(C\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ C^* = \left( \kappa - 1 \right)^2 C . \]</div>
+<p>Поскольку область допустимых значений молярного объема системы для кубических уравнений состояния <span class="math notranslate nohighlight">\(v &gt; b_m \Leftrightarrow \kappa &gt; 1\)</span>, то данная модификация не приведет к появлению дополнительного корня. Таким образом, второе условие для критического состояния системы записывается:</p>
+<div class="math notranslate nohighlight">
+\[ C^* = 0. \]</div>
+<p>Для решения данного уравнения также может быть использован метод Ньютона, для которого итерация определяется следующим выражением:</p>
+<div class="math notranslate nohighlight">
+\[ \kappa_{j+1} = \kappa_j - \frac{C^* \left( \kappa_j, \, T \right)}{\frac{\partial C^* \left( \kappa, \, T \right)}{\partial \kappa} \bigg|_{\kappa_j}}.\]</div>
+<p>Частная производная функции <span class="math notranslate nohighlight">\(C^* \left( \kappa, \, T \right)\)</span> по <span class="math notranslate nohighlight">\(\kappa\)</span> также может быть определена с использованием квазиньютоновского численного подхода с учетом результатов предыдущей итерации:</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial C^* \left( \kappa, \, T \right)}{\partial \kappa} \bigg|_{\kappa_j} \approx \frac{C^* \left( \kappa_j, \, T \right) - C^* \left( \kappa_{j-1}, \, T \right)}{\kappa_j - \kappa_{j-1}}. \]</div>
+<p>На первой итерации значение производной может быть определено для небольшого сдвига объема системы <span class="math notranslate nohighlight">\(\delta V\)</span> аналогичным способом, как и при нахождения спинодальной температуры для заданного объема. В качестве начального приближения для второго уравнения второго условия критического состояния авторами работы [<a class="reference external" href="https://doi.org/10.1002/aic.690270326">Michelsen and Heidemann, 1981</a>] рекомендуется следующее значение</p>
+<div class="math notranslate nohighlight">
+\[ \kappa = 3.5. \]</div>
+<p>Стоит отметить, что иногда такое начальное приближение находится достаточного далеко от критического состояния смеси, что может приводить к несходимости алгоритма. Для улучшения начального приближения может применяться процедура расчета значений величины <span class="math notranslate nohighlight">\(C = \delta^3 F\)</span> для серии значений параметра <span class="math notranslate nohighlight">\(\kappa\)</span>, полученной с равным шагом, например, <span class="math notranslate nohighlight">\(0.1\)</span>. В качестве минимального и максимального значений допустимо использовать значения <span class="math notranslate nohighlight">\(\kappa = 1.1\)</span> и <span class="math notranslate nohighlight">\(\kappa = 5.0\)</span> соответственно. Тот отрезок от <span class="math notranslate nohighlight">\(\left( \kappa_{l}, \, \kappa_{l+1} \right)\)</span>, где происходит смена значений величины <span class="math notranslate nohighlight">\(C = \delta^3 F\)</span>, может быть впоследствии использован для получения более точного начального приближения.</p>
+<p>Ранее для рассматриваемой смеси была определена температура на спинодали, соответствующая начальному приближению <span class="math notranslate nohighlight">\(\kappa = 3.5\)</span>, а также вектор <span class="math notranslate nohighlight">\(\mathbf{\zeta}\)</span>, удовлетворяющий условиям <span class="math notranslate nohighlight">\(\mathbf{\zeta}^\top \mathbf{\zeta} = 1\)</span> и <span class="math notranslate nohighlight">\(\mathbf{Q} \mathbf{\zeta} = 0\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="n">Tk</span>
+<span class="n">T</span><span class="p">,</span> <span class="n">zetai</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(209.29225467270518),
+ array([0.00418311, 0.99716538, 0.06485697, 0.02543874, 0.02179882,
+        0.00548063, 0.01687987]))
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим значения параметра <span class="math notranslate nohighlight">\(C^*\)</span> для полученной температуры и вектора изменений количества вещества компонентов. Для этого будем использовать представленное выше аналитическое выражение, реализованное в качестве метода <code class="docutils literal notranslate"><span class="pre">getVT_d3F</span></code> инициализированного класса с уравнением состояния:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_d3F</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
+<span class="n">C</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(-8285.011052035774)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Для выполнения первой итерации необходимо получить значение производной <span class="math notranslate nohighlight">\(\frac{\partial C^* \left( \kappa, \, T \right)}{\partial \kappa}\)</span>. Для ее определения с использованием метода конечных разностей зададимся небольшим приращением <span class="math notranslate nohighlight">\(\delta V = 10^{-5} V\)</span>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dV</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="o">*</span> <span class="n">V</span>
+<span class="n">Vs</span> <span class="o">=</span> <span class="n">V</span> <span class="o">+</span> <span class="n">dV</span>
+<span class="n">kappas</span> <span class="o">=</span> <span class="p">(</span><span class="n">Vs</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="n">bm</span>
+<span class="n">Cs</span> <span class="o">=</span> <span class="p">(</span><span class="n">kappas</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_d3F</span><span class="p">(</span><span class="n">Vs</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
+<span class="n">dCdkappa</span> <span class="o">=</span> <span class="p">(</span><span class="n">Cs</span> <span class="o">-</span> <span class="n">C</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">kappas</span> <span class="o">-</span> <span class="n">kappa</span><span class="p">)</span>
+<span class="n">dkappa</span> <span class="o">=</span> <span class="o">-</span><span class="n">C</span> <span class="o">/</span> <span class="n">dCdkappa</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Таким образом, для итерации <span class="math notranslate nohighlight">\(j=0\)</span> решения второго условия критического состояния определены следующие параметры:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">kappaj</span> <span class="o">=</span> <span class="n">kappa</span>
+<span class="n">zetaij</span> <span class="o">=</span> <span class="n">zetai</span>
+<span class="n">Cj</span> <span class="o">=</span> <span class="n">C</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Cj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">kappaj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dkappa</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
+	Cj = np.float64(-8285.011052035774)
+	kappaj = 3.5
+	dkappa = np.float64(-0.41771347332125264)
+	T = np.float64(209.29225467270518)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Решим уравнение с использованием представленного выше численного алгоритма:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dkappa</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">j</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">):</span>
+    <span class="n">kappajp1</span> <span class="o">=</span> <span class="n">kappaj</span> <span class="o">+</span> <span class="n">dkappa</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">bm</span> <span class="o">*</span> <span class="n">kappajp1</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">zetaijp1</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">getV_Tspin</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">zetaij</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">zetaijp1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">zetaij</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
+        <span class="n">zetaijp1</span> <span class="o">*=</span> <span class="o">-</span><span class="mf">1.</span>
+    <span class="n">Cjp1</span> <span class="o">=</span> <span class="p">(</span><span class="n">kappajp1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_d3F</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zetaijp1</span><span class="p">)</span>
+    <span class="n">dCdkappa</span> <span class="o">=</span> <span class="p">(</span><span class="n">Cjp1</span> <span class="o">-</span> <span class="n">Cj</span><span class="p">)</span> <span class="o">/</span> <span class="n">dkappa</span>
+    <span class="n">dkappa</span> <span class="o">=</span> <span class="o">-</span><span class="n">Cjp1</span> <span class="o">/</span> <span class="n">dCdkappa</span>
+    <span class="n">kappaj</span> <span class="o">=</span> <span class="n">kappajp1</span>
+    <span class="n">Cj</span> <span class="o">=</span> <span class="n">Cjp1</span>
+    <span class="n">zetaij</span> <span class="o">=</span> <span class="n">zetaijp1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Cj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">kappaj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dkappa</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="si">= }</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #1:
+	Cj = np.float64(-2628.640181608677)
+	kappaj = np.float64(3.0822865266787476)
+	dkappa = np.float64(-0.1941206553679639)
+	T = np.float64(205.91596797806795)
+
+Iteration #2:
+	Cj = np.float64(-269.9720109843537)
+	kappaj = np.float64(2.888165871310784)
+	dkappa = np.float64(-0.02221895574629223)
+	T = np.float64(203.0340788830951)
+
+Iteration #3:
+	Cj = np.float64(-10.47287529156245)
+	kappaj = np.float64(2.8659469155644914)
+	dkappa = np.float64(-0.0008967134014470925)
+	T = np.float64(202.63566636261933)
+
+Iteration #4:
+	Cj = np.float64(-0.04815857369929371)
+	kappaj = np.float64(2.865050202163044)
+	dkappa = np.float64(-4.142504741326538e-06)
+	T = np.float64(202.61925356016977)
+
+Iteration #5:
+	Cj = np.float64(0.033417340824522634)
+	kappaj = np.float64(2.8650460596583027)
+	dkappa = np.float64(1.6969652576520532e-06)
+	T = np.float64(202.61925356016977)
+
+Iteration #6:
+	Cj = np.float64(5.983929012364895e-09)
+	kappaj = np.float64(2.8650477566235604)
+	dkappa = np.float64(3.0386982345175573e-13)
+	T = np.float64(202.61925356016977)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Видим, что в результате применения рассматриваемого алгоритма было найденно решение, удовлетворяющее условиям критического состояния. Таким образом, для рассматриваемого примера критические давление и температура:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Vc</span> <span class="o">=</span> <span class="n">kappaj</span> <span class="o">*</span> <span class="n">bm</span> <span class="o">*</span> <span class="n">n</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tc = </span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">273.15</span><span class="si">:</span><span class="s1"> .1f</span><span class="si">}</span><span class="s1"> C</span><span class="se">\n</span><span class="s1">Pc = </span><span class="si">{</span><span class="n">pr</span><span class="o">.</span><span class="n">getVT_P</span><span class="p">(</span><span class="n">V</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="p">,</span><span class="w"> </span><span class="n">yi</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s1"> .3f</span><span class="si">}</span><span class="s1"> MPa&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tc = -70.5 C
+Pc =  5.861 MPa
+</pre></div>
+</div>
+</div>
+</div>
+<p>Пример реализации сфорулированного численного метода определения критического состояния многокомпонентной системы представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/boundary.py">здесь</a>.</p>
+<p>Данным разделом завершается часть курса, посвященная PVT-моделированию, рассматривающая теоретические и алгоритмические аспекты определения равновесного состояния, стабильности и критического состояния многокомпонентных систем. Необходимо отметить, что существует еще множество интересных задач, например, определение градиента компонентного состава залежи углеводородов по глубине, без которого невозможна корректная инициализация композиционных гидродинамических моделей нефтегазовых залежей; определение давления многоконтактного смешивания компонентных составов закачиваемого и пластового флюидов; рассмотрение подходов к разделению плюс-фракции и формированию псевдокомпонентов; расчет количества выпавших асфальтенов и других, которым будет посвящен отдельный <a class="reference internal" href="../5-ETC/ETC-0-Introduction.html"><span class="std std-doc">раздел</span></a>.</p>
+<p>В следующем разделе будут рассматриваться моделирование лабораторных экспериментов, а также некоторые практические особенности построения и адаптации композиционных PVT-моделей залежей углеводородов.</p>
 </section>
 
     <script type="text/x-thebe-config">

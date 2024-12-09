@@ -32,10 +32,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,7 +61,7 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-5-Equilibrium';</script>
-    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Определение насыщенного состояния системы" href="SEC-6-Saturation.html" />
@@ -224,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-C-HV.html">Правило смешивания Хьюрона-Видаля</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -237,6 +238,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5-ETC/ETC-0-Introduction.html">Применение PVT-моделирования для решения практических задач проектирования месторождений углеводородов</a></li>
 </ul>
 
     </div>
@@ -478,7 +480,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[ \mathbf{K}_0 = \left\{ y_i \, / \, z_i, \; z_i  \, / \, y_i, \; i = 1 \, \ldots \, N_c \right\}. \]</div>
 <p>После определения равновесного состояния для <span class="math notranslate nohighlight">\(N_p\)</span>-фазной постановки задачи выполняется анализ стабильности системы. Если анализ стабильности показывает, что <span class="math notranslate nohighlight">\(N_p\)</span>-фазный компонентный состав не является стабильным, то выполняется поиск равновесного состояния для <span class="math notranslate nohighlight">\(\left( N_p+1 \right)\)</span>-фазной постановки.</p>
-<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>. Кроме того, для проверки стабильности стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Также на каждой итерации метода последовательных подстановок необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a>. Для решения уравнения в двухфазной постановке будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">реализация</a> <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">метода FGH</span></a>, для решения системы уравнений Речфорда-Райса – модифицированный метод [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>], реализация которого представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
+<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>. Кроме того, для проверки стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Также на каждой итерации метода последовательных подстановок необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a>. Для решения уравнения в двухфазной постановке будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">реализация</a> <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">метода FGH</span></a>, для решения системы уравнений Речфорда-Райса – модифицированный метод [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>], реализация которого представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
@@ -596,7 +598,7 @@ document.write(`
     <span class="n">gi_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">kvi_kp1</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphi1i</span> <span class="o">-</span> <span class="n">lnphi2i</span>
     <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kvi_kp1</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">gi_kp1</span>
 
-<span class="n">pupdate_ssi_2p</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ssi_2p</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<span class="n">pupdate_ssi_2p</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ssi_2p</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -608,8 +610,8 @@ document.write(`
     <span class="n">F1</span> <span class="o">=</span> <span class="n">solve2p_FGH</span><span class="p">(</span><span class="n">kvi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
     <span class="n">y2i</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">F1</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="n">y1i</span> <span class="o">=</span> <span class="n">y2i</span> <span class="o">*</span> <span class="n">kvi</span>
-    <span class="n">lnphi2i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">)</span>
-    <span class="n">lnphi1i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
+    <span class="n">lnphi2i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">)</span>
+    <span class="n">lnphi1i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
     <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">kvi</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphi1i</span> <span class="o">-</span> <span class="n">lnphi2i</span>
     <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">kvi</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
@@ -629,12 +631,12 @@ document.write(`
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>For the initial guess #0:
-	tolerance of equations: 2.3732331358782285e-07
+	tolerance of equations: 2.3732331226082408e-07
 	number of iterations: 10
 	phase compositions:
 		[0.81827116 0.18172884]
 		[0.91760692 0.08239308]
-	phase mole fractions: 0.1772465313683666, 0.8227534686316333
+	phase mole fractions: 0.1772465313683731, 0.8227534686316269
 </pre></div>
 </div>
 </div>
@@ -658,7 +660,7 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yj1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">yji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yj1</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yj1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
-<span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
@@ -668,7 +670,7 @@ document.write(`
 <p>Уравнение касательной:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
 <span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -706,10 +708,10 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c4c384b6c1be2f2eeaf0f290822b9cd35df06b7a0947e99f077a13a69a66ebf5.png" src="../../_images/c4c384b6c1be2f2eeaf0f290822b9cd35df06b7a0947e99f077a13a69a66ebf5.png" />
+<img alt="../../_images/b26e69988ee5a3063dfad83dbc824d60a8cac4bc8569903cd33fdfb89aa96a7c.png" src="../../_images/b26e69988ee5a3063dfad83dbc824d60a8cac4bc8569903cd33fdfb89aa96a7c.png" />
 </div>
 </div>
-<p>Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>.</p>
+<p>Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>. Стоит также отметить, что две точки, показанные на графике, соответствующие двухфазному равновесному состоянию, называются <em><strong>бинодальными точками</strong></em>.</p>
 <p>Таким образом, на примере, представленном выше, было рассмотрено применение метода последовательных подстановок для расчета равновесного состояния в двухфазной постановке. Однако этот метод может применяться и для многофазного случая. Рассмотрим следующий пример.</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
@@ -757,7 +759,7 @@ document.write(`
 <p>Однофазное состояние оказалось нестабильным, выполним расчет двухфазного равновесного состояния. Для этого сначала проинициализируем функцию <code class="docutils literal notranslate"><span class="pre">update_ssi_2p</span></code> для рассматриваемого примера. Поскольку точность расчета и максимальное количество итераций не изменилось, то будем использовать функцию <code class="docutils literal notranslate"><span class="pre">pcondit</span></code> из предыдущего примера:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pupdate_ssi_2p</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ssi_2p</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pupdate_ssi_2p</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ssi_2p</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -769,8 +771,8 @@ document.write(`
     <span class="n">F1</span> <span class="o">=</span> <span class="n">solve2p_FGH</span><span class="p">(</span><span class="n">kvi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
     <span class="n">y2i</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">F1</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="n">y1i</span> <span class="o">=</span> <span class="n">y2i</span> <span class="o">*</span> <span class="n">kvi</span>
-    <span class="n">lnphi2i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">)</span>
-    <span class="n">lnphi1i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
+    <span class="n">lnphi2i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">)</span>
+    <span class="n">lnphi1i</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
     <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">kvi</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphi1i</span> <span class="o">-</span> <span class="n">lnphi2i</span>
     <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">kvi</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
@@ -790,7 +792,7 @@ document.write(`
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>For the initial guess #0:
-	tolerance of equations: 9.391984846755839e-08
+	tolerance of equations: 9.391984935094901e-08
 	number of iterations: 5
 	phase compositions:
 		[8.56651228e-08 7.32712720e-21 9.99999915e-01]
@@ -856,7 +858,7 @@ document.write(`
 <p>Выполним расчет коэффициентов летучестей для каждого компонента в каждой из фаз. Для этого воспользуемся методом <code class="docutils literal notranslate"><span class="pre">get_lnphiji_Zj</span></code> класса <code class="docutils literal notranslate"><span class="pre">pr</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yji</span><span class="p">,</span> <span class="n">xi</span><span class="p">]))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yji</span><span class="p">,</span> <span class="n">xi</span><span class="p">]))</span>
 </pre></div>
 </div>
 </div>
@@ -886,7 +888,7 @@ document.write(`
     <span class="n">gji_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">kvji_kp1</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphiji</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">lnphiji</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kvji_kp1</span><span class="p">,</span> <span class="n">Fj</span><span class="p">,</span> <span class="n">gji_kp1</span>
 
-<span class="n">pupdate_ssi_Np</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ssi_Np</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_lnphiji_Zj</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<span class="n">pupdate_ssi_Np</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ssi_Np</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -913,7 +915,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tolerance of equations: 9.025238500838068e-07
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tolerance of equations: 9.025238496978203e-07
 Number of iterations: 4
 Phase compositions:
 [[2.61399687e-09 8.46397803e-21 9.99999997e-01]
@@ -938,17 +940,14 @@ Phase mole fractions: [0.29739749 0.12526799 0.57733453]
 </div>
 </div>
 </div>
-<p>Таким образом, на представленных примерах было продемонстрировано применение метода последовательных подстановок для нахождения двух- и трехфазного равновесного состояния. Как уже было отмечено ранее, недостатком этого метода является сравнительно большое количество итераций и медленная сходимость для случаев вблизи <a class="reference internal" href="SEC-6-Saturation.html"><span class="std std-doc">линии насыщения</span></a> или вблизи <a class="reference internal" href="SEC-7-Criticality.html"><span class="std std-doc">критической точки</span></a>. Для ускорения могут применяться различные модификации данного метода, например, <em>Accelerated Succesive Substitution (ACSS)</em> [<a class="reference external" href="https://doi.org/10.1002/cjce.5450610414">Mehra et al, 1983</a>], <em>Quasi-Newton Succesive Substitution (QNSS)</em> [<a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>] и другие. Реализация метода <em>QNSS</em> представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>. Стоит отметить, что в упомянутых работах эти методы рассматриваются для двухфазных систем, однако могут быть распространены и на многофазные системы.</p>
-<p>Особенностью метода <em>ACSS</em> является введение коэффициента <em>длины шага итерации</em>, обозначенного в представленном выше алгоритме, как <span class="math notranslate nohighlight">\(\lambda\)</span>, и его расчет с использованием следующего выражения:</p>
+<p>Таким образом, на представленных примерах было продемонстрировано применение метода последовательных подстановок для нахождения двух- и трехфазного равновесного состояния. Как уже было отмечено ранее, недостатком этого метода является сравнительно большое количество итераций и медленная сходимость для случаев вблизи <a class="reference internal" href="SEC-6-Saturation.html"><span class="std std-doc">линии насыщения</span></a> или вблизи <a class="reference internal" href="SEC-7-Criticality.html"><span class="std std-doc">критической точки</span></a>. Для ускорения могут применяться различные модификации данного метода, полученные авторами работ [<a class="reference external" href="https://doi.org/10.1002/cjce.5450610414">Mehra et al, 1983</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>]. Реализация метода <em>QNSS</em> представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>.</p>
+<p>Особенностью данных методов является введение коэффициента <em>длины шага итерации</em>, обозначенного в представленном выше алгоритме, как <span class="math notranslate nohighlight">\(\lambda\)</span>, и его расчет с использованием следующего выражения:</p>
 <div class="math notranslate nohighlight">
 \[ \lambda_{k} = \lambda_{k-1} \frac{\mathbf{g}_{k-1}^\top \mathbf{g}_{k-1}}{\mathbf{g}_{k-1}^\top \left( \mathbf{g}_{k-1} - \mathbf{g}_k \right)}, \]</div>
 <p>а итерация записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ \ln \mathbf{k}_{k+1} = \ln \mathbf{k}_k - \lambda_k \mathbf{g}_k. \]</div>
-<p>В методе <em>QNSS</em> также вводится коэффициент длины шага итерации, но рассчитывается с использованием несколько другого выражения:</p>
-<div class="math notranslate nohighlight">
-\[ \lambda_{k} = -\lambda_{k-1} \frac{\Delta \ln \mathbf{k}_{k-1}^\top \mathbf{g}_{k-1}}{\Delta \ln \mathbf{k}_{k-1}^\top \left( \mathbf{g}_k - \mathbf{g}_{k-1} \right)}. \]</div>
-<p>Итерация записывается аналогичным образом. Стоит отметить, что в обоих случаях предполагается выполнение первой итерации с использованием метода последовательных подстановок, то есть <span class="math notranslate nohighlight">\(\lambda_0 = 1\)</span>. Оба метода могут быть распространены и на многофазные системы. В этом случае, например, вектор <span class="math notranslate nohighlight">\(\mathbf{g}\)</span> записывается следующим образом:</p>
+<p>Стоит отметить, что в обоих случаях предполагается выполнение первой итерации с использованием метода последовательных подстановок, то есть <span class="math notranslate nohighlight">\(\lambda_0 = 1\)</span>. Оба метода могут быть распространены и на многофазные системы. В этом случае, например, вектор <span class="math notranslate nohighlight">\(\mathbf{g}\)</span> записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \mathbf{g} = \begin{bmatrix} \ln k_1^{1N_p} + \ln \phi_1^1 - \ln \phi_1^{N_p} \\ \ln k_2^{1N_p} + \ln \phi_2^1 - \ln \phi_2^{N_p} \\ \vdots \\ \ln k_{N_c}^{1N_p} + \ln \phi_{N_c}^1 - \ln \phi_{N_c}^{N_p} \\ \ln k_1^{2N_p} + \ln \phi_1^2 - \ln \phi_1^{N_p} \\ \ln k_2^{2N_p} + \ln \phi_2^2 - \ln \phi_2^{N_p} \\ \vdots \\ \ln k_{N_c}^{2N_p} + \ln \phi_{N_c}^2 - \ln \phi_{N_c}^{N_p} \\ \vdots \\ \ln k_{N_c}^{N_p-1,N_p} + \ln \phi_{N_c}^{N_p-1} - \ln \phi_{N_c}^{N_p} \end{bmatrix}. \end{split}\]</div>
 <p>Аналогично записывается вектор основных переменных. С другой стороны, поскольку метод последовательных подстановок является своеобразным упрощением метода градиентного спуска при рассмотрении задачи с точки зрения минимизации энергии Гиббса, то очевидным вариантом ускорения является применение метода Ньютона, требующего нахождение вторых частных производных функции энергии Гиббса по основным переменным. В качестве вектора основных переменных может выступать вектор количеств вещества компонентов в <span class="math notranslate nohighlight">\(N_p-1\)</span> фазах.</p>
@@ -1106,7 +1105,7 @@ U_{il} &amp;= \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} = \frac{1}
 <section id="vt">
 <span id="pvt-esc-equilibrium-vt"></span><h2>VT-термодинамика<a class="headerlink" href="#vt" title="Link to this heading">#</a></h2>
 <p>Стоит отметить, что в данном разделе основное внимание уделялось алгоритмам нахождения равновесного состояния для различных условий. Однако оптимизация времени, затрачиваемого на работу того или иного алгоритма, зависит не только от самого алгоритма, но и от его реализации: работы с памятью, распараллеливания, векторизации вычислений. Подробнее это было рассмотрено авторами работы [<a class="reference external" href="https://doi.org/10.2118/163583-MS">Haugen and Beckner, 2013</a>].</p>
-<p>Данный раздел, был посвящен нахождению равновесного состояния для различных формулировок. В следующем разделе будут рассмотрены различные пределы <em>(limit locus)</em>, характерные для методологий расчета равновесного состояния и проверки стабильности, в том числе речь пойдет про нахождение геометрического места точек насыщения (конденсации), являющихся одной их предельных областей, характеризующейся физичными значениями мольных долей фаз.</p>
+<p>Данный раздел, был посвящен нахождению равновесного состояния для различных формулировок. В следующих разделах будут рассмотрены алгоритмы нахождения предельных состояний, характерных для многокомпонентных систем. В том числе речь пойдет про поиск линий насыщения, конденсации, а также про определение критического состояния системы, являющегося пределом фазового равновесия.</p>
 </section>
 </section>
 

@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,7 +61,7 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/2-EOS/EOS-1-VanDerWaals';</script>
-    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона" href="EOS-2-SRK-PR.html" />
@@ -224,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
 <li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
 <li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-C-HV.html">Правило смешивания Хьюрона-Видаля</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -237,6 +238,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5-ETC/ETC-0-Introduction.html">Применение PVT-моделирования для решения практических задач проектирования месторождений углеводородов</a></li>
 </ul>
 
     </div>
@@ -457,6 +459,13 @@ F \left( V \right)
 <p class="admonition-title">NB</p>
 <p>Для того чтобы преобразовать это выражение, то есть взять частные производные от параметров <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, необходимо ввести <em><strong>правила смешивания</strong></em> – допущения, позволяющие рассчитать параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> по компонентному составу системы и свойствам компонентов.</p>
 </div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Правило смешивания имеет фундаментальное значение при формулировании уравнения состояния. Несмотря на то что <em>классическое</em>, Ван-дер-Ваальсово, правило смешивания является наиболее распространенным, существуют и другие способы расчета параметров <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span> в уравнениях состояния. Одним из таких правил является правило смешивания Хьюрона-Видаля, которое рекомендуется к применению для систем, содержащих полярные молекулы, способные к образованию кластеров. Подробнее применение правил смешивания Хьюрона-Видаля будет рассмотрено в <a class="reference internal" href="EOS-Appendix-C-HV.html"><span class="std std-doc">соответствующем разделе</span></a>.</p>
+</div>
+</aside>
 <p>Одними из наиболее часто использующихся правил смешивания являются следующие соотношения:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align} a_m &amp;= \sum_{j=1}^{N_c} \sum_{k=1}^{N_c} x_j x_k a_{jk}; \\ b_m &amp;= \sum_{j=1}^{N_c} x_j b_j. \end{align}\end{split}\]</div>
@@ -470,7 +479,7 @@ F \left( V \right)
 <p class="sidebar-title"></p>
 <div class="note admonition">
 <p class="admonition-title">Дополнительно</p>
-<p>Физический смысл коэффициента попарного взаимодействия заключается в следующем: чем больше коэффициент попарного взаимодействия между двумя компонентами, тем меньше они совместимы в рамках одной фазы. Соответственно, между одинаковыми компонентами коэффициент попарного взаимодействия равен нулю, то есть <span class="math notranslate nohighlight">\(\delta_{ii} = 0\)</span>. Если отсортировать углеводородные компоненты по мере увеличения их молекулярной массы, то обычно значения вблизи главной диагонали матрицы коэффициентов попарного взаимодействия <span class="math notranslate nohighlight">\(\delta_{ij}\)</span> близки нулю и увеличиваются в направлении побочной диагонали.</p>
+<p>Физический смысл данного параметра заключается в следующем: чем больше коэффициент попарного взаимодействия между двумя компонентами, тем меньше они совместимы в рамках одной фазы. И наоборот, чем меньше коэффициент попарного взаимодействия (в том числе отрицательные значения), тем в большей степени компоненты могут находиться в одной фазе. Положительные значения коэффициентов попарного взаимодействия снижают параметр энергетического <em>притяжения</em> между компонентами. Соответственно, между одинаковыми компонентами коэффициент попарного взаимодействия равен нулю, то есть <span class="math notranslate nohighlight">\(\delta_{ii} = 0\)</span>. Если отсортировать углеводородные компоненты по мере увеличения их молекулярной массы, то обычно значения вблизи главной диагонали матрицы коэффициентов попарного взаимодействия <span class="math notranslate nohighlight">\(\delta_{ij}\)</span> близки нулю и увеличиваются в направлении побочной диагонали.</p>
 </div>
 </aside>
 <p><a id='pvt-eos-vdw-bip'></a>

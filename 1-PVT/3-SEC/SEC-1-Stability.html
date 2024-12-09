@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,7 +61,7 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-1-Stability';</script>
-    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Уравнение Речфорда-Райса" href="SEC-2-RR.html" />
@@ -224,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2-EOS/EOS-Appendix-C-HV.html">Правило смешивания Хьюрона-Видаля</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -237,6 +238,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5-ETC/ETC-0-Introduction.html">Применение PVT-моделирования для решения практических задач проектирования месторождений углеводородов</a></li>
 </ul>
 
     </div>
@@ -618,13 +620,13 @@ document.write(`
 <p class="sd-card-text">Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов воспользуемся методом <code class="docutils literal notranslate"><span class="pre">get_lnphiji_Zj</span></code>, принимающего в качестве аргументов давление, температуру и набор компонентных составов в виде двумерного массива, и возвращающего соответствующие коэффициенты летучести компонентов в виде двумерного массива и коэффициенты сверхсжимаемости в виде одномерного массива. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">yj1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">yji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yj1</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yj1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
-<span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого воспользуемся методом <code class="docutils literal notranslate"><span class="pre">get_lnfi</span></code>, принимающего на вход давление, температуру и компонентный состав в виде одномерного масива, и возвращающего логарифмы летучести компонентов в виде одномерного массива. Затем выслим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -675,13 +677,13 @@ document.write(`
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Теперь вычислим летучести компонентов для заданного компонентного состава. Затем определим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -698,7 +700,7 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/660984b752c8e6227cd4a1b40c04d9822e61dee20ba28ab5d96e994c4b630d11.png" src="../../_images/660984b752c8e6227cd4a1b40c04d9822e61dee20ba28ab5d96e994c4b630d11.png" />
+<img alt="../../_images/fa6e62d7cc4e377e3f4bd96f9c53071f50f01338e47088612e1c56cc579fa9e1.png" src="../../_images/fa6e62d7cc4e377e3f4bd96f9c53071f50f01338e47088612e1c56cc579fa9e1.png" />
 <br>
 <br>
 <p class="sd-card-text">Поскольку видно, что касательная, проведенная к функции энергии Гиббса в точке с рассматриваемым компонентным составом пересекает функцию энергии Гиббса, то однофазное состояние данной системы нестабильно. Построим зависимость функции TPD.</p>
@@ -905,20 +907,20 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет коэффициентов летучести для начального компонентного состава:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
 <span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
-<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет функции TPD для различных начальных приближений:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
-    <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
+    <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
     <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
         <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
@@ -940,7 +942,7 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 2.2979639293154093e-09<br>	number of iterations: 4<br>	solution: [0.15 0.85]<br>	TPD: -2.1990009810648733e-10<br>For the initial guess #1:<br>	tolerance of equations: 1.1109749259100112e-08<br>	number of iterations: 4<br>	solution: [0.15 0.85]<br>	TPD: -8.832841121282723e-10<br>The system is stable: True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 2.2979639293154093e-09<br>	number of iterations: 4<br>	solution: [0.15 0.85]<br>	TPD: -2.1990009810648733e-10<br>For the initial guess #1:<br>	tolerance of equations: 1.1109749266420846e-08<br>	number of iterations: 4<br>	solution: [0.15 0.85]<br>	TPD: -8.832841121282723e-10<br>The system is stable: True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -972,18 +974,18 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет коэффициентов летучести для начального компонентного состава:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
-<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет функции TPD для различных начальных приближений:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
-    <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">get_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
+    <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
     <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
         <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
@@ -1005,7 +1007,7 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 8.158548004171597e-08<br>	number of iterations: 6<br>	solution: [0.80316797 0.21351219]<br>	TPD: -0.016542578586788807<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 8.158547980652592e-08<br>	number of iterations: 6<br>	solution: [0.80316797 0.21351219]<br>	TPD: -0.01654257858678946<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>

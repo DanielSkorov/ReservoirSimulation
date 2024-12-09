@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=7710e7f8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,7 +61,7 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/2-EOS/EOS-0-Introduction';</script>
-    <script src="../../_static/custom.js?v=ebf3e302"></script>
+    <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Уравнение состояния Ван-дер-Ваальса" href="EOS-1-VanDerWaals.html" />
@@ -224,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="EOS-3-CPA.html">Кубическое уравнение состояние с учетом ассоциации молекул</a></li>
 <li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-A-PD.html">Частные производные летучести компонентов</a></li>
 <li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-B-BIP.html">Универсальный расчет коэффициентов попарного взаимодействия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EOS-Appendix-C-HV.html">Правило смешивания Хьюрона-Видаля</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../3-SEC/SEC-0-Introduction.html">Стабильность. Равновесие. Критическое состояние</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -237,6 +238,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../4-LAB/LAB-0-Introduction.html">Моделирование лабораторных исследований</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5-ETC/ETC-0-Introduction.html">Применение PVT-моделирования для решения практических задач проектирования месторождений углеводородов</a></li>
 </ul>
 
     </div>
@@ -397,6 +399,7 @@ document.write(`
 <li><p><a class="reference internal" href="EOS-3-CPA.html"><span class="std std-doc">Кубическое уравнение состояния с учетом ассоциации молекул</span></a></p></li>
 <li><p><a class="reference internal" href="EOS-Appendix-A-PD.html"><span class="std std-doc">Приложение A. Частные производные летучести компонентов</span></a></p></li>
 <li><p><a class="reference internal" href="EOS-Appendix-B-BIP.html"><span class="std std-doc">Приложение B. Универсальный расчет коэффициентов попарного взаимодействия</span></a></p></li>
+<li><p><a class="reference internal" href="EOS-Appendix-C-HV.html"><span class="std std-doc">Приложение C. Правило смешивания Хьюрона-Видаля</span></a></p></li>
 </ul>
 <p><a class="reference internal" href="../1-TD/TD-0-Introduction.html"><span class="std std-doc">В предыдущем разделе</span></a> были введены основные термодинамические <a class="reference internal" href="../1-TD/TD-1-Basics.html#pvt-td-basics-observables"><span class="std std-ref">параметры</span></a> системы, характеризующие ее <a class="reference internal" href="../1-TD/TD-1-Basics.html#pvt-td-basics-state"><span class="std std-ref">состояние</span></a>. Также были рассмотрены <a class="reference internal" href="../1-TD/TD-1-Basics.html#pvt-td-basics-laws"><span class="std std-ref">законы</span></a>, которым подчиняется любая термодинамическая система. Этот раздел будет посвящен изучению <em><strong>правил</strong></em> (уравнений состояния), устанавливающих взаимосвязи между параметрами системы. Уравнения состояния представляют собой математические выражения, устанавливающие взаимосвязи между параметрами <em>гомогенной</em> системы, и полученные на основе экспериментальных данных и наблюдений за поведением реальных систем. То есть уравнения состояния являются эмпирическими зависимостями. Как и любые эмпирические зависимости, уравнения состояния характеризуются <em>областью применения</em> – такими диапазонами изменения параметров системы, при которых рассматриваемое уравнение состояния соответствует экспериментальным данным.</p>
 <p>Реальные термодинамические системы, в том числе пластовые флюиды: нефть, газ и вода, – представляют собой <em><strong>смеси</strong></em> – системы, состоящие из нескольких компонентов. Такие системы включают как углеводородные компоненты, которые могут состоять из десятков атомов углерода, так и неуглеводородные компоненты, например, азот <span class="math notranslate nohighlight">\(N_2\)</span>, диоксид углерода <span class="math notranslate nohighlight">\(CO_2\)</span>, сероводород <span class="math notranslate nohighlight">\(H_2S\)</span> и другие. Несмотря на сложность таких систем, даже простые уравнения состояния позволяют с удовлетворительной точностью описывать поведение реальных систем.</p>
