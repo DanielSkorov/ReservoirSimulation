@@ -302,7 +302,7 @@ pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ``` python
 yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 yji = np.vstack([yj1, 1. - yj1]).T
-lnphiji, Zj = pr.get_lnphiji_Zj(P, T, yji)
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
 lnfji = lnphiji + np.log(P * yji)
 Gj = np.sum(yji * lnfji, axis=1)
 ```
@@ -310,7 +310,7 @@ Gj = np.sum(yji * lnfji, axis=1)
 Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого воспользуемся методом `get_lnfi`, принимающего на вход давление, температуру и компонентный состав в виде одномерного масива, и возвращающего логарифмы летучести компонентов в виде одномерного массива. Затем выслим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
-lnfi = pr.get_lnfi(P, T, yi)
+lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = np.sum(yji * lnfi, axis=1)
 ```
 
@@ -382,11 +382,11 @@ pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
 yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 yji = np.vstack([yj1, 1. - yj1]).T
-lnphiji, Zj = pr.get_lnphiji_Zj(P, T, yji)
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
 lnfji = lnphiji + np.log(P * yji)
 Gj = np.sum(yji * lnfji, axis=1)
 
-lnfi = pr.get_lnfi(P, T, yi)
+lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = np.sum(yji * lnfi, axis=1)
 
 from matplotlib import pyplot as plt
@@ -429,7 +429,7 @@ yi = np.array([.9, .1]) # Mole fractions [fr.]
 Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
 
 ``` python
-lnphiji, Zj = pr.get_lnphiji_Zj(P, T, yji)
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
 lnfji = lnphiji + np.log(P * yji)
 Gj = np.sum(yji * lnfji, axis=1)
 ```
@@ -437,7 +437,7 @@ Gj = np.sum(yji * lnfji, axis=1)
 Теперь вычислим летучести компонентов для заданного компонентного состава. Затем определим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
-lnfi = pr.get_lnfi(P, T, yi)
+lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = np.sum(yji * lnfi, axis=1)
 ```
 
@@ -492,11 +492,11 @@ P = np.float64(6e6) # Pressure [Pa]
 T = np.float64(10. + 273.15) # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 
-lnphiji, Zj = pr.get_lnphiji_Zj(P, T, yji)
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
 lnfji = lnphiji + np.log(P * yji)
 Gj = np.sum(yji * lnfji, axis=1)
 
-lnfi = pr.get_lnfi(P, T, yi)
+lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = np.sum(yji * lnfi, axis=1)
 
 from matplotlib import pyplot as plt
@@ -757,7 +757,7 @@ def update(
 Выполним расчет коэффициентов летучести для начального компонентного состава:
 
 ``` python
-hi = pr.get_lnphii(P, T, yi) + np.log(yi)
+hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 ```
 
 Проинициализируем функции `condit` и `update`:
@@ -766,7 +766,7 @@ hi = pr.get_lnphii(P, T, yi) + np.log(yi)
 from functools import partial
 
 pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
+pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -774,7 +774,7 @@ pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
 ``` python
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.get_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
     carry = (1, ki, gi, 1.)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -849,18 +849,18 @@ def update(
         lmbd_kp1 = 30.
     return k + 1, ki_kp1, gi_kp1, lmbd_kp1
 
-hi = pr.get_lnphii(P, T, yi) + np.log(yi)
+hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 from functools import partial
 
 pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
+pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out1 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.get_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
     carry = (1, ki, gi, 1.)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -929,14 +929,14 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 Выполним расчет коэффициентов летучести для начального компонентного состава:
 
 ``` python
-hi = pr.get_lnphii(P, T, yi) + np.log(yi)
+hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 ```
 
 Проинициализируем функции `condit` и `update`:
 
 ``` python
 pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
+pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -944,7 +944,7 @@ pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
 ``` python
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.get_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
     carry = (1, ki, gi, 1.)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -981,16 +981,16 @@ yi = np.array([.9, .1]) # Mole fractions [fr.]
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
-hi = pr.get_lnphii(P, T, yi) + np.log(yi)
+hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.get_lnphii, P=P, T=T))
+pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out2 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.get_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
     carry = (1, ki, gi, 1.)
     while pcondit(carry):
         carry = pupdate(carry)

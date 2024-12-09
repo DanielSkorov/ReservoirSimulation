@@ -14,42 +14,76 @@ VectorType = np.ndarray[tuple[int], np.dtype[DType]]
 MatrixType = np.ndarray[tuple[int, int], np.dtype[DType]]
 
 
-class EosptType(Protocol):
+class EOSPTType(Protocol):
   mwi: VectorType
 
-  def get_Z(
+  def getPT_Z(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
   ) -> ScalarType: ...
 
-  def get_lnphii(
+  def getPT_lnphii(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
   ) -> VectorType: ...
 
-  def get_lnphii_Z(
+  def getPT_lnphii_Z(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
   ) -> tuple[VectorType, ScalarType]: ...
 
-  def get_lnphiji_Zj(
+  def getPT_lnphiji_Zj(
     self,
     P: ScalarType,
     T: ScalarType,
     yji: MatrixType,
   ) -> tuple[MatrixType, VectorType]: ...
 
-  def get_kvguess(
+  def getPT_kvguess(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
     level: int,
   ) -> MatrixType: ...
+
+
+class EOSVTType(Protocol):
+  mwi: VectorType
+
+  def getVT_P(
+    self,
+    V: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> ScalarType: ...
+
+  def getVT_lnfi_dnj(
+    self,
+    V: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    n: ScalarType,
+  ) -> tuple[VectorType, MatrixType]: ...
+
+  def getVT_d3F(
+    self,
+    V: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    zti: VectorType,
+    n: ScalarType,
+  ) -> ScalarType: ...
+
+  def detVT_vmin(
+    self,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> ScalarType: ...
 

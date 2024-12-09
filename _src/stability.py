@@ -10,7 +10,7 @@ from custom_types import (
   ScalarType,
   VectorType,
   MatrixType,
-  EosptType,
+  EOSPTType,
 )
 
 
@@ -25,7 +25,7 @@ class stabilityPT(object):
 
   Arguments
   ---------
-  eos : EosptType
+  eos : EOSPTType
     An initialized instance of a PT-based equation of state.
 
   tol : numpy.float64
@@ -42,23 +42,31 @@ class stabilityPT(object):
 
   level : int
     Regulates a set of initial k-values obtained by the method
-    `eos.get_kvguess(P, T, yi, level)`. The default is 0, which means
+    `eos.getPT_kvguess(P, T, yi, level)`. The default is 0, which means
     that the most simple approache are used to generate initial k-values
     for the stability test.
+
+  use_prev : bool
+    Allows to preseve previous calculation results and to use them
+    as the first initial guess for the next one if the solution is
+    non-trivial.
   """
   def __init__(
     self,
-    eos: EosptType,
+    eos: EOSPTType,
     tol: ScalarType = np.float64(1e-6),
     Niter: int = 50,
     eps: ScalarType = np.float64(1e-4),
     level: int = 0,
+    use_prev: bool = False
   ) -> None:
     self.eos = eos
     self.eps = -eps
     self.tol = tol
     self.Niter = Niter
     self.level = level
+    self.use_prev = use_prev
+    self.kvi_prev: None | VectorType = None
     pass
 
   def run(
@@ -145,10 +153,12 @@ class stabilityPT(object):
       '\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
       P, T, yi,
     )
-    kvji = self.eos.get_kvguess(P, T, yi, self.level)
-    lnphii, Z = self.eos.get_lnphii_Z(P, T, yi)
+    kvji = self.eos.getPT_kvguess(P, T, yi, self.level)
+    if self.use_prev and self.preserved:
+      kvji = np.vstack([self.kvi_prev, kvji])
+    lnphii, Z = self.eos.getPT_lnphii_Z(P, T, yi)
     hi = lnphii + np.log(yi)
-    plnphii = partial(self.eos.get_lnphii, P=P, T=T)
+    plnphii = partial(self.eos.getPT_lnphii, P=P, T=T)
     kvik: VectorType
     for j, kvik in enumerate(kvji):
       k = 0
@@ -186,6 +196,9 @@ class stabilityPT(object):
       ni = kvik * yi
       TPD = -np.log(ni.sum())
       if (TPD < self.eps) & (k < self.Niter):
+        if self.use_prev:
+          self.kvi_prev = kvi
+          self.preserved = True
         logger.debug('TPD = %s\n\tThe system is unstable.\n', TPD)
         n = ni.sum()
         xi = ni / n

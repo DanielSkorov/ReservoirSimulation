@@ -18,7 +18,7 @@ from custom_types import (
   ScalarType,
   VectorType,
   MatrixType,
-  EosptType,
+  EOSPTType,
 )
 
 
@@ -32,7 +32,7 @@ class flash2pPT(object):
 
   Arguments
   ---------
-  eos : EosptType
+  eos : EOSPTType
     An initialized instance of a PT-based equation of state.
 
   tol : numpy.float64
@@ -47,19 +47,28 @@ class flash2pPT(object):
     If `True` the algorithm will not perform the stability test, and
     initial guesses of k-values will be calculated by the method of
     an eos instance. The default is `False`.
+
+  use_prev : bool
+    Allows to preseve previous calculation results and to use them
+    as the first initial guess for the next one if the solution was
+    found.
   """
   def __init__(
     self,
-    eos: EosptType,
+    eos: EOSPTType,
     tol: ScalarType = np.float64(1e-5),
     Niter: int = 50,
     skip_stab: bool = False,
+    use_prev: bool = False,
   ) -> None:
     self.eos = eos
     self.tol = tol
     self.Niter = Niter
     self.skip_stab = skip_stab
+    self.use_prev = use_prev
+    self.preserved: bool = False
     self.stability = stabilityPT(eos)
+    self.kvi_prev: None | VectorType = None
     pass
 
   def run(
@@ -75,7 +84,7 @@ class flash2pPT(object):
     Arguments
     ---------
       P : numpy.float64
-          Pressure of a mixture [Pa].
+        Pressure of a mixture [Pa].
 
       T : numpy.float64
         Temperature of a mixture [K].
@@ -152,7 +161,7 @@ class flash2pPT(object):
       P, T, yi,
     )
     if self.skip_stab:
-      kvji = self.eos.get_kvguess(P, T)
+      kvji = self.eos.getPT_kvguess(P, T)
     else:
       stab, kvji, Z = self.stability._run_qnss(P, T, yi)
       if stab:
@@ -161,7 +170,9 @@ class flash2pPT(object):
           np.vstack([yi, np.zeros_like(yi)]),
           np.array([Z, 0.]),
         )
-    plnphii = partial(self.eos.get_lnphii_Z, P=P, T=T)
+    if self.use_prev and self.preserved:
+      kvji = np.vstack([self.kvi_prev, kvji])
+    plnphii = partial(self.eos.getPT_lnphii_Z, P=P, T=T)
     kvik: VectorType
     for i, kvik in enumerate(kvji):
       logger.debug('The kv-loop iteration number = %s', i)
@@ -205,6 +216,9 @@ class flash2pPT(object):
         if lmbd > 30.:
           lmbd = 30.
       if k < self.Niter:
+        if self.use_prev:
+          self.kvi_prev = kvik
+          self.preserved = True
         rhol = yli.dot(self.eos.mwi) / Zl
         rhov = yvi.dot(self.eos.mwi) / Zv
         if rhov < rhol:
@@ -219,6 +233,7 @@ class flash2pPT(object):
             np.vstack([yli, yvi]),
             np.array([Zl, Zv]),
           )
+    self.preserved = False
     raise ValueError(
       "The solution of the equilibrium was not found. "
       "Try to increase the number of iterations or choose an another method."

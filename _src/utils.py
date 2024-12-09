@@ -95,3 +95,81 @@ def brentopt(func, x0, minx, maxx, Niter=50, tol=1e-8):
   return x
 
 
+def mineig_newton(Q, x0, lmbd0=0., tol=1e-5, Niter=10):
+  lmbd = lmbd0
+  x = x0
+  u = np.hstack([x, lmbd])
+  I = np.identity(x.shape[0])
+  M = Q - lmbd * I
+  J = np.block([[M, -x[:,None]], [2. * x, 0.]])
+  b = np.hstack([M.dot(x), x.dot(x) - 1.])
+  # print(f'Iteration #0:\n\t{x = }\n\t{lmbd = }\n\t{b = }')
+  k = 1
+  while (np.linalg.norm(b) > tol) & (k < Niter):
+    du = np.linalg.solve(J, b)
+    u -= du
+    x = u[:-1]
+    lmbd = u[-1]
+    M = Q - lmbd * I
+    J = np.block([[M, -x[:,None]], [2. * x, 0.]])
+    b = np.hstack([M.dot(x), x.dot(x) - 1.])
+    # print(f'Iteration #{k}:\n\t{x = }\n\t{lmbd = }\n\t{b = }')
+    k += 1
+  return k, x, lmbd
+
+
+def mineig_inviter(Q, b0=None, s=0., tol=1e-5, Niter=10):
+  k = 0
+  if b0 is None:
+    bk = np.ones(shape=(Q.shape[0],), dtype=Q.dtype)
+  else:
+    bk = b0
+  if s != 0.:
+    # M = Q - s * np.identity(n)
+    M = np.linalg.inv(Q - np.diagflat(np.full_like(bk, s)))
+  else:
+    # M = Q
+    M = np.linalg.inv(Q)
+  # bkp1 = np.linalg.solve(M, bk)
+  bkp1 = M.dot(bk)
+  bkp1 /= np.linalg.norm(bkp1)
+  k += 1
+  while (np.linalg.norm(bkp1 - bk) > tol) & (k < Niter):
+    bk = bkp1
+    # print(f'Iteration #{k}: {bk = }')
+    # bkp1 = np.linalg.solve(M, bk)
+    bkp1 = M.dot(bk)
+    bkp1 /= np.linalg.norm(bkp1)
+    k += 1
+  lmbd = Q[0].dot(bkp1) / bkp1[0]
+  return k, bkp1, lmbd
+
+
+def mineig_rayquot(Q, x0=None, lmbd0=None, tol=1e-5, Niter=10):
+  if x0 is None:
+    # xk = np.random.uniform(size=Q.shape[0], dtype=Q.dtype)
+    # xk /= np.linalg.norm(xk)
+    xk = np.ones(shape=(Q.shape[0],), dtype=Q.dtype)
+  else:
+    xk = x0
+  if lmbd0 is None:
+    lmbdk = xk.dot(Q).dot(xk)
+  else:
+    lmbdk = lmbd0
+  # print(f'Iteration #0:\n\t{xk = }\n\t{lmbdk = }')
+  M = Q - np.diagflat(np.full_like(xk, lmbdk))
+  xkp1 = np.linalg.solve(M, xk)
+  xkp1 /= np.linalg.norm(xkp1)
+  lmbdkp1 = xkp1.dot(Q).dot(xkp1)
+  k = 1
+  while (np.abs((lmbdkp1 - lmbdk) / lmbdk) > tol) & (k < Niter):
+    xk = xkp1
+    lmbdk = lmbdkp1
+    # print(f'Iteration #{k}:\n\t{xk = }\n\t{lmbdk = }')
+    M = Q - np.diagflat(np.full_like(xk, lmbdk))
+    xkp1 = np.linalg.solve(M, xk)
+    xkp1 /= np.linalg.norm(xkp1)
+    lmbdkp1 = xkp1.dot(Q).dot(xkp1)
+    k += 1
+  return k, xkp1, lmbdkp1
+

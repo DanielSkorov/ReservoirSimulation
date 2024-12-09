@@ -46,6 +46,12 @@ $$ \left( P + \frac{\alpha_m}{v^2 + v b_m \left(1 + c \right) - c b_m^2} \right)
 
 $$ \ln \phi_i = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln Z = \frac{\partial}{\partial n_i} \left( \int_V^\infty \left( \frac{P}{RT} - \frac{n}{V} \right) dV \right)_{V, T, n_{j \neq i}} - \ln Z. $$
 
+````{margin}
+```{admonition} Дополнительно
+Уравнения состояния Суаве-Редлиха-Квонга и Пенга-Робинсона, как и ранее уравнение состояния Ван-дер-Ваальса, позволяют явно выразить давление через известные объем $V$ и температуру $P$, то есть являются *pressure-explicit*. Однако на практике в гидродинамическом моделировании чаще всего известными являются давление $P$ и температура $T$.
+```
+````
+
 Запишем рассматриваемые уравнения состояния относительно давления:
 
 $$ P = \frac{RT}{v - b_m} - \frac{\alpha_m}{v^2 + \left( c + 1 \right) b_m v - c b_m^2} = \frac{n R T}{V - n b_m} - \frac{\alpha_m n^2}{V^2 + \left( c + 1 \right) b_m n V - c b_m^2 n^2}. $$
