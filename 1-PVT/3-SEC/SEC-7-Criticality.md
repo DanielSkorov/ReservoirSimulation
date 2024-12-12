@@ -85,19 +85,25 @@ print(f'Pcmix = {P / 1e6} MPa, Tcmix = {T - 273.15} C')
 Выполним проверку стабильности равновесного состояния:
 
 ```{code-cell} python
-stab = stabilityPT(pr)
-is_stable, kv0, _ = stab.run(P, T, yi, method='qnss')
-print(f'The system is stable: {is_stable}.')
+stab = stabilityPT(pr, method='qnss')
+stabres = stab.run(P, T, yi)
+stabres
 ```
 
 Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:
 
 ```{code-cell} python
-flash = flash2pPT(pr)
-Fj, yji, Zj = flash.run(P, T, yi)
-vj = Zj * R * T / P
-denj = yji.dot(mwi) / vj
-print(f'Phase mole fractions: {Fj}\nCompositions:\n{yji}\nPhase densities: {denj} kg/m3')
+flash = flash2pPT(pr, stabmethod='qnss', flashmethod='qnss')
+flashres = flash.run(P, T, yi)
+flashres
+```
+
+Определим плотности фаз:
+
+```{code-cell} python
+vj = flashres.Zj * R * T / P
+denj = flashres.yji.dot(mwi) / vj
+print(f'Phase densities: {denj} kg/m3')
 ```
 
 Таким образом, при псевдокритических давлении и температуре рассматриваемая система представляет собой двухфазную систему, следовательно, эти термобарические условия не соответствуют определению критического состояния системы.
@@ -573,56 +579,10 @@ zetai.dot(zetai)
 np.linalg.norm(Q.dot(zetai))
 ```
 
-Для последующего использования оформим данный алгоритм в функцию `getV_Tspin`:
+В последующем будем использовать [реализацию](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/boundary.py) данного алгоритма в виде функции `getVT_Tspinodal`:
 
 ```{code-cell} python
-import numpy.typing as npt
-from typing import Protocol
-
-
-class EOSVTType(Protocol):
-    def getVT_lnfi_dnj(
-        self,
-        V: np.float64,
-        T: np.float64,
-        yi: npt.NDArray[np.float64],
-        n: np.float64,
-    ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: ...
-
-
-def getV_Tspin(
-    V: np.float64,
-    yi: npt.NDArray[np.float64],
-    eos: EOSVTType,
-    T0: np.float64 | None = None,
-    zeta0i: npt.NDArray[np.float64] | None = None,
-    tol: float = 1e-5,
-    Niter: int = 25,
-) -> tuple[np.float64, npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-    k = 0
-    if T0 is None:
-        Tk = 1.3 * yi.dot(eos.Tci)
-    else:
-        Tk = T0
-    if zeta0i is None:
-        zeta0i = yi
-    lnfi, Q = eos.getVT_lnfi_dnj(V, Tk, yi)
-    Nitrq, zetai, lmbdk = mineig_rayquot(Q, zeta0i)
-    dT = 1e-5 * Tk
-    lmbdkdT = np.linalg.eigvals(eos.getVT_lnfi_dnj(V, Tk + dT, yi)[1]).min()
-    dlmbddT = (lmbdkdT - lmbdk) / dT
-    dT = -lmbdk / dlmbddT
-    k = 1
-    while (np.abs(lmbdk) > 1e-5) & (k < 10):
-        Tkp1 = Tk + dT
-        Q = pr.getVT_lnfi_dnj(V, Tkp1, yi)[1]
-        Nitrq, zetai, lmbdkp1 = mineig_rayquot(Q, zetai)
-        dlmbddT = (lmbdkp1 - lmbdk) / dT
-        dT = -lmbdkp1 / dlmbddT
-        Tk = Tkp1
-        lmbdk = lmbdkp1
-        k += 1
-    return Tk, zetai, Q
+from boundary import getVT_Tspinodal
 ```
 
 Стоит отметить, что, принимая во внимание неточность определения производной функции минимального собственного значения, а также численную погрешность итерационных методов расчета минимального собственного значения, для надежной работы представленного выше подхода необходимо достаточно хорошее начальное приближение к спинодальной температуре для заданного объема термодинамической системы. В качестве такого начального приближения может быть использована температура с предыдущей итерации внешнего цикла. Кроме того, решением уравнения $\mathbf{Q} \mathbf{\zeta} = 0$ является не только вектор $\mathbf{\zeta}$, но также и вектор $-\mathbf{\zeta}$. Дискретная вариация знака в значениях вектора изменения количеств вещества компонентов на каждой $j$-й итерации внешнего цикла решения уравнения $C = \delta^3 F = 0$ может приводить к плохой сходимости численного метода. В связи с этим, необходимо осуществлять проверку знака элементов решения уравнения $\mathbf{Q} \mathbf{\zeta} = 0$ и умножать вектор $\mathbf{\zeta}$ на $-1$ на $j$-й итерации, если:
@@ -699,7 +659,7 @@ j += 1
 while (np.abs(dkappa) > 1e-6) & (j < 20):
     kappajp1 = kappaj + dkappa
     V = bm * kappajp1 * n
-    T, zetaijp1, Q = getV_Tspin(V, yi, pr, T, zetaij)
+    T, zetaijp1 = getVT_Tspinodal(V, yi, pr, T, zetaij)
     if zetaijp1[0] * zetaij[0] < 0.:
         zetaijp1 *= -1.
     Cjp1 = (kappajp1 - 1)**2 * pr.getVT_d3F(V, T, yi, zetaijp1)

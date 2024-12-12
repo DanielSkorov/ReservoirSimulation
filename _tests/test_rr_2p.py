@@ -4,13 +4,13 @@ sys.path.append('../_src/')
 
 import logging
 
-logger = logging.getLogger('rr')
-logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger('rr')
+# logger.setLevel(logging.DEBUG)
 
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# handler = logging.StreamHandler(sys.stdout)
+# formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
+# handler.setFormatter(formatter)
+# logger.addHandler(handler)
 
 import unittest
 
@@ -42,8 +42,8 @@ class rr_fgh(unittest.TestCase):
     yi = np.array([0.770, 0.200, 0.010, 0.010, 0.005, 0.005])
     kvi = np.array([1.00003, 1.00002, 1.00001, 0.99999, 0.99998, 0.99997])
     tol = np.float64(1e-10)
-    Niter = 2
-    F = solve2p_FGH(kvi, yi, tol, Niter)
+    maxiter = 2
+    F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
@@ -51,8 +51,8 @@ class rr_fgh(unittest.TestCase):
     yi = np.array([0.44, 0.55, 3.88E-03, 2.99E-03, 2.36E-03, 1.95E-03])
     kvi = np.array([161.59, 6.90, 0.15, 1.28E-03, 5.86E-06, 2.32E-08])
     tol = np.float64(1e-10)
-    Niter = 3
-    F = solve2p_FGH(kvi, yi, tol, Niter)
+    maxiter = 3
+    F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
@@ -61,8 +61,8 @@ class rr_fgh(unittest.TestCase):
     kvi = 1. + np.array([2. * eps, 1.5 * eps, eps, -eps, -1.5 * eps, -2. * eps])
     yi = np.full_like(kvi, 1. / 6.)
     tol = np.float64(1e-10)
-    Niter = 1
-    F = solve2p_FGH(kvi, yi, tol, Niter)
+    maxiter = 1
+    F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
@@ -70,8 +70,8 @@ class rr_fgh(unittest.TestCase):
     yi = np.array([0.8097, 0.0566, 0.0306, 0.0457, 0.0330, 0.0244])
     kvi = np.array([1.000065, 0.999922, 0.999828, 0.999650, 0.999490, 0.999282])
     tol = np.float64(1e-10)
-    Niter = 5
-    F = solve2p_FGH(kvi, yi, tol, Niter)
+    maxiter = 5
+    F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
@@ -79,8 +79,8 @@ class rr_fgh(unittest.TestCase):
     yi = np.array([0.1789202106, 0.0041006011, 0.7815241261, 0.0164691242, 0.0189859122, 0.0000000257])
     kvi = np.array([445.995819899, 441.311360487, 411.625356748, 339.586063803, 29.7661058122, 0.00596602417])
     tol = np.float64(1e-8)
-    Niter = 1
-    F = solve2p_FGH(kvi, yi, tol, Niter)
+    maxiter = 1
+    F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 

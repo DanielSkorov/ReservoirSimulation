@@ -62,8 +62,8 @@ def fD(
 def solve2p_FGH(
   kvi: VectorType,
   yi: VectorType,
-  tol: ScalarType = np.float64(1e-8),
-  Niter: int = 50,
+  tol: ScalarType = 1e-8,
+  maxiter: int = 50,
 ) -> ScalarType:
   """FGH-method for solving the Rachford-Rice equation.
 
@@ -72,19 +72,22 @@ def solve2p_FGH(
 
   Arguments
   ---------
-    kvi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      K-values of `(Nc,)` components.
+  kvi: ndarray, shape (Nc,)
+    K-values of `Nc` components.
 
-    yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Mole fractions of `(Nc,)` components.
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
 
-    tol : numpy.float64
-      Tolerance.
+  tol: float
+    Terminate successfully if the absolute value of the D-function
+    is less than `tol`. Default is `1e-8`.
 
-    Niter : int
-      Maximum number of iterations.
+  maxiter: int
+    Maximum number of iterations. Default is `50`.
 
-  Returns a mole fraction of the non-reference phase in a system.
+  Returns
+  -------
+  A mole fraction of the non-reference phase in a system.
   """
   logger.debug(
     'Solving the RR-equation using the FGH-method\n\tkvi = %s\n\tyi = %s',
@@ -104,7 +107,7 @@ def solve2p_FGH(
   D, dDda = pD(ak)
   hk = D / dDda
   logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', 0, ak, D)
-  while (np.abs(D) > tol) & (k < Niter):
+  while (np.abs(D) > tol) & (k < maxiter):
     akp1 = ak - hk
     if akp1 < 0.:
       if D > 0.:
@@ -124,8 +127,8 @@ def solve2p_FGH(
 def solve2p_GH(
   kvi: VectorType,
   yi: VectorType,
-  tol: ScalarType = np.float64(1e-8),
-  Niter: int = 50,
+  tol: ScalarType = 1e-8,
+  maxiter: int = 50,
 ) -> ScalarType:
   """GH-method for solving the Rachford-Rice equation.
 
@@ -134,20 +137,22 @@ def solve2p_GH(
 
   Arguments
   ---------
+  kvi: ndarray, shape (Nc,)
+    K-values of `Nc` components.
 
-    kvi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      K-values of `(Nc,)` components.
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
 
-    yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Mole fractions of `(Nc,)` components.
+  tol: float
+    Terminate successfully if the absolute value of the D-function
+    is less than `tol`. Default is `1e-8`.
 
-    tol : numpy.float64
-      Tolerance.
+  maxiter: int
+    Maximum number of iterations. Default is `50`.
 
-    Niter : int
-      Maximum number of iterations.
-
-  Returns a mole fraction of the non-reference phase in a system.
+  Returns
+  -------
+  A mole fraction of the non-reference phase in a system.
   """
   logger.debug(
     'Solving the RR-equation using the GH-method\n\tkvi = %s\n\tyi = %s',
@@ -176,7 +181,7 @@ def solve2p_GH(
     eq *= -ak
   hk = eq / deqda
   logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', 0, ak, eq)
-  while (eq > tol) & (k < Niter):
+  while (eq > tol) & (k < maxiter):
     k +=1
     ak -= hk
     eq, deqda = peq(ak)
@@ -191,10 +196,10 @@ def solveNp(
   Kji: MatrixType,
   yi: VectorType,
   fj0: VectorType,
-  tol: ScalarType = np.float64(1e-6),
-  Niter: int = 30,
-  beta: ScalarType = np.float64(0.8),
-  c: ScalarType = np.float64(0.3),
+  tol: ScalarType = 1e-6,
+  maxiter: int = 30,
+  beta: ScalarType = 0.8,
+  c: ScalarType = 0.3,
 ):
   """Solves the system of Rachford-Rice equations
 
@@ -206,30 +211,33 @@ def solveNp(
   Arguments
   ---------
 
-    Kji : numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]
-      K-values of `Nc` components in `Np-1` phases.
+  Kji: ndarray, shape (Np-1, Nc)
+    K-values of `Nc` components in `Np-1` phases.
 
-    yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Mole fractions of `(Nc,)` components.
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
 
-    fj0 : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Initial guess for phase mole fractions.
+  fj0: ndarray, shape (Np-1,)
+    Initial guess for phase mole fractions.
 
-    tol : numpy.float64
-      Tolerance.
+  tol: float
+    Terminate successfully if the gradient norm is less than `tol`.
+    Default is `1e-6`.
 
-    Niter : int
-      Maximum number of iterations.
+  maxiter: int
+    Maximum number of iterations. Default is `30`.
 
-    beta : numpy.float64
-      Coefficient used to update step size in the backtracking line
-      search procedure.
+  beta: float
+    Coefficient used to update step size in the backtracking line
+    search procedure. Default is `0.8`.
 
-    c : numpy.float64
-      Coefficient used to calculate the Goldstein's condition for the
-      backtracking line search procedure.
+  c: float
+    Coefficient used to calculate the Goldstein's condition for the
+    backtracking line search procedure. Default is `0.3`.
 
-  Returns a vector of mole fractions of non-reference phases in a system.
+  Returns
+  -------
+  A vector of mole fractions of non-reference phases in a system.
   """
   logger.debug(
     "Solving the system of RR-equations using Okuno's method"
@@ -255,7 +263,7 @@ def solveNp(
     'Iteration #0:\n\tFj = %s\n\tgnorm = %s', fjk, gnorm,
   )
   k: int = 1
-  while (gnorm > tol) & (k < Niter):
+  while (gnorm > tol) & (k < maxiter):
     Pji = Bji / ti
     Hjl = Pji.dot(Pji.T)
     dfj = -linsolver(Hjl, gj)

@@ -11,7 +11,7 @@ from custom_types import (
 logger = logging.getLogger('eos')
 
 
-R: ScalarType = np.float64(8.3144598)  # Universal gas constant [J/mol/K]
+R: ScalarType = 8.3144598  # Universal gas constant [J/mol/K]
 
 
 class vdw(object):
@@ -22,15 +22,41 @@ class vdw(object):
 
   Arguments
   ---------
-    Pci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Critical pressures of `(Nc,)` components [Pa].
+  Pci: ndarray, shape (Nc,)
+    Critical pressures of `Nc` components [Pa].
 
-    Tci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Critical temperatures of `(Nc,)` components [K].
+  Tci: ndarray, shape (Nc,)
+    Critical temperatures of `Nc` components [K].
 
-    dij : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      The lower triangle matrix of binary interaction coefficients
-      expressed as a numpy.array of the shape `(Nc * (Nc - 1) // 2,)`.
+  dij: ndarray, shape (Nc * (Nc - 1) // 2,)
+    The lower triangle matrix of binary interaction coefficients
+    of `Nc` components.
+
+  Methods
+  -------
+  getPT_Z(P, T, yi) -> float
+    Returns the compressiblity factor of a mixture for given
+    pressure `P: float`, temperature `T: float` and `yi: ndarray`
+    of shape `(Nc,)` mole fractions of `Nc` components.
+
+  getPT_lnphii(P, T, yi) -> ndarray
+    Returns logarithms of the fugacity coefficients of `Nc`
+    components.
+
+  getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]
+    Returns a tuple of logarithms of the fugacity coefficients of
+    `Nc` components and the compressiblity factor of a mixture.
+
+  getPT_lnfi(P, T, yi) -> ndarray
+    Returns logarithms of the fugacities of `Nc` components.
+
+  getPT_kvguess(P, T, yi, level) -> tuple[ndarray]
+    Returns a tuple containing vectors of initial k-values.
+
+  solve_eos(A, B) -> float
+    Returns the solution of the EOS corresponding to the lowest Gibb's
+    energy. `A: float` and `B: float` are the coefficients used to
+    express the EOS in the cubic form.
   """
   def __init__(
     self,
@@ -38,6 +64,7 @@ class vdw(object):
     Tci: VectorType,
     dij: VectorType,
   ) -> None:
+    self.name = 'Van der Waals EOS'
     self.Nc = Pci.shape[0]
     self.Pci = Pci
     self.Tci = Tci
@@ -58,17 +85,19 @@ class vdw(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns the compressibility factor of a mixture calculated using
-    the van der Waals equation of state.
+    Returns
+    -------
+    The compressibility factor of a mixture calculated using the
+    van der Waals equation of state.
     """
     Si = self.sqrtai * (yi * self.sqrtai).dot(self.D)
     am = yi.dot(Si)
@@ -88,17 +117,19 @@ class vdw(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns an array with the natural logarithm of the fugacity
-    coefficient of each component.
+    Returns
+    -------
+    An array with the natural logarithm of the fugacity coefficient
+    of each component.
     """
     Si = self.sqrtai * (yi * self.sqrtai).dot(self.D)
     am = yi.dot(Si)
@@ -119,16 +150,18 @@ class vdw(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns a tuple containing an array with the natural logarithm of
+    Returns
+    -------
+    A tuple containing an array with the natural logarithm of
     the fugacity coefficient of each component, and the compressibility
     factor of a mixture.
     """
@@ -153,16 +186,18 @@ class vdw(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns an array with the natural logarithm of the fugacity of
+    Returns
+    -------
+    An array with the natural logarithm of the fugacity of
     each component.
     """
     return self.getPT_lnphii(P, T, yi) + np.log(P * yi)
@@ -171,32 +206,39 @@ class vdw(object):
     self,
     P: ScalarType,
     T: ScalarType,
+    yi: VectorType,
     level: int = 0,
-  ) -> MatrixType:
-    """Computes initial guess of k-values for given pressure `P` and
-    temperature `T` using the Wilson's correlation.
+  ) -> tuple[VectorType]:
+    """Computes initial guess of k-values for given pressure,
+    temperature and composition.
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      level : int
-        Regulates an output of this function. The default is 0, which
-        means that Wilson's and inverse Wilson's equations are used to
-        generate initial k-values. Available options are:
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-        0 - Wilson's and inverse Wilson's equations.
+    level: int
+      Regulates an output of this function. Available options are:
 
-    Returns a matrix containing two vectors of initial k-values
-    calculated using the Wilson's correlation and inverse Wilson's
-    correlation.
+        - 0: Wilson's and inverse Wilson's equations.
+
+      Default is `0`
+
+    Returns
+    -------
+    A tuple containing vectors of initial k-values.
     """
-    kvi = self.Pci * np.exp(5.3727 * (1. - self.Tci / T)) / P
-    return np.vstack([kvi, 1. / kvi])
+    if level == 0:
+      kvi = self.Pci * np.exp(5.3727 * (1. - self.Tci / T)) / P
+      return kvi, 1. / kvi
+    else:
+      raise ValueError(f'Unsupported level number: {level}.')
 
   @staticmethod
   def solve_eos(A: ScalarType, B: ScalarType) -> ScalarType:
@@ -208,16 +250,18 @@ class vdw(object):
 
     Arguments:
     ----------
-      A : numpy.float64
-        Coefficient in the cubic form of the van der Waals
-        equation of state.
+    A: float
+      The coefficient in the cubic form of the van der Waals
+      equation of state.
 
-      B : numpy.float64
-        Coefficient in the cubic form of the van der Waals
-        equation of state.
+    B: float
+      The coefficient in the cubic form of the van der Waals
+      equation of state.
 
-    Returns the solution of the van der Waals equation of state
-    corresponding to the lowest Gibb's energy.
+    Returns
+    -------
+    The solution of the van der Waals equation of state corresponding
+    to the lowest Gibb's energy.
     """
     b = -1. - B
     c = A
@@ -266,21 +310,95 @@ class pr78(object):
 
   Arguments
   ---------
-    Pci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Critical pressures of `(Nc,)` components [Pa].
+  Pci: ndarray, shape (Nc,)
+    Critical pressures of `Nc` components [Pa].
 
-    Tci : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Critical temperatures of `(Nc,)` components [K].
+  Tci: ndarray, shape (Nc,)
+    Critical temperatures of `Nc` components [K].
 
-    wi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Acentric factors of `(Nc,)` components.
+  wi: ndarray, shape (Nc,)
+    Acentric factors of `Nc` components.
 
-    vsi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      Volume shift parameters of `(Nc,)` components
+  mwi: ndarray, shape (Nc,)
+    Molar weights of `Nc` components.
 
-    dij : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-      The lower triangle matrix of binary interaction coefficients
-      expressed as a numpy.array of the shape `(Nc * (Nc - 1) // 2,)`.
+  vsi: ndarray, shape (Nc,)
+    Volume shift parameters of `Nc` components
+
+  dij: ndarray, shape (Nc * (Nc - 1) // 2,)
+    The lower triangle matrix of binary interaction coefficients
+    of `Nc` components.
+
+  Methods
+  -------
+  getPT_Z(P, T, yi) -> float
+    Returns the compressiblity factor of a mixture for given
+    pressure `P: float` in [Pa], temperature `T: float` in [K] and
+    `yi: ndarray` of shape `(Nc,)` mole fractions of `Nc` components.
+
+  getPT_lnphii(P, T, yi) -> ndarray
+    Returns logarithms of the fugacity coefficients of `Nc`
+    components.
+
+  getPT_lnfi(P, T, yi) -> ndarray
+    Returns logarithms of the fugacities of `Nc` components.
+
+  getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]
+    Returns a tuple of logarithms of the fugacity coefficients of
+    `Nc` components and the compressiblity factor of a mixture.
+
+  getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]
+    Returns a tuple of a vector of logarithms of the fugacity
+    coefficients of `Nc` components, the compressibility factor of
+    a mixture, and a `(Nc, Nc)` matrix of partial derivatives of
+    logarithms of the fugacity coefficients with respect to mole
+    numbers of components. `n` is a mixture mole number.
+
+  getPT_lnfi_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]
+    Returns a tuple of a vector of logarithms of the fugacities
+    of `Nc` components, the compressibility factor of a mixture, and
+    a `(Nc, Nc)` matrix of partial derivatives of logarithms of the
+    fugacities of components with respect to their mole numbers.
+    `n` is a mixture mole number.
+
+  getPT_Zj(P, T, yji) -> ndarray
+    Returns a vector of the compressibility factor for each phase
+    composition in `yji: ndarray` of shape `(Np, Nc)`, where `Np` is
+    the number of phases.
+
+  getPT_lnphiji_Zj(P, T, yji) -> tuple[ndarray, ndarray]
+    Returns a tuple of a matrix of shape `(Np, Nc)` of logarithms of
+    fugacity coefficients of `Nc` components in `Np` phases for given
+    matrix `yji: ndarray` of shape `(Np, Nc)` of phase compositions,
+    and a vector of the compressibility factor for each phase.
+
+  getPT_kvguess(P, T, yi, level) -> tuple[ndarray]
+    Returns a tuple containing vectors of initial k-values.
+
+  getVT_P(V, T, yi, n) -> float
+    Returns pressure in [Pa] calculated using the EOS for given
+    volume `V: float` in [m3], temperature `T: float` in [K],
+    composition `yi: ndarray` of shape `(Nc,)`, where `Nc` is the
+    number of components, and phase mole number `n: float`.
+
+  getVT_lnfi_dnj(V, T, yi, n) -> tuple[ndarray, ndarray]
+    Returns a tuple of an array with the natural logarithm of the
+    fugacity for each component and a matrix of their partial
+    derivatives with respect to component mole numbers.
+
+  getVT_d3F(V, T, yi, zti, n) -> float
+    Returns the cubic form of the Helmholtz energy Taylor series
+    decomposition for given component nole numbers changes
+    `zti: ndarray` of shape `(Nc)`, wherer `Nc` is the number of
+    components.
+
+  getVT_vmin(T, yi) -> float
+    Returns the minimal molar volume.
+
+  solve_eos(A, B) -> float
+    Returns the solution of the EOS corresponding to the lowest Gibb's
+    energy. `A: float` and `B: float` are the coefficients used to
+    express the EOS in the cubic form.
   """
   def __init__(
     self,
@@ -291,6 +409,7 @@ class pr78(object):
     vsi: VectorType,
     dij: VectorType,
   ) -> None:
+    self.name = 'Peng-Robinson (1978) EOS'
     self.Nc = Pci.shape[0]
     self.Pci = Pci
     self.Tci = Tci
@@ -322,16 +441,18 @@ class pr78(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns the compressibility factor of a mixture calculated using
+    Returns
+    -------
+    The compressibility factor of a mixture calculated using
     the modified Peng-Robinson equation of state.
     """
     RT = R * T
@@ -356,17 +477,19 @@ class pr78(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns an array with the natural logarithm of the fugacity
-    coefficient of each component.
+    Returns
+    -------
+    An array with the natural logarithm of the fugacity coefficient
+    of each component.
     """
     RT = R * T
     PRT = P / RT
@@ -383,6 +506,32 @@ class pr78(object):
     fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
     return -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
 
+  def getPT_lnfi(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> VectorType:
+    """Computes fugacities of components.
+
+    Arguments
+    ---------
+    P: float
+      Pressure of a mixture [Pa].
+
+    T: float
+      Temperature of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    An array with the natural logarithm of the fugacity of each
+    component.
+    """
+    return self.getPT_lnphii(P, T, yi,) + np.log(P * yi)
+
   def getPT_lnphii_Z(
     self,
     P: ScalarType,
@@ -394,17 +543,19 @@ class pr78(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns a tuple containing an array with the natural logarithm of
-    the fugacity coefficient of each component, and the compressibility
+    Returns
+    -------
+    A tuple containing an array with the natural logarithm of the
+    fugacity coefficient of each component, and the compressibility
     factor of a mixture.
     """
     RT = R * T
@@ -425,6 +576,114 @@ class pr78(object):
       Z - PRT * yi.dot(self.vsi_bi),
     )
 
+  def getPT_lnphii_Z_dnj(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    n: ScalarType = 1.,
+  ) -> tuple[VectorType, ScalarType, MatrixType]:
+    """Computes fugacities of components and their partial derivatives
+    with respect to component mole numbers.
+
+    Arguments
+    ---------
+    P: float
+      Pressure of a mixture [Pa].
+
+    T: float
+      Temperature of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    n: float
+      Mole number of a phase [gmole].
+
+    Returns
+    -------
+    A tuple of an array with the natural logarithm of the fugacity
+    coefficient for each component, the compressibility factor of
+    a mixture, and a `(Nc, Nc)` matrix of partial derivatives of
+    logarithms of the fugacity coefficients with respect to component
+    mole numbers.
+    """
+    RT = R * T
+    PRT = P / RT
+    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve_eos(A, B)
+    gZ = np.log(Z - B)
+    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
+    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
+    lnphii = -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
+    ddmdA = np.array([0., 1., -B])[:,None]
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
+    dgZdZ = 1. / (Z - B)
+    dgZdB = -dgZdZ
+    dfZdZ = 1. / (Z - B * .41421356) - 1. / (Z + B * 2.41421356)
+    dfZdB = (- 0.41421356 / (Z - B * 0.41421356)
+             - 2.41421356 / (Z + B * 2.41421356))
+    dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
+    dalphamdnj = 2. / n * (Si - alpham)
+    dbmdnj = (self.bi - bm) / n
+    dAdnj = dalphamdnj * PRT / RT
+    dBdnj = dbmdnj * PRT
+    ddmdnj = ddmdA * dAdnj + ddmdB * dBdnj
+    dqdnj = np.power(Z, np.array([2., 1., 0.])).dot(ddmdnj)
+    dZdnj = -dqdnj / dqdZ
+    dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
+    dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
+    dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
+                  + (self.bi / bm**2)[:,None] * dbmdnj) * (.35355339 * A / B)
+                 + gphii[:,None] * (dAdnj / A - dBdnj / B))
+    dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
+                  + (fZ * dgphiidnj + gphii[:,None] * dfZdnj)
+                  - dgZdnj)
+    return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidnj
+
+  def getPT_lnfi_Z_dnj(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    n: ScalarType = 1.,
+  ) -> tuple[VectorType, ScalarType, MatrixType]:
+    """Computes fugacities of components and their partial derivatives
+    with respect to component mole numbers.
+
+    Arguments
+    ---------
+    P: float
+      Pressure of a mixture [Pa].
+
+    T: float
+      Temperature of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    n: float
+      Mole number of a phase [gmole].
+
+    Returns
+    -------
+    A tuple of an array with the natural logarithm of the fugacity
+    for each component, the compressibility factor of a mixture, and
+    a `(Nc, Nc)` matrix of partial derivatives of logarithms of the
+    fugacities of components with respect to their mole numbers.
+    """
+    lnphii, Z, dlnphiidnj = self.getPT_lnphii_Z_dnj(P, T, yi, n)
+    lnfi = lnphii + np.log(yi * P)
+    dlnfidnj = dlnphiidnj + np.diagflat(1. / n / yi) - 1. / n
+    return lnfi, Z, dlnfidnj
+
   def getPT_Zj(
     self,
     P: ScalarType,
@@ -436,16 +695,19 @@ class pr78(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yji : numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]
-        Mole fractions array of shape `(Np, Nc)`.
+    yji: ndarray, shape (Np, Nc)
+      Mole fractions matrix, where `Np` is the number of phases and
+      `Nc` is the number of components.
 
-    Returns an array of the compressibility factor for each phase.
+    Returns
+    -------
+    An array of the compressibility factor for each phase.
     """
     RT = R * T
     PRT = P / RT
@@ -470,16 +732,19 @@ class pr78(object):
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yji : numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]
-        Mole fractions array of shape `(Np, Nc)`.
+    yji: ndarray, shape (Np, Nc)
+      Mole fractions matrix, where `Np` is the number of phases and
+      `Nc` is the number of components.
 
-    Returns a tuple with an array of the natural logarithm of fugacity
+    Returns
+    -------
+    A tuple with an array of the natural logarithm of fugacity
     coefficients for each component in each phase, and an array of
     compressibility factors for each phase.
     """
@@ -502,167 +767,77 @@ class pr78(object):
                - PRT * self.vsi_bi)
     return (lnphiji, Zj - yji.dot(self.vsi_bi) * PRT)
 
-  def getPT_lnfi(
-    self,
-    P: ScalarType,
-    T: ScalarType,
-    yi: VectorType,
-  ) -> VectorType:
-    """Computes fugacities of components.
-
-    Arguments
-    ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
-
-      T : numpy.float64
-        Temperature of a mixture [K].
-
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
-
-    Returns an array with the natural logarithm of the fugacity
-    of each component.
-    """
-    return self.getPT_lnphii(P, T, yi,) + np.log(P * yi)
-
-  def getPT_lnfi_dnj(
-    self,
-    P: ScalarType,
-    T: ScalarType,
-    yi: VectorType,
-    n: ScalarType = np.float64(1.),
-  ) -> tuple[VectorType, MatrixType]:
-    """Computes fugacities of components and their partial derivatives
-    with respect to component mole numbers.
-
-    Arguments
-    ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
-
-      T : numpy.float64
-        Temperature of a mixture [K].
-
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
-
-      n : numpy.float64
-        Mole number of a phase [gmole].
-
-    Returns a tuple of an array with the natural logarithm of
-    the fugacity for each component and a matrix of their partial
-    derivatives with respect to component mole numbers.
-    """
-    RT = R * T
-    PRT = P / RT
-    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
-    sqrtalphai = self.sqrtai * multi
-    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
-    alpham = yi.dot(Si)
-    bm = yi.dot(self.bi)
-    A = alpham * PRT / RT
-    B = bm * PRT
-    Z = self.solve_eos(A, B)
-    gZ = np.log(Z - B)
-    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
-    lnphii = -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
-    lnfi = lnphii + np.log(yi * P)
-    ddmdA = np.array([0., 1., -B])[:,None]
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / (Z - B * .41421356) - 1. / (Z + B * 2.41421356)
-    dfZdB = (- 0.41421356 / (Z - B * 0.41421356)
-             - 2.41421356 / (Z + B * 2.41421356))
-    dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
-    dalphamdnj = 2. / n * (Si - alpham)
-    dbmdnj = (self.bi - bm) / n
-    dAdnj = dalphamdnj * PRT / RT
-    dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj + ddmdB * dBdnj
-    dqdnj = np.power(Z, np.array([2., 1., 0.])).dot(ddmdnj)
-    dZdnj = -dqdnj / dqdZ
-    dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
-    dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
-    dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
-                  + (self.bi / bm**2)[:,None] * dbmdni) * (.35355339 * A / B)
-                 + gphii[:,None] * (dAdnj / A - dBdnj / B))
-    dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
-                  + (fZ * dgphiidni + gphii[:,None] * dfZdnj)
-                  - dgZdnj)
-    dlnfidnj = dlnphiidnj + np.diagflat(1. / n / yi) - 1. / n
-    return lnfi, dlnfidnj
-
   def getPT_kvguess(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
     level: int = 0,
-  ) -> MatrixType:
-    """Computes initial guess of k-values for given pressure `P` and
-    temperature `T` using the Wilson's correlation.
+  ) -> tuple[VectorType]:
+    """Computes initial k-values for given pressure, temperature
+    and composition.
 
     Arguments
     ---------
-      P : numpy.float64
-        Pressure of a mixture [Pa].
+    P: float
+      Pressure of a mixture [Pa].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-      level : int
-        Regulates an output of this function. The default is 0, which
-        means that Wilson's and inverse Wilson's equations are used to
-        generate initial k-values. Available options are:
+    level: int
+      Regulates an output of this function. Available options are:
 
-        0 - Wilson's and inverse Wilson's equations;
-        1 - previous + the first and last pure components.
+        - 0: Wilson's and inverse Wilson's equations;
+        - 1: previous + the first and last pure components.
 
-    Returns a matrix containing two vectors of initial k-values
-    calculated using the Wilson's correlation and inverse Wilson's
-    correlation.
+      Default is `0`.
+
+    Returns
+    -------
+    A tuple containing vectors of initial k-values.
     """
     kvi = self.Pci * np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / T)) / P
     if level == 0:
-      return np.vstack([kvi, 1. / kvi])
+      return kvi, 1. / kvi
     elif level == 1:
       u1i = np.full_like(yi, 1e-5)
       u1i[0] = 1. / yi[0]
       uNi = np.full_like(yi, 1e-5)
       uNi[-1] = 1. / yi[-1]
-      return np.vstack([uNi, u1i, kvi, 1. / kvi])
+      return uNi, u1i, kvi, 1. / kvi
+    else:
+      raise ValueError(f'Unsupported level number: {level}.')
 
   def getVT_P(
     self,
     V: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    n: ScalarType = np.float64(1.),
+    n: ScalarType = 1.,
   ) -> ScalarType:
     """Computes pressure for given volume, temperature and composition.
 
     Arguments
     ---------
-      V : numpy.float64
-        Volume of a mixture [m3].
+    V: float
+      Volume of a mixture [m3].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-      n : numpy.float64
-        Mole number of a phase [gmole].
+    n: float
+      Mole number of a phase [gmole].
 
-    Returns pressure in Pa.
+    Returns
+    -------
+    Pressure in [Pa].
     """
     v = V / n
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
@@ -677,7 +852,7 @@ class pr78(object):
     V: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    n: ScalarType = np.float64(1.),
+    n: ScalarType = 1.,
   ) -> tuple[VectorType, MatrixType]:
     """Computes fugacities of components and their partial derivatives
     with respect to component mole numbers.
@@ -687,21 +862,23 @@ class pr78(object):
 
     Arguments
     ---------
-      V : numpy.float64
-        Volume of a mixture [m3].
+    V: float
+      Volume of a mixture [m3].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-      n : numpy.float64
-        Mole number of a phase [gmole].
+    n: float
+      Mole number of a phase [gmole].
 
-    Returns a tuple of an array with the natural logarithm of
-    the fugacity for each component and a matrix of their partial
-    derivatives with respect to component mole numbers.
+    Returns
+    -------
+    A tuple of an array with the natural logarithm of the fugacity for
+    each component and a matrix of their partial derivatives with
+    respect to component mole numbers.
     """
     d1 = 2.41421356
     d2 = -.41421356
@@ -737,7 +914,7 @@ class pr78(object):
     T: ScalarType,
     yi: VectorType,
     zti: VectorType,
-    n: ScalarType = np.float64(1.),
+    n: ScalarType = 1.,
   ) -> ScalarType:
     """Computes the cubic form of the Helmholtz energy Taylor series
     decomposition for a given vector of component mole number changes.
@@ -748,23 +925,24 @@ class pr78(object):
 
     Arguments
     ---------
-      V : numpy.float64
-        Volume of a mixture [m3].
+    V: float
+      Volume of a mixture [m3].
 
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-      zti : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Component mole number changes [gmole].
+    zti: ndarray, shape (Nc,)
+      Component mole number changes [gmole].
 
-      n : numpy.float64
-        Mole number of a phase [gmole].
+    n: float
+      Mole number of a phase [gmole].
 
-    Returns the cubic form of the Helmholtz energy Taylor series
-    decomposition.
+    Returns
+    -------
+    The cubic form of the Helmholtz energy Taylor series decomposition.
     """
     d1 = 2.41421356
     d2 = -.41421356
@@ -804,13 +982,15 @@ class pr78(object):
 
     Arguments
     ---------
-      T : numpy.float64
-        Temperature of a mixture [K].
+    T: float
+      Temperature of a mixture [K].
 
-      yi : numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
-        Mole fractions of `(Nc,)` components.
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
 
-    Returns the minimal molar volume.
+    Returns
+    -------
+    The minimal molar volume.
     """
     return yi.dot(self.bi)
 
@@ -825,15 +1005,17 @@ class pr78(object):
 
     Arguments:
     ----------
-      A : numpy.float64
-        Coefficient in the cubic form of the modified Peng-Robinson
-        equation of state.
+    A: float
+      The coefficient in the cubic form of the modified Peng-Robinson
+      equation of state.
 
-      B : numpy.float64
-        Coefficient in the cubic form of the modified Peng-Robinson
-        equation of state.
+    B: float
+      The coefficient in the cubic form of the modified Peng-Robinson
+      equation of state.
 
-    Returns the solution of the modified Peng-Robinson equation of state
+    Returns
+    -------
+    The solution of the modified Peng-Robinson equation of state
     corresponding to the lowest Gibb's energy.
     """
     b = B - 1.
