@@ -470,14 +470,19 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i, \; i = 1 \, \ldots \, N_c,
 <p>Выполним проверку стабильности равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
-<span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">stabres</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: False.
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+False
+Tangent-plane distance:
+-0.004053320447365545
+Calculation completed successfully:
+True
 </pre></div>
 </div>
 </div>
@@ -485,20 +490,37 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i, \; i = 1 \, \ldots \, N_c,
 <p>Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
-<span class="n">Fj</span><span class="p">,</span> <span class="n">yji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">flash</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
-<span class="n">vj</span> <span class="o">=</span> <span class="n">Zj</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">P</span>
-<span class="n">denj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mwi</span><span class="p">)</span> <span class="o">/</span> <span class="n">vj</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Phase mole fractions: </span><span class="si">{</span><span class="n">Fj</span><span class="si">}</span><span class="se">\n</span><span class="s1">Compositions:</span><span class="se">\n</span><span class="si">{</span><span class="n">yji</span><span class="si">}</span><span class="se">\n</span><span class="s1">Phase densities: </span><span class="si">{</span><span class="n">denj</span><span class="si">}</span><span class="s1"> kg/m3&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">stabmethod</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">,</span> <span class="n">flashmethod</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<span class="n">flashres</span> <span class="o">=</span> <span class="n">flash</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">flashres</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase mole fractions: [0.42996619 0.57003381]
-Compositions:
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase composition:
 [[0.87389624 0.12610376]
  [0.9196896  0.0803104 ]]
-Phase densities: [267.51409751 575.9898083 ] kg/m3
+Phase mole fractions:
+[0.42996619 0.57003381]
+Phase compressibility factors:
+[0.44121581 0.21140204]
+Calculation completed successfully:
+True
+</pre></div>
+</div>
+</div>
+</div>
+<p>Определим плотности фаз:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vj</span> <span class="o">=</span> <span class="n">flashres</span><span class="o">.</span><span class="n">Zj</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">P</span>
+<span class="n">denj</span> <span class="o">=</span> <span class="n">flashres</span><span class="o">.</span><span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mwi</span><span class="p">)</span> <span class="o">/</span> <span class="n">vj</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Phase densities: </span><span class="si">{</span><span class="n">denj</span><span class="si">}</span><span class="s1"> kg/m3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase densities: [267.51409751 575.9898083 ] kg/m3
 </pre></div>
 </div>
 </div>
@@ -877,56 +899,10 @@ Iteration #6:
 </div>
 </div>
 </div>
-<p>Для последующего использования оформим данный алгоритм в функцию <code class="docutils literal notranslate"><span class="pre">getV_Tspin</span></code>:</p>
+<p>В последующем будем использовать <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/boundary.py">реализацию</a> данного алгоритма в виде функции <code class="docutils literal notranslate"><span class="pre">getVT_Tspinodal</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
-
-
-<span class="k">class</span> <span class="nc">EOSVTType</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">getVT_lnfi_dnj</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">V</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-        <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-        <span class="n">yi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-        <span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span> <span class="o">...</span>
-
-
-<span class="k">def</span> <span class="nf">getV_Tspin</span><span class="p">(</span>
-    <span class="n">V</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-    <span class="n">yi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">eos</span><span class="p">:</span> <span class="n">EOSVTType</span><span class="p">,</span>
-    <span class="n">T0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">zeta0i</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
-    <span class="n">Niter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">T0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Tk</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">yi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">eos</span><span class="o">.</span><span class="n">Tci</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">Tk</span> <span class="o">=</span> <span class="n">T0</span>
-    <span class="k">if</span> <span class="n">zeta0i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">zeta0i</span> <span class="o">=</span> <span class="n">yi</span>
-    <span class="n">lnfi</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">eos</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
-    <span class="n">Nitrq</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">mineig_rayquot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zeta0i</span><span class="p">)</span>
-    <span class="n">dT</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="o">*</span> <span class="n">Tk</span>
-    <span class="n">lmbdkdT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">eos</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-    <span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkdT</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
-    <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdk</span> <span class="o">/</span> <span class="n">dlmbddT</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">):</span>
-        <span class="n">Tkp1</span> <span class="o">=</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span>
-        <span class="n">Q</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tkp1</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">Nitrq</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdkp1</span> <span class="o">=</span> <span class="n">mineig_rayquot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
-        <span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkp1</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
-        <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdkp1</span> <span class="o">/</span> <span class="n">dlmbddT</span>
-        <span class="n">Tk</span> <span class="o">=</span> <span class="n">Tkp1</span>
-        <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">lmbdkp1</span>
-        <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">zetai</span><span class="p">,</span> <span class="n">Q</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">boundary</span> <span class="kn">import</span> <span class="n">getVT_Tspinodal</span>
 </pre></div>
 </div>
 </div>
@@ -1025,7 +1001,7 @@ Iteration #6:
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dkappa</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">j</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">):</span>
     <span class="n">kappajp1</span> <span class="o">=</span> <span class="n">kappaj</span> <span class="o">+</span> <span class="n">dkappa</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">bm</span> <span class="o">*</span> <span class="n">kappajp1</span> <span class="o">*</span> <span class="n">n</span>
-    <span class="n">T</span><span class="p">,</span> <span class="n">zetaijp1</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">getV_Tspin</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">zetaij</span><span class="p">)</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">zetaijp1</span> <span class="o">=</span> <span class="n">getVT_Tspinodal</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">zetaij</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">zetaijp1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">zetaij</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
         <span class="n">zetaijp1</span> <span class="o">*=</span> <span class="o">-</span><span class="mf">1.</span>
     <span class="n">Cjp1</span> <span class="o">=</span> <span class="p">(</span><span class="n">kappajp1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_d3F</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zetaijp1</span><span class="p">)</span>

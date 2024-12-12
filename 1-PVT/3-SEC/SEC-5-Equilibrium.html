@@ -533,14 +533,19 @@ document.write(`
 <p>Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
-<span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">stabres</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: False.
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+False
+Tangent-plane distance:
+-0.01654257858678946
+Calculation completed successfully:
+True
 </pre></div>
 </div>
 </div>
@@ -548,13 +553,12 @@ document.write(`
 <p>В результате проверки стабильности (путем вызова метода <code class="docutils literal notranslate"><span class="pre">run</span></code>) однофазное состояние системы оказалось нестабильным. В <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном тесту стабильности, применение метода QNSS для данного примера было представлено подробнее. Также был получен набор начальных приближений для проведения расчета равновесного состояния (принцип получения начальных приближений также подробнее был представлен в <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном проверке стабильности некоторого состояния системы):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kv0</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stabres</span><span class="o">.</span><span class="n">kvji</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[0.87776755, 2.10009203],
-       [1.13925378, 0.47616961]])
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([0.87776755, 2.10009203]), array([1.13925378, 0.47616961]))
 </pre></div>
 </div>
 </div>
@@ -606,7 +610,7 @@ document.write(`
 <p>Найдем равновесное состояние с использованием метода последовательных подстановок:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">kvi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kv0</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">kvi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stabres</span><span class="o">.</span><span class="n">kvji</span><span class="p">):</span>
     <span class="n">F1</span> <span class="o">=</span> <span class="n">solve2p_FGH</span><span class="p">(</span><span class="n">kvi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
     <span class="n">y2i</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">F1</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="n">y1i</span> <span class="o">=</span> <span class="n">y2i</span> <span class="o">*</span> <span class="n">kvi</span>
@@ -644,13 +648,17 @@ document.write(`
 <p>Выполним проверку стабильности найденного решения:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_stable</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: True.
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+True
+Tangent-plane distance:
+-3.079791818553032e-08
+Calculation completed successfully:
+True
 </pre></div>
 </div>
 </div>
@@ -744,14 +752,19 @@ document.write(`
 <p>Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># level=1 means more cases in a set of initial k-values</span>
-<span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># level=1 means more cases of initial k-values</span>
+<span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">stabres</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: False.
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+False
+Tangent-plane distance:
+-2.7485362194997007
+Calculation completed successfully:
+True
 </pre></div>
 </div>
 </div>
@@ -767,7 +780,7 @@ document.write(`
 <p>Перебирая различные начальные приближения констант фазового равновесия, полученные после проверки стабильности однофазного состояния, выполним расчет равновесного состояния в двухфазной постановке:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">kvi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kv0</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">kvi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stabres</span><span class="o">.</span><span class="n">kvji</span><span class="p">):</span>
     <span class="n">F1</span> <span class="o">=</span> <span class="n">solve2p_FGH</span><span class="p">(</span><span class="n">kvi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
     <span class="n">y2i</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">F1</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="n">y1i</span> <span class="o">=</span> <span class="n">y2i</span> <span class="o">*</span> <span class="n">kvi</span>
@@ -805,13 +818,18 @@ document.write(`
 <p>Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за пять итераций. Проверим, является ли двухфазное состояние стабильным. Для этого проведем тест стабильности для одной из фаз:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">)</span>
+<span class="n">stabres</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: False.
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+False
+Tangent-plane distance:
+-3.249408423438081
+Calculation completed successfully:
+True
 </pre></div>
 </div>
 </div>
@@ -820,7 +838,7 @@ document.write(`
 <p>С учетом изложенного выше, сформируем матрицу констант фазового равновесия для первой итерации расчета трехфазного равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kvji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">kvi</span><span class="p">,</span> <span class="n">kv0</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kvji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">kvi</span><span class="p">,</span> <span class="n">stabres</span><span class="o">.</span><span class="n">kvji</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 <span class="n">kvji</span>
 </pre></div>
 </div>
@@ -929,13 +947,17 @@ Phase mole fractions: [0.29739749 0.12526799 0.57733453]
 <p>Выполним проверку стабильности компонентного состава одной из фаз:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_stable</span><span class="p">,</span> <span class="n">kv0</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The system is stable: True.
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+True
+Tangent-plane distance:
+2.1562375322898374e-07
+Calculation completed successfully:
+True
 </pre></div>
 </div>
 </div>
@@ -1104,6 +1126,8 @@ U_{il} &amp;= \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} = \frac{1}
 </section>
 <section id="vt">
 <span id="pvt-esc-equilibrium-vt"></span><h2>VT-термодинамика<a class="headerlink" href="#vt" title="Link to this heading">#</a></h2>
+<!-- TODO: Показать, как учитывать условие электронейтральности при расчете равновесного состояния. -->
+<!-- TODO: Показать пример расчета равновесного состояния с учетом распределения ионов в полярных фазах. -->
 <p>Стоит отметить, что в данном разделе основное внимание уделялось алгоритмам нахождения равновесного состояния для различных условий. Однако оптимизация времени, затрачиваемого на работу того или иного алгоритма, зависит не только от самого алгоритма, но и от его реализации: работы с памятью, распараллеливания, векторизации вычислений. Подробнее это было рассмотрено авторами работы [<a class="reference external" href="https://doi.org/10.2118/163583-MS">Haugen and Beckner, 2013</a>].</p>
 <p>Данный раздел, был посвящен нахождению равновесного состояния для различных формулировок. В следующих разделах будут рассмотрены алгоритмы нахождения предельных состояний, характерных для многокомпонентных систем. В том числе речь пойдет про поиск линий насыщения, конденсации, а также про определение критического состояния системы, являющегося пределом фазового равновесия.</p>
 </section>
