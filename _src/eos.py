@@ -576,6 +576,67 @@ class pr78(object):
       Z - PRT * yi.dot(self.vsi_bi),
     )
 
+  def getPT_lnphii_Z_dP(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> tuple[VectorType, ScalarType, VectorType]:
+    """Computes fugacities of components and their partial derivatives
+    with respect to pressure.
+
+    Arguments
+    ---------
+    P: float
+      Pressure of a mixture [Pa].
+
+    T: float
+      Temperature of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple of an array with the natural logarithm of the fugacity
+    coefficient for each component, the compressibility factor of
+    a mixture, and a vector of partial derivatives of logarithms of
+    the fugacity coefficients with respect to pressure.
+    """
+    RT = R * T
+    PRT = P / RT
+    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve_eos(A, B)
+    gZ = np.log(Z - B)
+    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
+    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
+    lnphii = -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
+    ddmdA = np.array([0., 1., -B])[:,None]
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
+    dgZdZ = 1. / (Z - B)
+    dgZdB = -dgZdZ
+    dfZdZ = 1. / (Z - B * .41421356) - 1. / (Z + B * 2.41421356)
+    dfZdB = (- 0.41421356 / (Z - B * 0.41421356)
+             - 2.41421356 / (Z + B * 2.41421356))
+    dAdP = alpham / (RT * RT)
+    dBdP = bm / RT
+    ddmdP = ddmdA * dAdP + ddmdB * dBdP
+    dqdP = np.power(Z, np.array([2., 1., 0.])).dot(ddmdP)
+    dZdP = -dqdP / dqdZ
+    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
+    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
+    dgphiidP = gphii * ((B * dAdP - A * dBdP) / (A * B))
+    dlnphiidP = (-dgZdP + self.bi * dZdP / bm + fZ * dgphiidP + gphii * dfZdP
+                 - self.vsi_bi / RT)
+    return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidP
+
   def getPT_lnphii_Z_dnj(
     self,
     P: ScalarType,
@@ -1038,10 +1099,13 @@ class pr78(object):
       D = np.sqrt(r * r - 4. * k)
       x1 = (-r + D) * .5
       x2 = (-r - D) * .5
-      fdG = lambda Z1, Z2: (np.log((Z2 - B) / (Z1 - B)) + (Z1 - Z2)
-        + 0.35355339 * A / B * np.log((Z1 - B * 0.41421356)
-          * (Z2 + B * 2.41421356) / (Z1 + B * 2.41421356)
-          / (Z2 - B * 0.41421356)))
+      fdG = lambda Z1, Z2: (np.log((Z2 - B) / (Z1 - B))
+                            + (Z1 - Z2)
+                            + np.log((Z1 - B * 0.41421356)
+                                     * (Z2 + B * 2.41421356)
+                                     / (Z1 + B * 2.41421356)
+                                     / (Z2 - B * 0.41421356))
+                              * 0.35355339 * A / B)
       if x2 > 0:
         dG = fdG(x0, x2)
         if dG < 0.:
