@@ -2,15 +2,15 @@ import sys
 
 sys.path.append('../_src/')
 
-import logging
+# import logging
 
-logger = logging.getLogger('bound')
-logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger('bound')
+# logger.setLevel(logging.DEBUG)
 
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# handler = logging.StreamHandler(sys.stdout)
+# formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
+# handler.setFormatter(formatter)
+# logger.addHandler(handler)
 
 import unittest
 
@@ -35,11 +35,11 @@ class critpoint(unittest.TestCase):
     vsi = np.zeros_like(yi)
     dij = np.array([
       0.025,
-      0.01, 0.0,
-      0.09, 0.0, 0.0,
+      0.010, 0.0,
+      0.090, 0.0, 0.0,
       0.095, 0.0, 0.0, 0.0,
-      0.11, 0.0, 0.0, 0.0, 0.0,
-      0.11, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.110, 0.0, 0.0, 0.0, 0.0,
+      0.110, 0.0, 0.0, 0.0, 0.0, 0.0,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     maxiter = 7

@@ -53,14 +53,14 @@ $$ \begin{align}
 \ln {K_i^j}_{k+1}
 &= \ln {K_i^j}_{k} - \lambda \left( \frac{\partial \bar{G}}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
 &= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \frac{\partial \bar{G}}{\partial n_l^m} \right)_{P, \, T, \, n_i^j \neq n_l^m} \left( \frac{\partial n_l^m}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
-&= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \ln f_l \left( P, \, T, \, y_l^m \right) - \ln f_l \left( P, \, T, \, y_l^{N_p} \right) \right) U_{lmij}.
+&= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \ln f_l \left( P, \, T, \, y_l^m \right) - \ln f_l \left( P, \, T, \, y_l^{N_p} \right) \right) U_{lmij}^{-1}.
 \end{align} $$
 
 В представленном выражении параметр $\lambda$ характеризует длину шага, а $\bar{G} = G / \left(RT\right)$ – приведенная энергия Гиббса системы. При преобразовании данного выражения учитывалось [правило дифференцирования сложной функции от нескольких переменных](https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs). Если принять
 
 $$ \lambda = 1, $$
 
-$$ U_{lmij} = \delta_{lmij} = \begin{cases} 1, \; l = i, \; m = j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1, \\ 0, \; \mathrm{otherwise}, \end{cases} $$
+$$ U_{lmij}^{-1} = \delta_{lmij} = \begin{cases} 1, \; l = i, \; m = j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1, \\ 0, \; \mathrm{otherwise}, \end{cases} $$
 
 тогда метод последовательных подстановок будет эквивалентен методу градиентного спуска для минимизации функции энергии Гиббса. Таким образом, метод последовательных подстановок является своеобразным упрощением метода градиентного спуска для минимизации функции энергии Гиббса.
 
@@ -234,11 +234,11 @@ for i, kvi in enumerate(stabres.kvji):
     if k < Niter:
         y2i = yi / (F1 * (kvi - 1.) + 1.)
         y1i = y2i * kvi
-        print(f'For the initial guess #{i}:')
-        print(f'\ttolerance of equations: {np.linalg.norm(gi)}')
-        print(f'\tnumber of iterations: {k}')
-        print(f'\tphase compositions:\n\t\t{y1i}\n\t\t{y2i}')
-        print(f'\tphase mole fractions: {F1}, {1.-F1}')
+        print(f'For the initial guess #{i}:\n'
+              f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+              f'\tnumber of iterations: {k}\n'
+              f'\tphase compositions:\n\t\t{y1i}\n\t\t{y2i}\n'
+              f'\tphase mole fractions: {F1}, {1.-F1}')
         break
 ```
 
@@ -355,11 +355,11 @@ for i, kvi in enumerate(stabres.kvji):
     if k < Niter:
         y2i = yi / (F1 * (kvi - 1.) + 1.)
         y1i = y2i * kvi
-        print(f'For the initial guess #{i}:')
-        print(f'\ttolerance of equations: {np.linalg.norm(gi)}')
-        print(f'\tnumber of iterations: {k}')
-        print(f'\tphase compositions:\n\t\t{y1i}\n\t\t{y2i}')
-        print(f'\tphase mole fractions: {F1}, {1.-F1}')
+        print(f'For the initial guess #{i}:\n'
+              f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+              f'\tnumber of iterations: {k}\n'
+              f'\tphase compositions:\n\t\t{y1i}\n\t\t{y2i}\n'
+              f'\tphase mole fractions: {F1}, {1.-F1}')
         break
 ```
 
@@ -438,10 +438,10 @@ xi = yi / (Fj.dot(kvji - 1.) + 1.)
 yji = np.vstack([xi * kvji, xi])
 Fj = np.hstack([Fj, 1. - Fj.sum()])
 
-print(f'Tolerance of equations: {np.linalg.norm(gji)}')
-print(f'Number of iterations: {k}')
-print(f'Phase compositions:\n{yji}')
-print(f'Phase mole fractions: {Fj}')
+print(f'Tolerance of equations: {np.linalg.norm(gji)}\n'
+      f'Number of iterations: {k}\n'
+      f'Phase compositions:\n{yji}\n'
+      f'Phase mole fractions: {Fj}')
 ```
 
 Выполним проверку стабильности компонентного состава одной из фаз:
