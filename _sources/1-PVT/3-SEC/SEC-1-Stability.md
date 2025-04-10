@@ -781,11 +781,11 @@ for i, ki in enumerate(K):
     c, ki, gi, _ = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
-    print(f'For the initial guess #{i}:')
-    print(f'\ttolerance of equations: {np.linalg.norm(gi)}')
-    print(f'\tnumber of iterations: {c}')
-    print(f'\tsolution: {ni}')
-    print(f'\tTPD: {TPD}\n')
+    print(f'For the initial guess #{i}:\n'
+          f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+          f'\tnumber of iterations: {c}\n'
+          f'\tsolution: {ni}\n'
+          f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
         break
@@ -867,11 +867,11 @@ for i, ki in enumerate(K):
     c, ki, gi, _ = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
-    out1 += f'For the initial guess #{i}:\n'
-    out1 += f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
-    out1 += f'\tnumber of iterations: {c}\n'
-    out1 += f'\tsolution: {ni}\n'
-    out1 += f'\tTPD: {TPD}\n'
+    out1 += (f'For the initial guess #{i}:\n'
+             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\tnumber of iterations: {c}\n'
+             f'\tsolution: {ni}\n'
+             f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
         break
@@ -951,11 +951,11 @@ for i, ki in enumerate(K):
     c, ki, gi, _ = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
-    print(f'For the initial guess #{i}:')
-    print(f'\ttolerance of equations: {np.linalg.norm(gi)}')
-    print(f'\tnumber of iterations: {c}')
-    print(f'\tsolution: {ni}')
-    print(f'\tTPD: {TPD}\n')
+    print(f'For the initial guess #{i}:\n'
+          f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+          f'\tnumber of iterations: {c}\n'
+          f'\tsolution: {ni}\n'
+          f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
         break
@@ -997,11 +997,11 @@ for i, ki in enumerate(K):
     c, ki, gi, _ = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
-    out2 += f'For the initial guess #{i}:\n'
-    out2 += f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
-    out2 += f'\tnumber of iterations: {c}\n'
-    out2 += f'\tsolution: {ni}\n'
-    out2 += f'\tTPD: {TPD}\n'
+    out2 += (f'For the initial guess #{i}:\n'
+             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\tnumber of iterations: {c}\n'
+             f'\tsolution: {ni}\n'
+             f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
         break
