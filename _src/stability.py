@@ -83,10 +83,6 @@ class stabilityPT(object):
         logarithms of the fugacity coefficients of components and the
         phase compressibility factor.
 
-      - `getPT_lnphii(P, T, yi) -> ndarray`
-        Same as previous one but returns only an array of the fugacity
-        coefficients of components.
-
     If the solution method would be one of `'newton'` or `'ss-newton'`
     then it also must have:
 
@@ -244,10 +240,6 @@ def _stabPT_ss(
         logarithms of the fugacity coefficients of components and the
         phase compressibility factor.
 
-      - `getPT_lnphii(P, T, yi) -> ndarray`
-        Same as previous one but returns only an array of the fugacity
-        coefficients of components.
-
   eps: float
     System will be considered unstable when `TPD < eps`.
     Default is `-1e-4`.
@@ -273,14 +265,14 @@ def _stabPT_ss(
   )
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   hi = lnphiyi + np.log(yi)
-  plnphii = partial(eos.getPT_lnphii, P=P, T=T)
+  plnphii = partial(eos.getPT_lnphii_Z, P=P, T=T)
   j: int
   kvi0: VectorType
   for j, kvi0 in enumerate(kvji0):
     k: int = 0
     kvik = kvi0.flatten()
     ni = kvik * yi
-    lnphixi = plnphii(yi=ni/ni.sum())
+    lnphixi, Zx = plnphii(yi=ni/ni.sum())
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug('The kv-loop iteration number = %s', j)
@@ -293,7 +285,7 @@ def _stabPT_ss(
       k += 1
       kvik *= np.exp(-gi)
       ni = kvik * yi
-      lnphixi = plnphii(yi=ni/ni.sum())
+      lnphixi, Zx = plnphii(yi=ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       TPD = -np.log(ni.sum())
@@ -306,13 +298,13 @@ def _stabPT_ss(
       n = ni.sum()
       xi = ni / n
       kvji = xi / yi, yi / xi
-      return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm,
-                        TPD=TPD, Z=Z, lnphiyi=lnphiyi, lnphiyti=lnphixi,
+      return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
+                        Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                         success=True)
   else:
     logger.debug('TPD = %s\n\tThe system is stable.\n', TPD)
-    return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm,
-                      TPD=TPD, Z=Z, lnphiyi=lnphiyi, lnphiyti=lnphixi,
+    return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm, TPD=TPD,
+                      Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                       success=True)
 
 
@@ -356,10 +348,6 @@ def _stabPT_qnss(
         temperature and composition of a phase and returns a tuple of
         logarithms of the fugacity coefficients of components and the
         phase compressibility factor.
-
-      - `getPT_lnphii(P, T, yi) -> ndarray`
-        Same as previous one but returns only an array of the fugacity
-        coefficients of components.
 
   eps: float
     System will be considered unstable when `TPD < eps`.

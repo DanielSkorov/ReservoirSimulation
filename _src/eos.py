@@ -7,11 +7,12 @@ from custom_types import (
   MatrixType,
 )
 
+from constants import (
+  R,
+)
+
 
 logger = logging.getLogger('eos')
-
-
-R: ScalarType = 8.3144598  # Universal gas constant [J/mol/K]
 
 
 class vdw(object):

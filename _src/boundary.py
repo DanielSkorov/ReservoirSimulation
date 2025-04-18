@@ -409,11 +409,10 @@ def _PsatPT_ss(
     lnphiyi = stab0.lnphiyi
     Zx = stab0.Zt
     Zy = stab0.Z
-  hi = lnphiyi + np.log(yi)
   ni = xi
   n = ni.sum()
   TPD = -np.log(n)
-  gi = np.log(ni) + lnphixi - hi
+  gi = np.log(kvik) + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
     'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
@@ -427,8 +426,8 @@ def _PsatPT_ss(
     n = ni.sum()
     TPD = -np.log(n)
     xi = ni / n
-    Pk, lnphixi, _, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
-    gi = np.log(ni) + lnphixi - hi
+    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
+    gi = np.log(kvik) + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
@@ -488,11 +487,10 @@ def _PsatPT_qnss(
     lnphiyi = stab0.lnphiyi
     Zx = stab0.Zt
     Zy = stab0.Z
-  hi = lnphiyi + np.log(yi)
   ni = xi
   n = ni.sum()
   TPD = -np.log(n)
-  gi = np.log(ni) + lnphixi - hi
+  gi = np.log(kvik) + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   lmbd = 1.
   logger.debug(
@@ -513,8 +511,8 @@ def _PsatPT_qnss(
     n = ni.sum()
     TPD = -np.log(n)
     xi = ni / n
-    Pk, lnphixi, _, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
-    gi = np.log(ni) + lnphixi - hi
+    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
+    gi = np.log(kvik) + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
     if lmbd > 30.:
@@ -540,7 +538,7 @@ def _PsatPT_qnss(
       "Saturation pressure calculation terminates unsuccessfully. "
       "The solution method was QNSS, EOS: %s. Parameters:"
       "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
-      eos.name, P0, T, yi, improve_P0
+      eos.name, P0, T, yi, improve_P0,
     )
     return PsatResult(P=Pk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                       Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
