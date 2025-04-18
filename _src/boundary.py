@@ -1,5 +1,9 @@
 import logging
 
+from functools import (
+  partial,
+)
+
 import numpy as np
 
 from utils import (
@@ -10,7 +14,13 @@ from custom_types import (
   ScalarType,
   VectorType,
   MatrixType,
+  EOSPTType,
   EOSVTType,
+)
+
+from stability import (
+  StabResult,
+  stabilityPT,
 )
 
 
@@ -247,3 +257,292 @@ def getVT_PcTc(
     "The critical point solution procedure completed unsuccessfully. "
     "Try to increase the number of iterations or change the initial guess."
   )
+
+
+class PsatResult(dict):
+  def __getattr__(self, name):
+    try:
+      return self[name]
+    except KeyError as e:
+      raise AttributeError(name) from e
+
+  def __repr__(self):
+    with np.printoptions(linewidth=np.inf):
+      s = (f"Saturation pressure: {self.P} Pa\n"
+           f"Phase composition:\n{self.yji}\n"
+           f"Phase compressibility factors:\n{self.Zj}\n"
+           f"Calculation completed successfully:\n{self.success}")
+    return s
+
+
+class PsatPT(object):
+  def __init__(
+    self,
+    eos: EOSPTType,
+    method: str = 'ss',
+    tol: ScalarType = 1e-5,
+    maxiter: int = 50,
+    tol_tpd: ScalarType = 1e-6,
+    maxiter_tpd: int = 10,
+    improve_P0: bool = True,
+    stabkwargs: dict = {},
+  ) -> None:
+    self.eos = eos
+    self.tol = tol
+    self.maxiter = maxiter
+    self.improve_P0 = improve_P0
+    self.stabsolver = stabilityPT(eos, **stabkwargs)
+    if method == 'ss':
+      self.psatsolver = partial(_PsatPT_ss, eos=eos, improve_P0=improve_P0,
+                                tol=tol, maxiter=maxiter, tol_tpd=tol_tpd,
+                                maxiter_tpd=maxiter_tpd)
+    elif method == 'qnss':
+      self.psatsolver = partial(_PsatPT_qnss, eos=eos, improve_P0=improve_P0,
+                                tol=tol, maxiter=maxiter, tol_tpd=tol_tpd,
+                                maxiter_tpd=maxiter_tpd)
+    elif method == 'bfgs':
+      raise NotImplementedError(
+        'The BFGS-method for the saturation pressure calculation is not '
+        'implemented yet.'
+      )
+    elif method == 'newton':
+      raise NotImplementedError(
+        "The Newton's method for the saturation pressure calculation is not "
+        "implemented yet."
+      )
+    elif method == 'ss-newton':
+      raise NotImplementedError(
+        'The SS-Newton method for the saturation pressure calculation is '
+        'not implemented yet.'
+      )
+    else:
+      raise ValueError(f'The unknown method: {method}.')
+    pass
+
+  def run(
+    self,
+    T: ScalarType,
+    yi: VectorType,
+    P0: ScalarType = 1e5,
+  ) -> PsatResult:
+    logger.debug(
+      'Initial stability test for\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
+      P0, T, yi,
+    )
+    stab = self.stabsolver.run(P0, T, yi)
+    logger.debug(
+      'TPD = %s\n\tThe system is stable: %s\n\tComputation succeeded: %s',
+      stab.TPD, stab.stable, stab.success,
+    )
+    if stab.stable:
+      raise NotImplementedError(
+        'The gridding procedure is not implemented yet. '
+        'Try to reduce the value of P0.'
+      )
+    if not stab.success:
+      raise ValueError(
+        'The stability test for the initial value of P0 completed '
+        'unsuccessfully. Try to change stabmethod or increase level.'
+      )
+    return self.psatsolver(P0, T, yi, stab)
+
+
+def _solveTPDeqPT(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  yti: VectorType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-6,
+  maxiter: int = 10,
+) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+  logger.debug('Solving the TPD equation:')
+  k = 0
+  Pk = P0.copy()
+  lnkvi = np.log(yti / yi)
+  lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+  lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
+  TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
+  while (np.abs(TPD) > tol) and (k < maxiter):
+    lnP = np.log(Pk)
+    dTPDdP = yti.dot(dlnphixidP - dlnphiyidP)
+    dTPDdlnP = Pk * dTPDdP
+    dlnP = - TPD / dTPDdlnP
+    logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
+    lnP += dlnP
+    k += 1
+    Pk = np.exp(lnP)
+    lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+    lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
+    TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
+  logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
+  return Pk, lnphixi, lnphiyi, Zx, Zy
+
+
+def _PsatPT_ss(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  improve_P0: bool = True,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 10,
+) -> PsatResult:
+  logger.debug(
+    'Saturation pressure calculation using the SS-method:\n'
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+  )
+  solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd)
+  k = 0
+  xi = stab0.yti
+  kvik = xi / yi
+  lnkvi = np.log(kvik)
+  if improve_P0:
+    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(P0, T, yi, xi)
+  else:
+    Pk = P0.copy()
+    lnphixi = stab0.lnphiyti
+    lnphiyi = stab0.lnphiyi
+    Zx = stab0.Zt
+    Zy = stab0.Z
+  hi = lnphiyi + np.log(yi)
+  ni = xi
+  n = ni.sum()
+  TPD = -np.log(n)
+  gi = np.log(ni) + lnphixi - hi
+  gnorm = np.linalg.norm(gi)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
+    k, kvik, gnorm, Pk,
+  )
+  while (gnorm > tol) and (k < maxiter):
+    dlnkvi = - gi
+    k += 1
+    kvik *= np.exp(dlnkvi)
+    ni = kvik * yi
+    n = ni.sum()
+    TPD = -np.log(n)
+    xi = ni / n
+    Pk, lnphixi, _, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
+    gi = np.log(ni) + lnphixi - hi
+    gnorm = np.linalg.norm(gi)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
+      k, kvik, gnorm, Pk,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    return PsatResult(P=Pk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation terminates unsuccessfully. "
+      "The solution method was SS, EOS: %s. Parameters:"
+      "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
+      eos.name, P0, T, yi, improve_P0
+    )
+    return PsatResult(P=Pk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                      success=False)
+
+
+def _PsatPT_qnss(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  improve_P0: bool = True,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 10,
+) -> PsatResult:
+  logger.debug(
+    'Saturation pressure calculation using the QNSS-method:\n'
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+  )
+  solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd)
+  k = 0
+  xi = stab0.yti
+  kvik = xi / yi
+  lnkvi = np.log(kvik)
+  if improve_P0:
+    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(P0, T, yi, xi)
+  else:
+    Pk = P0.copy()
+    lnphixi = stab0.lnphiyti
+    lnphiyi = stab0.lnphiyi
+    Zx = stab0.Zt
+    Zy = stab0.Z
+  hi = lnphiyi + np.log(yi)
+  ni = xi
+  n = ni.sum()
+  TPD = -np.log(n)
+  gi = np.log(ni) + lnphixi - hi
+  gnorm = np.linalg.norm(gi)
+  lmbd = 1.
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s\n\tPk = %s',
+    k, kvik, gnorm, lmbd, Pk,
+  )
+  while (gnorm > tol) and (k < maxiter):
+    dlnkvi = -lmbd * gi
+    max_dlnkvi = np.abs(dlnkvi).max()
+    if max_dlnkvi > 6.:
+      relax = 6. / max_dlnkvi
+      lmbd *= relax
+      dlnkvi *= relax
+    k += 1
+    tkm1 = dlnkvi.dot(gi)
+    kvik *= np.exp(dlnkvi)
+    ni = kvik * yi
+    n = ni.sum()
+    TPD = -np.log(n)
+    xi = ni / n
+    Pk, lnphixi, _, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
+    gi = np.log(ni) + lnphixi - hi
+    gnorm = np.linalg.norm(gi)
+    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    if lmbd > 30.:
+      lmbd = 30.
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s\n\tPk = %s',
+      k, kvik, gnorm, lmbd, Pk,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    return PsatResult(P=Pk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation terminates unsuccessfully. "
+      "The solution method was QNSS, EOS: %s. Parameters:"
+      "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
+      eos.name, P0, T, yi, improve_P0
+    )
+    return PsatResult(P=Pk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                      success=False)
+

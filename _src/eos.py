@@ -347,6 +347,12 @@ class pr78(object):
     Returns a tuple of logarithms of the fugacity coefficients of
     `Nc` components and the compressiblity factor of a mixture.
 
+  getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]
+    Returns a tuple of a vector of logarithms of the fugacity
+    coefficients of `Nc` components, the compressibility factor of
+    a mixture, and a vector of partial derivatives of logarithms of
+    the fugacity coefficients with respect to pressure.
+
   getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]
     Returns a tuple of a vector of logarithms of the fugacity
     coefficients of `Nc` components, the compressibility factor of
@@ -582,8 +588,8 @@ class pr78(object):
     T: ScalarType,
     yi: VectorType,
   ) -> tuple[VectorType, ScalarType, VectorType]:
-    """Computes fugacities of components and their partial derivatives
-    with respect to pressure.
+    """Computes fugacity coefficients of components and their partial
+    derivatives with respect to pressure.
 
     Arguments
     ---------

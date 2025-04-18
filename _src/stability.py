@@ -271,8 +271,8 @@ def _stabPT_ss(
     'Stability Test (SS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
     P, T, yi,
   )
-  lnphii, Z = eos.getPT_lnphii_Z(P, T, yi)
-  hi = lnphii + np.log(yi)
+  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  hi = lnphiyi + np.log(yi)
   plnphii = partial(eos.getPT_lnphii, P=P, T=T)
   j: int
   kvi0: VectorType
@@ -280,7 +280,8 @@ def _stabPT_ss(
     k: int = 0
     kvik = kvi0.flatten()
     ni = kvik * yi
-    gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
+    lnphixi = plnphii(yi=ni/ni.sum())
+    gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug('The kv-loop iteration number = %s', j)
     TPD = -np.log(ni.sum())
@@ -292,7 +293,8 @@ def _stabPT_ss(
       k += 1
       kvik *= np.exp(-gi)
       ni = kvik * yi
-      gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
+      lnphixi = plnphii(yi=ni/ni.sum())
+      gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       TPD = -np.log(ni.sum())
       logger.debug(
@@ -305,11 +307,13 @@ def _stabPT_ss(
       xi = ni / n
       kvji = xi / yi, yi / xi
       return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm,
-                        TPD=TPD, Z=Z, success=True)
+                        TPD=TPD, Z=Z, lnphiyi=lnphiyi, lnphiyti=lnphixi,
+                        success=True)
   else:
     logger.debug('TPD = %s\n\tThe system is stable.\n', TPD)
     return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm,
-                      TPD=TPD, Z=Z, success=True)
+                      TPD=TPD, Z=Z, lnphiyi=lnphiyi, lnphiyti=lnphixi,
+                      success=True)
 
 
 def _stabPT_qnss(
@@ -380,16 +384,17 @@ def _stabPT_qnss(
     'Stability Test (QNSS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
     P, T, yi,
   )
-  lnphii, Z = eos.getPT_lnphii_Z(P, T, yi)
-  hi = lnphii + np.log(yi)
-  plnphii = partial(eos.getPT_lnphii, P=P, T=T)
+  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  hi = lnphiyi + np.log(yi)
+  plnphii = partial(eos.getPT_lnphii_Z, P=P, T=T)
   j: int
   kvi0: VectorType
   for j, kvi0 in enumerate(kvji0):
     k: int = 0
     kvik = kvi0.flatten()
     ni = kvik * yi
-    gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
+    lnphixi, Zx = plnphii(yi=ni/ni.sum())
+    gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug('The kv-loop iteration number = %s', j)
     TPD = -np.log(ni.sum())
@@ -409,7 +414,8 @@ def _stabPT_qnss(
       tkm1 = dlnkvi.dot(gi)
       kvik *= np.exp(dlnkvi)
       ni = kvik * yi
-      gi = np.log(ni) + plnphii(yi=ni/ni.sum()) - hi
+      lnphixi, Zx = plnphii(yi=ni/ni.sum())
+      gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       TPD = -np.log(ni.sum())
       logger.debug(
@@ -426,10 +432,12 @@ def _stabPT_qnss(
       n = ni.sum()
       xi = ni / n
       kvji = xi / yi, yi / xi
-      return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm,
-                        TPD=TPD, Z=Z, success=True)
+      return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
+                        Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
+                        success=True)
   else:
     logger.debug('TPD = %s\n\tThe system is stable.\n', TPD)
-    return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm,
-                      TPD=TPD, Z=Z, success=True)
+    return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm, TPD=TPD,
+                      Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
+                      success=True)
 

@@ -505,7 +505,7 @@ def _flash2pPT_qnss(
                          success=True)
   else:
     logger.warning(
-      "Two-phase flash calculations terminates unsuccessfully. "
+      "Two-phase flash calculation terminates unsuccessfully. "
       "The solution method was QNSS, EOS: %s. Parameters:"
       "\n\tP = %s, T = %s\n\tyi = %s\n\tkvji = %s.",
       eos.name, P, T, yi, kvji0,
