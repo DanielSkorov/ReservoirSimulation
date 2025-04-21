@@ -364,14 +364,12 @@ def _solveTPDeqPT(
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
   TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
   while (np.abs(TPD) > tol) and (k < maxiter):
-    lnP = np.log(Pk)
     dTPDdP = yti.dot(dlnphixidP - dlnphiyidP)
     dTPDdlnP = Pk * dTPDdP
     dlnP = - TPD / dTPDdlnP
     logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
-    lnP += dlnP
     k += 1
-    Pk = np.exp(lnP)
+    Pk *= np.exp(dlnP)
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
     TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
