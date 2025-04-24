@@ -259,7 +259,8 @@ class flash2pPT(object):
         kvji0 = *self.prevkvji, *stab.kvji
       else:
         kvji0 = stab.kvji
-    flash = self.flashsolver(P, T, yi, kvji0, negativeflash=self.negativeflash)
+    flash = self.flashsolver(P, T, yi, kvji0,
+                             negativeflash=self.negativeflash)
     if flash.success and self.useprev:
       self.prevkvji = flash.kvji
       self.preserved = True

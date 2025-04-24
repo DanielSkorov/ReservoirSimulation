@@ -29,6 +29,9 @@ class vdw(object):
   Tci: ndarray, shape (Nc,)
     Critical temperatures of `Nc` components [K].
 
+  mwi: ndarray, shape (Nc,)
+    Molar weights of `Nc` components [kg/mol].
+
   dij: ndarray, shape (Nc * (Nc - 1) // 2,)
     The lower triangle matrix of binary interaction coefficients
     of `Nc` components.
@@ -37,8 +40,8 @@ class vdw(object):
   -------
   getPT_Z(P, T, yi) -> float
     Returns the compressiblity factor of a mixture for given
-    pressure `P: float`, temperature `T: float` and `yi: ndarray`
-    of shape `(Nc,)` mole fractions of `Nc` components.
+    pressure `P: float` in [Pa], temperature `T: float` in [K] and
+    `yi: ndarray` of shape `(Nc,)` mole fractions of `Nc` components.
 
   getPT_lnphii(P, T, yi) -> ndarray
     Returns logarithms of the fugacity coefficients of `Nc`
@@ -63,12 +66,14 @@ class vdw(object):
     self,
     Pci: VectorType,
     Tci: VectorType,
+    mwi: VectorType,
     dij: VectorType,
   ) -> None:
     self.name = 'Van der Waals EOS'
     self.Nc = Pci.shape[0]
     self.Pci = Pci
     self.Tci = Tci
+    self.mwi = mwi
     self.sqrtai = .649519052838329 * R * Tci / np.sqrt(Pci)
     self.bi = .125 * R * Tci / Pci
     D = np.zeros(shape=(self.Nc, self.Nc), dtype=Pci.dtype)
@@ -321,7 +326,7 @@ class pr78(object):
     Acentric factors of `Nc` components.
 
   mwi: ndarray, shape (Nc,)
-    Molar weights of `Nc` components.
+    Molar weights of `Nc` components [kg/mol].
 
   vsi: ndarray, shape (Nc,)
     Volume shift parameters of `Nc` components
@@ -359,7 +364,7 @@ class pr78(object):
     coefficients of `Nc` components, the compressibility factor of
     a mixture, and a `(Nc, Nc)` matrix of partial derivatives of
     logarithms of the fugacity coefficients with respect to mole
-    numbers of components. `n` is a mixture mole number.
+    numbers of components. `n` is a mixture mole number [mol].
 
   getPT_lnfi_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]
     Returns a tuple of a vector of logarithms of the fugacities
@@ -386,7 +391,7 @@ class pr78(object):
     Returns pressure in [Pa] calculated using the EOS for given
     volume `V: float` in [m3], temperature `T: float` in [K],
     composition `yi: ndarray` of shape `(Nc,)`, where `Nc` is the
-    number of components, and phase mole number `n: float`.
+    number of components, and phase mole number `n: float` in [mol].
 
   getVT_lnfi_dnj(V, T, yi, n) -> tuple[ndarray, ndarray]
     Returns a tuple of an array with the natural logarithm of the
@@ -396,7 +401,7 @@ class pr78(object):
   getVT_d3F(V, T, yi, zti, n) -> float
     Returns the cubic form of the Helmholtz energy Taylor series
     decomposition for given component nole numbers changes
-    `zti: ndarray` of shape `(Nc)`, wherer `Nc` is the number of
+    `zti: ndarray` of shape `(Nc)`, where `Nc` is the number of
     components.
 
   getVT_vmin(T, yi) -> float
@@ -1041,11 +1046,7 @@ class pr78(object):
             - 3. * btm * tm * F6) * alpham / bm)
     return C / (n * n)
 
-  def getVT_vmin(
-    self,
-    T: ScalarType,
-    yi: VectorType,
-  ) -> ScalarType:
+  def getVT_vmin(self, T: ScalarType, yi: VectorType) -> ScalarType:
     """Calculates the minimal molar volume.
 
     Arguments

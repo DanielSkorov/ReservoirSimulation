@@ -358,7 +358,7 @@ def _solveTPDeqPT(
 ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
   logger.debug('Solving the TPD equation:')
   k = 0
-  Pk = P0.copy()
+  Pk = P0
   lnkvi = np.log(yti / yi)
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
@@ -402,7 +402,7 @@ def _PsatPT_ss(
   if improve_P0:
     Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(P0, T, yi, xi)
   else:
-    Pk = P0.copy()
+    Pk = P0
     lnphixi = stab0.lnphiyti
     lnphiyi = stab0.lnphiyi
     Zx = stab0.Zt
@@ -480,7 +480,7 @@ def _PsatPT_qnss(
   if improve_P0:
     Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(P0, T, yi, xi)
   else:
-    Pk = P0.copy()
+    Pk = P0
     lnphixi = stab0.lnphiyti
     lnphiyi = stab0.lnphiyi
     Zx = stab0.Zt
