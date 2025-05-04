@@ -41,7 +41,7 @@ class FlashResult(dict):
     where `Np` is the number of phases.
 
   Zj: ndarray, shape (Np,)
-    Compressibility factors for each phase. Array of real elements of
+    Compressibility factors of each phase. Array of real elements of
     size `(Np,)`, where `Np` is the number of phases.
 
   kvji: ndarray, shape (Np-1, Nc)
@@ -104,7 +104,8 @@ class flash2pPT(object):
     Also, this instance must have attributes:
 
       - `mwi: ndarray`
-        Vector of components molecular weights of shape `(Nc,)`.
+        Vector of components molecular weights [kg/mol] of shape
+        `(Nc,)`.
 
       - `name: str`
         The EOS name (for proper logging).
@@ -241,7 +242,7 @@ class flash2pPT(object):
     Flash calculation results as an instance of `FlashResult` object.
     Important attributes are: `yji` the component mole fractions in
     each phase, `Fj` the phase mole fractions, `Zj` the compressibility
-    factors of each phase, `success` a Boolean flag indicating if the
+    factors of each phase, `success` a boolean flag indicating if the
     calculation completed successfully.
     """
     kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
@@ -277,7 +278,8 @@ def _flash2pPT_ss(
   maxiter: int = 30,
   negativeflash: bool = True,
 ) -> FlashResult:
-  """Successive substitution method for two-phase flash calculations.
+  """Successive substitution method for two-phase flash calculations
+  using a PT-based equation of state.
 
   Arguments
   ---------
@@ -325,7 +327,7 @@ def _flash2pPT_ss(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are: `yji` the component mole fractions
   in each phase, `Fj` the phase mole fractions, `Zj` the compressibility
-  factors of each phase, `success` a Boolean flag indicating if the
+  factors of each phase, `success` a boolean flag indicating if the
   calculation completed successfully.
   """
   logger.debug(
@@ -401,7 +403,8 @@ def _flash2pPT_qnss(
   maxiter: int = 30,
   negativeflash: bool = True,
 ) -> FlashResult:
-  """QNSS-method for two-phase flash calculations.
+  """QNSS-method for two-phase flash calculations using a PT-based
+  equation of state.
 
   Performs the Quasi-Newton Successive Substitution (QNSS) method to
   find an equilibrium state by solving a system of non-linear equations.
@@ -453,7 +456,7 @@ def _flash2pPT_qnss(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are: `yji` the component mole fractions
   in each phase, `Fj` the phase mole fractions, `Zj` the compressibility
-  factors of each phase, `success` a Boolean flag indicating if the
+  factors of each phase, `success` a boolean flag indicating if the
   calculation completed successfully.
   """
   logger.debug(

@@ -259,7 +259,30 @@ def getVT_PcTc(
   )
 
 
-class PsatResult(dict):
+class SatResult(dict):
+  """Container for saturation point calculation outputs with
+  pretty-printing.
+
+  Attributes:
+  -----------
+  P: float
+    Saturation pressure [Pa].
+
+  T: float
+    Saturation temperature [K].
+
+  yji: ndarray, shape (Np, Nc)
+    Equilibrium composition of two phases for the saturation point.
+    Two-dimensional array of real elements of size `(2, Nc)`, where `Np`
+    is the number of phases and `Nc` is the number of components.
+
+  Zj: ndarray, shape (Np,)
+    Compressibility factors of each phase. Array of real elements of
+    size `(Np,)`, where `Np` is the number of phases.
+
+  success: bool
+    Whether or not the procedure exited successfully.
+  """
   def __getattr__(self, name):
     try:
       return self[name]
@@ -269,6 +292,7 @@ class PsatResult(dict):
   def __repr__(self):
     with np.printoptions(linewidth=np.inf):
       s = (f"Saturation pressure: {self.P} Pa\n"
+           f"Saturation temperature: {self.T} K\n"
            f"Phase composition:\n{self.yji}\n"
            f"Phase compressibility factors:\n{self.Zj}\n"
            f"Calculation completed successfully:\n{self.success}")
@@ -276,6 +300,126 @@ class PsatResult(dict):
 
 
 class PsatPT(object):
+  """Saturation pressure calculation.
+
+  Performs saturation pressure calculation for PT-based equations of
+  state.
+
+  Arguments
+  ---------
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+      - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+        `P: float` is pressure [Pa], `T: float` is temperature [K],
+        and `yi: ndarray`, shape `(Nc,)` is an array of components
+        mole fractions, `Nc` is the number of components. This method
+        is used to generate initial guesses of k-values.
+
+      - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+        This method should return a tuple of logarithms of the fugacity
+        coefficients of components and the phase compressibility factor.
+
+      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+        This method should return a tuple of logarithms of the fugacity
+        coefficients of components, the phase compressibility factor and
+        the partial derivatives of the logarithms of the fugacity
+        coefficients of components with respect to pressure.
+
+    If the solution method would be one of `'newton'` or `'ss-newton'`
+    then it also must have:
+
+      - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
+        This method should return a tuple of logarithms of the fugacity
+        coefficients, the mixture compressibility factor, and partial
+        derivatives of logarithms of the fugacity coefficients with
+        respect to components mole numbers which are an `ndarray` of
+        shape `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+      - `mwi: ndarray`
+        Vector of components molecular weights [kg/mol] of shape
+        `(Nc,)`.
+
+      - `name: str`
+        The EOS name (for proper logging).
+
+  method: str
+    Type of the solver. Should be one of:
+
+      - `'ss'` (Successive Substitution method),
+      - `'qnss'` (Quasi-Newton Successive Substitution method),
+      - `'bfgs'` (Currently raises `NotImplementedError`),
+      - `'newton'` (Currently raises `NotImplementedError`),
+      - `'ss-newton'` (Currently raises `NotImplementedError`).
+
+    Default is `'ss'`.
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    Maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol`. Default is `1e-6`.
+    The TPD-equation is the equation of equality to zero of the
+    tangent-plane distance, which determines the second phase
+    appearance.
+
+  maxiter_tpd: int
+    Maximum number of TPD-equation solver iterations. Default is `50`.
+
+  improve_P0: bool
+    Flag indicating whether or not to improve the initial guess of the
+    saturation pressure. The improvement method depends on the flag
+    `stabgrid`. Default is `False`.
+
+  stabgrid: bool
+    Flag indicating which method should be used to improve the initial
+    guess of the saturation pressure. This flag affects the program
+    flow only if the `improve_P0` was set `True`. If the `stabgrid` was
+    set `True` then `Npoint` of stability tests will be performed to
+    find the pressure, closest to the given and located inside the
+    two-phase region. If the `stabgrid` was set `False` then all
+    possible roots of the TPD-equation would be found by splitting the
+    interval from `Pmin` to `Pmax` into `(Npoint - 1)` segments.
+    The closest solution of the TPD-equation to the given value would
+    be used as an initial guess for the saturation pressure calculation.
+
+  Pmax: float
+    Upper bound for the TPD-solver [Pa]. It also used to contruct
+    the grid for the algorithm of the initial guess improvement. If it
+    was completed successfully then the value of the upper bound will
+    be also changed. Default is `1e8` [Pa].
+
+  Pmin: float
+    Lower bound for the TPD-solver [Pa]. It also used to contruct
+    the grid for the algorithm of the initial guess improvement. If it
+    was completed successfully then the value of the lower bound will
+    be also changed. Default is `1.0` [Pa].
+
+  Npoint: int
+    The number of points to
+
+  stabkwargs: dict
+    Dictionary that used to regulate the stability test procedure.
+    Default is an empty dictionary.
+
+  Methods
+  -------
+  run(T, yi, P0) -> SatResult
+    This method performs the saturation pressure calculation for given
+    temperature `T: float` in [K], composition `yi: ndarray` of `Nc`
+    components and the initial guess `P0: float` in [Pa]. This method
+    returns saturation pressure calculation results as an instance of
+    `SatResult`.
+  """
   def __init__(
     self,
     eos: EOSPTType,
@@ -284,21 +428,25 @@ class PsatPT(object):
     maxiter: int = 50,
     tol_tpd: ScalarType = 1e-6,
     maxiter_tpd: int = 10,
-    improve_P0: bool = True,
+    improve_P0: bool = False,
+    stabgrid: bool = False,
+    Pmax: ScalarType = 1e8,
+    Pmin: ScalarType = 1.,
+    Npoint: int = 10,
     stabkwargs: dict = {},
   ) -> None:
     self.eos = eos
     self.tol = tol
     self.maxiter = maxiter
     self.improve_P0 = improve_P0
+    self.stabgrid = stabgrid
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     if method == 'ss':
-      self.psatsolver = partial(_PsatPT_ss, eos=eos, improve_P0=improve_P0,
-                                tol=tol, maxiter=maxiter, tol_tpd=tol_tpd,
-                                maxiter_tpd=maxiter_tpd)
+      self.psatsolver = partial(_PsatPT_ss, eos=eos, tol=tol, maxiter=maxiter,
+                                tol_tpd=tol_tpd, maxiter_tpd=maxiter_tpd)
     elif method == 'qnss':
-      self.psatsolver = partial(_PsatPT_qnss, eos=eos, improve_P0=improve_P0,
-                                tol=tol, maxiter=maxiter, tol_tpd=tol_tpd,
+      self.psatsolver = partial(_PsatPT_qnss, eos=eos, tol=tol,
+                                maxiter=maxiter, tol_tpd=tol_tpd,
                                 maxiter_tpd=maxiter_tpd)
     elif method == 'bfgs':
       raise NotImplementedError(
@@ -324,26 +472,69 @@ class PsatPT(object):
     T: ScalarType,
     yi: VectorType,
     P0: ScalarType = 1e5,
-  ) -> PsatResult:
-    logger.debug(
-      'Initial stability test for\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
-      P0, T, yi,
-    )
-    stab = self.stabsolver.run(P0, T, yi)
-    logger.debug(
-      'TPD = %s\n\tThe system is stable: %s\n\tComputation succeeded: %s',
-      stab.TPD, stab.stable, stab.success,
-    )
-    if stab.stable:
-      raise NotImplementedError(
-        'The gridding procedure is not implemented yet. '
-        'Try to reduce the value of P0.'
+  ) -> SatResult:
+    """Performs the saturation pressure calculation for given temperature
+    and composition.
+
+    Arguments
+    ---------
+    T: float
+      Temperature of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    P0: float
+      Initial guess of the saturation pressure [Pa]. It should be inside
+      the two-phase region unless the `improve_P0` was activated.
+      Default is `1e5` [Pa].
+
+    Returns
+    -------
+    Saturation pressure calculation results as an instance of the
+    `SatResult`. Important attributes are: `P` the saturation pressure
+    in [Pa], `T` the saturation temperature in [K], `yji` the component
+    mole fractions in each phase, `Zj` the compressibility factors of
+    each phase, `success` a boolean flag indicating if the calculation
+    completed successfully.
+    """
+    if self.improve_P0:
+      if self.stabgrid:
+        raise NotImplementedError(
+          'The construction of the grid of stability test results to\n'
+          'locate the initial saturation pressure inside the two-phase\n'
+          'region is not implemented yet.'
+        )
+      else:
+        raise NotImplementedError(
+          'Improvement of the initial guess of the saturation pressure\n'
+          'by finding all roots of the TPD-equation for given temperature\n'
+          'and composition is not implemented yet.'
+        )
+    else:
+      logger.debug(
+        'Initial stability test for\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
+        P0, T, yi,
       )
-    if not stab.success:
-      raise ValueError(
-        'The stability test for the initial value of P0 completed '
-        'unsuccessfully. Try to change stabmethod or increase level.'
+      stab = self.stabsolver.run(P0, T, yi)
+      logger.debug(
+        'TPD = %s\n\tThe system is stable: %s\n\tComputation succeeded: %s',
+        stab.TPD, stab.stable, stab.success,
       )
+      if stab.stable:
+        raise ValueError(
+          'The initial guess of the P0 is outside of the two-phase region.\n'
+          'Try to change the value of P0 or the level of the initial guess\n'
+          'of k-values for the stability test using the `stabkwargs`\n'
+          'argument. Also this problem can be solved by activating the\n'
+          '`improve_P0` flag.'
+        )
+      if not stab.success:
+        raise ValueError(
+          'The stability test for the initial value of P0 completed\n'
+          'unsuccessfully. Try to change the `stabmethod` using the\n'
+          '`stabkwargs` argument.'
+        )
     return self.psatsolver(P0, T, yi, stab)
 
 
@@ -355,7 +546,64 @@ def _solveTPDeqPT(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 10,
+  Pmax: ScalarType = 1e8,
+  Pmin: ScalarType = 1.,
 ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+  """Solves the TPD-equation for the PT-based equations of state.
+  The TPD-equation is the equation of equality to zero of the
+  tangent-plane distance, which determines the phase appearance or
+  disappearance. The Newton's method is used to solve the TPD-equation.
+
+  Arguments
+  ---------
+  P0: float
+    Initial guess of the saturation pressure [Pa].
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  yti: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components in the trial phase.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+        This method should return a tuple of logarithms of the fugacity
+        coefficients of components, the phase compressibility factor and
+        the partial derivatives of the logarithms of the fugacity
+        coefficients of components with respect to pressure. The
+        arguments are: `P: float` is pressure [Pa], `T: float` is
+        temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
+        components mole fractions.
+
+  maxiter: int
+    Maximum number of iterations. Default is `10`.
+
+  tol: float
+    Terminate successfully if the absolute value of the equation is less
+    than `tol`. Default is `1e-6`.
+
+  Pmax: float
+    Upper bound of the saturation pressure [Pa]. If the saturation
+    pressure at any iteration is greater than `Pmax`, then the bisection
+    update would be used. Default is `1e8` [Pa].
+
+  Pmin: float
+    Lower bound of the saturation pressure [Pa]. If the saturation
+    pressure at any iteration is less than `Pmin`, then the bisection
+    update would be used. Default is `1.0` [Pa].
+
+  Returns
+  -------
+  A tuple of the saturation pressure, an array of the natural logarithms
+  of components in the trial phase and in the mixture, and their
+  compressibility factors.
+  """
   logger.debug('Solving the TPD equation:')
   k = 0
   Pk = P0
@@ -368,8 +616,14 @@ def _solveTPDeqPT(
     dTPDdlnP = Pk * dTPDdP
     dlnP = - TPD / dTPDdlnP
     logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
+    Pkp1 = Pk * np.exp(dlnP)
+    if Pkp1 > Pmax:
+      Pk = .5 * (Pk + Pmax)
+    elif Pkp1 < Pmin:
+      Pk = .5 * (Pmin + Pk)
+    else:
+      Pk = Pkp1
     k += 1
-    Pk *= np.exp(dlnP)
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
     TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
@@ -383,34 +637,106 @@ def _PsatPT_ss(
   yi: VectorType,
   stab0: StabResult,
   eos: EOSPTType,
-  improve_P0: bool = True,
   tol: ScalarType = 1e-5,
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 10,
-) -> PsatResult:
+  Pmax: ScalarType = 1e8,
+  Pmin: ScalarType = 1.,
+) -> SatResult:
+  """Successive substitution (SS) method for the saturation pressure
+  calculation using a PT-based equation of state.
+
+  Arguments
+  ---------
+  P0: float
+    Initial guess of the saturation pressure [Pa]. It should be inside
+    the two-phase region.
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation pressure.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+        This method should return a tuple of logarithms of the fugacity
+        coefficients of components, the phase compressibility factor and
+        the partial derivatives of the logarithms of the fugacity
+        coefficients of components with respect to pressure. The
+        arguments are: `P: float` is pressure [Pa], `T: float` is
+        temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
+        components mole fractions.
+
+    Also, this instance must have attributes:
+
+      - `mwi: ndarray`
+        Vector of components molecular weights [kg/mol] of shape
+        `(Nc,)`.
+
+      - `name: str`
+        The EOS name (for proper logging).
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    Maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol`. Default is `1e-6`.
+    The TPD-equation is the equation of equality to zero of the
+    tangent-plane distance, which determines the second phase
+    appearance or disappearance.
+
+  maxiter_tpd: int
+    Maximum number of TPD-equation solver iterations. Default is `50`.
+
+  Pmax: float
+    Upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+
+  Pmin: float
+    Lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+  Returns
+  -------
+  Saturation pressure calculation results as an instance of the
+  `SatResult`. Important attributes are: `P` the saturation pressure
+  in [Pa], `T` the saturation temperature in [K], `yji` the component
+  mole fractions in each phase, `Zj` the compressibility factors of
+  each phase, `success` a boolean flag indicating if the calculation
+  completed successfully.
+  """
   logger.debug(
     'Saturation pressure calculation using the SS-method:\n'
     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
   )
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd)
+                        maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   k = 0
   xi = stab0.yti
   kvik = xi / yi
-  lnkvi = np.log(kvik)
-  if improve_P0:
-    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(P0, T, yi, xi)
-  else:
-    Pk = P0
-    lnphixi = stab0.lnphiyti
-    lnphiyi = stab0.lnphiyi
-    Zx = stab0.Zt
-    Zy = stab0.Z
+  lnkvik = np.log(kvi)
+  Pk = P0
+  lnphixi = stab0.lnphiyti
+  lnphiyi = stab0.lnphiyi
+  Zx = stab0.Zt
+  Zy = stab0.Z
   ni = xi
   n = ni.sum()
   TPD = -np.log(n)
-  gi = np.log(kvik) + lnphixi - lnphiyi
+  gi = lnkvik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
     'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
@@ -419,13 +745,14 @@ def _PsatPT_ss(
   while (gnorm > tol) and (k < maxiter):
     dlnkvi = - gi
     k += 1
-    kvik *= np.exp(dlnkvi)
-    ni = kvik * yi
+    lnkvik += dlnkvi
+    kvik = np.exp(lnkvik)
+    ni = kvi * yi
     n = ni.sum()
     TPD = -np.log(n)
     xi = ni / n
     Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
-    gi = np.log(kvik) + lnphixi - lnphiyi
+    gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
@@ -442,7 +769,7 @@ def _PsatPT_ss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    return PsatResult(P=Pk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
       "Saturation pressure calculation terminates unsuccessfully. "
@@ -450,9 +777,9 @@ def _PsatPT_ss(
       "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
       eos.name, P0, T, yi, improve_P0
     )
-    return PsatResult(P=Pk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                      success=False)
+    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
 
 
 def _PsatPT_qnss(
@@ -461,30 +788,107 @@ def _PsatPT_qnss(
   yi: VectorType,
   stab0: StabResult,
   eos: EOSPTType,
-  improve_P0: bool = True,
   tol: ScalarType = 1e-5,
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 10,
-) -> PsatResult:
+  Pmax: ScalarType = 1e8,
+  Pmin: ScalarType = 1.,
+) -> SatResult:
+  """QNSS-method for the saturation pressure calculation using a PT-based
+  equation of state.
+
+  Performs the Quasi-Newton Successive Substitution (QNSS) method to
+  find an equilibrium state by solving a system of non-linear equations.
+  For the details of the QNSS-method see: 10.1016/0378-3812(84)80013-8
+  and 10.1016/0378-3812(85)90059-7.
+
+  Arguments
+  ---------
+  P0: float
+    Initial guess of the saturation pressure [Pa]. It should be inside
+    the two-phase region.
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation pressure.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+        This method should return a tuple of logarithms of the fugacity
+        coefficients of components, the phase compressibility factor and
+        the partial derivatives of the logarithms of the fugacity
+        coefficients of components with respect to pressure. The
+        arguments are: `P: float` is pressure [Pa], `T: float` is
+        temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
+        components mole fractions.
+
+    Also, this instance must have attributes:
+
+      - `mwi: ndarray`
+        Vector of components molecular weights [kg/mol] of shape
+        `(Nc,)`.
+
+      - `name: str`
+        The EOS name (for proper logging).
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    Maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol`. Default is `1e-6`.
+    The TPD-equation is the equation of equality to zero of the
+    tangent-plane distance, which determines the second phase
+    appearance or disappearance.
+
+  maxiter_tpd: int
+    Maximum number of TPD-equation solver iterations. Default is `50`.
+
+  Pmax: float
+    Upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+
+  Pmin: float
+    Lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+  Returns
+  -------
+  Saturation pressure calculation results as an instance of the
+  `SatResult`. Important attributes are: `P` the saturation pressure
+  in [Pa], `T` the saturation temperature in [K], `yji` the component
+  mole fractions in each phase, `Zj` the compressibility factors of
+  each phase, `success` a boolean flag indicating if the calculation
+  completed successfully.
+  """
   logger.debug(
     'Saturation pressure calculation using the QNSS-method:\n'
     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
   )
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd)
+                        maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   k = 0
   xi = stab0.yti
   kvik = xi / yi
-  lnkvi = np.log(kvik)
-  if improve_P0:
-    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(P0, T, yi, xi)
-  else:
-    Pk = P0
-    lnphixi = stab0.lnphiyti
-    lnphiyi = stab0.lnphiyi
-    Zx = stab0.Zt
-    Zy = stab0.Z
+  lnkvik = np.log(kvik)
+  Pk = P0
+  lnphixi = stab0.lnphiyti
+  lnphiyi = stab0.lnphiyi
+  Zx = stab0.Zt
+  Zy = stab0.Z
   ni = xi
   n = ni.sum()
   TPD = -np.log(n)
@@ -504,13 +908,14 @@ def _PsatPT_qnss(
       dlnkvi *= relax
     k += 1
     tkm1 = dlnkvi.dot(gi)
-    kvik *= np.exp(dlnkvi)
+    lnkvik += dlnkvi
+    kvik = np.exp(lnkvik)
     ni = kvik * yi
     n = ni.sum()
     TPD = -np.log(n)
     xi = ni / n
     Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
-    gi = np.log(kvik) + lnphixi - lnphiyi
+    gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
     if lmbd > 30.:
@@ -530,7 +935,7 @@ def _PsatPT_qnss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    return PsatResult(P=Pk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
       "Saturation pressure calculation terminates unsuccessfully. "
@@ -538,7 +943,7 @@ def _PsatPT_qnss(
       "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
       eos.name, P0, T, yi, improve_P0,
     )
-    return PsatResult(P=Pk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                      success=False)
+    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
 

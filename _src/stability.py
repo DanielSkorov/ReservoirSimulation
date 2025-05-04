@@ -24,7 +24,7 @@ class StabResult(dict):
   ----------
 
   stable: bool
-    A Boolean-flag indicating if a one-phase state is stable.
+    A boolean flag indicating if a one-phase state is stable.
 
   TPD: float
     Tangent-plane distance at a local minima of a potential energy
@@ -189,9 +189,9 @@ class stabilityPT(object):
     Returns
     -------
     Stability test results as an instance of `StabResult`. Important
-    properties are: `stab` a Boolean-flag indicating if a one-phase
+    properties are: `stab` a boolean flag indicating if a one-phase
     state is stable, `TPD` the tangent-plane distance at a local minima
-    of the Gibbs energy function, `success` a Boolean flag indicating
+    of the Gibbs energy function, `success` a boolean flag indicating
     if the calculation completed successfully.
     """
     kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
@@ -214,7 +214,8 @@ def _stabPT_ss(
   tol: ScalarType = 1e-6,
   maxiter: int = 50,
 ) -> StabResult:
-  """Successive Substitution method for stability testing.
+  """Successive Substitution (SS) method to perform the stability test
+  using a PT-based equation of state.
 
   Arguments
   ---------
@@ -254,9 +255,9 @@ def _stabPT_ss(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a Boolean-flag indicating if a one-phase
+  properties are: `stab` a boolean flag indicating if a one-phase
   state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a Boolean flag indicating
+  of the Gibbs energy function, `success` a boolean flag indicating
   if the calculation completed successfully.
   """
   logger.debug(
@@ -318,7 +319,8 @@ def _stabPT_qnss(
   tol: ScalarType = 1e-6,
   maxiter: int = 50,
 ) -> StabResult:
-  """QNSS-method for stability testing.
+  """QNSS-method to perform the stability test using a PT-based
+  equation of state.
 
   Performs the Quasi-Newton Successive Substitution (QNSS) method to
   find local minimums of the Gibbs energy function from different
@@ -363,9 +365,9 @@ def _stabPT_qnss(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a Boolean-flag indicating if a one-phase
+  properties are: `stab` a boolean flag indicating if a one-phase
   state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a Boolean flag indicating
+  of the Gibbs energy function, `success` a boolean flag indicating
   if the calculation completed successfully.
   """
   logger.debug(
