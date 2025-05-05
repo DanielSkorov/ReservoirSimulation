@@ -640,7 +640,7 @@ class pr78(object):
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = np.power(Z, np.array([2., 1., 0.])).dot(ddmdP)
+    dqdP = np.power(Z, np.array([2, 1, 0])).dot(ddmdP)
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
@@ -709,7 +709,7 @@ class pr78(object):
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj + ddmdB * dBdnj
-    dqdnj = np.power(Z, np.array([2., 1., 0.])).dot(ddmdnj)
+    dqdnj = np.power(Z, np.array([2, 1, 0])).dot(ddmdnj)
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj

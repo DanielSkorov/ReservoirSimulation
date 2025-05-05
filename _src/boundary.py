@@ -283,13 +283,13 @@ class SatResult(dict):
   success: bool
     Whether or not the procedure exited successfully.
   """
-  def __getattr__(self, name):
+  def __getattr__(self, name: str) -> object:
     try:
       return self[name]
     except KeyError as e:
       raise AttributeError(name) from e
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     with np.printoptions(linewidth=np.inf):
       s = (f"Saturation pressure: {self.P} Pa\n"
            f"Saturation temperature: {self.T} K\n"
@@ -337,6 +337,13 @@ class PsatPT(object):
         respect to components mole numbers which are an `ndarray` of
         shape `(Nc, Nc)`.
 
+    If the `improve_P0` is set to `True` and the `stabgrid` is set to
+    `False` then it also must have:
+
+      - `getPT_lnphii(P, T, yi) -> ndarray`
+        This method must return logarithms of the fugacity coefficients
+        of components.
+
     Also, this instance must have attributes:
 
       - `mwi: ndarray`
@@ -373,7 +380,7 @@ class PsatPT(object):
     appearance.
 
   maxiter_tpd: int
-    Maximum number of TPD-equation solver iterations. Default is `50`.
+    Maximum number of TPD-equation solver iterations. Default is `8`.
 
   improve_P0: bool
     Flag indicating whether or not to improve the initial guess of the
@@ -387,25 +394,11 @@ class PsatPT(object):
     set `True` then `Npoint` of stability tests will be performed to
     find the pressure, closest to the given and located inside the
     two-phase region. If the `stabgrid` was set `False` then all
-    possible roots of the TPD-equation would be found by splitting the
-    interval from `Pmin` to `Pmax` into `(Npoint - 1)` segments.
-    The closest solution of the TPD-equation to the given value would
-    be used as an initial guess for the saturation pressure calculation.
-
-  Pmax: float
-    Upper bound for the TPD-solver [Pa]. It also used to contruct
-    the grid for the algorithm of the initial guess improvement. If it
-    was completed successfully then the value of the upper bound will
-    be also changed. Default is `1e8` [Pa].
-
-  Pmin: float
-    Lower bound for the TPD-solver [Pa]. It also used to contruct
-    the grid for the algorithm of the initial guess improvement. If it
-    was completed successfully then the value of the lower bound will
-    be also changed. Default is `1.0` [Pa].
-
-  Npoint: int
-    The number of points to
+    possible roots of the TPD-equation for fixed real and trial
+    compositions would be found by splitting the interval from `Pmin` to
+    `Pmax` into `(Npoint - 1)` segments. The closest solution of the
+    TPD-equation to the given value would be used as an initial guess for
+    the saturation pressure calculation.
 
   stabkwargs: dict
     Dictionary that used to regulate the stability test procedure.
@@ -427,12 +420,9 @@ class PsatPT(object):
     tol: ScalarType = 1e-5,
     maxiter: int = 50,
     tol_tpd: ScalarType = 1e-6,
-    maxiter_tpd: int = 10,
+    maxiter_tpd: int = 8,
     improve_P0: bool = False,
     stabgrid: bool = False,
-    Pmax: ScalarType = 1e8,
-    Pmin: ScalarType = 1.,
-    Npoint: int = 10,
     stabkwargs: dict = {},
   ) -> None:
     self.eos = eos
@@ -472,6 +462,9 @@ class PsatPT(object):
     T: ScalarType,
     yi: VectorType,
     P0: ScalarType = 1e5,
+    Pmax: ScalarType = 1e8,
+    Pmin: ScalarType = 1.,
+    Npoint: int = 10,
   ) -> SatResult:
     """Performs the saturation pressure calculation for given temperature
     and composition.
@@ -489,6 +482,24 @@ class PsatPT(object):
       the two-phase region unless the `improve_P0` was activated.
       Default is `1e5` [Pa].
 
+    Pmax: float
+      Upper bound for the TPD-solver [Pa]. It also used to contruct
+      the grid for the algorithm of the initial guess improvement. If it
+      was completed successfully then the value of the upper bound will
+      be also changed. Default is `1e8` [Pa].
+
+    Pmin: float
+      Lower bound for the TPD-solver [Pa]. It also used to contruct
+      the grid for the algorithm of the initial guess improvement. If it
+      was completed successfully then the value of the lower bound will
+      be also changed. Default is `1.0` [Pa].
+
+    Npoint: int
+      The number of points for grid construction routines. It affects
+      the program flow only if the option of the saturation pressure
+      initial guess improvement was activated by `improve_P0`. Default
+      is `10`.
+
     Returns
     -------
     Saturation pressure calculation results as an instance of the
@@ -500,42 +511,93 @@ class PsatPT(object):
     """
     if self.improve_P0:
       if self.stabgrid:
-        raise NotImplementedError(
-          'The construction of the grid of stability test results to\n'
-          'locate the initial saturation pressure inside the two-phase\n'
-          'region is not implemented yet.'
+        logger.debug(
+          'Improvement of the saturation pressure initial guess by finding\n'
+          '\tthe closest pressure to the given in the two-phase region...'
         )
+        PP = np.linspace(Pmin, Pmax, Npoint, endpoint=True)
+        stabs = []
+        where = []
+        for P in PP:
+          stab = self.stabsolver.run(P, T, yi)
+          stabs.append(stab)
+          where.append(not stab.stable)
+        if np.any(where):
+          idx = np.where(where, np.abs(PP - P0), np.inf).argmin()
+          P0 = PP[idx]
+          stab = stabs[idx]
+          if idx > 0:
+            Pmin = PP[idx-1]
+          if idx < Npoint - 1:
+            Pmax = PP[idx+1]
+          logger.debug(
+            'Improved initial guess:\n\tP0 = %s, Pmin = %s, Pmax = %s',
+            P0, Pmin, Pmax,
+          )
+        else:
+          logger.warning(
+            'The stability test gridding procedure was unsuccessful.\n'
+            '\tTry to increase the number of points or use another initial\n'
+            '\tguess improvement method.'
+          )
+          stab = self.stabsolver.run(P0, T, yi)
       else:
-        raise NotImplementedError(
-          'Improvement of the initial guess of the saturation pressure\n'
-          'by finding all roots of the TPD-equation for given temperature\n'
-          'and composition is not implemented yet.'
+        logger.debug(
+          'Improvement of the saturation pressure initial guess by\n'
+          '\tfinding the roots of the TPD-equation for fixed real\n'
+          '\tand trial compositions...'
         )
+        stab = self.stabsolver.run(P0, T, yi)
+        P0s = []
+        Pmins = []
+        Pmaxs = []
+        PP = np.linspace(Pmin, Pmax, Npoint, endpoint=True)
+        for kvi in stab.kvji:
+          lnkvi = np.log(kvi)
+          yti = kvi * yi
+          ftpd = np.vectorize(
+            lambda P: yti.dot(lnkvi + self.eos.getPT_lnphii(P, T, yti)
+                              - self.eos.getPT_lnphii(P, T, yi))
+          )
+          tpds = ftpd(PP)
+          for i in range(Npoint-1):
+            if tpds[i] * tpds[i+1] < 0.:
+              P0s.append(_solveTPDeqPT(.5 * (PP[i] + PP[i+1]), T, yi, yti,
+                                       self.eos, Pmax=PP[i+1], Pmin=PP[i])[0])
+              Pmins.append(PP[i])
+              Pmaxs.append(PP[i+1])
+        if P0s:
+          idx = np.abs(np.asarray(P0s) - P0).argmin()
+          P0 = P0s[idx]
+          Pmin = Pmins[idx]
+          Pmax = Pmaxs[idx]
+          logger.debug(
+            'Improved initial guess:\n\tP0 = %s, Pmin = %s, Pmax = %s',
+            P0, Pmin, Pmax,
+          )
+          stab = self.stabsolver.run(P0, T, yi)
+        else:
+          logger.warning(
+            'The TPD-equation gridding procedure completed unsuccessfully. '
+            'Try to increase the number of points or use another initial '
+            'guess improvement method.'
+          )
     else:
-      logger.debug(
-        'Initial stability test for\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
-        P0, T, yi,
-      )
       stab = self.stabsolver.run(P0, T, yi)
-      logger.debug(
-        'TPD = %s\n\tThe system is stable: %s\n\tComputation succeeded: %s',
-        stab.TPD, stab.stable, stab.success,
+    if stab.stable:
+      raise ValueError(
+        'The initial guess of the P0 is outside of the two-phase region.\n'
+        'Try to change the value of P0 or stability test parameters\n'
+        'using the `stabkwargs` argument. Also this problem can be solved\n'
+        'by activating the `improve_P0` flag.'
       )
-      if stab.stable:
-        raise ValueError(
-          'The initial guess of the P0 is outside of the two-phase region.\n'
-          'Try to change the value of P0 or the level of the initial guess\n'
-          'of k-values for the stability test using the `stabkwargs`\n'
-          'argument. Also this problem can be solved by activating the\n'
-          '`improve_P0` flag.'
-        )
-      if not stab.success:
-        raise ValueError(
-          'The stability test for the initial value of P0 completed\n'
-          'unsuccessfully. Try to change the `stabmethod` using the\n'
-          '`stabkwargs` argument.'
-        )
-    return self.psatsolver(P0, T, yi, stab)
+    if not stab.success:
+      raise ValueError(
+        'The stability test for the initial value of P0 completed\n'
+        'unsuccessfully. Try to change the `stabmethod` using the\n'
+        '`stabkwargs` argument.'
+      )
+    return self.psatsolver(P0, T, yi, stab, Pmin=Pmin, Pmax=Pmax)
 
 
 def _solveTPDeqPT(
@@ -545,7 +607,7 @@ def _solveTPDeqPT(
   yti: VectorType,
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
-  maxiter: int = 10,
+  maxiter: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
 ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
@@ -582,7 +644,7 @@ def _solveTPDeqPT(
         components mole fractions.
 
   maxiter: int
-    Maximum number of iterations. Default is `10`.
+    Maximum number of iterations. Default is `8`.
 
   tol: float
     Terminate successfully if the absolute value of the equation is less
@@ -613,10 +675,12 @@ def _solveTPDeqPT(
   TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
   while (np.abs(TPD) > tol) and (k < maxiter):
     dTPDdP = yti.dot(dlnphixidP - dlnphiyidP)
-    dTPDdlnP = Pk * dTPDdP
-    dlnP = - TPD / dTPDdlnP
+    # dTPDdlnP = Pk * dTPDdP
+    # dlnP = - TPD / dTPDdlnP
+    # Pkp1 = Pk * np.exp(dlnP)
+    dP = - TPD / dTPDdP
+    Pkp1 = Pk + dP
     logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
-    Pkp1 = Pk * np.exp(dlnP)
     if Pkp1 > Pmax:
       Pk = .5 * (Pk + Pmax)
     elif Pkp1 < Pmin:
@@ -640,7 +704,7 @@ def _PsatPT_ss(
   tol: ScalarType = 1e-5,
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
-  maxiter_tpd: int = 10,
+  maxiter_tpd: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
 ) -> SatResult:
@@ -701,7 +765,7 @@ def _PsatPT_ss(
     appearance or disappearance.
 
   maxiter_tpd: int
-    Maximum number of TPD-equation solver iterations. Default is `50`.
+    Maximum number of TPD-equation solver iterations. Default is `8`.
 
   Pmax: float
     Upper bound for the TPD-equation solver. Default is `1e8` [Pa].
@@ -774,8 +838,8 @@ def _PsatPT_ss(
     logger.warning(
       "Saturation pressure calculation terminates unsuccessfully. "
       "The solution method was SS, EOS: %s. Parameters:"
-      "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
-      eos.name, P0, T, yi, improve_P0
+      "\n\tP0 = %s, T = %s\n\tyi = %s\n\tPmin = %s\n\tPmax = %s",
+      eos.name, P0, T, yi, Pmin, Pmax,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -791,7 +855,7 @@ def _PsatPT_qnss(
   tol: ScalarType = 1e-5,
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
-  maxiter_tpd: int = 10,
+  maxiter_tpd: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
 ) -> SatResult:
@@ -857,7 +921,7 @@ def _PsatPT_qnss(
     appearance or disappearance.
 
   maxiter_tpd: int
-    Maximum number of TPD-equation solver iterations. Default is `50`.
+    Maximum number of TPD-equation solver iterations. Default is `8`.
 
   Pmax: float
     Upper bound for the TPD-equation solver. Default is `1e8` [Pa].
@@ -940,8 +1004,8 @@ def _PsatPT_qnss(
     logger.warning(
       "Saturation pressure calculation terminates unsuccessfully. "
       "The solution method was QNSS, EOS: %s. Parameters:"
-      "\n\tP0 = %s, T = %s\n\tyi = %s\n\timprove_P0 = %s",
-      eos.name, P0, T, yi, improve_P0,
+      "\n\tP0 = %s, T = %s\n\tyi = %s\n\tPmin = %s\n\tPmax = %s",
+      eos.name, P0, T, yi, Pmin, Pmax,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),

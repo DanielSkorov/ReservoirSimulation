@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from functools import (
@@ -22,7 +24,6 @@ class StabResult(dict):
 
   Attributes
   ----------
-
   stable: bool
     A boolean flag indicating if a one-phase state is stable.
 
@@ -48,18 +49,27 @@ class StabResult(dict):
   success: bool
     Whether or not the procedure exited successfully.
   """
-  def __getattr__(self, name):
+  def __getattr__(self, name: str) -> object:
     try:
       return self[name]
     except KeyError as e:
       raise AttributeError(name) from e
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     with np.printoptions(linewidth=np.inf):
       s = (f"The one-phase state is stable:\n{self.stable}\n"
            f"Tangent-plane distance:\n{self.TPD}\n"
            f"Calculation completed successfully:\n{self.success}")
     return s
+
+  def extend(self, stab: StabResult) -> None:
+    assert self.keys() == stab.keys()
+    for key in self:
+      if isinstance(self[key], list):
+        self[key].append(stab[key])
+      else:
+        self[key] = [self[key], stab[key]]
+    pass
 
 
 class stabilityPT(object):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from functools import (
@@ -55,19 +57,28 @@ class FlashResult(dict):
   success: bool
     Whether or not the procedure exited successfully.
   """
-  def __getattr__(self, name):
+  def __getattr__(self, name: str) -> object:
     try:
       return self[name]
     except KeyError as e:
       raise AttributeError(name) from e
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     with np.printoptions(linewidth=np.inf):
       s = (f"Phase composition:\n{self.yji}\n"
            f"Phase mole fractions:\n{self.Fj}\n"
            f"Phase compressibility factors:\n{self.Zj}\n"
            f"Calculation completed successfully:\n{self.success}")
     return s
+
+  def extend(self, flash: FlashResult) -> None:
+    assert self.keys() == flash.keys()
+    for key in self:
+      if isinstance(self[key], list):
+        self[key].append(flash[key])
+      else:
+        self[key] = [self[key], flash[key]]
+    pass
 
 
 class flash2pPT(object):
