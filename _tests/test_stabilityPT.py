@@ -29,7 +29,7 @@ from stability import (
 
 class stabPT(unittest.TestCase):
 
-  def test_case_1_qnss(self):
+  def test_1(self):
     P = np.float64(2e6)
     T = np.float64(40. + 273.15)
     yi = np.array([.15, .85])
@@ -45,7 +45,7 @@ class stabPT(unittest.TestCase):
     self.assertTrue(res.stable & res.success)
     pass
 
-  def test_case_2_qnss(self):
+  def test_2(self):
     P = np.float64(6e6)
     T = np.float64(10. + 273.15)
     yi = np.array([.9, .1])
@@ -61,7 +61,7 @@ class stabPT(unittest.TestCase):
     self.assertFalse(res.stable & res.success)
     pass
 
-  def test_case_3_qnss(self):
+  def test_3(self):
     P = np.float64(101325.)
     T = np.float64(20. + 273.15)
     yi = np.array([.1, .6, .3])
@@ -77,7 +77,7 @@ class stabPT(unittest.TestCase):
     self.assertFalse(res.stable & res.success)
     pass
 
-  def test_case_1_ss(self):
+  def test_4(self):
     P = np.float64(2e6)
     T = np.float64(40. + 273.15)
     yi = np.array([.15, .85])
@@ -93,7 +93,7 @@ class stabPT(unittest.TestCase):
     self.assertTrue(res.stable & res.success)
     pass
 
-  def test_case_2_ss(self):
+  def test_5(self):
     P = np.float64(6e6)
     T = np.float64(10. + 273.15)
     yi = np.array([.9, .1])
@@ -109,7 +109,7 @@ class stabPT(unittest.TestCase):
     self.assertFalse(res.stable & res.success)
     pass
 
-  def test_case_3_ss(self):
+  def test_6(self):
     P = np.float64(101325.)
     T = np.float64(20. + 273.15)
     yi = np.array([.1, .6, .3])
