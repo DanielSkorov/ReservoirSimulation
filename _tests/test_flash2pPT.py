@@ -2,15 +2,17 @@ import sys
 
 sys.path.append('../_src/')
 
-# import logging
+import logging
 
-# logger = logging.getLogger('flash')
-# logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('flash')
+logger.setLevel(logging.INFO)
 
-# handler = logging.StreamHandler(sys.stdout)
-# formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter(
+  '%(process)d:%(name)s:%(levelname)s:\n\t%(message)s'
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 import unittest
 
@@ -27,7 +29,7 @@ from flash import (
 
 class flash(unittest.TestCase):
 
-  def test_case_1_qnss(self):
+  def test_1(self):
     P = np.float64(6e6)
     T = np.float64(10. + 273.15)
     yi = np.array([.9, .1])
@@ -39,12 +41,13 @@ class flash(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='qnss', stabmethod='qnss', tol=tol, maxiter=6)
+    flash = flash2pPT(pr, flashmethod='qnss', stabmethod='qnss', tol=tol,
+                      maxiter=6)
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
     pass
 
-  def test_case_1_ss(self):
+  def test_2(self):
     P = np.float64(6e6)
     T = np.float64(10. + 273.15)
     yi = np.array([.9, .1])
@@ -56,11 +59,12 @@ class flash(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss', stabmethod='ss', tol=tol, maxiter=7)
+    flash = flash2pPT(pr, flashmethod='ss', stabmethod='ss', tol=tol,
+                      maxiter=7)
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
     pass
 
 
 if __name__ == '__main__':
-  unittest.main()
+  unittest.main(verbosity=0)

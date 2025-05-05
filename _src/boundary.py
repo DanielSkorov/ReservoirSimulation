@@ -154,7 +154,7 @@ def getVT_PcTc(
     An initialized instance of a VT-based equation of state.
 
   v0: float
-    An initial guess for the critical molar volume of a mixture.
+    An initial guess of the critical molar volume of a mixture [m3/mol].
     Default is `None` which means that the gridding procedure or the
     `kappa0` will be used instead.
 
@@ -246,11 +246,17 @@ def getVT_PcTc(
     )
     k += 1
   if k < maxiter:
-    return eos.getVT_P(vk, T, yi), T
+    Pc = eos.getVT_P(vk, T, yi)
+    logger.info(
+      'Critical point for yi = %s:\n\tPc = %s Pa\n\tTc = %s K'
+      '\n\tdkappa = %s\n\tNiter = %s',
+      yi, Pc, T, dkappa, k,
+    )
+    return Pc, T
   logger.warning(
     "The critical point was not found using %s:"
-    "\n\tyi = %s\n\tv0 = %s\n\tT0 = %s\n\tkappa0 = %s\n\tmultdV0 = %s"
-    "\n\tkrange = %s\n\tkstep = %s\n\ttol = %s\n\tmaxiter = %s",
+    "\n\tyi = %s\n\tv0 = %s m3/mol\n\tT0 = %s K\n\tkappa0 = %s\n\t"
+    "multdV0 = %s\n\tkrange = %s\n\tkstep = %s\n\ttol = %s\n\tmaxiter = %s",
     eos.name, yi, v0, T0, kappa0, multdV0, krange, kstep, tol, maxiter,
   )
   raise ValueError(
@@ -537,8 +543,7 @@ class PsatPT(object):
         else:
           logger.warning(
             'The stability test gridding procedure was unsuccessful.\n'
-            '\tTry to increase the number of points or use another initial\n'
-            '\tguess improvement method.'
+            '\tTry to increase the number of points.'
           )
           stab = self.stabsolver.run(P0, T, yi)
       else:
@@ -548,6 +553,13 @@ class PsatPT(object):
           '\tand trial compositions...'
         )
         stab = self.stabsolver.run(P0, T, yi)
+        if stab.stable:
+          raise ValueError(
+            'The initial guess is outside of the two-phase region.\n'
+            'Try to change the value of P0 or stability test parameters\n'
+            'using the `stabkwargs` argument. Also this problem can be\n'
+            'solved by activating the `improve_P0` and `stabgrid` flags.'
+          )
         P0s = []
         Pmins = []
         Pmaxs = []
@@ -562,10 +574,12 @@ class PsatPT(object):
           tpds = ftpd(PP)
           for i in range(Npoint-1):
             if tpds[i] * tpds[i+1] < 0.:
-              P0s.append(_solveTPDeqPT(.5 * (PP[i] + PP[i+1]), T, yi, yti,
-                                       self.eos, Pmax=PP[i+1], Pmin=PP[i])[0])
-              Pmins.append(PP[i])
-              Pmaxs.append(PP[i+1])
+              P0t, *_, suc = _solveTPDeqPT(.5*(PP[i]+PP[i+1]), T, yi, yti,
+                                           self.eos, Pmax=PP[i+1], Pmin=PP[i])
+              if suc:
+                P0s.append(P0t)
+                Pmins.append(PP[i])
+                Pmaxs.append(PP[i+1])
         if P0s:
           idx = np.abs(np.asarray(P0s) - P0).argmin()
           P0 = P0s[idx]
@@ -589,13 +603,7 @@ class PsatPT(object):
         'The initial guess of the P0 is outside of the two-phase region.\n'
         'Try to change the value of P0 or stability test parameters\n'
         'using the `stabkwargs` argument. Also this problem can be solved\n'
-        'by activating the `improve_P0` flag.'
-      )
-    if not stab.success:
-      raise ValueError(
-        'The stability test for the initial value of P0 completed\n'
-        'unsuccessfully. Try to change the `stabmethod` using the\n'
-        '`stabkwargs` argument.'
+        'by activating the `improve_P0` and `stabgrid` flags.'
       )
     return self.psatsolver(P0, T, yi, stab, Pmin=Pmin, Pmax=Pmax)
 
@@ -663,8 +671,9 @@ def _solveTPDeqPT(
   Returns
   -------
   A tuple of the saturation pressure, an array of the natural logarithms
-  of components in the trial phase and in the mixture, and their
-  compressibility factors.
+  of components in the trial phase and in the mixture, their
+  compressibility factors and a flag indicating if the equation was
+  solved successfully.
   """
   logger.debug('Solving the TPD equation:')
   k = 0
@@ -692,7 +701,7 @@ def _solveTPDeqPT(
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
     TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
   logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
-  return Pk, lnphixi, lnphiyi, Zx, Zy
+  return Pk, lnphixi, lnphiyi, Zx, Zy, k < maxiter
 
 
 def _PsatPT_ss(
@@ -815,7 +824,7 @@ def _PsatPT_ss(
     n = ni.sum()
     TPD = -np.log(n)
     xi = ni / n
-    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
@@ -833,12 +842,17 @@ def _PsatPT_ss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation pressure for T = %s K, yi = %s:\n\t'
+      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      T, yi, Pk, xi, gnorm, k,
+    )
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
       "Saturation pressure calculation terminates unsuccessfully. "
       "The solution method was SS, EOS: %s. Parameters:"
-      "\n\tP0 = %s, T = %s\n\tyi = %s\n\tPmin = %s\n\tPmax = %s",
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
@@ -978,7 +992,7 @@ def _PsatPT_qnss(
     n = ni.sum()
     TPD = -np.log(n)
     xi = ni / n
-    Pk, lnphixi, lnphiyi, Zx, Zy = solverTPDeq(Pk, T, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
@@ -999,12 +1013,17 @@ def _PsatPT_qnss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation pressure for T = %s K, yi = %s:\n\t'
+      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      T, yi, Pk, xi, gnorm, k,
+    )
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
       "Saturation pressure calculation terminates unsuccessfully. "
       "The solution method was QNSS, EOS: %s. Parameters:"
-      "\n\tP0 = %s, T = %s\n\tyi = %s\n\tPmin = %s\n\tPmax = %s",
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),

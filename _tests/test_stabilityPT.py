@@ -2,15 +2,17 @@ import sys
 
 sys.path.append('../_src/')
 
-# import logging
+import logging
 
-# logger = logging.getLogger('stab')
-# logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('stab')
+logger.setLevel(logging.INFO)
 
-# handler = logging.StreamHandler(sys.stdout)
-# formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter(
+  '%(process)d:%(name)s:%(levelname)s:\n\t%(message)s'
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 import unittest
 
@@ -125,4 +127,4 @@ class stabPT(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  unittest.main(verbosity=0)

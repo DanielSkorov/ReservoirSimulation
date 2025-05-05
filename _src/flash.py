@@ -361,7 +361,8 @@ def _flash2pPT_ss(
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s', 0, kvik, gi, Fv,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
+      k, kvik, gnorm, Fv,
     )
     while (gnorm > tol) & (k < maxiter):
       k += 1
@@ -375,7 +376,8 @@ def _flash2pPT_ss(
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s', k, kvik, gi, Fv,
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
+        k, kvik, gnorm, Fv,
       )
     if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
         & ((Fv < 1.) & (1. - Fv < 1.) | negativeflash)):
@@ -390,13 +392,18 @@ def _flash2pPT_ss(
         yji = np.vstack([yli, yvi])
         Fj = np.array([1. - Fv, Fv])
         Zj = np.array([Zl, Zv])
+      logger.info(
+        'Two-phase flash P = %s Pa, T = %s K, yi = %s:\n\t'
+        'Fj = %s\n\tyji = %s\n\tgnorm = %s\n\tNiter = %s',
+        P, T, yi, Fj, yji, gnorm, k,
+      )
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
                          success=True)
   else:
     logger.warning(
       "Two-phase flash calculations terminates unsuccessfully. "
       "The solution method was SS, EOS: %s. Parameters:"
-      "\n\tP = %s, T = %s\n\tyi = %s\n\tkvji = %s.",
+      "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
       eos.name, P, T, yi, kvji0,
     )
     return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
@@ -491,8 +498,8 @@ def _flash2pPT_qnss(
     gnorm = np.linalg.norm(gi)
     lmbd: ScalarType = 1.
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s\n\tlmbd = %s',
-      0, kvik, gi, Fv, lmbd,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s\n\tlmbd = %s',
+      k, kvik, gnorm, Fv, lmbd,
     )
     while (gnorm > tol) & (k < maxiter):
       dlnkvi = -lmbd * gi
@@ -513,8 +520,8 @@ def _flash2pPT_qnss(
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tFv = %s\n\tlmbd = %s',
-        k, kvik, gi, Fv, lmbd,
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s\n\tlmbd = %s',
+        k, kvik, gnorm, Fv, lmbd,
       )
       if (gnorm < tol):
         break
@@ -534,13 +541,18 @@ def _flash2pPT_qnss(
         yji = np.vstack([yli, yvi])
         Fj = np.array([1. - Fv, Fv])
         Zj = np.array([Zl, Zv])
+      logger.info(
+        'Two-phase flash P = %s Pa, T = %s K, yi = %s:\n\t'
+        'Fj = %s\n\tyji = %s\n\tgnorm = %s\n\tNiter = %s',
+        P, T, yi, Fj, yji, gnorm, k,
+      )
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
                          success=True)
   else:
     logger.warning(
       "Two-phase flash calculation terminates unsuccessfully. "
       "The solution method was QNSS, EOS: %s. Parameters:"
-      "\n\tP = %s, T = %s\n\tyi = %s\n\tkvji = %s.",
+      "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
       eos.name, P, T, yi, kvji0,
     )
     return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),

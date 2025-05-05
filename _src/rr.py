@@ -120,7 +120,10 @@ def solve2p_FGH(
     logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', k, ak, D)
     hk = D / dDda
   F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.debug('Solution:\n\tF = %s\n', F)
+  logger.info(
+    'For given:\n\tkvi = %s\n\tyi = %s\n\tSolution is:\n\tF = %s\n',
+    kvi, yi, F,
+  )
   return F
 
 
@@ -188,7 +191,10 @@ def solve2p_GH(
     logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', k, ak, eq)
     hk = eq / deqda
   F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.debug('Solution:\n\tF = %s\n', F)
+  logger.info(
+    'For given:\n\tkvi = %s\n\tyi = %s\n\tSolution is:\n\tF = %s\n',
+    kvi, yi, F,
+  )
   return F
 
 
@@ -306,4 +312,8 @@ def solveNp(
       gnorm = np.linalg.norm(gj)
     logger.debug('Iteration #%s:\n\tFj = %s\n\tgnorm = %s', k, fjk, gnorm)
     k += 1
+  logger.info(
+    'For given:\n\tkvji = %s\n\tyi = %s\n\tSolution is:\n\tFj = %s\n',
+    Kji, yi, fjk,
+  )
   return fjk

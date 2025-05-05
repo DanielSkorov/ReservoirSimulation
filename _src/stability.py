@@ -289,8 +289,8 @@ def _stabPT_ss(
     logger.debug('The kv-loop iteration number = %s', j)
     TPD = -np.log(ni.sum())
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tTPD = %s',
-      0, kvik, gi, TPD,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s',
+      0, kvik, gnorm, TPD,
     )
     while (gnorm > tol) & (k < maxiter):
       k += 1
@@ -301,11 +301,15 @@ def _stabPT_ss(
       gnorm = np.linalg.norm(gi)
       TPD = -np.log(ni.sum())
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tTPD = %s',
-        k, kvik, gi, TPD,
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s',
+        k, kvik, gnorm, TPD,
       )
     if (TPD < eps) & (k < maxiter) & (np.isfinite(kvik).all()):
-      logger.debug('TPD = %s\n\tThe system is unstable.\n', TPD)
+      logger.info(
+        'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
+        'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+        P, T, yi, kvik, TPD, gnorm, k,
+      )
       n = ni.sum()
       xi = ni / n
       kvji = xi / yi, yi / xi
@@ -313,8 +317,16 @@ def _stabPT_ss(
                         Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                         success=True)
   else:
-    logger.debug('TPD = %s\n\tThe system is stable.\n', TPD)
-    return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm, TPD=TPD,
+    logger.info(
+      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
+      'The last kv-loop iteration results:\n\t'
+      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      P, T, yi, kvik, TPD, gnorm, k,
+    )
+    n = ni.sum()
+    xi = ni / n
+    kvji = xi / yi, yi / xi
+    return StabResult(stable=True, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
                       Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                       success=True)
 
@@ -399,8 +411,8 @@ def _stabPT_qnss(
     logger.debug('The kv-loop iteration number = %s', j)
     TPD = -np.log(ni.sum())
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tTPD = %s\n\tlmbd = %s',
-      0, kvik, gi, TPD, 1.,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tlmbd = %s',
+      0, kvik, gnorm, TPD, 1.,
     )
     lmbd: ScalarType = 1.
     while (gnorm > tol) & (k < maxiter):
@@ -419,8 +431,8 @@ def _stabPT_qnss(
       gnorm = np.linalg.norm(gi)
       TPD = -np.log(ni.sum())
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgi = %s\n\tTPD = %s\n\tlmbd = %s',
-        k, kvik, gi, TPD, lmbd,
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tlmbd = %s',
+        k, kvik, gnorm, TPD, lmbd,
       )
       if (gnorm < tol):
         break
@@ -428,7 +440,11 @@ def _stabPT_qnss(
       if lmbd > 30.:
         lmbd = 30.
     if (TPD < eps) & (k < maxiter) & (np.isfinite(kvik).all()):
-      logger.debug('TPD = %s\n\tThe system is unstable.\n', TPD)
+      logger.info(
+        'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
+        'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+        P, T, yi, kvik, TPD, gnorm, k,
+      )
       n = ni.sum()
       xi = ni / n
       kvji = xi / yi, yi / xi
@@ -436,8 +452,15 @@ def _stabPT_qnss(
                         Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                         success=True)
   else:
-    logger.debug('TPD = %s\n\tThe system is stable.\n', TPD)
-    return StabResult(stable=True, yti=None, kvji=None, gnorm=gnorm, TPD=TPD,
+    logger.info(
+      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
+      'The last kv-loop iteration results:\n\t'
+      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      P, T, yi, kvik, TPD, gnorm, k,
+    )
+    n = ni.sum()
+    xi = ni / n
+    kvji = xi / yi, yi / xi
+    return StabResult(stable=True, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
                       Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                       success=True)
-

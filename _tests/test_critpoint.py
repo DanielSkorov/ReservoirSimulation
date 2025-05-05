@@ -2,15 +2,17 @@ import sys
 
 sys.path.append('../_src/')
 
-# import logging
+import logging
 
-# logger = logging.getLogger('bound')
-# logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('bound')
+logger.setLevel(logging.INFO)
 
-# handler = logging.StreamHandler(sys.stdout)
-# formatter = logging.Formatter('%(process)d:%(name)s:%(levelname)s:\n\t%(message)s')
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter(
+  '%(process)d:%(name)s:%(levelname)s:\n\t%(message)s'
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 import unittest
 
@@ -26,7 +28,7 @@ from boundary import (
 
 class critpoint(unittest.TestCase):
 
-  def test_case_1(self):
+  def test_1(self):
     yi = np.array([0.014, 0.943, 0.027, 0.0074, 0.0049, 0.001, 0.0027])
     Pci = np.array([33.5, 45.4, 48.2, 41.9, 37.5, 33.3, 32.46]) * 101325.
     Tci = np.array([126.2, 190.6, 305.4, 369.8, 425.2, 469.6, 507.5])
@@ -51,4 +53,4 @@ class critpoint(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  unittest.main(verbosity=0)
