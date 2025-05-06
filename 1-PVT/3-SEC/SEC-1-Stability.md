@@ -268,10 +268,19 @@ $$ \sum_{j=1}^{N_p} \tilde{G} \left( \mathbf{n^j} \right) = \sum_{j=1}^{N_p} \su
 ````{dropdown} Решение
 Для решения данной задачи будем использовать [уравнение состояния Пенга-Робинсона](../2-EOS/EOS-2-SRK-PR.md), реализованное [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py).
 
-Зададим исходные термобарические условия и компонентный состав.
+Импортирурем необходимые библиотеки:
 
 ``` python
 import numpy as np
+from matplotlib import pyplot as plt
+import sys
+sys.path.append('../../_src/')
+from eos import pr78
+```
+
+Зададим исходные термобарические условия и компонентный состав.
+
+``` python
 P = np.float64(2e6) # Pressure [Pa]
 T = np.float64(40. + 273.15) # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
@@ -291,9 +300,6 @@ dij = np.array([.025]) # Binary interaction parameters
 Импортируем класс с уравнением состояния и проинициализируем его.
 
 ``` python
-import sys
-sys.path.append('../../_src/')
-from eos import pr78
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 
@@ -317,7 +323,6 @@ Lj = np.sum(yji * lnfi, axis=1)
 Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.
 
 ``` python
-from matplotlib import pyplot as plt
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная энергия Гиббса')
 ax1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
@@ -364,6 +369,11 @@ plt.show()
 :tags: [remove-cell]
 
 import numpy as np
+from matplotlib import pyplot as plt
+import sys
+sys.path.append('../../_src/')
+from eos import pr78
+
 P = np.float64(2e6) # Pressure [Pa]
 T = np.float64(40. + 273.15) # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
@@ -375,9 +385,6 @@ mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([.025]) # Binary interaction parameters
 
-import sys
-sys.path.append('../../_src/')
-from eos import pr78
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
 yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
@@ -389,7 +396,6 @@ Gj = np.sum(yji * lnfji, axis=1)
 lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = np.sum(yji * lnfi, axis=1)
 
-from matplotlib import pyplot as plt
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная энергия Гиббса')
 ax1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
@@ -444,7 +450,6 @@ Lj = np.sum(yji * lnfi, axis=1)
 Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.
 
 ``` python
-from matplotlib import pyplot as plt
 fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax3.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная энергия Гиббса')
 ax3.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
@@ -499,7 +504,6 @@ Gj = np.sum(yji * lnfji, axis=1)
 lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = np.sum(yji * lnfi, axis=1)
 
-from matplotlib import pyplot as plt
 fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax3.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная энергия Гиббса')
 ax3.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
@@ -542,7 +546,7 @@ $\mathbf{z} = \mathbf{n} / \sum_{i=1}^{N_c} n_i$ – заданный компо
 $\mathbf{\mu} \left( \mathbf{z} \right)$ – химические потенциалы компонентов для заданного компонентного состава системы, Дж/моль.
 ```
 
-Естественно, нет необходимости проверять значение функции TPD для всех составов системы, достаточно проверить значение функции TPD в ее глобальном минимуме: если в этой точке функция TPD неотрицательна, то систему можно считать стабильной. Однако поиск глобального минимума является достаточно сложной задачей для не выпуклых вниз функций. Таким образом, в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено заменить поиск глобального минимума функции TPD на проверку ее значений в локальных минимумах (стационарных точках). Для этого, задаваясь некоторым начальным приближением, находится локальный минимум, и проверяется значение функции TPD в нем. Если это значение меньше нуля, то рассматриваемое фазовое состояние считается нестабильным, и проверка заканчивается. Если же это значение неотрицательно, то рассматривается следующее начальное приближение. Алгоритм повторяется, пока не будут рассмотрены все начальные приближения. Если после рассмотрения всех начальных приближений не было получено отрицательное значение функции TPD, то система считается стабильной. Прежде чем переходить к рассмотрению реализаций данного алгоритма, необходимо получить условие стационарности (выражение, определяющее положение стационарных точек) функции TPD.
+Естественно, нет необходимости проверять значение функции TPD для всех составов системы, достаточно проверить значение функции TPD в ее глобальном минимуме: если в этой точке функция TPD неотрицательна, то систему можно считать стабильной. Однако поиск глобального минимума является достаточно сложной задачей для не выпуклых вниз функций. В связи с этим в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено заменить поиск глобального минимума функции TPD на проверку ее значений в локальных минимумах (стационарных точках). Для этого, задаваясь некоторым начальным приближением, находится локальный минимум, и проверяется значение функции TPD в нем. Если это значение меньше нуля, то рассматриваемое фазовое состояние считается нестабильным, и проверка заканчивается. Если же это значение неотрицательно, то рассматривается следующее начальное приближение. Алгоритм повторяется, пока не будут рассмотрены все начальные приближения. Если после рассмотрения всех начальных приближений не было получено отрицательное значение функции TPD, то система считается стабильной. Прежде чем переходить к рассмотрению реализаций данного алгоритма, необходимо получить условие стационарности (выражение, определяющее положение стационарных точек) функции TPD.
 
 Для этого в представленном выше критерии стабильности фазового состояния системы разделим левую и правую часть на $\sum_{i=1}^{N_c} r_i > 0$:
 
@@ -576,13 +580,15 @@ $$ \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) = \mu_{N_c}
 
 В данном выражении разность химических потенциалов последнего компонента обозначена константой $K$, поскольку она не зависит от индекса $i$, то есть является одинаковой (постоянной) для всех компонентов. Иными словами, разность химических потенциалов одинакова для соответствующих компонентов в стационарных точках функции TPD. Из этого следует, что касательные, проведенные к функции энергии Гиббса в точках, соответствующих стационарным точкам функции TPD, будут параллельны друг другу и касательной, проведенной в точке с рассматриваемым компонентным составом. Действительно, из приведенного выше соотношения выразим значения химического потенциала в точке, соответствующей стационарной точке функции TPD:
 
-$$ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z}^0 \right) + K. $$
+<!--- $$ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z}^0 \right) + K. $$ -->
+
+$$ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z} \right) + K. $$
 
 Тогда, согласно представленной выше теореме, уравнение касательной к функции энергии Гиббса в этой точке с компонентным составом $\mathbf{y}$:
 
 $$ L_y \left( \mathbf{x} \right) = \sum_{i=1}^{N_c} \mu_i \left( \mathbf{y} \right) x_i = \sum_{i=1}^{N_c} \mu_i \left( \mathbf{z} \right) x_i + K \sum_{i=1}^{N_c} x_i = L_z \left( \mathbf{x} \right) + K .$$
 
-При этом, значение функции TPD в стационарной точке:
+При этом значение функции TPD в стационарной точке:
 
 $$ D \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) \right) = K. $$
 
@@ -610,9 +616,51 @@ $$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-K}}{\sum_{i=1}^{N_c
 
 Условие стабильности $K \geq 0$ можно представить в виде $\sum_{i=1}^{N_c} Y_i \leq 1$.
 
-Таким образом, мы можем использовать метод [градиентного спуска](../../0-Math/1-OM/OM-0-Introduction.md) для поиска локального минимума функции TPD и, задаваясь различными начальными приближениями, определить стабильность рассматриваемой системы. Очевидным недостатком данного подхода является конечность набора начальных приближений (и с точки зрения времени счета – их количество, ведь чем больше начальных приближений мы рассмотрим, тем с большей вероятностью найдем глобальный минимум функции TPD, однако это приведет к увеличению времени работы алгоритма), следовательно, корректный выбор начальных приближений является одним из залогов успешного решения задачи определения стабильности фазового состояния системы.
+Для решения системы нелинейных уравнений, определяющей условие стационарности многокомпонентной системы:
 
-Обозначим отношение $Y_i$ к $z_i$ переменной $k_i$. В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать корреляцию Уилсона:
+$$ \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c, $$
+
+могут быть использованы различные методы. Одним из наиболее распространенных является *метод последовательных подстановок (successive substitution method)*, суть которого заключается в итерационном обновлении основных переменных с использованием следующего выражения:
+
+$$ \mathbf{t}^{k+1} = f \left( \mathbf{t}^{k} \right), $$
+
+где $\mathbf{t}^{k+1} \in {\rm I\!R}^n$ – вектор основных переменных на $\left( k+1 \right)$-й итерации, $\mathbf{t}^{k} \in {\rm I\!R}^n$ – вектор основных переменных на $\left( k \right)$-й итерации, $f \, : \, {\rm I\!R}^n \rightarrow {\rm I\!R}^n$ – функция, принимающая на вход вектор основных переменных размерности $n$ и возвращающая вектор размерности $n$, состоящий из значений нелинейных уравнений решаемой системы. Соответственно, такая система уравнений должна иметь решение, удовлетворяющее следующему соотношению:
+
+$$ \mathbf{t}^{*} = f \left( \mathbf{t}^{*} \right), $$
+
+где $\mathbf{t}^{*} \in {\rm I\!R}^n$ – вектор основных переменных, соответствующий решению системы нелинейных уравнений. Преобразуем выражение, определяеющее условие стационарности многокомпонентной системы, следующим образом:
+
+$$ \begin{align}
+\ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i &= 0, \; i = 1 \, \ldots \, N_c, \\
+\ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) - \ln z_i &= 0, \; i = 1 \, \ldots \, N_c, \\
+\ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) &= 0, \; i = 1 \, \ldots \, N_c, \\
+\ln k_i &= \ln \phi_i \left( \mathbf{z} \right) - \ln \phi_i \left( \mathbf{y} \right), \; i = 1 \, \ldots \, N_c, \\
+\ln k_i &= \ln k_i - \left( \ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) \right), \; i = 1 \, \ldots \, N_c, \\
+\ln k_i &= \ln k_i - g_i, \; i = 1 \, \ldots \, N_c. \\
+\end{align} $$
+
+В процессе данного преобразования было введено обозначение для вектора отношений количеств вещества компонентов $Y_i, \, i = 1 \, \ldots \, N_c,$ в произвольной фазе к соответствующим мольным долям в рассматриваемой системе $z_i, \, i = 1 \, \ldots \, N_c$:
+
+$$ k_i = \frac{Y_i}{z_i}, \; i = 1 \, \ldots \, N_c. $$
+
+Кроме того, вектором $\mathbf{g} \in {\rm I\!R}^n$ обозначен вектор, состоящий из значений нелинейных уравнений, определяющих положение стационарной точки:
+
+$$ \begin{align}
+g_i
+&= \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i, \; i = 1 \, \ldots \, N_c, \\
+&= \ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right), \; i = 1 \, \ldots \, N_c.
+\end{align} $$
+
+Таким образом, метод последовательных подстановок может быть использован для решения рассматриваемой системы нелинейных уравнений. Обновление основных переменных $k_i, \, i = 1 \, \ldots \, N_c,$ на некоторой итерации осуществляется с использованием следующего выражения:
+
+$$ \begin{align}
+\ln k_i^{k+1} &= \ln k_i^{k} - g_i^{k}, \; i = 1 \, \ldots \, N_c, \\
+k_i^{k+1} &= k_i^{k} \cdot \exp{\left(- g_i^{k} \right)}, \; i = 1 \, \ldots \, N_c.
+\end{align} $$
+
+Вернемся к задаче проверки стабильности фазового состояния системы, заключающейся в проверке значений функции TPD в ее стационарных точках. Как уже было отмечено ранее, для нахождения различных стационарных точек необходимо задаваться различными начальными приближениями. Следовательно, очевидным недостатком данного подхода является конечность набора начальных приближений (и с точки зрения времени счета – их количество, ведь чем больше начальных приближений мы рассмотрим, тем с большей вероятностью найдем глобальный минимум функции TPD, однако это приведет к увеличению времени работы алгоритма). Таким образом, корректный выбор начальных приближений является одним из залогов успешного решения задачи определения стабильности фазового состояния системы.
+
+В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать корреляцию Уилсона:
 
 $$ k_i^{go} = \frac{{P_c}_i}{P} \mathrm{e}^{5.3727 \left(1 + \omega_i \right) \left(1 - \frac{{T_c}_i}{T} \right)}. $$
 
@@ -620,7 +668,7 @@ $$ k_i^{go} = \frac{{P_c}_i}{P} \mathrm{e}^{5.3727 \left(1 + \omega_i \right) \l
 
 $$ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}. $$
 
-Использование этих двух начальных приближений зачастую бывает достаточно для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии, в работе \[[Li and Firoozabadi, 2012](https://doi.org/10.2118/129844-PA)\] было предложено дополнить данный набор следующими начальными приближениями:
+Использование этих двух начальных приближений зачастую бывает достаточным для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии, в работе \[[Li and Firoozabadi, 2012](https://doi.org/10.2118/129844-PA)\] было предложено дополнить данный набор следующими начальными приближениями:
 
 $$ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}}, \; \sqrt[3]{k_i^{go}}, \; \frac{1}{\sqrt[3]{k_i^{go}}}, \; k_i^{pure} \right\}, $$
 
@@ -630,19 +678,19 @@ $$ k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, & i = \mathrm{sp
 
 Данный набор начальных приближений хорошо подходит для проверки стабильности систем, где мольная доля одного компонента много больше мольных долей других. Например, к таким системам относятся системы с водой в качестве компонента, в этом случае $\epsilon = 1\mathrm{e}-3$, согласно \[[Connolly et al, 2019](https://doi.org/10.1021/acs.iecr.9b00695)\] (для водных растворов иногда имеет смысл задать $\epsilon = 1\mathrm{e}-15$, согласно \[[Li and Li](https://doi.org/10.1016/j.fuel.2019.02.026)\]). Для систем с высоким содержанием диоксида углерода рекомендуется $\epsilon = 0.05$, согласно \[[Imai at al, 2019](https://doi.org/10.1016/j.fluid.2019.06.002)\].
 
-Существует также множество работ, посвященных разработке численных алгоритмов решения задачи стабильности. В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать метод последовательных подстановок, а также метод BFGS с учетом замены переменной $\alpha_i = 2 \sqrt{Y_i}$ для решения задачи стабильности. Впоследсвтии применение метода BFGS для решение задачи стабильности получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\]. Кроме того, было исследовано применение методов глобальной оптимизации для решения данной задачи, например, авторами работы \[[Nichita et al, 2002](http://doi.org/10.1016/S0378-3812(01)00779-8)\]. Далее будет кратко представлен метод *QNSS (quasi-Newton successive substitution)*, который будет использоваться для решения задачи стабильности системы при известных давлении и температуре. Более подробно данный метод изложен в работах \[[Nghiem, 1983](https://doi.org/10.2118/12242-MS); [Nghiem and Li, 1984](https://doi.org/10.1016/0378-3812(84)80013-8)\].
+С учетом вышеизложенного далее будет представлен алгоритм метода последовательных постановок для решения задачи проверки стабильности фазового состояния системы.
 
 ```{eval-rst}
 .. role:: comment
     :class: comment
 ```
 
-```{admonition} Алгоритм. Анализ стабильности с использованием QNSS
+```{admonition} Алгоритм. Анализ стабильности с использованием метода SS
 :class: algorithm
 
 **Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z} \in {\rm I\!R}^{N_c}$; термобарические условия $P$ и $T$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций $N_{iter}$; точность решения системы нелинейных уравнений $\epsilon_1$; численная погрешность расчета $0 < \epsilon_2 \leq 10^{-4}$.
 
-**Определить:** Является ли однофазное состояние системы с компонентным составом $\mathbf{y}$ при давлении $P$ и температуре $T$ стабильным.
+**Определить:** Является ли однофазное состояние системы с компонентным составом $\mathbf{z}$ при давлении $P$ и температуре $T$ стабильным.
 
 **Псевдокод:**  
 **def** $\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \mathbf{\varphi} \in {\rm I\!R}^{N_c}$ {comment}`# Функция для расчета вектора коэффициентов летучести`  
@@ -654,19 +702,11 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`#
 &emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
 &emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
 &emsp;$c := 1$ {comment}`# Счетчик итераций решения системы нелинейных уравнений`  
-&emsp;$\lambda := 1$ {comment}`# Коэффициент релаксации (длина шага)`  
 &emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do** {comment}`# Цикл решения системы нелинейных уравнений`  
-&emsp;&emsp;$\mathbf{\Delta \ln k} := -\lambda \cdot \mathbf{g}$ {comment}`# Вектор направления поиска решения`  
-&emsp;&emsp;**if** $\max \left( \left| \mathbf{\Delta \ln k} \right| \right) > 6$ **then** {comment}`# Проверка на модуль вариации переменной для каждого компонента`  
-&emsp;&emsp;&emsp;$\lambda := \lambda \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка длины шага`  
-&emsp;&emsp;&emsp;$\mathbf{\Delta \ln k} := \mathbf{\Delta \ln k} \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка вектора направления поиска решения`  
-&emsp;&emsp;**end if**  
-&emsp;&emsp;$\mathbf{g}_{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
-&emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
+&emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( - \mathbf{g} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
 &emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
 &emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
 &emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
-&emsp;&emsp;$\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|$ {comment}`# Новое значение коэффициента релаксации`  
 &emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
 &emsp;**end while**  
 &emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$ {comment}`# Расчет значения функции TPD`  
@@ -715,43 +755,21 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений:
 
 ``` python
-import numpy.typing as npt
-
-def condit(
-    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
-    tol: np.float64,
-    Niter: int,
-) -> bool:
-    k, ki, gi, lmbd = carry
+def condit_ss(carry, tol, Niter):
+    k, ki, gi = carry
     return (k < Niter) & (np.linalg.norm(gi) > tol)
 ```
 
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации:
 
 ``` python
-from typing import Callable
-
-def update(
-    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
-    hi: npt.NDArray[np.float64],
-    yi: npt.NDArray[np.float64],
-    plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
-) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
-    k, ki_k, gi_k, lmbd_k = carry
-    dlnki = -lmbd_k * gi_k
-    max_dlnki = np.abs(dlnki).max()
-    if max_dlnki > 6.:
-        relax = 6. / max_dlnki
-        dlnki *= relax
-    else:
-        relax = 1.
+def update_ss(carry, hi, yi, plnphi):
+    k, ki_k, gi_k = carry
+    dlnki = -gi_k
     ki_kp1 = ki_k * np.exp(dlnki)
     ni = ki_kp1 * yi
     gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd_kp1 = (lmbd_k * relax) * np.abs(dlnki.dot(gi_k) / dlnki.dot(gi_kp1 - gi_k))
-    if lmbd_kp1 > 30.:
-        lmbd_kp1 = 30.
-    return k + 1, ki_kp1, gi_kp1, lmbd_kp1
+    return k + 1, ki_kp1, gi_kp1
 ```
 
 Выполним расчет коэффициентов летучести для начального компонентного состава:
@@ -765,8 +783,8 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 ``` python
 from functools import partial
 
-pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
+pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -775,10 +793,10 @@ pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi, 1.)
+    carry = (1, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
-    c, ki, gi, _ = carry
+    c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
     print(f'For the initial guess #{i}:\n'
@@ -815,56 +833,34 @@ eps2 = 1e-4
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
-import numpy.typing as npt
-
-def condit(
-    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
-    tol: np.float64,
-    Niter: int,
-) -> bool:
-    k, ki, gi, lmbd = carry
+def condit_ss(carry, tol, Niter):
+    k, ki, gi = carry
     return (k < Niter) & (np.linalg.norm(gi) > tol)
 
-from typing import Callable
-
-def update(
-    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64],
-    hi: npt.NDArray[np.float64],
-    yi: npt.NDArray[np.float64],
-    plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
-) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], np.float64]:
-    k, ki_k, gi_k, lmbd_k = carry
-    dlnki = -lmbd_k * gi_k
-    max_dlnki = np.abs(dlnki).max()
-    if max_dlnki > 6.:
-        relax = 6. / max_dlnki
-        dlnki *= relax
-    else:
-        relax = 1.
+def update_ss(carry, hi, yi, plnphi):
+    k, ki_k, gi_k = carry
+    dlnki = -gi_k
     ki_kp1 = ki_k * np.exp(dlnki)
     ni = ki_kp1 * yi
     gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
-    lmbd_kp1 = (lmbd_k * relax) * np.abs(dlnki.dot(gi_k) / dlnki.dot(gi_kp1 - gi_k))
-    if lmbd_kp1 > 30.:
-        lmbd_kp1 = 30.
-    return k + 1, ki_kp1, gi_kp1, lmbd_kp1
+    return k + 1, ki_kp1, gi_kp1
 
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 from functools import partial
 
-pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
+pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out1 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi, 1.)
+    carry = (1, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
-    c, ki, gi, _ = carry
+    c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
     out1 += (f'For the initial guess #{i}:\n'
@@ -935,8 +931,8 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 Проинициализируем функции `condit` и `update`:
 
 ``` python
-pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
+pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -945,10 +941,10 @@ pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi, 1.)
+    carry = (1, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
-    c, ki, gi, _ = carry
+    c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
     print(f'For the initial guess #{i}:\n'
@@ -983,18 +979,18 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
-pcondit = partial(condit, tol=eps1, Niter=Niter)
-pupdate = partial(update, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
+pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out2 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi, 1.)
+    carry = (1, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
-    c, ki, gi, _ = carry
+    c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
     out2 += (f'For the initial guess #{i}:\n'
@@ -1016,7 +1012,55 @@ glue('glued_out2', MultilineText(out2))
 
 Представленный выше алгоритм можно использовать для проверки стабильности однофазного состояния системы. Для проверки стабильности многофазной системы также можно использовать представленный выше алгоритм: для этого достаточно проверить стабильность любой из фаз.
 
-Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
+Существует также множество работ, посвященных разработке численных алгоритмов решения задачи стабильности. В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать метод последовательных подстановок, а также метод BFGS с учетом замены переменной $\alpha_i = 2 \sqrt{Y_i}$ для решения задачи стабильности. Впоследсвтии применение метода BFGS для решение задачи стабильности получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\]. Кроме того, было исследовано применение методов глобальной оптимизации для решения данной задачи, например, авторами работы \[[Nichita et al, 2002](http://doi.org/10.1016/S0378-3812(01)00779-8)\]. Далее будет кратко представлен метод *QNSS (quasi-Newton successive substitution)*, который будет использоваться для решения задачи стабильности системы при известных давлении и температуре. Более подробно данный метод изложен в работах \[[Nghiem, 1983](https://doi.org/10.2118/12242-MS); [Nghiem and Li, 1984](https://doi.org/10.1016/0378-3812(84)80013-8)\].
+
+```{admonition} Алгоритм. Анализ стабильности с использованием QNSS
+:class: algorithm
+
+**Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z} \in {\rm I\!R}^{N_c}$; термобарические условия $P$ и $T$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций $N_{iter}$; точность решения системы нелинейных уравнений $\epsilon_1$; численная погрешность расчета $0 < \epsilon_2 \leq 10^{-4}$.
+
+**Определить:** Является ли однофазное состояние системы с компонентным составом $\mathbf{z}$ при давлении $P$ и температуре $T$ стабильным.
+
+**Псевдокод:**  
+**def** $\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \mathbf{\varphi} \in {\rm I\!R}^{N_c}$ {comment}`# Функция для расчета вектора коэффициентов летучести`  
+$\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}$ {comment}`# Инициализация набора (матрицы) начальных приближений`  
+$\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`# Расчет коэффициентов летучести для начального состава`  
+**for** $i := 1$ **to** $N$ **do** {comment}`# Цикл перебора начальных приближений`  
+&emsp;$\mathbf{k} := \mathbf{K}\left[ i \right]$ {comment}`# Вектор основных переменных`  
+&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
+&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
+&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
+&emsp;$c := 1$ {comment}`# Счетчик итераций решения системы нелинейных уравнений`  
+&emsp;$\lambda := 1$ {comment}`# Коэффициент релаксации (длина шага)`  
+&emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do** {comment}`# Цикл решения системы нелинейных уравнений`  
+&emsp;&emsp;$\mathbf{\Delta \ln k} := -\lambda \cdot \mathbf{g}$ {comment}`# Вектор направления поиска решения`  
+&emsp;&emsp;**if** $\max \left( \left| \mathbf{\Delta \ln k} \right| \right) > 6$ **then** {comment}`# Проверка на модуль вариации переменной для каждого компонента`  
+&emsp;&emsp;&emsp;$\lambda := \lambda \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка длины шага`  
+&emsp;&emsp;&emsp;$\mathbf{\Delta \ln k} := \mathbf{\Delta \ln k} \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка вектора направления поиска решения`  
+&emsp;&emsp;**end if**  
+&emsp;&emsp;$\mathbf{g}_{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
+&emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
+&emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
+&emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
+&emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
+&emsp;&emsp;$\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|$ {comment}`# Новое значение коэффициента релаксации`  
+&emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
+&emsp;**end while**  
+&emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$ {comment}`# Расчет значения функции TPD`  
+&emsp;**if** $TPD < -\epsilon_2$ **and** $c < N_{iter}$ **then** {comment}`# Проверка условия стабильности`  
+&emsp;&emsp;$is\_stable := \mathrm{False}$  
+&emsp;&emsp;**exit for** {comment}`# Выход из цикла перебора начальных приближений`  
+&emsp;**else**  
+&emsp;&emsp;**continue**  
+&emsp;**end if**  
+**else**  
+&emsp;$is\_stable := \mathrm{True}$  
+**end for**  
+```
+
+Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py).
+
+Таким образом, в этом подразделе был выведен критерий стабильности для PT-термодинамики, а также рассмотрены некоторые численные алгоритмы проверки стабильности фазового состояния. [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
 
 (pvt-sec-stability-vt)=
 ## VT-термодинамика
