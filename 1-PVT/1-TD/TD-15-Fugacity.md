@@ -46,7 +46,7 @@ $$ \lim_{P \rightarrow 0} \left( \frac{f}{P} \right) = 1. $$
 
 ```
 
-При этом,
+При этом
 
 ```{admonition} Определение
 :class: tip
@@ -60,7 +60,7 @@ $$ \phi = \frac{f}{P}. $$
 
 $$ d \mu_i = R T d \ln f_i. $$
 
-Данное выражение справедливо для процесса с постоянным количеством молекул компонента $i$ в системе. При этом, определение летучести дается на основании следующего выражения:
+Данное выражение справедливо для процесса с постоянным количеством молекул компонента $i$ в системе. При этом определение летучести дается на основании следующего выражения:
 
 $$ \lim_{P \rightarrow 0} \left( \frac{f_i}{x_i P} \right) = 1. $$
 
@@ -251,7 +251,7 @@ $$ f_i = x_i P. $$
 :class: note
 Полученное выражение является частным случаем соотношения, выполняемого для ***идеальных смесей***:
 
-$$ f_i \left( P, T, x_i \right) = x_i f \left( P, T \right). $$
+$$ f_i \left( P, T, \mathbf{x} \right) = f_i \left( P, T, x_1, x_2, \ldots, x_{N_c} \right) = x_i f \left( P, T \right). $$
 
 ```
 
@@ -261,7 +261,7 @@ $$ f_i \left( P, T, x_i \right) = x_i f \left( P, T \right). $$
 :class: tip
 Смесь является ***идеальной***, если для нее выполняется следующее соотношение:
 
-$$ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i v_i \left( P, T \right). $$
+$$ V \left(P, T, \mathbf{n} \right) = \sum_{i=1}^{N_c} n_i v_i \left( P, T \right). $$
 
 Здесь $N_c$ – количество компонентов в системе, $v_i \left( P, T \right)$ – молярный (удельный) объем $i$-го компонента.
 ```
@@ -272,7 +272,7 @@ $$ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i v_i \l
 :class: proof
 [Ранее](TD-10-MixtureGibbsEnergy.md#pvt-td-mixturegibbsenergy) для всех экстенсивных параметров было показано, что:
 
-$$ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i \bar{V_i}.$$
+$$ V \left(P, T, \mathbf{n} \right) = \sum_{i=1}^{N_c} n_i \bar{V_i}.$$
 
 Следовательно, с учетом определения идеальной смеси получим следующее соотношение:
 
@@ -289,15 +289,15 @@ $$ \begin{align}
 
 Из данного выражения видно, что для идеальной смеси логарифм коэффициента летучести не зависит от компонентного состава и определяется только термобарическими условиями и свойствами компонентов. Получим выражение для летучести $i$-го компонента в идеальной смеси. Для этого преобразуем и проинтегрируем полученное выражение:
 
-$$ f_i \left(P, T, x_i \right) = x_i P \mathrm{e}^{\int_0^P \left( \frac{v_i \left( P, T \right)}{RT} - \frac{1}{P} \right) dP}. $$
+$$ f_i \left(P, T, \mathbf{x} \right) = x_i P \exp \left( \int_0^P \left( \frac{v_i \left( P, T \right)}{RT} - \frac{1}{P} \right) dP \right). $$
 
 Для чистого компонента $x_i = 1$, тогда летучесть чистого компонента:
 
-$$ f \left(P, T \right) = P \mathrm{e}^{\int_0^P \left( \frac{v \left( P, T \right)}{RT} - \frac{1}{P} \right) dP}. $$
+$$ f \left(P, T \right) = P \exp \left( \int_0^P \left( \frac{v \left( P, T \right)}{RT} - \frac{1}{P} \right) dP \right). $$
 
 Следовательно, летучесть $i$-го компонента:
 
-$$ f_i \left(P, T, x_i \right) = x_i f \left(P, T \right). $$
+$$ f_i \left(P, T, \mathbf{x} \right) = x_i f \left( P, T \right). $$
 
 Таким образом, летучесть $i$-го компонента в идеальной смеси равна летучести этого же компонента при отсутствии других компонентов.
 ```
@@ -313,7 +313,7 @@ $$ d \mu^{ig}_i = \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP. 
 
 Интегрируя данное выражение от однокомпонентного состояния к многокомпонентной смеси, получим:
 
-$$ \mu^{ig}_i \left( P, T, n_i \right) - \mu^{ig}_i \left( P, T, \right) = \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP. $$
+$$ \mu^{ig}_i \left( P, T, \mathbf{n} \right) - \mu^{ig}_i \left( P, T \right) = \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP. $$
 
 Рассмотрим вторую частную производную энергии Гиббса по количеству вещества $i$-го компонента и давлению:
 
@@ -326,7 +326,7 @@ $$ \left( \frac{\partial V}{\partial n_i} \right)_{P,T} = \left( \frac{\partial 
 Тогда рассматриваемая разница химических потенциалов может быть преобразована следующим образом, применяя уравнение состояния идеального газа:
 
 $$ \begin{align}
-\mu^{ig}_i \left( P, T, n_i \right) - \mu^{ig}_i \left( P, T \right)
+\mu^{ig}_i \left( P, T, \mathbf{n} \right) - \mu^{ig}_i \left( P, T \right)
 &= \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP \\
 &= \int_{P}^{x_i P} \left( \frac{\partial V}{\partial n_i} \right)_{P,T} dP \\
 &= \int_{P}^{x_i P} \frac{\partial}{\partial n_i} \left( \frac{nRT}{P} \right)_{P,T} dP \\
@@ -336,47 +336,88 @@ $$ \begin{align}
 
 Следовательно,
 
-$$ \mu^{ig}_i \left( P, T, n_i \right) = \mu^{ig}_i \left( P, T \right) + RT \ln x_i . $$
+$$ \mu^{ig}_i \left( P, T, \mathbf{n} \right) = \mu^{ig}_i \left( P, T \right) + RT \ln x_i . $$
 
 Данное уравнение может быть использоваться для расчета химического потенциала компонента идеального газа в идеальной смеси, зная химический потенциал чистого компонента при тех же термобарических условиях и компонентный состав смеси.
 ```
 
 При давлении $P_1$ и компонентном составе ${x_i}_1$ химический потенциал $i$-го компонента в смеси:
 
-$$ \mu_i \left(P_1, T, {x_i}_1 \right) = \mu_i \left( P_1, T \right) + RT \ln {x_i}_1. $$
+$$ \mu_i \left(P_1, T, \mathbf{x}_1 \right) = \mu_i \left( P_1, T \right) + RT \ln {x_i}_1. $$
 
 При давлении $P_2$ и компонентном составе ${x_i}_2$ химический потенциал $i$-го компонента в смеси:
 
-$$ \mu_i \left(P_2, T, {x_i}_2 \right) = \mu_i \left( P_2, T \right) + RT \ln {x_i}_2. $$
+$$ \mu_i \left(P_2, T, \mathbf{x}_2 \right) = \mu_i \left( P_2, T \right) + RT \ln {x_i}_2. $$
 
 Тогда разница данных выражений:
 
-$$ \mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) + R T \ln \frac{{x_i}_2}{{x_i}_1}. $$
+$$ \mu_i \left(P_2, T, \mathbf{x}_2 \right) - \mu_i \left(P_1, T, \mathbf{x}_1 \right) = \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) + R T \ln \frac{{x_i}_2}{{x_i}_1}. $$
 
-При этом, разница химических потенциалов чистого компонента, являющегося идеальным газом,:
+При этом разница химических потенциалов чистого компонента, являющегося идеальным газом,:
 
 $$ \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) = RT \ln \frac{P_2}{P_1}. $$
 
 Тогда:
 
-$$ \mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = RT \ln \frac{P_2 {x_i}_2}{P_1 {x_i}_1}. $$
+$$ \mu_i \left(P_2, T, \mathbf{x}_2 \right) - \mu_i \left(P_1, T, \mathbf{x}_1 \right) = RT \ln \frac{P_2 {x_i}_2}{P_1 {x_i}_1}. $$
 
 
 (pvt-td-fugacity-realgasmixture)=
 ## Летучесть смеси реальных газов
 По аналогии с идеальным газом, для реальных газов данное соотношение записывается следующим образом:
 
-$$ \mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = RT \ln \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{f_i \left( P_1, T, {x_i}_1 \right)}. $$
+$$ \mu_i \left(P_2, T, \mathbf{x}_2 \right) - \mu_i \left(P_1, T, \mathbf{x}_1 \right) = RT \ln \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{f_i \left( P_1, T, \mathbf{x}_1 \right)}. $$
+
+Докажем корректность данного соотношения.
+
+```{admonition} Доказательство
+:class: proof
+Для квази-стационарного изотермического процесса проинтегрируем дифференциал химического потенциала компонента рассматриваемой многокомпонентной системы:
+
+$$ \begin{align}
+d \mu_i \left( P,T, \mathbf{x} \right) &= RT d \ln f_i \left( P,T, \mathbf{x} \right), \; i = 1 \, \ldots \, N_c, \\
+\int_{P^*}^{P} d \mu_i \left( P,T, \mathbf{x} \right) &= RT \int_{P^*}^{P} d \ln f_i \left( P,T, \mathbf{x} \right), \; i = 1 \, \ldots \, N_c,
+\end{align} $$
+
+В выражении выше в качестве нижнего предела интегрирования используется давление, соответствующее состоянию $i$-го компонента в виде идеального газа. С учетом этого
+
+$$ \mu_i \left( P,T, \mathbf{x} \right) - \mu_i \left( P^*,T, \mathbf{x} \right) = RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{f_i \left( P^*,T, \mathbf{x} \right)}, \; i = 1 \, \ldots \, N_c. $$
+
+Учитывая определение летучести компонента многокомпонентной системы, можно записать следующее выражение:
+
+$$ f_i \left( P^*,T, \mathbf{x} \right) = x_i P^*, \; i = 1 \, \ldots \, N_c. $$
+
+Тогда выражение для химического потенциала $i$-го компонента:
+
+$$ \mu_i \left( P,T, \mathbf{x} \right) = \mu_i \left( P^*,T, \mathbf{x} \right) + RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{x_i P^*}, \; i = 1 \, \ldots \, N_c. $$
+
+[Ранее](pvt-td-fugacity-idealgasmixture-chemicalpotential) было доказано следующее свойство смеси идеальных газов:
+
+$$ \mu_i \left( P^*,T, \mathbf{x} \right) = \mu_i \left( P^*,T \right) + RT \ln x_i, \; i = 1 \, \ldots \, N_c. $$
+
+С учетом этого преобразуем выражение для химического потенциала $i$-го компонента к следующему виду:
+
+$$ \begin{align}
+\mu_i \left( P,T, \mathbf{x} \right)
+&= \mu_i \left( P^*,T \right) + RT \ln x_i + RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{x_i P^*} \\
+&= \mu_i \left( P^*,T \right) + RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{P^*}, \; i = 1 \, \ldots \, N_c.
+\end{align} $$
+
+Тогда разность химических потенциалов:
+
+$$ \mu_i \left( P_2,T, \mathbf{x}_2 \right) - \mu_i \left( P_1,T, \mathbf{x}_1 \right) = RT \ln \frac{f_i \left( P_2,T, \mathbf{x}_2 \right)}{f_i \left( P_1,T, \mathbf{x}_1 \right)}, \; i = 1 \, \ldots \, N_c. $$
+
+```
 
 Тогда разница химических потенциалов между реальным и идеальным газами:
 
-$$ \mu_i^{rg} \left(P_2, T, {x_i}_2 \right) - \mu_i^{ig} \left(P_2, T, {x_i}_2 \right) = \mu_i^{rg} \left(P_1, T, {x_i}_1 \right) - \mu_i^{ig} \left(P_1, T, {x_i}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{f_i \left( P_1, T, {x_i}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right). $$
+$$ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = \mu_i^{rg} \left(P_1, T, \mathbf{x}_1 \right) - \mu_i^{ig} \left(P_1, T, \mathbf{x}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{f_i \left( P_1, T, \mathbf{x}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right). $$
 
 ```{admonition} NB
 :class: note
 При этом, если давление $P_1$ достаточно низкое настолько, что при нем рассматриваемая система ведет себя, как идеальный газ, то:
 
-$$ \mu_i^{rg} \left(P_2, T, {x_i}_2 \right) - \mu_i^{ig} \left(P_2, T, {x_i}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, {x_i}_2 \right). $$
+$$ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, \mathbf{x}_2 \right). $$
 
 ```
 

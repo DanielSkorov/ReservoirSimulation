@@ -186,7 +186,7 @@ $$\begin{align}
 \left( \frac{\partial g_Z}{\partial n_k} \right)_{P,T} &= \left( \frac{\partial g_Z}{\partial Z} \right)_{P,T,n_k} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} + \left( \frac{\partial g_Z}{\partial B} \right)_{P,T,n_k} \left( \frac{\partial B}{\partial n_k} \right)_{P,T}.
 \end{align}$$
 
-При этом,
+При этом
 
 $$\begin{align}
 \left( \frac{\partial g_Z}{\partial Z} \right)_{T,P,n_i} &= \frac{1}{Z - B}; \\
@@ -252,7 +252,7 @@ $$\begin{align}
 \left( \frac{\partial f_Z}{\partial n_k} \right)_{P,T} &= \left( \frac{\partial f_Z}{\partial Z} \right)_{P,T,n_k} \left( \frac{\partial Z}{\partial n_k} \right)_{P,T} + \left( \frac{\partial f_Z}{\partial B} \right)_{P,T,n_k} \left( \frac{\partial B}{\partial n_k} \right)_{P,T}.
 \end{align}$$
 
-При этом,
+При этом
 
 $$\begin{align}
 \left( \frac{\partial f_Z}{\partial Z} \right)_{T,P,n_i} &= \frac{1}{Z + B \delta_1} - \frac{1}{Z + B \delta_2}; \\
@@ -288,7 +288,7 @@ $$ \begin{align}
 
 $$ \left( \frac{\partial \ln f_i}{\partial n_k} \right)_{P,T} = \left( \frac{\partial \ln \phi_i}{\partial n_k} \right)_{P,T} + \frac{E_{ik}}{x_i n} - \frac{1}{n}.$$
 
-При этом, необходимо отметить, что под $n$ понимается в данном случае количество вещества фазы, поскольку летучести компонентов, коэффициент сверхсжимаемости и т.д. определяются с использованием уравнения состояния для фазы.
+При этом необходимо отметить, что под $n$ понимается в данном случае количество вещества фазы, поскольку летучести компонентов, коэффициент сверхсжимаемости и т.д. определяются с использованием уравнения состояния для фазы.
 ````
 
 ## Вторые частные производные летучести компонентов с использованием уравнений состояния Суаве-Редлиха-Квонга и Пенга-Робинсона (в PT-формулировке)
@@ -657,7 +657,7 @@ $$\begin{alignat}{3}
 &&& \; + \left( \frac{\partial g_Z}{\partial B} \right)_{T,P,n_i} \left( \frac{\partial^2 B}{\partial P \partial T} \right)_{n_i} + \left( \frac{\partial^2 g_Z}{\partial Z \partial B} \right)_{T,P,n_i} \left( \left( \frac{\partial Z}{\partial P} \right)_{T,n_i} \left( \frac{\partial B}{\partial T} \right)_{P,n_i} + \left( \frac{\partial Z}{\partial T} \right)_{P,n_i} \left( \frac{\partial B}{\partial P} \right)_{T,n_i} \right).
 \end{alignat}$$
 
-При этом, вторые частные производные $g_Z$ по $Z$ и $B$:
+При этом вторые частные производные $g_Z$ по $Z$ и $B$:
 
 $$\begin{align}
 \left( \frac{\partial^2 g_Z}{\partial Z^2} \right)_{T,P,n_i} &= - \frac{1}{\left( Z - B \right)^2}; \\

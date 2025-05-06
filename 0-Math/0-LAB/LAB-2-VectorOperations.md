@@ -155,7 +155,7 @@ ax.set_ylabel('Y')
 fig.tight_layout()
 ```
 
-В данном случае коллинеарными являются векторы: $\mathbf{a} \; || \; \mathbf{b} \; || \; \mathbf{c}$ и $\mathbf{d} \; || \; \mathbf{e}$. При этом, векторы $\mathbf{a} \uparrow \uparrow \mathbf{c}$ – сонаправлены, а $\mathbf{d} \uparrow \downarrow \mathbf{e}$ – противоположно направлены. Если два вектора коллинеарны, то они являются ***линейно зависимыми***.
+В данном случае коллинеарными являются векторы: $\mathbf{a} \; || \; \mathbf{b} \; || \; \mathbf{c}$ и $\mathbf{d} \; || \; \mathbf{e}$. При этом векторы $\mathbf{a} \uparrow \uparrow \mathbf{c}$ – сонаправлены, а $\mathbf{d} \uparrow \downarrow \mathbf{e}$ – противоположно направлены. Если два вектора коллинеарны, то они являются ***линейно зависимыми***.
 
 (math-lab-vectoroperations-dotnumber)=
 ## Произведение вектора на число

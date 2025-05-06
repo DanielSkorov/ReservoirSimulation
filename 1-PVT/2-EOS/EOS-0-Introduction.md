@@ -31,7 +31,7 @@ kernelspec:
 
 $$ {f_1}_i = {f_2}_i, \; i=1 \ldots N_c. $$
 
-При этом, коэффициент летучести компонента определяется следующим выражением:
+При этом коэффициент летучести компонента определяется следующим выражением:
 
 $$ \ln \phi_i = \int_V^\infty \left( \frac{1}{R T} \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} - \frac{1}{V} \right) dV - \ln \zeta.$$
 

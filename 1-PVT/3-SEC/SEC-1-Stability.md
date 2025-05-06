@@ -64,7 +64,7 @@ $$ G \left( \hat{K} \right) = \min_l G^l \left( \hat{L} \right), $$
 
 ```{admonition} Теорема
 :class: danger
-Пусть многофазная многокомпонентная система находится при фиксированных давлении $P$, температуре $T$ и количествах вещества компонентов в ней $n_i, \; i=1 \, \ldots \, N_c$ в некотором состоянии $\hat{K}$ с количеством фаз $N_p$ с соответствующими количествами вещества компонентов $n_i^j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p$. При этом, в этом состоянии частная производная энергии Гиббса всей системы по $n_i^j$ равна нулю:
+Пусть многофазная многокомпонентная система находится при фиксированных давлении $P$, температуре $T$ и количествах вещества компонентов в ней $n_i, \; i=1 \, \ldots \, N_c$ в некотором состоянии $\hat{K}$ с количеством фаз $N_p$ с соответствующими количествами вещества компонентов $n_i^j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p$. При этом в этом состоянии частная производная энергии Гиббса всей системы по $n_i^j$ равна нулю:
 
 $$ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i, l \neq j} = 0. $$
 
@@ -598,23 +598,41 @@ $$ D \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mathb
 
 $$ \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) = K, \; i = 1 \, \ldots \, N_c. $$
 
-Эта система имеет тривиальное решение $\mathbf{y} = \mathbf{z}$, в этом случае $K = 0$. При постоянных давлении и температуре химические потенциалы можно заменить на летучести:
+Эта система имеет тривиальное решение $\mathbf{y} = \mathbf{z}$, в этом случае $K = 0$.
 
-$$ \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = K, \; i = 1 \, \ldots \, N_c. $$
+Для квази-стационарного изотермического процесса разность химических потенциалов [можно](../1-TD/TD-15-Fugacity.md#pvt-td-fugacity-realgasmixture) заменить разностью логарифмов летучестей компонентов. Следовательно, условие стационарности функции TPD записывается следующим образом:
+
+$$ \begin{align}
+RT \left( \ln f_i \left( \mathbf{y} \right) - \ln f_i \left( \mathbf{z} \right) \right) = K, \; i = 1 \, \ldots \, N_c, \\
+\ln f_i \left( \mathbf{y} \right) - \ln f_i \left( \mathbf{z} \right) = \bar{K}, \; i = 1 \, \ldots \, N_c,
+\end{align} $$
+
+где $\bar{K} = K \, / \, RT$.
+
+Преобразуем данное выражение с учетом [определения коэффициента летучести](../1-TD/TD-15-Fugacity.md):
+
+$$ \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = \bar{K}, \; i = 1 \, \ldots \, N_c. $$
 
 Здесь под переменной $h_i$ обозначено следующее:
 
 $$ h_i = \ln \phi_i \left( \mathbf{z} \right) + \ln z_i, \; i = 1 \, \ldots \, N_c. $$
 
-Пусть $Y_i = y_i \mathrm{e}^{-K}$, тогда:
+С учетом изложенного выше функцию TPD преобразуем к следующему виду:
+
+$$ \begin{align}
+D \left( \mathbf{y} \right) &= \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) \right), \\
+\bar{D} \left( \mathbf{y} \right) &= \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i \right).
+\end{align} $$
+
+Пусть $Y_i = y_i \mathrm{e}^{-\bar{K}}$, тогда:
 
 $$ \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c. $$
 
 Значения $Y_i$ можно условно интерпретировать как количество вещества $i$-го компонента, действительно:
 
-$$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-K}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-K}} = \frac{y_i \mathrm{e}^{-K}}{\mathrm{e}^{-K} \sum_{i=1}^{N_c} y_i} = y_i. $$
+$$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i. $$
 
-Условие стабильности $K \geq 0$ можно представить в виде $\sum_{i=1}^{N_c} Y_i \leq 1$.
+Условие стабильности $\bar{K} \geq 0$ можно представить в виде $\sum_{i=1}^{N_c} Y_i \leq 1$.
 
 Для решения системы нелинейных уравнений, определяющей условие стационарности многокомпонентной системы:
 
@@ -1012,53 +1030,13 @@ glue('glued_out2', MultilineText(out2))
 
 Представленный выше алгоритм можно использовать для проверки стабильности однофазного состояния системы. Для проверки стабильности многофазной системы также можно использовать представленный выше алгоритм: для этого достаточно проверить стабильность любой из фаз.
 
-Существует также множество работ, посвященных разработке численных алгоритмов решения задачи стабильности. В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать метод последовательных подстановок, а также метод BFGS с учетом замены переменной $\alpha_i = 2 \sqrt{Y_i}$ для решения задачи стабильности. Впоследсвтии применение метода BFGS для решение задачи стабильности получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\]. Кроме того, было исследовано применение методов глобальной оптимизации для решения данной задачи, например, авторами работы \[[Nichita et al, 2002](http://doi.org/10.1016/S0378-3812(01)00779-8)\]. Далее будет кратко представлен метод *QNSS (quasi-Newton successive substitution)*, который будет использоваться для решения задачи стабильности системы при известных давлении и температуре. Более подробно данный метод изложен в работах \[[Nghiem, 1983](https://doi.org/10.2118/12242-MS); [Nghiem and Li, 1984](https://doi.org/10.1016/0378-3812(84)80013-8)\].
+<!-- TODO: добавить анализ сходимости метода SS. См. 10.1016/0378-3812(82)85001-2, 10.1021/ie00042a032, 10.1002/aic.690210314 -->
 
-```{admonition} Алгоритм. Анализ стабильности с использованием QNSS
-:class: algorithm
+<!-- TODO: показать на примере увеличение количества итераций метода последовательных подстановок вблизи критической точки -->
 
-**Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z} \in {\rm I\!R}^{N_c}$; термобарические условия $P$ и $T$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций $N_{iter}$; точность решения системы нелинейных уравнений $\epsilon_1$; численная погрешность расчета $0 < \epsilon_2 \leq 10^{-4}$.
+Существует также множество работ, посвященных разработке численных алгоритмов, направленных на оптимизацию численных методов решения задачи стабильности. В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать методы GDEM и BFGS с учетом замены переменной $\alpha_i = 2 \sqrt{Y_i}$. Впоследсвтии применение метода BFGS для решение задачи стабильности получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\]. В работах \[[Nghiem, 1983](https://doi.org/10.2118/12242-MS); [Nghiem and Li, 1984](https://doi.org/10.1016/0378-3812(84)80013-8)\] авторы рассмотрели различные подходы к оптимизации метода последовательных подстановок путем введения длины шага итерации. Примеры реализации некоторых из алгоритмов представлены [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py).
 
-**Определить:** Является ли однофазное состояние системы с компонентным составом $\mathbf{z}$ при давлении $P$ и температуре $T$ стабильным.
 
-**Псевдокод:**  
-**def** $\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \mathbf{\varphi} \in {\rm I\!R}^{N_c}$ {comment}`# Функция для расчета вектора коэффициентов летучести`  
-$\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}$ {comment}`# Инициализация набора (матрицы) начальных приближений`  
-$\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`# Расчет коэффициентов летучести для начального состава`  
-**for** $i := 1$ **to** $N$ **do** {comment}`# Цикл перебора начальных приближений`  
-&emsp;$\mathbf{k} := \mathbf{K}\left[ i \right]$ {comment}`# Вектор основных переменных`  
-&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
-&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
-&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
-&emsp;$c := 1$ {comment}`# Счетчик итераций решения системы нелинейных уравнений`  
-&emsp;$\lambda := 1$ {comment}`# Коэффициент релаксации (длина шага)`  
-&emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do** {comment}`# Цикл решения системы нелинейных уравнений`  
-&emsp;&emsp;$\mathbf{\Delta \ln k} := -\lambda \cdot \mathbf{g}$ {comment}`# Вектор направления поиска решения`  
-&emsp;&emsp;**if** $\max \left( \left| \mathbf{\Delta \ln k} \right| \right) > 6$ **then** {comment}`# Проверка на модуль вариации переменной для каждого компонента`  
-&emsp;&emsp;&emsp;$\lambda := \lambda \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка длины шага`  
-&emsp;&emsp;&emsp;$\mathbf{\Delta \ln k} := \mathbf{\Delta \ln k} \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)$ {comment}`# Корректировка вектора направления поиска решения`  
-&emsp;&emsp;**end if**  
-&emsp;&emsp;$\mathbf{g}_{\left( -1 \right)} := \mathbf{g}$ {comment}`# Сохранение предыдущих значений вектора невязок`  
-&emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
-&emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
-&emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
-&emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
-&emsp;&emsp;$\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|$ {comment}`# Новое значение коэффициента релаксации`  
-&emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
-&emsp;**end while**  
-&emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$ {comment}`# Расчет значения функции TPD`  
-&emsp;**if** $TPD < -\epsilon_2$ **and** $c < N_{iter}$ **then** {comment}`# Проверка условия стабильности`  
-&emsp;&emsp;$is\_stable := \mathrm{False}$  
-&emsp;&emsp;**exit for** {comment}`# Выход из цикла перебора начальных приближений`  
-&emsp;**else**  
-&emsp;&emsp;**continue**  
-&emsp;**end if**  
-**else**  
-&emsp;$is\_stable := \mathrm{True}$  
-**end for**  
-```
-
-Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py).
 
 Таким образом, в этом подразделе был выведен критерий стабильности для PT-термодинамики, а также рассмотрены некоторые численные алгоритмы проверки стабильности фазового состояния. [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
 

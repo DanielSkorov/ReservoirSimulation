@@ -38,7 +38,7 @@ $$ \mathbf{u} = \mathbf{T} \left(\mathbf{v} \right). $$
 
 ```
 
-При этом, для функции линейного преобразования должны выполняться ***свойства линейности***:
+При этом для функции линейного преобразования должны выполняться ***свойства линейности***:
 
 $$ \mathbf{T}\left( a + b \right)=\mathbf{T} \left( a \right) + \mathbf{T} \left( b \right) ;\\ \mathbf{T} \left( \lambda a \right) = \lambda \mathbf{T} \left( a \right). $$
 
@@ -136,7 +136,7 @@ $$ \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. $$
 
 $$ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B}. $$
 
-При этом, линейное преобразование $\mathbf{T}$ по-прежнему устанавливает связь между этими двумя векторами, поэтому можно записать:
+При этом линейное преобразование $\mathbf{T}$ по-прежнему устанавливает связь между этими двумя векторами, поэтому можно записать:
 
 $$ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. $$
 
@@ -144,7 +144,7 @@ $$ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B}
 
 $$ \mathbf{B} = \begin{Bmatrix} \mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_n} \end{Bmatrix}. $$
 
-При этом, любой вектор [можно представить](LAB-1-Vectors.md) в виде суммы произведений координат данного вектора и базисных векторов. Если имеется вектор $\begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}$, представленный в виде координат $\begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}_\mathbf{B}$, отнесенных к базису $\mathbf{B}$, то:
+При этом любой вектор [можно представить](LAB-1-Vectors.md) в виде суммы произведений координат данного вектора и базисных векторов. Если имеется вектор $\begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}$, представленный в виде координат $\begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}_\mathbf{B}$, отнесенных к базису $\mathbf{B}$, то:
 
 $$ \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = x_1 \cdot \mathbf{v_1} + x_2 \cdot \mathbf{v_2} + \ldots + x_n \cdot \mathbf{v_n}. $$
 
