@@ -287,10 +287,9 @@ def _stabPT_ss(
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug('The kv-loop iteration number = %s', j)
-    TPD = -np.log(ni.sum())
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s',
-      0, kvik, gnorm, TPD,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s',
+      0, kvik, gnorm,
     )
     while (gnorm > tol) & (k < maxiter):
       k += 1
@@ -299,11 +298,11 @@ def _stabPT_ss(
       lnphixi, Zx = plnphii(yi=ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
-      TPD = -np.log(ni.sum())
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s',
-        k, kvik, gnorm, TPD,
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s',
+        k, kvik, gnorm,
       )
+    TPD = -np.log(ni.sum())
     if (TPD < eps) & (k < maxiter) & (np.isfinite(kvik).all()):
       logger.info(
         'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
@@ -409,10 +408,9 @@ def _stabPT_qnss(
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug('The kv-loop iteration number = %s', j)
-    TPD = -np.log(ni.sum())
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tlmbd = %s',
-      0, kvik, gnorm, TPD, 1.,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
+      0, kvik, gnorm, 1.,
     )
     lmbd: ScalarType = 1.
     while (gnorm > tol) & (k < maxiter):
@@ -429,16 +427,16 @@ def _stabPT_qnss(
       lnphixi, Zx = plnphii(yi=ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
-      TPD = -np.log(ni.sum())
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tlmbd = %s',
-        k, kvik, gnorm, TPD, lmbd,
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
+        k, kvik, gnorm, lmbd,
       )
       if (gnorm < tol):
         break
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
+    TPD = -np.log(ni.sum())
     if (TPD < eps) & (k < maxiter) & (np.isfinite(kvik).all()):
       logger.info(
         'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
