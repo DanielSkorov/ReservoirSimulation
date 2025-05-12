@@ -476,7 +476,7 @@ $$ T_0 = 1.3 \sum_{i=1}^{N_c} {T_c}_i y_i. $$
 ```{table}
 :width: 100%
 :widths: "1, 1, 1, 1, 1, 1, 1"
-| $\mathrm{CH_4}$ | $\mathrm{CH_4}$ | $\mathrm{C_2 H_6}$ | $\mathrm{C_3 H_8}$ | $\mathrm{n \mbox{-} C_4}$ | $\mathrm{n \mbox{-} C_5}$ | $\mathrm{n \mbox{-} C_6}$ |
+| $\mathrm{N_2}$ | $\mathrm{CH_4}$ | $\mathrm{C_2 H_6}$ | $\mathrm{C_3 H_8}$ | $\mathrm{n \mbox{-} C_4}$ | $\mathrm{n \mbox{-} C_5}$ | $\mathrm{n \mbox{-} C_6}$ |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | 0.014  | 0.943  | 0.027  | 0.0074 | 0.0049 | 0.001  | 0.0027 |
 ```
@@ -676,7 +676,7 @@ while (np.abs(dkappa) > 1e-6) & (j < 20):
 
 ```{code-cell} python
 Vc = kappaj * bm * n
-print(f'Tc = {T - 273.15: .1f} C\nPc = {pr.getVT_P(V, T, yi) / 1e6: .3f} MPa')
+print(f'Tc = {T - 273.15: .2f} C\nPc = {pr.getVT_P(V, T, yi) / 1e6: .3f} MPa')
 ```
 
 Пример реализации сфорулированного численного метода определения критического состояния многокомпонентной системы представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/boundary.py).

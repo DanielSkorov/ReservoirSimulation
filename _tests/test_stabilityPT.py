@@ -125,6 +125,27 @@ class stabPT(unittest.TestCase):
     self.assertFalse(res.stable & res.success)
     pass
 
+  def test_7(self):
+    P = np.float64(17e6)
+    T = np.float64(68. + 273.15)
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, level=0, method='ss', maxiter=100)
+    res = stab.run(P, T, yi)
+    self.assertFalse(res.stable & res.success)
+    pass
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=0)

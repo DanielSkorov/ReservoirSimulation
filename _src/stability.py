@@ -302,20 +302,22 @@ def _stabPT_ss(
         'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s',
         k, kvik, gnorm,
       )
-    TPD = -np.log(ni.sum())
-    if (TPD < eps) & (k < maxiter) & (np.isfinite(kvik).all()):
-      logger.info(
-        'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-        'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-        P, T, yi, kvik, TPD, gnorm, k,
-      )
-      n = ni.sum()
-      xi = ni / n
-      kvji = xi / yi, yi / xi
-      return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
-                        Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
-                        success=True)
+    if (k < maxiter) & (np.isfinite(kvik).all()):
+      TPD = -np.log(ni.sum())
+      if (TPD < eps):
+        logger.info(
+          'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
+          'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+          P, T, yi, kvik, TPD, gnorm, k,
+        )
+        n = ni.sum()
+        xi = ni / n
+        kvji = xi / yi, yi / xi
+        return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm,
+                          TPD=TPD,Z=Z, Zt=Zx, lnphiyi=lnphiyi,
+                          lnphiyti=lnphixi, success=True)
   else:
+    TPD = -np.log(ni.sum())
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'
@@ -436,20 +438,22 @@ def _stabPT_qnss(
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    TPD = -np.log(ni.sum())
-    if (TPD < eps) & (k < maxiter) & (np.isfinite(kvik).all()):
-      logger.info(
-        'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-        'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-        P, T, yi, kvik, TPD, gnorm, k,
-      )
-      n = ni.sum()
-      xi = ni / n
-      kvji = xi / yi, yi / xi
-      return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
-                        Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
-                        success=True)
+    if (k < maxiter) & (np.isfinite(kvik).all()):
+      TPD = -np.log(ni.sum())
+      if (TPD < eps):
+        logger.info(
+          'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
+          'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+          P, T, yi, kvik, TPD, gnorm, k,
+        )
+        n = ni.sum()
+        xi = ni / n
+        kvji = xi / yi, yi / xi
+        return StabResult(stable=False, yti=xi, kvji=kvji, gnorm=gnorm,
+                          TPD=TPD, Z=Z, Zt=Zx, lnphiyi=lnphiyi,
+                          lnphiyti=lnphixi, success=True)
   else:
+    TPD = -np.log(ni.sum())
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'

@@ -846,6 +846,8 @@ class pr78(object):
     T: ScalarType,
     yi: VectorType,
     level: int = 0,
+    idx: int = 0,
+    eps: ScalarType = 1e-5,
   ) -> tuple[VectorType]:
     """Computes initial k-values for given pressure, temperature
     and composition.
@@ -869,6 +871,15 @@ class pr78(object):
 
       Default is `0`.
 
+    idx: int
+      Index of a component that is characterized by a higher
+      concentration in the trial phase. Default is `0`.
+
+    eps: float
+      Summarized mole fraction in the trial phase of other components
+      except the component with the index `idx`. Must be greater than zero
+      and lower than one. Default is `1e-5`.
+
     Returns
     -------
     A tuple containing vectors of initial k-values.
@@ -877,11 +888,20 @@ class pr78(object):
     if level == 0:
       return kvi, 1. / kvi
     elif level == 1:
-      u1i = np.full_like(yi, 1e-5)
-      u1i[0] = 1. / yi[0]
-      uNi = np.full_like(yi, 1e-5)
-      uNi[-1] = 1. / yi[-1]
-      return uNi, u1i, kvi, 1. / kvi
+      upi = np.where(
+        np.arange(self.Nc) == idx,
+        (1. - eps) / yi[idx],
+        eps / ((self.Nc - 1) * yi),
+      )
+      return kvi, 1. / kvi, upi, 1. / upi
+    elif level == 2:
+      upi = np.where(
+        np.arange(self.Nc) == idx,
+        (1. - eps) / yi[idx],
+        eps / ((self.Nc - 1) * yi),
+      )
+      u3i = np.cbrt(kvi)
+      return kvi, 1. / kvi, upi, 1. / upi, u3i, 1. / u3i
     else:
       raise ValueError(f'Unsupported level number: {level}.')
 
