@@ -71,15 +71,6 @@ class FlashResult(dict):
            f"Calculation completed successfully:\n{self.success}")
     return s
 
-  def extend(self, flash: FlashResult) -> None:
-    assert self.keys() == flash.keys()
-    for key in self:
-      if isinstance(self[key], list):
-        self[key].append(flash[key])
-      else:
-        self[key] = [self[key], flash[key]]
-    pass
-
 
 class flash2pPT(object):
   """Two-phase flash calculations.

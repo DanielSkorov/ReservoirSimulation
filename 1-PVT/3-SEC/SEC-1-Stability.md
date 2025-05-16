@@ -733,18 +733,18 @@ $\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N
 $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`# Расчет коэффициентов летучести для начального состава`  
 **for** $i := 1$ **to** $N$ **do** {comment}`# Цикл перебора начальных приближений`  
 &emsp;$\mathbf{k} := \mathbf{K}\left[ i \right]$ {comment}`# Вектор основных переменных`  
-&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
-&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
-&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
+&emsp;$\mathbf{Y} := \mathbf{k} \cdot \mathbf{z}$  
+&emsp;$\mathbf{y} := \mathbf{Y} \, / \, \sum_{i=1}^{N_c} Y_i$  
+&emsp;$\mathbf{g} := \ln \mathbf{Y} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Вектор невязок`  
 &emsp;$c := 1$ {comment}`# Счетчик итераций решения системы нелинейных уравнений`  
 &emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do** {comment}`# Цикл решения системы нелинейных уравнений`  
 &emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( - \mathbf{g} \right)$ {comment}`# Расчет новых значений вектора основных переменных`  
 &emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
-&emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
-&emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
+&emsp;&emsp;$\mathbf{y} := \mathbf{Y} \, / \, \sum_{i=1}^{N_c} Y_i$  
+&emsp;&emsp;$\mathbf{g} := \ln \mathbf{Y} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$ {comment}`# Новые значения вектора невязок`  
 &emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
 &emsp;**end while**  
-&emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$ {comment}`# Расчет значения функции TPD`  
+&emsp;$TPD := - \ln \sum_{i=1}^{N_c} Y_i$ {comment}`# Расчет значения функции TPD`  
 &emsp;**if** $TPD < -\epsilon_2$ **and** $c < N_{iter}$ **then** {comment}`# Проверка условия стабильности`  
 &emsp;&emsp;$is\_stable := \mathrm{False}$  
 &emsp;&emsp;**exit for** {comment}`# Выход из цикла перебора начальных приближений`  
@@ -1258,7 +1258,7 @@ $$ \begin{align}
 
 Решение задачи условной минимизации зачастую сложнее *безусловной (unconstrained minimization)*. В связи с этим имеет смысл исключить второе условие из рассмотрения путем замены основных переменных, например, на уже упомянутые ранее количества вещества компонентов в произвольной (мнимой) фазе:
 
-$$ Y_i = y_i \mathrm{e}^{-\bar{K}}. $$
+$$ Y_i = y_i \mathrm{e}^{-\bar{K}}, \; i = 1 \, \ldots \, N_c. $$
 
 В связи с изложенным выше при использовании $Y_i, \, i = 1 \, \ldots \, N_c,$ в качестве основных переменных положение стационарных точек функции TPD будет определяться следующей системой нелинейных уравнений:
 
@@ -1350,7 +1350,7 @@ H_{ij}
 
 $$ \alpha_i = 2 \sqrt{Y_i}, \; i = 1 \, \ldots \, N_c. $$
 
-В этом случае значения вектора $\mathbf{Y}$ всегда будут неотрицательными, поскольку $Y_i = \alpha_i^2 \, / \, 4, \, i = 1 \, \ldots \, N_c$. При использовании $\alpha_i, \, i = 1 \, \ldots \, N_c$ в качестве основных переменных положения стационарных точек модифицированной функции TPD будут определяться равенством нулю частных производных функции по основным переменным:
+В этом случае значения вектора $\mathbf{Y}$ всегда будут неотрицательными, поскольку $Y_i = \alpha_i^2 \, / \, 4, \, i = 1 \, \ldots \, N_c$. При использовании $\alpha_i, \, i = 1 \, \ldots \, N_c,$ в качестве основных переменных положения стационарных точек модифицированной функции TPD будут определяться равенством нулю частных производных функции по основным переменным:
 
 $$ \begin{align}
 \frac{\partial \bar{D}^*}{\partial \alpha_j}
@@ -1360,7 +1360,7 @@ $$ \begin{align}
 &= \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j \left( \mathbf{y} \right) - h_j \right), \; j = 1 \, \ldots \, N_c.
 \end{align} $$
 
-При этом изменится и аналитическое выражение элемента матрицы гессиана при использовании $\alpha_i, \, i = 1 \, \ldots \, N_c$ в качестве основных переменных:
+При этом изменится и аналитическое выражение элемента матрицы гессиана при использовании $\alpha_i, \, i = 1 \, \ldots \, N_c,$ в качестве основных переменных:
 
 $$ \begin{align}
 \frac{\partial^2 \bar{D}^*}{\partial \alpha_j \partial \alpha_k}
@@ -1382,6 +1382,49 @@ $$ \mathbf{\alpha}^{k+1} = \mathbf{\alpha}^{k} + \Delta \mathbf{\alpha}^{k}, $$
 где вектор $\Delta \mathbf{\alpha}^{k} \in {\rm I\!R}^{N_c}$ определяется при решении системы линейных уравнений:
 
 $$ \mathbf{H}^{k} \Delta \mathbf{\alpha}^{k} = - \mathbf{g}^{k}. $$
+
+Таким образом, алгоритм определения стабильности фазового состояния с использованием метода Ньютона можно представить следующим образом:
+
+```{eval-rst}
+.. role:: multilinecomment
+    :class: multilinecomment
+```
+
+```{admonition} Алгоритм. Анализ стабильности с использованием метода Ньютона
+:class: algorithm
+
+**Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z} \in {\rm I\!R}^{N_c}$; термобарические условия $P$ и $T$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций $N_{iter}$; точность решения системы нелинейных уравнений $\epsilon_1$; численная погрешность расчета $0 < \epsilon_2 \leq 10^{-4}$.
+
+**Определить:** Является ли однофазное состояние системы с компонентным составом $\mathbf{z}$ при давлении $P$ и температуре $T$ стабильным.
+
+**Псевдокод:**  
+**def** $\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \mathbf{\varphi} \in {\rm I\!R}^{N_c}, \, \mathbf{\Phi} \in {\rm I\!R}^{N_c \times N_c}$ {multilinecomment}`# Функция, возвращающая вектор коэффициентов летучести и матрицу их частных производных по количеству вещества компонентов`  
+$\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}$  
+$\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$   
+**for** $i := 1$ **to** $N$ **do**  
+&emsp;$\mathbf{k} := \mathbf{K}\left[ i \right]$  
+&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
+&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
+&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$  
+&emsp;$c := 1$  
+&emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do**  
+&emsp;&emsp;$\mathbf{k} := \mathbf{k} \cdot \exp \left( - \mathbf{g} \right)$  
+&emsp;&emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
+&emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
+&emsp;&emsp;$\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}$  
+&emsp;&emsp;$c := c + 1$  
+&emsp;**end while**  
+&emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$  
+&emsp;**if** $TPD < -\epsilon_2$ **and** $c < N_{iter}$ **then**  
+&emsp;&emsp;$is\_stable := \mathrm{False}$  
+&emsp;&emsp;**exit for**  
+&emsp;**else**  
+&emsp;&emsp;**continue**  
+&emsp;**end if**  
+**else**  
+&emsp;$is\_stable := \mathrm{True}$  
+**end for**  
+```
 
 (pvt-sec-stability-pt-newton-init)=
 #### Начальные приближения

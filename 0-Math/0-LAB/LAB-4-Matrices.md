@@ -42,7 +42,7 @@ $$ \exists ~ \mathbf{T} \in {\rm I\!R}^{n \times m \times k}. $$
 
 $$ \exists ~ \mathbf{A} \in {\rm I\!R}^{n \times m} $$
 
-читается следующим образом: *существует* $\left( \exists \right)$ *матрица* $\left( \mathbf{A} \right)$ *, принадлежащая пространству реальных чисел* $\left( {\rm I\!R} \right)$, *размерностью* $n \times m$. Данная запись объявляет матрицу $\mathbf{M}$ следующего вида:
+читается следующим образом: *существует* $\left( \exists \right)$ *матрица* $\left( \mathbf{A} \right)$ *, принадлежащая пространству реальных чисел* $\left( {\rm I\!R} \right)$, *размерностью* $n \times m$. Данная запись объявляет матрицу $\mathbf{A}$ следующего вида:
 
 $$ \mathbf{A} = \begin{bmatrix} a_{1,1} & a_{1,2} & \ldots & a_{1,m} \\ a_{2,1} & a_{2,2} & \ldots & a_{2,m} \\ \vdots & \vdots & \ddots & \vdots \\ a_{n,1} & a_{n,2} & \ldots & a_{n,m} \end{bmatrix}. $$
 

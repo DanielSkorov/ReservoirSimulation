@@ -62,15 +62,6 @@ class StabResult(dict):
            f"Calculation completed successfully:\n{self.success}")
     return s
 
-  def extend(self, stab: StabResult) -> None:
-    assert self.keys() == stab.keys()
-    for key in self:
-      if isinstance(self[key], list):
-        self[key].append(stab[key])
-      else:
-        self[key] = [self[key], stab[key]]
-    pass
-
 
 class stabilityPT(object):
   """Stability test based on the Gibbs energy analysis.

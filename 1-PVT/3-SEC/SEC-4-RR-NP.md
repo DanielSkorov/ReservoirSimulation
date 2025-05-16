@@ -625,17 +625,7 @@ $k := 1$ {comment}`# Счетчик итерации`
 Рассмотрим реализацию данного алгоритма. Процедура поиска оптимальной длины шага выполняется исходя из условия минимизации оптимизируемой функции в заданном направлении методом Ньютона в соответствии с \[[Okuno et al, 2010](https://doi.org/10.2118/117752-PA)\]. Применение процедуры *line search* методом обратного хода с учетом условий Голдштейна реализовано [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py).
 
 ```{code-cell} python
-import numpy.typing as npt
-
-def solveNp(
-    Kji: npt.NDArray[np.float64],
-    yi: npt.NDArray[np.float64],
-    fj0: npt.NDArray[np.float64],
-    tol: np.float64 = np.float64(1e-6),
-    Niter: int = 30,
-    tol_ls: np.float64 = np.float64(1e-5),
-    Niter_ls: int = 10,
-):
+def solveNp(Kji, yi, fj0, tol=1e-6, Niter=30, tol_ls=1e-5, Niter_ls=10):
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
     fjk = fj0
