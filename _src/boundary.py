@@ -85,7 +85,7 @@ def getVT_Tspinodal(
     'The spinodal temperature calculation procedure\n\tV = %s m3\n\tyi = %s',
     V, yi,
   )
-  k: int = 0
+  k = 0
   if T0 is None:
     Tk = 1.3 * yi.dot(eos.Tci)
   else:
@@ -192,7 +192,7 @@ def getVT_PcTc(
   The `ValueError` if the solution was not found.
   """
   logger.debug('The critical point calculation procedure\n\tyi = %s', yi)
-  k: int = 0
+  k = 0
   if T0 is None:
     T = 1.3 * yi.dot(eos.Tci)
   else:
@@ -317,56 +317,56 @@ class PsatPT(object):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
-        `P: float` is pressure [Pa], `T: float` is temperature [K],
-        and `yi: ndarray`, shape `(Nc,)` is an array of components
-        mole fractions, `Nc` is the number of components. This method
-        is used to generate initial guesses of k-values.
+    - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+      `P: float` is pressure [Pa], `T: float` is temperature [K],
+      and `yi: ndarray`, shape `(Nc,)` is an array of components
+      mole fractions, `Nc` is the number of components. This method
+      is used to generate initial guesses of k-values.
 
-      - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components and the phase compressibility factor.
+    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components and the phase compressibility factor.
 
-      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components, the phase compressibility factor and
-        the partial derivatives of the logarithms of the fugacity
-        coefficients of components with respect to pressure.
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components, the phase compressibility factor and
+      the partial derivatives of the logarithms of the fugacity
+      coefficients of components with respect to pressure.
 
     If the solution method would be one of `'newton'` or `'ss-newton'`
     then it also must have:
 
-      - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients, the mixture compressibility factor, and partial
-        derivatives of logarithms of the fugacity coefficients with
-        respect to components mole numbers which are an `ndarray` of
-        shape `(Nc, Nc)`.
+    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients, the mixture compressibility factor, and partial
+      derivatives of logarithms of the fugacity coefficients with
+      respect to components mole numbers which are an `ndarray` of
+      shape `(Nc, Nc)`.
 
     If the `improve_P0` is set to `True` and the `stabgrid` is set to
     `False` then it also must have:
 
-      - `getPT_lnphii(P, T, yi) -> ndarray`
-        This method must return logarithms of the fugacity coefficients
-        of components.
+    - `getPT_lnphii(P, T, yi) -> ndarray`
+      This method must return logarithms of the fugacity coefficients
+      of components.
 
     Also, this instance must have attributes:
 
-      - `mwi: ndarray`
-        Vector of components molecular weights [kg/mol] of shape
-        `(Nc,)`.
+    - `mwi: ndarray`
+      Vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
-      - `name: str`
-        The EOS name (for proper logging).
+    - `name: str`
+      The EOS name (for proper logging).
 
   method: str
     Type of the solver. Should be one of:
 
-      - `'ss'` (Successive Substitution method),
-      - `'qnss'` (Quasi-Newton Successive Substitution method),
-      - `'bfgs'` (Currently raises `NotImplementedError`),
-      - `'newton'` (Currently raises `NotImplementedError`),
-      - `'ss-newton'` (Currently raises `NotImplementedError`).
+    - `'ss'` (Successive Substitution method),
+    - `'qnss'` (Quasi-Newton Successive Substitution method),
+    - `'bfgs'` (Currently raises `NotImplementedError`),
+    - `'newton'` (Currently raises `NotImplementedError`),
+    - `'ss-newton'` (Currently raises `NotImplementedError`).
 
     Default is `'ss'`.
 
@@ -642,14 +642,14 @@ def _solveTPDeqPT(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components, the phase compressibility factor and
-        the partial derivatives of the logarithms of the fugacity
-        coefficients of components with respect to pressure. The
-        arguments are: `P: float` is pressure [Pa], `T: float` is
-        temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
-        components mole fractions.
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components, the phase compressibility factor and
+      the partial derivatives of the logarithms of the fugacity
+      coefficients of components with respect to pressure. The
+      arguments are: `P: float` is pressure [Pa], `T: float` is
+      temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
+      components mole fractions.
 
   maxiter: int
     Maximum number of iterations. Default is `8`.
@@ -740,23 +740,23 @@ def _PsatPT_ss(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components, the phase compressibility factor and
-        the partial derivatives of the logarithms of the fugacity
-        coefficients of components with respect to pressure. The
-        arguments are: `P: float` is pressure [Pa], `T: float` is
-        temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
-        components mole fractions.
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components, the phase compressibility factor and
+      the partial derivatives of the logarithms of the fugacity
+      coefficients of components with respect to pressure. The
+      arguments are: `P: float` is pressure [Pa], `T: float` is
+      temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
+      components mole fractions.
 
     Also, this instance must have attributes:
 
-      - `mwi: ndarray`
-        Vector of components molecular weights [kg/mol] of shape
-        `(Nc,)`.
+    - `mwi: ndarray`
+      Vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
-      - `name: str`
-        The EOS name (for proper logging).
+    - `name: str`
+      The EOS name (for proper logging).
 
   tol: float
     Terminate equilibrium equation solver successfully if the norm of
@@ -901,23 +901,23 @@ def _PsatPT_qnss(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components, the phase compressibility factor and
-        the partial derivatives of the logarithms of the fugacity
-        coefficients of components with respect to pressure. The
-        arguments are: `P: float` is pressure [Pa], `T: float` is
-        temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
-        components mole fractions.
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components, the phase compressibility factor and
+      the partial derivatives of the logarithms of the fugacity
+      coefficients of components with respect to pressure. The
+      arguments are: `P: float` is pressure [Pa], `T: float` is
+      temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
+      components mole fractions.
 
     Also, this instance must have attributes:
 
-      - `mwi: ndarray`
-        Vector of components molecular weights [kg/mol] of shape
-        `(Nc,)`.
+    - `mwi: ndarray`
+      Vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
-      - `name: str`
-        The EOS name (for proper logging).
+    - `name: str`
+      The EOS name (for proper logging).
 
   tol: float
     Terminate equilibrium equation solver successfully if the norm of

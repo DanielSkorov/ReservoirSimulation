@@ -866,8 +866,10 @@ class pr78(object):
     level: int
       Regulates an output of this function. Available options are:
 
-        - 0: Wilson's and inverse Wilson's equations;
-        - 1: previous + the first and last pure components.
+      - 0: Wilson's and inverse Wilson's equations;
+      - 1: previous + the first and last pure components;
+      - 2: previous + cube roots of Wilson's and inverse Wilson's
+           equations.
 
       Default is `0`.
 

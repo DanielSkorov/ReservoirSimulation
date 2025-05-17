@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 
 from functools import (
@@ -83,54 +81,54 @@ class flash2pPT(object):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
-        `P: float` is pressure [Pa], `T: float` is temperature [K],
-        and `yi: ndarray`, shape `(Nc,)` is an array of components
-        mole fractions, `Nc` is the number of components. This method
-        is used to generate initial guesses of k-values.
+    - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+      `P: float` is pressure [Pa], `T: float` is temperature [K],
+      and `yi: ndarray`, shape `(Nc,)` is an array of components
+      mole fractions, `Nc` is the number of components. This method
+      is used to generate initial guesses of k-values.
 
-      - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components and the phase compressibility factor.
+    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components and the phase compressibility factor.
 
     If the solution method would be one of `'newton'` or `'ss-newton'`
     then it also must have:
 
-      - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients, the mixture compressibility factor, and partial
-        derivatives of logarithms of the fugacity coefficients with
-        respect to components mole numbers which are an `ndarray` of
-        shape `(Nc, Nc)`.
+    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients, the mixture compressibility factor, and partial
+      derivatives of logarithms of the fugacity coefficients with
+      respect to components mole numbers which are an `ndarray` of
+      shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-      - `mwi: ndarray`
-        Vector of components molecular weights [kg/mol] of shape
-        `(Nc,)`.
+    - `mwi: ndarray`
+      Vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
-      - `name: str`
-        The EOS name (for proper logging).
+    - `name: str`
+      The EOS name (for proper logging).
 
   flashmethod: str
     Type of flash calculations solver. Should be one of:
 
-      - `'ss'` (Successive Substitution method),
-      - `'qnss'` (Quasi-Newton Successive Substitution method),
-      - `'bfgs'` (Currently raises `NotImplementedError`),
-      - `'newton'` (Currently raises `NotImplementedError`),
-      - `'ss-newton'` (Currently raises `NotImplementedError`).
+    - `'ss'` (Successive Substitution method),
+    - `'qnss'` (Quasi-Newton Successive Substitution method),
+    - `'bfgs'` (Currently raises `NotImplementedError`),
+    - `'newton'` (Currently raises `NotImplementedError`),
+    - `'ss-newton'` (Currently raises `NotImplementedError`).
 
     Default is `'ss'`.
 
   stabmethod: str
     Type of stability tests sovler. Should be one of:
 
-      - `'ss'` (Successive Substitution method),
-      - `'qnss'` (Quasi-Newton Successive Substitution method),
-      - `'bfgs'` (Currently raises `NotImplementedError`),
-      - `'newton'` (Currently raises `NotImplementedError`),
-      - `'ss-newton'` (Currently raises `NotImplementedError`).
+    - `'ss'` (Successive Substitution method),
+    - `'qnss'` (Quasi-Newton Successive Substitution method),
+    - `'bfgs'` (Currently raises `NotImplementedError`),
+    - `'newton'` (Currently raises `NotImplementedError`),
+    - `'ss-newton'` (Currently raises `NotImplementedError`).
 
     Default is `'ss'`.
 
@@ -301,17 +299,17 @@ def _flash2pPT_ss(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components and the phase compressibility factor.
+    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components and the phase compressibility factor.
 
     Also, this instance must have attributes:
 
-      - `mwi: ndarray`
-        Vector of components molecular weights of shape `(Nc,)`.
+    - `mwi: ndarray`
+      Vector of components molecular weights of shape `(Nc,)`.
 
-      - `name: str`
-        The EOS name (for proper logging).
+    - `name: str`
+      The EOS name (for proper logging).
 
   tol: float
     Terminate successfully if the norm of the equilibrium equations
@@ -336,18 +334,15 @@ def _flash2pPT_ss(
     'Flash Calculation (SS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
     P, T, yi,
   )
-  plnphii = partial(eos.getPT_lnphii_Z, P=P, T=T)
-  i: int
-  kvik: VectorType
   for i, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', i)
-    k: int = 0
+    k = 0
     kvik = kvi0.flatten()
     Fv = solve2p_FGH(kvik, yi)
     yli = yi / ((kvik - 1.) * Fv + 1.)
     yvi = yli * kvik
-    lnphili, Zl = plnphii(yi=yli)
-    lnphivi, Zv = plnphii(yi=yvi)
+    lnphili, Zl = eos.getPT_lnphii_Z(P, T, yli)
+    lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
     lnkvik = np.log(kvik)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
@@ -362,8 +357,8 @@ def _flash2pPT_ss(
       Fv = solve2p_FGH(kvik, yi)
       yli = yi / ((kvik - 1.) * Fv + 1.)
       yvi = yli * kvik
-      lnphili, Zl = plnphii(yi=yli)
-      lnphivi, Zv = plnphii(yi=yvi)
+      lnphili, Zl = eos.getPT_lnphii_Z(P, T, yli)
+      lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
       logger.debug(
@@ -437,17 +432,17 @@ def _flash2pPT_qnss(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-      - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-        This method should return a tuple of logarithms of the fugacity
-        coefficients of components and the phase compressibility factor.
+    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+      This method should return a tuple of logarithms of the fugacity
+      coefficients of components and the phase compressibility factor.
 
     Also, this instance must have attributes:
 
-      - `mwi: ndarray`
-        Vector of components molecular weights of shape `(Nc,)`.
+    - `mwi: ndarray`
+      Vector of components molecular weights of shape `(Nc,)`.
 
-      - `name: str`
-        The EOS name (for proper logging).
+    - `name: str`
+      The EOS name (for proper logging).
 
   tol: float
     Terminate successfully if the norm of the equilibrium equations
@@ -472,22 +467,19 @@ def _flash2pPT_qnss(
     'Flash Calculation (QNSS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
     P, T, yi,
   )
-  plnphii = partial(eos.getPT_lnphii_Z, P=P, T=T)
-  i: int
-  kvi0: VectorType
   for i, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', i)
-    k: int = 0
+    k = 0
     kvik = kvi0.flatten()
     Fv = solve2p_FGH(kvik, yi)
     yli = yi / ((kvik - 1.) * Fv + 1.)
     yvi = yli * kvik
-    lnphili, Zl = plnphii(yi=yli)
-    lnphivi, Zv = plnphii(yi=yvi)
+    lnphili, Zl = eos.getPT_lnphii_Z(P, T, yli)
+    lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
     lnkvik = np.log(kvik)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
-    lmbd: ScalarType = 1.
+    lmbd = 1.
     logger.debug(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s\n\tlmbd = %s',
       k, kvik, gnorm, Fv, lmbd,
@@ -506,8 +498,8 @@ def _flash2pPT_qnss(
       Fv = solve2p_FGH(kvik, yi)
       yli = yi / ((kvik - 1.) * Fv + 1.)
       yvi = yli * kvik
-      lnphili, Zl = plnphii(yi=yli)
-      lnphivi, Zv = plnphii(yi=yvi)
+      lnphili, Zl = eos.getPT_lnphii_Z(P, T, yli)
+      lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
       logger.debug(

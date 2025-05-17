@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('flash')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
@@ -29,7 +29,7 @@ from flash import (
 
 class flash(unittest.TestCase):
 
-  def test_1(self):
+  def test_01(self):
     P = np.float64(6e6)
     T = np.float64(10. + 273.15)
     yi = np.array([.9, .1])
@@ -47,7 +47,7 @@ class flash(unittest.TestCase):
     self.assertTrue((res.gnorm < tol) & (res.success))
     pass
 
-  def test_2(self):
+  def test_02(self):
     P = np.float64(6e6)
     T = np.float64(10. + 273.15)
     yi = np.array([.9, .1])
@@ -61,6 +61,29 @@ class flash(unittest.TestCase):
     tol = 1e-5
     flash = flash2pPT(pr, flashmethod='ss', stabmethod='ss', tol=tol,
                       maxiter=7)
+    res = flash.run(P, T, yi)
+    self.assertTrue((res.gnorm < tol) & (res.success))
+    pass
+
+  def test_03(self):
+    P = np.float64(17e6)
+    T = np.float64(68. + 273.15)
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-6
+    flash = flash2pPT(pr, flashmethod='qnss', stabmethod='qnss', tol=tol,
+                      maxiter=12)
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
     pass
