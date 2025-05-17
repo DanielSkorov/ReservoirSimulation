@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=ea443c07" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -403,7 +403,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[ \mathbf{u} = \mathbf{T} \left(\mathbf{v} \right). \]</div>
 </div>
-<p>При этом, для функции линейного преобразования должны выполняться <em><strong>свойства линейности</strong></em>:</p>
+<p>При этом для функции линейного преобразования должны выполняться <em><strong>свойства линейности</strong></em>:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \mathbf{T}\left( a + b \right)=\mathbf{T} \left( a \right) + \mathbf{T} \left( b \right) ;\\ \mathbf{T} \left( \lambda a \right) = \lambda \mathbf{T} \left( a \right). \end{split}\]</div>
 <p>Рассмотрим пример:</p>
@@ -482,13 +482,13 @@ document.write(`
 <p>Тогда вектор <span class="math notranslate nohighlight">\(\mathbf{T} \left( \mathbf{x} \right)\)</span> также выражается через координаты базиса <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B}. \]</div>
-<p>При этом, линейное преобразование <span class="math notranslate nohighlight">\(\mathbf{T}\)</span> по-прежнему устанавливает связь между этими двумя векторами, поэтому можно записать:</p>
+<p>При этом линейное преобразование <span class="math notranslate nohighlight">\(\mathbf{T}\)</span> по-прежнему устанавливает связь между этими двумя векторами, поэтому можно записать:</p>
 <div class="math notranslate nohighlight">
 \[ \begin{bmatrix} \mathbf{T} \left( \mathbf{x} \right) \end{bmatrix}_\mathbf{B} = \mathbf{D} \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}. \]</div>
 <p>Такая матрица <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> называется матрицей преобразования по отношению к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>. Известно, что любой базис определяется через <span class="math notranslate nohighlight">\(n\)</span> базисных векторов:</p>
 <div class="math notranslate nohighlight">
 \[ \mathbf{B} = \begin{Bmatrix} \mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_n} \end{Bmatrix}. \]</div>
-<p>При этом, любой вектор <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">можно представить</span></a> в виде суммы произведений координат данного вектора и базисных векторов. Если имеется вектор <span class="math notranslate nohighlight">\(\begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}\)</span>, представленный в виде координат <span class="math notranslate nohighlight">\(\begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}_\mathbf{B}\)</span>, отнесенных к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, то:</p>
+<p>При этом любой вектор <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">можно представить</span></a> в виде суммы произведений координат данного вектора и базисных векторов. Если имеется вектор <span class="math notranslate nohighlight">\(\begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B}\)</span>, представленный в виде координат <span class="math notranslate nohighlight">\(\begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}_\mathbf{B}\)</span>, отнесенных к базису <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, то:</p>
 <div class="math notranslate nohighlight">
 \[ \begin{bmatrix} \mathbf{x} \end{bmatrix}_\mathbf{B} = x_1 \cdot \mathbf{v_1} + x_2 \cdot \mathbf{v_2} + \ldots + x_n \cdot \mathbf{v_n}. \]</div>
 <p>Рассмотрим пример. Пусть базис <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> задан векторами <span class="math notranslate nohighlight">\(\mathbf{v_1} = \begin{bmatrix} 2 \\ 1 \end{bmatrix}\)</span> и <span class="math notranslate nohighlight">\(\mathbf{v_2} = \begin{bmatrix} 1 \\ 2 \end{bmatrix}\)</span>:</p>
@@ -723,7 +723,7 @@ By Daniel Skorov
 
   <p class="copyright">
     
-      © Copyright 2024.
+      © Copyright 2022 – 2025.
       <br/>
     
   </p>

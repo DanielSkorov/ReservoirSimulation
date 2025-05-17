@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=ea443c07" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -398,7 +398,7 @@ document.write(`
 <p>Выразим из уравнения состояния Ван-дер-Ваальса давление:</p>
 <div class="math notranslate nohighlight">
 \[ P = \frac{n R T}{V - n b_m} - \frac{n^2 a_m}{V^2}. \]</div>
-<p>Для того чтобы определить летучесть компонента, необходимо получить частную производную давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента при постоянных давлении, температуре и количествах вещества остальных компонентов.  Стоит сразу отметить, что эта производная будет представлять собой вектор из <span class="math notranslate nohighlight">\(N_c\)</span> значений, где <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе. При этом, от количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента будут зависеть параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span>, а также общее количество вещества <span class="math notranslate nohighlight">\(n\)</span>. С учетом этого, частная производная давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<p>Для того чтобы определить летучесть компонента, необходимо получить частную производную давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента при постоянных давлении, температуре и количествах вещества остальных компонентов.  Стоит сразу отметить, что эта производная будет представлять собой вектор из <span class="math notranslate nohighlight">\(N_c\)</span> значений, где <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе. При этом от количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента будут зависеть параметры <span class="math notranslate nohighlight">\(a_m\)</span> и <span class="math notranslate nohighlight">\(b_m\)</span>, а также общее количество вещества <span class="math notranslate nohighlight">\(n\)</span>. С учетом этого, частная производная давления по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
 \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}}
@@ -595,7 +595,7 @@ b &amp;= \frac{1}{8} \frac{R T_c}{P_c}.
 <p><a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">Дифференциал химического потенциала компонента</span></a>:</p>
 <div class="math notranslate nohighlight">
 \[ d \mu_i = R T d \ln f_i.\]</div>
-<p>Проинтегрируем данное выражение, при этом, <span class="math notranslate nohighlight">\(\mu_0\)</span> будет соответствовать <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span>. Тогда:</p>
+<p>Проинтегрируем данное выражение, при этом <span class="math notranslate nohighlight">\(\mu_0\)</span> будет соответствовать <span class="math notranslate nohighlight">\(P \rightarrow 0\)</span>. Тогда:</p>
 <div class="math notranslate nohighlight">
 \[ \mu_i - {\mu_0}_i = R T \ln \frac{f_i}{x_i P} = R T \ln \phi_i. \]</div>
 <p>Тогда приведенная энергия Гиббса:</p>
@@ -688,7 +688,7 @@ b &amp;= \frac{1}{8} \frac{R T_c}{P_c}.
 </div>
 </div>
 </details><p>Пример реализации уравнения состояния Ван-дер-Ваалься для расчета коэффициента сверхсжимаемости и летучестей компонентов представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">здесь</a>.</p>
-<p>Однако использование уравнения состояния Ван-дер-Ваальса может приводить к существенному расхождению с фактическими данными. Например, с учетом ранее полученных соотношений, согласно уравнению состояния Ван-дер-Ваальса коэффиицент сверхсжимаемости глюбого газа в сверхкритическом состоянии составляет <span class="math notranslate nohighlight">\(\frac{3}{8} = 0.375 .\)</span> При этом, для большинства реальных газов коэффициент сверхсжимаемости в критическом состоянии <a class="reference external" href="https://phys.libretexts.org/Bookshelves/Thermodynamics_and_Statistical_Mechanics/Book%3A_Heat_and_Thermodynamics_(Tatum)/06%3A_Properties_of_Gases/6.03%3A_vdw_and_Other_Gases">составляет</a> около <span class="math notranslate nohighlight">\(0.28\)</span>. Таким образом, несмотря на свою простоту, уравнение состояния Ван-дер-Ваальса практически не используется, поэтому далее уравнение состояния Ван-дер-Ваальса не будет рассматриваться. Для повышения точности расчета параметров систем на практике используются уравнения состояния Пенга-Робинсона и Суаве-Редлиха-Квонга, которые также являются двухпараметрическими уравнениями состояния.</p>
+<p>Однако использование уравнения состояния Ван-дер-Ваальса может приводить к существенному расхождению с фактическими данными. Например, с учетом ранее полученных соотношений, согласно уравнению состояния Ван-дер-Ваальса коэффиицент сверхсжимаемости глюбого газа в сверхкритическом состоянии составляет <span class="math notranslate nohighlight">\(\frac{3}{8} = 0.375 .\)</span> При этом для большинства реальных газов коэффициент сверхсжимаемости в критическом состоянии <a class="reference external" href="https://phys.libretexts.org/Bookshelves/Thermodynamics_and_Statistical_Mechanics/Book%3A_Heat_and_Thermodynamics_(Tatum)/06%3A_Properties_of_Gases/6.03%3A_vdw_and_Other_Gases">составляет</a> около <span class="math notranslate nohighlight">\(0.28\)</span>. Таким образом, несмотря на свою простоту, уравнение состояния Ван-дер-Ваальса практически не используется, поэтому далее уравнение состояния Ван-дер-Ваальса не будет рассматриваться. Для повышения точности расчета параметров систем на практике используются уравнения состояния Пенга-Робинсона и Суаве-Редлиха-Квонга, которые также являются двухпараметрическими уравнениями состояния.</p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -765,7 +765,7 @@ By Daniel Skorov
 
   <p class="copyright">
     
-      © Copyright 2024.
+      © Copyright 2022 – 2025.
       <br/>
     
   </p>

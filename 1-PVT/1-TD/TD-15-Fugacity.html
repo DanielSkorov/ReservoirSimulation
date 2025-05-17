@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=ea443c07" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -429,7 +429,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[ \lim_{P \rightarrow 0} \left( \frac{f}{P} \right) = 1. \]</div>
 </div>
-<p>При этом,</p>
+<p>При этом</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
 <p>Отношение летучести к давлению называют <em><strong>коэффициентом летучести</strong></em>:</p>
@@ -439,7 +439,7 @@ document.write(`
 <p>Для компонента <span class="math notranslate nohighlight">\(i\)</span>, находящегося в термодинамическом равновесии (или в квази-стационарном изотермическом процессе), летучесть определяется следующим выражением (единицы измерения химического потенциала – <span class="math notranslate nohighlight">\(\frac{Дж}{моль}\)</span>):</p>
 <div class="math notranslate nohighlight">
 \[ d \mu_i = R T d \ln f_i. \]</div>
-<p>Данное выражение справедливо для процесса с постоянным количеством молекул компонента <span class="math notranslate nohighlight">\(i\)</span> в системе. При этом, определение летучести дается на основании следующего выражения:</p>
+<p>Данное выражение справедливо для процесса с постоянным количеством молекул компонента <span class="math notranslate nohighlight">\(i\)</span> в системе. При этом определение летучести дается на основании следующего выражения:</p>
 <div class="math notranslate nohighlight">
 \[ \lim_{P \rightarrow 0} \left( \frac{f_i}{x_i P} \right) = 1. \]</div>
 <p>Здесь <span class="math notranslate nohighlight">\(x_i\)</span> – мольная доля компонента в фазе.</p>
@@ -588,14 +588,14 @@ V &amp;= \left( \frac{\partial G}{\partial P} \right)_{T, n_i}.
 <p class="admonition-title">NB</p>
 <p>Полученное выражение является частным случаем соотношения, выполняемого для <em><strong>идеальных смесей</strong></em>:</p>
 <div class="math notranslate nohighlight">
-\[ f_i \left( P, T, x_i \right) = x_i f \left( P, T \right). \]</div>
+\[ f_i \left( P, T, \mathbf{x} \right) = f_i \left( P, T, x_1, x_2, \ldots, x_{N_c} \right) = x_i f \left( P, T \right). \]</div>
 </div>
 <p>Докажем данное утверждение. Для начала дадим определение идеальной смеси.</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
 <p>Смесь является <em><strong>идеальной</strong></em>, если для нее выполняется следующее соотношение:</p>
 <div class="math notranslate nohighlight">
-\[ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i v_i \left( P, T \right). \]</div>
+\[ V \left(P, T, \mathbf{n} \right) = \sum_{i=1}^{N_c} n_i v_i \left( P, T \right). \]</div>
 <p>Здесь <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе, <span class="math notranslate nohighlight">\(v_i \left( P, T \right)\)</span> – молярный (удельный) объем <span class="math notranslate nohighlight">\(i\)</span>-го компонента.</p>
 </div>
 <p>То есть объем для идеальных смесей является экстенсивным параметром.</p>
@@ -603,7 +603,7 @@ V &amp;= \left( \frac{\partial G}{\partial P} \right)_{T, n_i}.
 <p class="admonition-title">Доказательство</p>
 <p><a class="reference internal" href="TD-10-MixtureGibbsEnergy.html#pvt-td-mixturegibbsenergy"><span class="std std-ref">Ранее</span></a> для всех экстенсивных параметров было показано, что:</p>
 <div class="math notranslate nohighlight">
-\[ V \left(P, T, n_1, n_2, \ldots, n_{N_c} \right) = \sum_{i=1}^{N_c} n_i \bar{V_i}.\]</div>
+\[ V \left(P, T, \mathbf{n} \right) = \sum_{i=1}^{N_c} n_i \bar{V_i}.\]</div>
 <p>Следовательно, с учетом определения идеальной смеси получим следующее соотношение:</p>
 <div class="math notranslate nohighlight">
 \[ \bar{V_i} = v_i \left( P, T \right).\]</div>
@@ -617,13 +617,13 @@ V &amp;= \left( \frac{\partial G}{\partial P} \right)_{T, n_i}.
 \end{align} \end{split}\]</div>
 <p>Из данного выражения видно, что для идеальной смеси логарифм коэффициента летучести не зависит от компонентного состава и определяется только термобарическими условиями и свойствами компонентов. Получим выражение для летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента в идеальной смеси. Для этого преобразуем и проинтегрируем полученное выражение:</p>
 <div class="math notranslate nohighlight">
-\[ f_i \left(P, T, x_i \right) = x_i P \mathrm{e}^{\int_0^P \left( \frac{v_i \left( P, T \right)}{RT} - \frac{1}{P} \right) dP}. \]</div>
+\[ f_i \left(P, T, \mathbf{x} \right) = x_i P \exp \left( \int_0^P \left( \frac{v_i \left( P, T \right)}{RT} - \frac{1}{P} \right) dP \right). \]</div>
 <p>Для чистого компонента <span class="math notranslate nohighlight">\(x_i = 1\)</span>, тогда летучесть чистого компонента:</p>
 <div class="math notranslate nohighlight">
-\[ f \left(P, T \right) = P \mathrm{e}^{\int_0^P \left( \frac{v \left( P, T \right)}{RT} - \frac{1}{P} \right) dP}. \]</div>
+\[ f \left(P, T \right) = P \exp \left( \int_0^P \left( \frac{v \left( P, T \right)}{RT} - \frac{1}{P} \right) dP \right). \]</div>
 <p>Следовательно, летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
-\[ f_i \left(P, T, x_i \right) = x_i f \left(P, T \right). \]</div>
+\[ f_i \left(P, T, \mathbf{x} \right) = x_i f \left( P, T \right). \]</div>
 <p>Таким образом, летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в идеальной смеси равна летучести этого же компонента при отсутствии других компонентов.</p>
 </div>
 <p><a id='pvt-td-fugacity-idealgasmixture-chemicalpotential'></a>
@@ -635,7 +635,7 @@ V &amp;= \left( \frac{\partial G}{\partial P} \right)_{T, n_i}.
 \[ d \mu^{ig}_i = \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP. \]</div>
 <p>Интегрируя данное выражение от однокомпонентного состояния к многокомпонентной смеси, получим:</p>
 <div class="math notranslate nohighlight">
-\[ \mu^{ig}_i \left( P, T, n_i \right) - \mu^{ig}_i \left( P, T, \right) = \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP. \]</div>
+\[ \mu^{ig}_i \left( P, T, \mathbf{n} \right) - \mu^{ig}_i \left( P, T \right) = \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP. \]</div>
 <p>Рассмотрим вторую частную производную энергии Гиббса по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента и давлению:</p>
 <div class="math notranslate nohighlight">
 \[ \frac{\partial^2 G}{\partial n_i \partial P} = \frac{\partial}{\partial n_i} \left( \left( \frac{\partial G}{\partial P} \right)_{T,n_i} \right)_{P,T} = \frac{\partial}{\partial P} \left( \left( \frac{\partial G}{\partial n_i} \right)_{P,T} \right)_{T,n_i}. \]</div>
@@ -645,7 +645,7 @@ V &amp;= \left( \frac{\partial G}{\partial P} \right)_{T, n_i}.
 <p>Тогда рассматриваемая разница химических потенциалов может быть преобразована следующим образом, применяя уравнение состояния идеального газа:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\mu^{ig}_i \left( P, T, n_i \right) - \mu^{ig}_i \left( P, T \right)
+\mu^{ig}_i \left( P, T, \mathbf{n} \right) - \mu^{ig}_i \left( P, T \right)
 &amp;= \int_{P}^{x_i P} \left( \frac{\partial \mu_i}{\partial P} \right)_{T, n_i} dP \\
 &amp;= \int_{P}^{x_i P} \left( \frac{\partial V}{\partial n_i} \right)_{P,T} dP \\
 &amp;= \int_{P}^{x_i P} \frac{\partial}{\partial n_i} \left( \frac{nRT}{P} \right)_{P,T} dP \\
@@ -654,38 +654,70 @@ V &amp;= \left( \frac{\partial G}{\partial P} \right)_{T, n_i}.
 \end{align} \end{split}\]</div>
 <p>Следовательно,</p>
 <div class="math notranslate nohighlight">
-\[ \mu^{ig}_i \left( P, T, n_i \right) = \mu^{ig}_i \left( P, T \right) + RT \ln x_i . \]</div>
+\[ \mu^{ig}_i \left( P, T, \mathbf{n} \right) = \mu^{ig}_i \left( P, T \right) + RT \ln x_i . \]</div>
 <p>Данное уравнение может быть использоваться для расчета химического потенциала компонента идеального газа в идеальной смеси, зная химический потенциал чистого компонента при тех же термобарических условиях и компонентный состав смеси.</p>
 </div>
 <p>При давлении <span class="math notranslate nohighlight">\(P_1\)</span> и компонентном составе <span class="math notranslate nohighlight">\({x_i}_1\)</span> химический потенциал <span class="math notranslate nohighlight">\(i\)</span>-го компонента в смеси:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left(P_1, T, {x_i}_1 \right) = \mu_i \left( P_1, T \right) + RT \ln {x_i}_1. \]</div>
+\[ \mu_i \left(P_1, T, \mathbf{x}_1 \right) = \mu_i \left( P_1, T \right) + RT \ln {x_i}_1. \]</div>
 <p>При давлении <span class="math notranslate nohighlight">\(P_2\)</span> и компонентном составе <span class="math notranslate nohighlight">\({x_i}_2\)</span> химический потенциал <span class="math notranslate nohighlight">\(i\)</span>-го компонента в смеси:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left(P_2, T, {x_i}_2 \right) = \mu_i \left( P_2, T \right) + RT \ln {x_i}_2. \]</div>
+\[ \mu_i \left(P_2, T, \mathbf{x}_2 \right) = \mu_i \left( P_2, T \right) + RT \ln {x_i}_2. \]</div>
 <p>Тогда разница данных выражений:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) + R T \ln \frac{{x_i}_2}{{x_i}_1}. \]</div>
-<p>При этом, разница химических потенциалов чистого компонента, являющегося идеальным газом,:</p>
+\[ \mu_i \left(P_2, T, \mathbf{x}_2 \right) - \mu_i \left(P_1, T, \mathbf{x}_1 \right) = \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) + R T \ln \frac{{x_i}_2}{{x_i}_1}. \]</div>
+<p>При этом разница химических потенциалов чистого компонента, являющегося идеальным газом,:</p>
 <div class="math notranslate nohighlight">
 \[ \mu_i \left( P_2, T \right) - \mu_i \left( P_1, T \right) = RT \ln \frac{P_2}{P_1}. \]</div>
 <p>Тогда:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = RT \ln \frac{P_2 {x_i}_2}{P_1 {x_i}_1}. \]</div>
+\[ \mu_i \left(P_2, T, \mathbf{x}_2 \right) - \mu_i \left(P_1, T, \mathbf{x}_1 \right) = RT \ln \frac{P_2 {x_i}_2}{P_1 {x_i}_1}. \]</div>
 </section>
 <section id="pvt-td-fugacity-realgasmixture">
 <span id="id5"></span><h2>Летучесть смеси реальных газов<a class="headerlink" href="#pvt-td-fugacity-realgasmixture" title="Link to this heading">#</a></h2>
 <p>По аналогии с идеальным газом, для реальных газов данное соотношение записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left(P_2, T, {x_i}_2 \right) - \mu_i \left(P_1, T, {x_i}_1 \right) = RT \ln \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{f_i \left( P_1, T, {x_i}_1 \right)}. \]</div>
+\[ \mu_i \left(P_2, T, \mathbf{x}_2 \right) - \mu_i \left(P_1, T, \mathbf{x}_1 \right) = RT \ln \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{f_i \left( P_1, T, \mathbf{x}_1 \right)}. \]</div>
+<p>Докажем корректность данного соотношения.</p>
+<div class="proof admonition">
+<p class="admonition-title">Доказательство</p>
+<p>Для квази-стационарного изотермического процесса проинтегрируем дифференциал химического потенциала компонента рассматриваемой многокомпонентной системы:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+d \mu_i \left( P,T, \mathbf{x} \right) &amp;= RT d \ln f_i \left( P,T, \mathbf{x} \right), \; i = 1 \, \ldots \, N_c, \\
+\int_{P^*}^{P} d \mu_i \left( P,T, \mathbf{x} \right) &amp;= RT \int_{P^*}^{P} d \ln f_i \left( P,T, \mathbf{x} \right), \; i = 1 \, \ldots \, N_c,
+\end{align} \end{split}\]</div>
+<p>В выражении выше в качестве нижнего предела интегрирования используется давление, соответствующее состоянию <span class="math notranslate nohighlight">\(i\)</span>-го компонента в виде идеального газа. С учетом этого</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i \left( P,T, \mathbf{x} \right) - \mu_i \left( P^*,T, \mathbf{x} \right) = RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{f_i \left( P^*,T, \mathbf{x} \right)}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Учитывая определение летучести компонента многокомпонентной системы, можно записать следующее выражение:</p>
+<div class="math notranslate nohighlight">
+\[ f_i \left( P^*,T, \mathbf{x} \right) = x_i P^*, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Тогда выражение для химического потенциала <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i \left( P,T, \mathbf{x} \right) = \mu_i \left( P^*,T, \mathbf{x} \right) + RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{x_i P^*}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p><a class="reference internal" href="#pvt-td-fugacity-idealgasmixture-chemicalpotential"><span class="xref myst">Ранее</span></a> было доказано следующее свойство смеси идеальных газов:</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i \left( P^*,T, \mathbf{x} \right) = \mu_i \left( P^*,T \right) + RT \ln x_i, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>С учетом этого преобразуем выражение для химического потенциала <span class="math notranslate nohighlight">\(i\)</span>-го компонента к следующему виду:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\mu_i \left( P,T, \mathbf{x} \right)
+&amp;= \mu_i \left( P^*,T \right) + RT \ln x_i + RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{x_i P^*} \\
+&amp;= \mu_i \left( P^*,T \right) + RT \ln \frac{f_i \left( P,T, \mathbf{x} \right)}{P^*}, \; i = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>Тогда разность химических потенциалов:</p>
+<div class="math notranslate nohighlight">
+\[ \mu_i \left( P_2,T, \mathbf{x}_2 \right) - \mu_i \left( P_1,T, \mathbf{x}_1 \right) = RT \ln \frac{f_i \left( P_2,T, \mathbf{x}_2 \right)}{f_i \left( P_1,T, \mathbf{x}_1 \right)}, \; i = 1 \, \ldots \, N_c. \]</div>
+</div>
 <p>Тогда разница химических потенциалов между реальным и идеальным газами:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i^{rg} \left(P_2, T, {x_i}_2 \right) - \mu_i^{ig} \left(P_2, T, {x_i}_2 \right) = \mu_i^{rg} \left(P_1, T, {x_i}_1 \right) - \mu_i^{ig} \left(P_1, T, {x_i}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{f_i \left( P_1, T, {x_i}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right). \]</div>
+\[ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = \mu_i^{rg} \left(P_1, T, \mathbf{x}_1 \right) - \mu_i^{ig} \left(P_1, T, \mathbf{x}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{f_i \left( P_1, T, \mathbf{x}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right). \]</div>
 <div class="note admonition">
 <p class="admonition-title">NB</p>
 <p>При этом, если давление <span class="math notranslate nohighlight">\(P_1\)</span> достаточно низкое настолько, что при нем рассматриваемая система ведет себя, как идеальный газ, то:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i^{rg} \left(P_2, T, {x_i}_2 \right) - \mu_i^{ig} \left(P_2, T, {x_i}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, {x_i}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, {x_i}_2 \right). \]</div>
+\[ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, \mathbf{x}_2 \right). \]</div>
 </div>
 <p>Данное соотношение между химическими потенциалами реального и идеального газов достаточно полезно, так как будет использоваться при определении других термодинамических параметров реальных систем с использованием <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html#pvt-eos"><span class="std std-ref">уравнений состояния</span></a>.</p>
 </section>
@@ -783,7 +815,7 @@ By Daniel Skorov
 
   <p class="copyright">
     
-      © Copyright 2024.
+      © Copyright 2022 – 2025.
       <br/>
     
   </p>

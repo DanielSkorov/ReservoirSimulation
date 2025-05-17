@@ -98,7 +98,7 @@ $$ \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) 
 
 $$ F = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. $$
 
-При этом, для того чтобы мольные доли компонентов в фазах, определяемые выражением:
+При этом для того чтобы мольные доли компонентов в фазах, определяемые выражением:
 
 $$ y_i^R = \frac{y_i}{F \left( K_i - 1 \right) + 1}, \; i = 1 \, \ldots \, N_c, $$
 
@@ -150,7 +150,7 @@ $$ F \in \left( с_1, \, с_{N_c} \right). $$
 
 $$ a = \frac{F - c_1}{c_{N_c} - F}. $$
 
-При этом, отрезок NF-window $F \in \left( с_1, \, с_{N_c} \right)$ эквивалентен интервалу $a \in \left(0, \, +\infty \right)$. Уравнение Речфорда-Райса преобразуется следующим образом:
+При этом отрезок NF-window $F \in \left( с_1, \, с_{N_c} \right)$ эквивалентен интервалу $a \in \left(0, \, +\infty \right)$. Уравнение Речфорда-Райса преобразуется следующим образом:
 
 $$ \begin{align}
 \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} &= 0, \\
@@ -249,14 +249,9 @@ ax2.grid(zorder=1)
 Создадим функцию, которая рассчитывает значение и первую производную функции $G \left( a \right)$, и проинициализируем ее:
 
 ```{code-cell} python
-import numpy.typing as npt
 from functools import partial
 
-def G_val_grad(
-    a: np.float64,
-    yi: npt.NDArray[np.float64],
-    di: npt.NDArray[np.float64],
-) -> tuple[np.float64, np.float64]:
+def G_val_grad(a, yi, di):
     denom = 1. / (di + a * (1. + di))
     return (1. + a) * yi.dot(denom), -1. * yi.dot(denom * denom)
 
@@ -266,11 +261,7 @@ pG = partial(G_val_grad, yi=yi, di=di)
 Затем создадим функцию, которая принимает на вход кортеж из номера итерации `i`, переменной `a`, ее изменения `da` и значения уравнения `eq`, а также точность решения уравнения `tol` и максимальное количество итераций `Niter`, и возвращает необходимость выполнения следующей итерации:
 
 ```{code-cell} python
-def condit(
-    carry: tuple[int, np.float64, np.float64, np.float64],
-    tol: np.float64,
-    Niter: int,
-) -> bool:
+def condit(carry, tol, Niter):
     i, a, _, eq = carry
     return (i < Niter) & (np.abs(eq) > tol)
 
@@ -280,12 +271,7 @@ pcondit = partial(condit, tol=np.float64(1e-8), Niter=50)
 Далее создадим функцию, которая принимает на вход кортеж с результатами предыдущей итерации и обновляет их значениями для новой итерации:
 
 ```{code-cell} python
-from typing import Callable
-
-def update(
-    carry: tuple[int, np.float64, np.float64, np.float64],
-    pF: Callable[[np.float64], tuple[np.float64, np.float64]],
-) -> tuple[int, np.float64, np.float64, np.float64]:
+def update(carry, pF):
     i, a_, da_, _ = carry
     a = a_ - da_
     eq, grad = pF(a)
@@ -344,7 +330,7 @@ kvi = 1. + np.array([2. * eps, 1.5 * eps, eps, -eps, -1.5 * eps, -2. * eps])
 yi = np.full_like(kvi, 1. / 6.)
 ```
 
-Необходимо найти решение уравнение Речфорда-Райса, соответствующее NF-window.
+Необходимо найти решение уравнения Речфорда-Райса, соответствующее NF-window.
 
 ````
 
@@ -574,11 +560,7 @@ ax4.grid(zorder=1)
 Создадим функцию, которая рассчитывает значение и первую производную функции $H \left( a \right)$, и проинициализируем ее:
 
 ```{code-cell} python
-def H_val_grad(
-    a: np.float64,
-    yi: npt.NDArray[np.float64],
-    di: npt.NDArray[np.float64],
-) -> tuple[np.float64, np.float64]:
+def H_val_grad(a, yi, di):
     denom = 1. / (di + a * (1. + di))
     G = (1. + a) * yi.dot(denom)
     dGda = -1. * yi.dot(denom * denom)
@@ -799,11 +781,7 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 Создадим функцию, позволяющую рассчитать значение и производную функции $D \left( a \right)$ и проинициализируем ее исходными данными:
 
 ``` python
-def fD(
-    a: np.float64,
-    yi: npt.NDArray[np.float64],
-    di: npt.NDArray[np.float64],
-) -> tuple[np.float64, np.float64]:
+def fD(a, yi, di):
     denom = 1. / (di * (a + 1.) + a)
     return (
         yi[0] + a * yi[1:-1].dot(denom) - yi[-1] * a,
@@ -816,11 +794,7 @@ pD = partial(fD, yi=yi, di=di)
 Затем создадим функцию, которая принимает на вход кортеж из номера итерации `i`, переменной `a`, шага итерации `h` и значения функции $D \left( a \right)$ `D`, а также точность решения уравнения `tol` и максимальное количество итераций `Niter`, и возвращает необходимость выполнения следующей итерации:
 
 ``` python
-def condit(
-    carry: tuple[int, np.float64, np.float64, np.float64],
-    tol: np.float64,
-    Niter: int,
-) -> bool:
+def condit(carry, tol, Niter):
     i, a, _, D = carry
     return (i < Niter) & (np.abs(D) > tol)
 
@@ -830,10 +804,7 @@ pcondit = partial(condit, tol=np.float64(1e-10), Niter=50)
 Далее создадим функцию, которая принимает на вход кортеж с результатами предыдущей итерации и обновляет их значениями для новой итерации:
 
 ``` python
-def update(
-    carry: tuple[int, np.float64, np.float64, np.float64],
-    pD: Callable[[np.float64], tuple[np.float64, np.float64]],
-) -> tuple[int, np.float64, np.float64, np.float64]:
+def update(carry, pD):
     i, a_, h_, D_ = carry
     print(f'\nIteration #{i}:')
     a = a_ - h_
@@ -893,11 +864,7 @@ kvi = np.array([1.00003, 1.00002, 1.00001, 0.99999, 0.99998, 0.99997])
 ci = 1. / (1. - kvi)
 di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
-def fD(
-    a: np.float64,
-    yi: npt.NDArray[np.float64],
-    di: npt.NDArray[np.float64],
-) -> tuple[np.float64, np.float64]:
+def fD(a, yi, di):
     denom = 1. / (di * (a + 1.) + a)
     return (
         yi[0] + a * yi[1:-1].dot(denom) - yi[-1] * a,
@@ -906,20 +873,13 @@ def fD(
 
 pD = partial(fD, yi=yi, di=di)
 
-def condit(
-    carry: tuple[int, np.float64, np.float64, np.float64],
-    tol: np.float64,
-    Niter: int,
-) -> bool:
+def condit(carry, tol, Niter):
     i, a, _, D = carry
     return (i < Niter) & (np.abs(D) > tol)
 
 pcondit = partial(condit, tol=np.float64(1e-10), Niter=50)
 
-def update(
-    carry: tuple[int, np.float64, np.float64, np.float64],
-    pD: Callable[[np.float64], tuple[np.float64, np.float64]],
-) -> tuple[tuple[int, np.float64, np.float64, np.float64], str]:
+def update(carry, pD):
     i, a_, h_, D_ = carry
     out = f'\n\nIteration #{i}:'
     a = a_ - h_

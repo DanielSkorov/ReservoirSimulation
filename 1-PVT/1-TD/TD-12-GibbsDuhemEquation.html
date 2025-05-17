@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=ea443c07" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -404,6 +404,13 @@ document.write(`
 <p>Если в системе температура и давление постоянны, то уравнение Гиббса-Дюгема:</p>
 <div class="math notranslate nohighlight">
 \[ \sum_i N_i d \mu_i = 0. \]</div>
+<p>Разделив левую и правую части данного выражения на <span class="math notranslate nohighlight">\(\partial N_1\)</span>, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \sum_i N_i \frac{\partial \mu_i}{\partial N_1} = 0. \]</div>
+<p>Аналогичное выражение можно записать для остальных компонентов. Следовательно:</p>
+<div class="math notranslate nohighlight">
+\[ \sum_i N_i \frac{\partial \mu_i}{\partial N_j} = 0, \; j = 1 \, \ldots \, C, \]</div>
+<p>где <span class="math notranslate nohighlight">\(C\)</span> – количество компонентов.</p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -480,7 +487,7 @@ By Daniel Skorov
 
   <p class="copyright">
     
-      © Copyright 2024.
+      © Copyright 2022 – 2025.
       <br/>
     
   </p>

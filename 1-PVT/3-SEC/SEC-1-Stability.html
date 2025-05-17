@@ -32,10 +32,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=916ff907" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=ea443c07" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -387,7 +387,21 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-theory">Теоретические основы анализа стабильности фазового состояния системы</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-num">Численный подход к проверке стабильности фазового состояния системы</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-ss">Метод последовательных подстановок</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-ss-init">Начальные приближения</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-ss-examples">Примеры</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-newton">Метод минимизации функции</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-newton-init">Начальные приближения</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-newton-examples">Примеры</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vt">VT-термодинамика</a></li>
 </ul>
             </nav>
@@ -405,6 +419,8 @@ document.write(`
 <p>В данном разделе будут представлены критерии стабильности фазового состояния системы, позволяющие определить, является ли рассматриваемое фазовое состояние системы стабильным для различных формулировок (<a class="reference internal" href="#pvt-sec-stability-pt">PT-термодинамика</a> и <a class="reference internal" href="#pvt-sec-stability-vt"><span class="std std-ref">VT-термодинамика</span></a>), а также численные алгоритмы и их реализации. Выбор той или иной формулировки зачастую определяется теми переменными, через которые удобнее выражать уравнение состояния. Проверка стабильности фазового равновесия является первым из двух последовательных шагов к определению равновесного фазового состояния системы.</p>
 <section id="pt">
 <span id="pvt-sec-stability-pt"></span><h2>PT-термодинамика<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
+<section id="pvt-sec-stability-pt-theory">
+<span id="id2"></span><h3>Теоретические основы анализа стабильности фазового состояния системы<a class="headerlink" href="#pvt-sec-stability-pt-theory" title="Link to this heading">#</a></h3>
 <p>Пусть некоторая многокомпонентная макроскопическая система находится в равновесном состоянии и характеризуется давлением <span class="math notranslate nohighlight">\(P\)</span>, температурой <span class="math notranslate nohighlight">\(T\)</span> и количеством вещества всех компонентов <span class="math notranslate nohighlight">\(n_i, \; i=1..N_c\)</span>, где <span class="math notranslate nohighlight">\(N_c\)</span> – число компонентов, составляющих рассматриваемую систему. Можем ли мы использовать некоторое уравнение состояния для описания взаимосвязей между термодинамическими параметрами? Ответ на этот вопрос зависит от того, является ли рассматриваемая система гомогенной, то есть состоящей из одной сплошной фазы. Иными словами, является ли однофазное состояние рассматриваемой системы <em>стабильным</em>. Именно исследованию данного вопроса будет посвящен настоящий раздел. Однако, прежде чем переходить к рассмотрению темы стабильности фазового состояния системы, необходимо ввести ряд определений. Некоторые из них будут перекликаться с рассмотренными ранее темами, но при этом являться более обобщенными. Теоретическое изложение рассматриваемой проблемы соответствует работе [<a class="reference external" href="https://doi.org/10.2118/9806-PA">Baker et al, 1982</a>].</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
@@ -438,7 +454,7 @@ document.write(`
 <p>Представленное в предыдущем определении условие идентификации равновесного состояния, по сути, аналогично условию нахождения <a class="reference external" href="https://en.wikipedia.org/wiki/Maximum_and_minimum">глобального минимума функции</a>. <a class="reference external" href="https://en.wikipedia.org/wiki/First_derivative_test">Известно</a>, что необходимым условием для соответствия некоторого точки (состояния) глобальному минимуму функции (энергии Гиббса) является равенство нулю производной в этой точке (этом состоянии). Такое состояние, в котором энергия Гиббса всей многофазной многокомпонентной системы характеризуется равенством нулю частной производной по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-ой фазе при фиксированных давлении и температуре будет характеризоваться равенством химических потенциалов соответствующих компонентов в фазах.</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
-<p>Пусть многофазная многокомпонентная система находится при фиксированных давлении <span class="math notranslate nohighlight">\(P\)</span>, температуре <span class="math notranslate nohighlight">\(T\)</span> и количествах вещества компонентов в ней <span class="math notranslate nohighlight">\(n_i, \; i=1 \, \ldots \, N_c\)</span> в некотором состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> с количеством фаз <span class="math notranslate nohighlight">\(N_p\)</span> с соответствующими количествами вещества компонентов <span class="math notranslate nohighlight">\(n_i^j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p\)</span>. При этом, в этом состоянии частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_i^j\)</span> равна нулю:</p>
+<p>Пусть многофазная многокомпонентная система находится при фиксированных давлении <span class="math notranslate nohighlight">\(P\)</span>, температуре <span class="math notranslate nohighlight">\(T\)</span> и количествах вещества компонентов в ней <span class="math notranslate nohighlight">\(n_i, \; i=1 \, \ldots \, N_c,\)</span> в некотором состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> с количеством фаз <span class="math notranslate nohighlight">\(N_p\)</span> с соответствующими количествами вещества компонентов <span class="math notranslate nohighlight">\(n_i^j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p\)</span>. В этом состоянии частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_i^j\)</span> равна нулю:</p>
 <div class="math notranslate nohighlight">
 \[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i, l \neq j} = 0. \]</div>
 <p>Тогда для такого состояния системы будет справедливо следующее равенство:</p>
@@ -492,8 +508,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i, l \neq j} = 0, \; i=1 \, \ldots \, N_c, \; j = 1 \, \ldots K_p. \]</div>
 </div>
-<p>Таким образом, для того чтобы доказать, что некоторое состояние является равновесным, нет необходимости перебирать бесконечное множество всех возможных состояний системы – достаточно рассмотреть конечное множество стационарных состояний системы.</p>
-<p>Центральным для анализа стабильности фазового состояния системы является положение, определяющее, что стационарное состояние системы может быть определено путем идентификации общих точек касательной <a class="reference external" href="https://en.wikipedia.org/wiki/Hyperplane">гиперплоскости</a> к <a class="reference external" href="https://en.wikipedia.org/wiki/Hypersurface">гиперповерхности</a>, представленной функцией энергии Гиббса. Приставки “гипер” необходимы при рассмотрении <span class="math notranslate nohighlight">\(N_c\)</span>-мерного пространства. Например, для двух компонентов функция энергии Гиббса представляет собой кривую на плоскости, касательной к которой является прямая. Для трех компонентов функция энергии Гиббса представляет собой поверхность, а касательная к ней – плоскость. Для <span class="math notranslate nohighlight">\(N_c\)</span> компонентов функция энергии Гиббса – гиперповерхность, касательная к ней – гиперплоскость. Далее под поверхностью и плоскостью будут пониматься именно гиперповерхность и гиперплоскость соответственно.</p>
+<p>Центральным для анализа стабильности фазового состояния системы является положение, определяющее, что стационарное состояние системы может быть определено путем идентификации общих точек касательной <a class="reference external" href="https://en.wikipedia.org/wiki/Hyperplane">гиперплоскости</a> к <a class="reference external" href="https://en.wikipedia.org/wiki/Hypersurface">гиперповерхности</a> функции энергии Гиббса. Приставки “гипер” необходимы при рассмотрении <span class="math notranslate nohighlight">\(N_c\)</span>-мерного пространства. Например, для двух компонентов функция энергии Гиббса представляет собой кривую на плоскости, касательной к которой является прямая. Для трех компонентов функция энергии Гиббса представляет собой поверхность, а касательная к ней – плоскость. Для <span class="math notranslate nohighlight">\(N_c\)</span> компонентов функция энергии Гиббса – гиперповерхность, касательная к ней – гиперплоскость. Далее под поверхностью и плоскостью будут пониматься именно гиперповерхность и гиперплоскость соответственно.</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
 <p>Пусть <span class="math notranslate nohighlight">\(\hat{K}\)</span> является некоторым состоянием системы, состоящей из <span class="math notranslate nohighlight">\(N_p\)</span> допустимых фаз, удовлетворяющих закону сохранения масс, с известным количеством вещества компонентов в фазах <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p\)</span>. Тогда <span class="math notranslate nohighlight">\(G \left( \hat{K} \right)\)</span> является стационарной точкой тогда и только тогда, когда <span class="math notranslate nohighlight">\(G\)</span> дифференциируема для всех <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span> и поверхность <span class="math notranslate nohighlight">\(G\)</span> имеет одинаковую касательную плоскость для каждого <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span>.</p>
@@ -510,9 +525,9 @@ document.write(`
 <p>Подставляя данное выражение в уравнение касательной поверхности, получим:</p>
 <div class="math notranslate nohighlight">
 \[ L^j \left( \mathbf{r} \right) = \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} n_i^j + \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} r_i - \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} n_i^j = \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} r_i = \sum_{i=1}^{N_c} \mu_i^j r_i. \]</div>
-<p>Поскольку для стационарного состояния выполняется условие постоянства химического потенциала компонентов, то есть химический потенциал каждого компонента не зависит от фазы, то есть <span class="math notranslate nohighlight">\(\mu_i^j = \mu_i^{N_p}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p-1\)</span> в соответствии с приведенной выше леммой, то <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> также не будет зависеть от фазы <span class="math notranslate nohighlight">\(j\)</span>, следовательно, для всех <span class="math notranslate nohighlight">\(j\)</span> в стационарном состоянии уравнение касательной плоскости к поверхности энергии Гиббса одинаково. Верно и обратное: если все <span class="math notranslate nohighlight">\(L^j\)</span> одинаковы, то химические потенциалы компонентов равны, и состояние является стационарным.</p>
+<p>Поскольку для стационарного состояния выполняется условие постоянства химического потенциала компонентов, то есть химический потенциал каждого компонента не зависит от фазы, то есть <span class="math notranslate nohighlight">\(\mu_i^j = \mu_i^{N_p}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p-1,\)</span> в соответствии с приведенной выше леммой, то <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> также не будет зависеть от фазы <span class="math notranslate nohighlight">\(j\)</span>, следовательно, для всех <span class="math notranslate nohighlight">\(j\)</span> в стационарном состоянии уравнение касательной плоскости к поверхности энергии Гиббса одинаково. Верно и обратное: если все <span class="math notranslate nohighlight">\(L^j\)</span> одинаковы, то химические потенциалы компонентов равны, и состояние является стационарным.</p>
 </div>
-<p>Представленная выше теорема говорит о том, что в стационарном состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> касательная плоскость <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> к поверхности энергии Гиббса <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> одинакова для всех составов фаз <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p\)</span>, выражающих рассматриваемое стационарное состояние <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{n}^j, \; j = 1 \, \ldots N_p \right\}\)</span>. Однако в конечном счете нам необходимо определить стабильность (равновесность) стационарного состояния. Для понимания того, является ли рассматриваемое стационарное состояние равновесным, необходимо ввести следующие обозначения.</p>
+<p>Представленная выше теорема говорит о том, что в стационарном состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> касательная плоскость <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> к поверхности энергии Гиббса <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> одинакова для всех составов фаз <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p,\)</span> определяющих рассматриваемое стационарное состояние <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{n}^j, \; j = 1 \, \ldots N_p \right\}\)</span>. Однако в конечном счете нам необходимо установить, является ли стационарное состояние стабильным (равновесным). Для этого введем следующие обозначения.</p>
 <p>Пусть <span class="math notranslate nohighlight">\(D \left( \mathbf{r} \right)\)</span> является функцией разности между энергией Гиббса <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> и функцией касательной плоскости к ней <span class="math notranslate nohighlight">\(L \left( \mathbf{r} \right)\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ D \left( \mathbf{r} \right) = G \left( \mathbf{r} \right) - L \left( \mathbf{r} \right). \]</div>
@@ -522,7 +537,7 @@ document.write(`
 <p>Далее будет показано, что при любых значениях <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> в равновесном состоянии функция <span class="math notranslate nohighlight">\(D \left( \mathbf{r} \right)\)</span> не принимает отрицательных значений. Однако прежде чем переходить к доказательству этого утверждения необходимо рассмотреть следующую лемму:</p>
 <div class="danger admonition">
 <p class="admonition-title">Лемма</p>
-<p>Разница между энергией Гиббса системы в <em>любом состоянии</em>, состоящей из <span class="math notranslate nohighlight">\(K_p\)</span> приемлемых фаз, компонентный состав которых <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p\)</span>, и удовлетворяющих закону сохранения масс, и энергией Гиббса в <em>стационарном состоянии</em> с <span class="math notranslate nohighlight">\(N_p\)</span> приемлемыми фазами, компонентный состав которых <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p\)</span>, причем <span class="math notranslate nohighlight">\(K_p\)</span> может быть неравно <span class="math notranslate nohighlight">\(N_p\)</span>, есть сумма <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right)\)</span> по количеству фаз <span class="math notranslate nohighlight">\(K_p\)</span>, то есть:</p>
+<p>Разница между энергией Гиббса системы в <em>любом состоянии</em>, состоящей из <span class="math notranslate nohighlight">\(K_p\)</span> приемлемых фаз, компонентный состав которых <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p,\)</span> и удовлетворяющих закону сохранения масс, и энергией Гиббса в <em>стационарном состоянии</em> с <span class="math notranslate nohighlight">\(N_p\)</span> приемлемыми фазами, компонентный состав которых <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p,\)</span> причем <span class="math notranslate nohighlight">\(K_p\)</span> может быть неравно <span class="math notranslate nohighlight">\(N_p\)</span>, есть сумма <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right)\)</span> по количеству фаз <span class="math notranslate nohighlight">\(K_p\)</span>, то есть:</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right) - \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) = \sum_{k=1}^{K_p} D \left( \mathbf{r}^k \right). \]</div>
 </div>
@@ -558,12 +573,12 @@ document.write(`
 <p>Теперь можем перейти к доказательству основной теоремы:</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
-<p>Пусть система находится в некотором <em>стационарном</em> состоянии с количеством вещества в фазах <span class="math notranslate nohighlight">\(\mathbf{n}^j, j = 1 \, \ldots \, N_p\)</span>, причем значение энергии Гиббса для всех значений <span class="math notranslate nohighlight">\(\mathbf{r}^k\)</span> (количеств вещества компонентов в фазах <span class="math notranslate nohighlight">\(k, \; k = 1 \, \ldots \, K_p\)</span>) больше или равно касательной плоскости <span class="math notranslate nohighlight">\(L \left( \mathbf{r}^k \right)\)</span>, иными словами <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right) \geq 0, \; k = 1 \, \ldots \, K_p\)</span>, тогда данное стационарное состояние является <em><strong>равновесным</strong></em>.</p>
+<p>Пусть система находится в некотором <em>стационарном</em> состоянии с количеством вещества в фазах <span class="math notranslate nohighlight">\(\mathbf{n}^j, j = 1 \, \ldots \, N_p,\)</span> причем значение энергии Гиббса для всех значений <span class="math notranslate nohighlight">\(\mathbf{r}^k\)</span> (количеств вещества компонентов в фазах <span class="math notranslate nohighlight">\(k, \; k = 1 \, \ldots \, K_p\)</span>) больше или равно касательной плоскости <span class="math notranslate nohighlight">\(L \left( \mathbf{r}^k \right)\)</span>, иными словами <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right) \geq 0, \; k = 1 \, \ldots \, K_p,\)</span> тогда данное стационарное состояние является <em><strong>равновесным</strong></em>.</p>
 </div>
 <p>Докажем данную теорему.</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
-<p>Рассмотрим любое состояние системы с количеством вещества <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p\)</span>. Тогда из условия <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right) \geq 0, \; k = 1 \, \ldots \, K_p\)</span> следует, что</p>
+<p>Рассмотрим любое состояние системы с количеством вещества <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p\)</span>. Тогда из условия <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right) \geq 0, \; k = 1 \, \ldots \, K_p,\)</span> следует, что</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{k=1}^{K_p} D \left( \mathbf{r}^k \right) \geq 0. \]</div>
 <p>Согласно доказанной ранее лемме, данное неравество можно записать следующим образом:</p>
@@ -572,14 +587,14 @@ document.write(`
 <p>Или:</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) \leq \sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right). \]</div>
-<p>То есть для любых <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p\)</span> энергия Гиббса системы получается больше, чем при <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span>, то есть состояние с <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span> характеризуется наименьшей энергией Гиббса, следовательно, оно является равновесным по определению.</p>
+<p>То есть для любых <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p,\)</span> энергия Гиббса системы получается больше, чем при <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span>, то есть состояние с <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span> характеризуется наименьшей энергией Гиббса, следовательно, оно является равновесным по определению.</p>
 </div>
 <p>В результате доказательства этой теоремы данное ранее определение равновесного состояния, как состояния, характеризующегося наименьшей энергией Гиббса, можно переформулировать следующим образом:</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
 <p><em><strong>Равновесным состоянием</strong></em> называется такое <em>стационарное</em> состояние системы, при котором касательная гиперплоскость к гиперповерхности энергии Гиббса, проведенная в точке с компонентным составом этого состояния, не пересекает гиперповерхность энергии Гиббса в любых других точках.</p>
 </div>
-<p>Таким образом, анализ стабильности некотрого стационарного состояния многофазной многокомпонентной системы можно проводить посредством исследования функции <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right)\)</span>, определяемой расстоянием от гиперповерхности энергии Гиббса до касательной гиперплоскости, проведенной в точке с рассматриваемым стационарным состоянием. Эту функцию обычно называют <em>TPD – tangent plane distance</em>. Прежде чем переходить к рассмотрению примеров анализа стабильности необходимо необходимо отметить, что для квази-стационарного изотермического процесса <a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">справедливо</span></a> следующее преобразование:</p>
+<p>Таким образом, анализ стабильности некоторого стационарного состояния многофазной многокомпонентной системы можно проводить посредством исследования функции <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right)\)</span>, определяемой расстоянием от гиперповерхности энергии Гиббса до касательной гиперплоскости, проведенной в точке с рассматриваемым стационарным состоянием. Эту функцию обычно называют <em>TPD – tangent plane distance</em>. Прежде чем переходить к рассмотрению примеров анализа стабильности необходимо необходимо отметить, что для квази-стационарного изотермического процесса <a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">справедливо</span></a> следующее преобразование:</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) = \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} \mu_i^j n_i^j = R T \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_i^j \ln f_i^j. \]</div>
 <p>Тогда <em>приведенная энергия Гиббса</em>:</p>
@@ -594,9 +609,16 @@ document.write(`
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Для решения данной задачи будем использовать <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояния Пенга-Робинсона</span></a>, реализованное <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">здесь</a>.</p>
-<p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
+<p class="sd-card-text">Импортирурем необходимые библиотеки:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">2e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../_src/&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">eos</span> <span class="kn">import</span> <span class="n">pr78</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">2e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
 <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">40.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.15</span><span class="p">,</span> <span class="mf">.85</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
@@ -610,29 +632,25 @@ document.write(`
 <span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.025</span><span class="p">])</span> <span class="c1"># Binary interaction parameters</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Импортируем класс с уравнением состояния и проинициализируем его.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../_src/&#39;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">eos</span> <span class="kn">import</span> <span class="n">pr78</span>
-<span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
+<p class="sd-card-text">Проинициализируем класс с используемым уравнением состояния.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов воспользуемся методом <code class="docutils literal notranslate"><span class="pre">get_lnphiji_Zj</span></code>, принимающего в качестве аргументов давление, температуру и набор компонентных составов в виде двумерного массива, и возвращающего соответствующие коэффициенты летучести компонентов в виде двумерного массива и коэффициенты сверхсжимаемости в виде одномерного массива. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.</p>
+<p class="sd-card-text">Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод <code class="docutils literal notranslate"><span class="pre">get_lnphiji_Zj</span></code>, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью <code class="docutils literal notranslate"><span class="pre">(Np,</span> <span class="pre">Nc)</span></code>, где <code class="docutils literal notranslate"><span class="pre">Np</span></code> – количество наборов компонентных составов, <code class="docutils literal notranslate"><span class="pre">Nc</span></code> – количество компонентов в каждом компонентном составе) и возвращающий соответствующие коэффициенты летучести компонентов в виде двумерного массива такой же размерности и коэффициенты сверхсжимаемости в виде одномерного массива для каждого компонентного состава. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">yj1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">yji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yj1</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yj1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
 <span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
-<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vecdot</span><span class="p">(</span><span class="n">yji</span><span class="p">,</span> <span class="n">lnfji</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого воспользуемся методом <code class="docutils literal notranslate"><span class="pre">get_lnfi</span></code>, принимающего на вход давление, температуру и компонентный состав в виде одномерного масива, и возвращающего логарифмы летучести компонентов в виде одномерного массива. Затем выслим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.</p>
+<p class="sd-card-text">Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого будем использовать метод <code class="docutils literal notranslate"><span class="pre">get_lnfi</span></code>, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью <code class="docutils literal notranslate"><span class="pre">(Nc,)</span></code>) и возвращающий логарифмы летучести компонентов в виде одномерного массива такой же размерности. Затем выслим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
-<span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
@@ -643,7 +661,7 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/a04c848d3f5961304556239246cbd0bf74ff366e98abe3205ea42f64e2bf7271.png" src="../../_images/a04c848d3f5961304556239246cbd0bf74ff366e98abe3205ea42f64e2bf7271.png" />
+<img alt="../../_images/b3dda1a718fd7143370fc8a2d805d2efe28421c4a7d36250db689d34ea413672.png" src="../../_images/b3dda1a718fd7143370fc8a2d805d2efe28421c4a7d36250db689d34ea413672.png" />
 <br>
 <br>
 <p class="sd-card-text">Из представленного результата видно, что при рассматриваемых термобарических условиях касательная, проведенная в точке с заданным компонентным составом, не пересекает функцию энергии Гиббса, следовательно, можно сделать вывод о том, что однофазное состояние является стабильным. Более того, учитывая выпуклую вниз форму функции энергии Гиббса, можно заключить, что при любых компонентных составах данная система будет стабильна в однофазовом состоянии при рассматриваемых термобарических условиях.</p>
@@ -661,7 +679,7 @@ document.write(`
 <img alt="../../_images/b20edc8e91fb693013beab33b12b5cc74c87c6363ad87681936a0a802ae60551.png" src="../../_images/b20edc8e91fb693013beab33b12b5cc74c87c6363ad87681936a0a802ae60551.png" />
 <br>
 <br>
-<p class="sd-card-text">Функция TPD на всем интервале количества вещества диоксида углерода в системе не принимает отрицательных значений, что также свидетельствует об отсутствии пересечении касательной и функции энергии Гиббса, то есть о стабильности рассматриваемой системы.</p>
+<p class="sd-card-text">Функция TPD на всем интервале количества вещества диоксида углерода в системе не принимает отрицательных значений, что также свидетельствует об отсутствии пересечении касательной и функции энергии Гиббса, то есть о стабильности однофазного состояния рассматриваемой системы.</p>
 </div>
 </details><div class="exercise admonition">
 <p class="admonition-title">Пример</p>
@@ -676,20 +694,19 @@ document.write(`
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.</p>
+<p class="sd-card-text">Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов. Для выполнения вычислений будем использовать проинициализированный в предыдущем примере класс с уравнением состояния.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
-<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vecdot</span><span class="p">(</span><span class="n">yji</span><span class="p">,</span> <span class="n">lnfji</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Теперь вычислим летучести компонентов для заданного компонентного состава. Затем определим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
-<span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
@@ -700,7 +717,7 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/fa6e62d7cc4e377e3f4bd96f9c53071f50f01338e47088612e1c56cc579fa9e1.png" src="../../_images/fa6e62d7cc4e377e3f4bd96f9c53071f50f01338e47088612e1c56cc579fa9e1.png" />
+<img alt="../../_images/f3430c6fe6d93ded70ceb780369a00994f0d0cb8142bdeb2f639ed5a1b6038f1.png" src="../../_images/f3430c6fe6d93ded70ceb780369a00994f0d0cb8142bdeb2f639ed5a1b6038f1.png" />
 <br>
 <br>
 <p class="sd-card-text">Поскольку видно, что касательная, проведенная к функции энергии Гиббса в точке с рассматриваемым компонентным составом пересекает функцию энергии Гиббса, то однофазное состояние данной системы нестабильно. Построим зависимость функции TPD.</p>
@@ -717,9 +734,12 @@ document.write(`
 <img alt="../../_images/6cbf068296e1a1cfc81b07f06830f7474f26cf1f15b257309fcce0b1166977ec.png" src="../../_images/6cbf068296e1a1cfc81b07f06830f7474f26cf1f15b257309fcce0b1166977ec.png" />
 <br>
 <br>
-<p class="sd-card-text">Функция TPD имеет отрицательные значения, что свидетельствует о пересечении касательной и функции энергии Гиббса, то есть о нестабильности рассматриваемой системы.</p>
+<p class="sd-card-text">Функция TPD имеет отрицательные значения, что свидетельствует о пересечении касательной и функции энергии Гиббса, то есть о нестабильности однофазного состояния рассматриваемой системы.</p>
 </div>
-</details><p>Представленные выше примеры наглядно демонстрируют применение графического метода, основанного на пересечении касательной гиперплоскости гиперповерхности функции энергии Гиббса. Однако применение графического метода не подходит для решения задач гидродинамического моделирования. Таким образом, была необходима разработка численных методов анализа стабильности фазового состояния системы. Эта задача была впервые успешно решена в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>]. Суть данного метода заключается в следующем. Для того чтобы понять, является ли фазовое состояние некоторой системы стабильным, в соответствии с изложенным выше, необходимо понять, имеется ли пересечение гиперповерхности функции энергии Гиббса и касательной гиперплоскости, проведенной к гиперповерхности функции энергии Гиббса в точке с рассматриваемым компонентным составом. Это же условие равносильно анализу значений функции <em>TPD – tangent plane distance</em>: если функция TPD имеет отрицательные значения, то рассматриваемое фазовое состояние системы не является стабильным. Таким образом, задачу анализа стабильности можно представить в качестве задачи минимизации функции TPD:</p>
+</details></section>
+<section id="pvt-sec-stability-pt-num">
+<span id="id3"></span><h3>Численный подход к проверке стабильности фазового состояния системы<a class="headerlink" href="#pvt-sec-stability-pt-num" title="Link to this heading">#</a></h3>
+<p>Представленные выше примеры наглядно демонстрируют применение графического метода, основанного на пересечении гиперповерхности функции энергии Гиббса и касательной гиперплоскости, проведенной в точке с заданным компонентным составом. Однако применение графического метода не подходит для решения задач гидродинамического моделирования. В связи с этим в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] был впервые представлен численный подход к проведению анализа стабильности, суть которого заключается в следующем. Для того чтобы определить, является ли фазовое состояние некоторой системы стабильным, необходимо понять, имеет ли функция <em>TPD (tangent plane distance)</em> отрицательные значения.</p>
 <div class="note admonition">
 <p class="admonition-title">NB</p>
 <p>Необходимым критерием стабильности рассматриваемого фазового состояния системы с количествами вещества компонентов <span class="math notranslate nohighlight">\(\mathbf{n}\)</span> является:</p>
@@ -737,11 +757,19 @@ D \left( \mathbf{r} \right)
 <span class="math notranslate nohighlight">\(\mathbf{z} = \mathbf{n} / \sum_{i=1}^{N_c} n_i\)</span> – заданный компонентный состав системы, д.ед.;
 <span class="math notranslate nohighlight">\(\mathbf{\mu} \left( \mathbf{z} \right)\)</span> – химические потенциалы компонентов для заданного компонентного состава системы, Дж/моль.</p>
 </div>
-<p>Естественно, нет необходимости проверять значение функции TPD для всех составов системы, достаточно проверить значение функции TPD в ее глобальном минимуме: если в этой точке функция TPD неотрицательна, то систему можно считать стабильной. Однако поиск глобального минимума является достаточно сложной задачей для не выпуклых вниз функций. Таким образом, в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено заменить поиск глобального минимума функции TPD на проверку ее значений в локальных минимумах (стационарных точках). Для этого, задаваясь некоторым начальным приближением, находится локальный минимум, и проверяется значение функции TPD в нем. Если это значение меньше нуля, то рассматриваемое фазовое состояние считается нестабильным, и проверка заканчивается. Если же это значение неотрицательно, то рассматривается следующее начальное приближение. Алгоритм повторяется, пока не будут рассмотрены все начальные приближения. Если после рассмотрения всех начальных приближений не было получено отрицательное значение функции TPD, то система считается стабильной. Прежде чем переходить к рассмотрению реализаций данного алгоритма, необходимо получить условие стационарности (выражение, определяющее положение стационарных точек) функции TPD.</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Важно отметить, что рассматриваемый подход к проверке стабильности фазового состояния однофазной системы можно использовать и для проверки стабильности многофазной системы: для этого достаточно проверить на стабильность компонентный состав любой из фаз, применив данный метод.</p>
+<!--- TODO: При условии, если свойства фаз рассчитываются с использованием одного и того же уравнения состояния. -->
+</div>
+</aside>
+<p>Естественно, нет необходимости проверять значение функции TPD для всех составов системы, достаточно проверить значение функции TPD в ее глобальном минимуме: если в этой точке функция TPD неотрицательна, то систему можно считать стабильной. Однако поиск глобального минимума является достаточно сложной задачей для не выпуклых вниз функций. В связи с этим в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено заменить поиск глобального минимума функции TPD на проверку ее значений в локальных минимумах (стационарных точках). Для этого, задаваясь некоторым начальным приближением, находится первый локальный минимум, и проверяется значение функции TPD в нем. Если это значение меньше нуля, то рассматриваемое фазовое состояние считается нестабильным, и проверка заканчивается. Если же это значение неотрицательно, то рассматривается следующее начальное приближение. Алгоритм повторяется, пока не будут рассмотрены все начальные приближения. Если после рассмотрения всех начальных приближений не было получено отрицательное значение функции TPD, то система считается стабильной. Прежде чем переходить к рассмотрению реализаций данного алгоритма, необходимо получить условие стационарности (выражение, определяющее положение стационарных точек) функции TPD.</p>
 <p>Для этого в представленном выше критерии стабильности фазового состояния системы разделим левую и правую часть на <span class="math notranslate nohighlight">\(\sum_{i=1}^{N_c} r_i &gt; 0\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ D \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) \right) .\]</div>
-<p>Положение стационарных точек функции определяется равенством нулю частных производных по независимым переменным. В качестве независимых переменных будут выступать мольные доли компонентов <span class="math notranslate nohighlight">\(y_j, \; j = 1 \, \ldots \, N_c - 1\)</span>, поскольку:</p>
+<p>Положение стационарных точек функции определяется равенством нулю частных производных по независимым переменным. В качестве независимых переменных будут выступать мольные доли компонентов <span class="math notranslate nohighlight">\(y_j, \; j = 1 \, \ldots \, N_c - 1,\)</span> поскольку:</p>
 <div class="math notranslate nohighlight">
 \[ y_{N_c} = 1 - \sum_{i=1}^{N_c-1} y_i. \]</div>
 <p>Запишем и преобразуем выражение для частных производных функции TPD:</p>
@@ -762,77 +790,123 @@ D \left( \mathbf{r} \right)
 <p>Следовательно,</p>
 <div class="math notranslate nohighlight">
 \[ \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) = \mu_{N_c} \left( \mathbf{y} \right) - \mu_{N_c} \left( \mathbf{z} \right) = K, \; i = 1 \, \ldots \, N_c - 1. \]</div>
-<p>В данном выражении разность химических потенциалов последнего компонента обозначена константой <span class="math notranslate nohighlight">\(K\)</span>, поскольку она не зависит от индекса <span class="math notranslate nohighlight">\(i\)</span>, то есть является одинаковой (постоянной) для всех компонентов. Иными словами, разность химических потенциалов одинакова для соответствующих компонентов в стационарных точках функции TPD. Из этого следует, что касательные, проведенные к функции энергии Гиббса в точках, соответствующих стационарным точкам функции TPD, будут параллельны друг другу и касательной, проведенной в точке с рассматриваемым компонентным составом. Действительно, из приведенного выше соотношения выразим значения химического потенциала в точке, соответствующей стационарной точке функции TPD:</p>
+<p>В данном выражении разность химических потенциалов последнего компонента обозначена константой <span class="math notranslate nohighlight">\(K\)</span>, поскольку она не зависит от индекса <span class="math notranslate nohighlight">\(i\)</span>, то есть является одинаковой (постоянной) для всех компонентов. Иными словами, разность химических потенциалов одинакова для соответствующих компонентов в стационарных точках функции TPD. Из этого следует, что касательные, проведенные к функции энергии Гиббса в точках, соответствующих стационарным точкам функции TPD, будут параллельны друг другу и касательной, проведенной в точке с рассматриваемым компонентным составом. Докажем данное утверждение.</p>
+<div class="proof admonition">
+<p class="admonition-title">Доказательство</p>
+<p>Из приведенного выше соотношения выразим значения химического потенциала в точке, соответствующей стационарной точке функции TPD:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z}^0 \right) + K. \]</div>
+\[ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z} \right) + K. \]</div>
 <p>Тогда, согласно представленной выше теореме, уравнение касательной к функции энергии Гиббса в этой точке с компонентным составом <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ L_y \left( \mathbf{x} \right) = \sum_{i=1}^{N_c} \mu_i \left( \mathbf{y} \right) x_i = \sum_{i=1}^{N_c} \mu_i \left( \mathbf{z} \right) x_i + K \sum_{i=1}^{N_c} x_i = L_z \left( \mathbf{x} \right) + K .\]</div>
-<p>При этом, значение функции TPD в стационарной точке:</p>
+<p>То есть значение касательной к функции энергии Гиббса, проведенной в точке, соответствующей стационарной точке функции TPD, отличается от касательной, проведенной в точке с рассматриваемым компонентным составом, на константу <span class="math notranslate nohighlight">\(K\)</span>, следовательно, они являются параллельными.</p>
+</div>
+<p>Рассмотрим значение функции TPD в стационарной точке:</p>
 <div class="math notranslate nohighlight">
 \[ D \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) \right) = K. \]</div>
 <p>Тогда условие стабильности рассматриваемой системы <span class="math notranslate nohighlight">\(D \left( \mathbf{y} \right) \geq 0\)</span> можно представить в виде <span class="math notranslate nohighlight">\(K \geq 0\)</span>.</p>
-<p>Подробнее рассмотрим условие стационарности функции TPD, которое представляет собой систему нелинейных уравнений:</p>
+<p>При этом условие стационарности функции TPD представляет собой систему нелинейных уравнений:</p>
 <div class="math notranslate nohighlight">
 \[ \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) = K, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Эта система имеет тривиальное решение <span class="math notranslate nohighlight">\(\mathbf{y} = \mathbf{z}\)</span>, в этом случае <span class="math notranslate nohighlight">\(K = 0\)</span>. При постоянных давлении и температуре химические потенциалы можно заменить на летучести:</p>
+<p>Эта система имеет тривиальное решение <span class="math notranslate nohighlight">\(\mathbf{y} = \mathbf{z}\)</span>, в этом случае <span class="math notranslate nohighlight">\(K = 0\)</span>.</p>
+<p>Для квази-стационарного изотермического процесса разность химических потенциалов <a class="reference internal" href="../1-TD/TD-15-Fugacity.html#pvt-td-fugacity-realgasmixture"><span class="std std-ref">можно</span></a> заменить разностью логарифмов летучестей компонентов. Следовательно, условие стационарности функции TPD записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = K, \; i = 1 \, \ldots \, N_c. \]</div>
+\[\begin{split} \begin{align}
+RT \left( \ln f_i \left( \mathbf{y} \right) - \ln f_i \left( \mathbf{z} \right) \right) = K, \; i = 1 \, \ldots \, N_c, \\
+\ln f_i \left( \mathbf{y} \right) - \ln f_i \left( \mathbf{z} \right) = \bar{K}, \; i = 1 \, \ldots \, N_c,
+\end{align} \end{split}\]</div>
+<p>где <span class="math notranslate nohighlight">\(\bar{K} = K \, / \, RT\)</span>.</p>
+<p>Преобразуем данное выражение с учетом <a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">определения коэффициента летучести</span></a>:</p>
+<div class="math notranslate nohighlight">
+\[ \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = \bar{K}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Здесь под переменной <span class="math notranslate nohighlight">\(h_i\)</span> обозначено следующее:</p>
 <div class="math notranslate nohighlight">
 \[ h_i = \ln \phi_i \left( \mathbf{z} \right) + \ln z_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Пусть <span class="math notranslate nohighlight">\(Y_i = y_i \mathrm{e}^{-K}\)</span>, тогда:</p>
+<p>С учетом изложенного выше функцию TPD преобразуем к следующему виду:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+D \left( \mathbf{y} \right) &amp;= \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) \right), \\
+\bar{D} \left( \mathbf{y} \right) &amp;= \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i \right).
+\end{align} \end{split}\]</div>
+<p>Пусть <span class="math notranslate nohighlight">\(Y_i = y_i \exp \left( -\bar{K} \right), \, i = 1 \, \ldots \, N_c,\)</span> тогда условие стационарности функции TPD:</p>
 <div class="math notranslate nohighlight">
 \[ \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Значения <span class="math notranslate nohighlight">\(Y_i\)</span> можно условно интерпретировать как количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, действительно:</p>
+<p>При этом условие стабильности <span class="math notranslate nohighlight">\(\bar{K} \geq 0\)</span> можно представить в виде <span class="math notranslate nohighlight">\(\sum_{i=1}^{N_c} Y_i \leq 1\)</span>, поскольку</p>
 <div class="math notranslate nohighlight">
-\[ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-K}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-K}} = \frac{y_i \mathrm{e}^{-K}}{\mathrm{e}^{-K} \sum_{i=1}^{N_c} y_i} = y_i. \]</div>
-<p>Условие стабильности <span class="math notranslate nohighlight">\(K \geq 0\)</span> можно представить в виде <span class="math notranslate nohighlight">\(\sum_{i=1}^{N_c} Y_i \leq 1\)</span>.</p>
-<p>Таким образом, мы можем использовать метод <a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html"><span class="std std-doc">градиентного спуска</span></a> для поиска локального минимума функции TPD и, задаваясь различными начальными приближениями, определить стабильность рассматриваемой системы. Очевидным недостатком данного подхода является конечность набора начальных приближений (и с точки зрения времени счета – их количество, ведь чем больше начальных приближений мы рассмотрим, тем с большей вероятностью найдем глобальный минимум функции TPD, однако это приведет к увеличению времени работы алгоритма), следовательно, корректный выбор начальных приближений является одним из залогов успешного решения задачи определения стабильности фазового состояния системы.</p>
-<p>Обозначим отношение <span class="math notranslate nohighlight">\(Y_i\)</span> к <span class="math notranslate nohighlight">\(z_i\)</span> переменной <span class="math notranslate nohighlight">\(k_i\)</span>. В работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено использовать корреляцию Уилсона:</p>
+\[ \sum_{i=1}^{N_c} Y_i = \sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}} = \mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i = \mathrm{e}^{-\bar{K}}. \]</div>
+<p>Логарифмируя левую и правую части, получим:</p>
 <div class="math notranslate nohighlight">
-\[ k_i^{go} = \frac{{P_c}_i}{P} \mathrm{e}^{5.3727 \left(1 + \omega_i \right) \left(1 - \frac{{T_c}_i}{T} \right)}. \]</div>
-<p>То есть в качестве начальных приближений <span class="math notranslate nohighlight">\(k_i\)</span> в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] выступал набор из следующих векторов:</p>
+\[ \ln \sum_{i=1}^{N_c} Y_i = - \bar{K}. \]</div>
+<p>С учетом <span class="math notranslate nohighlight">\(\bar{K} \geq 0\)</span> можно записать следующее неравенство:</p>
 <div class="math notranslate nohighlight">
-\[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}. \]</div>
-<p>Использование этих двух начальных приближений зачастую бывает достаточно для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии, в работе [<a class="reference external" href="https://doi.org/10.2118/129844-PA">Li and Firoozabadi, 2012</a>] было предложено дополнить данный набор следующими начальными приближениями:</p>
+\[ \ln \sum_{i=1}^{N_c} Y_i \leq 0 \Leftrightarrow \sum_{i=1}^{N_c} Y_i \leq 1. \]</div>
+<p>Стоит отметить, что значение <span class="math notranslate nohighlight">\(Y_i\)</span> можно условно интерпретировать как количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, действительно:</p>
 <div class="math notranslate nohighlight">
-\[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}}, \; \sqrt[3]{k_i^{go}}, \; \frac{1}{\sqrt[3]{k_i^{go}}}, \; k_i^{pure} \right\}, \]</div>
-<p>где:</p>
+\[ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i. \]</div>
+<p>Таким образом, система нелинейных уравнений, определяющая условие стационарности функции TPD, записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, &amp; i = \mathrm{specific \, component}, \\ \left( \epsilon / \left( N_c - 1 \right) \right) / z_i, &amp; i = \mathrm{others}. \end{cases} \end{split}\]</div>
-<p>Данный набор начальных приближений хорошо подходит для проверки стабильности систем, где мольная доля одного компонента много больше мольных долей других. Например, к таким системам относятся системы с водой в качестве компонента, в этом случае <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-3\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1021/acs.iecr.9b00695">Connolly et al, 2019</a>] (для водных растворов иногда имеет смысл задать <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-15\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fuel.2019.02.026">Li and Li</a>]). Для систем с высоким содержанием диоксида углерода рекомендуется <span class="math notranslate nohighlight">\(\epsilon = 0.05\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2019.06.002">Imai at al, 2019</a>].</p>
-<p>Существует также множество работ, посвященных разработке численных алгоритмов решения задачи стабильности. В работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено использовать метод последовательных подстановок, а также метод BFGS с учетом замены переменной <span class="math notranslate nohighlight">\(\alpha_i = 2 \sqrt{Y_i}\)</span> для решения задачи стабильности. Впоследсвтии применение метода BFGS для решение задачи стабильности получило свое развитие в работах [<a class="reference external" href="https://doi.org/10.1002/aic.10908">Hoteit and Firoozabadi, 2006</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2015.07.035">Nichita and Petitfrere, 2015</a>]. Кроме того, было исследовано применение методов глобальной оптимизации для решения данной задачи, например, авторами работы [<a class="reference external" href="http://doi.org/10.1016/S0378-3812(01)00779-8">Nichita et al, 2002</a>]. Далее будет кратко представлен метод <em>QNSS (quasi-Newton successive substitution)</em>, который будет использоваться для решения задачи стабильности системы при известных давлении и температуре. Более подробно данный метод изложен в работах [<a class="reference external" href="https://doi.org/10.2118/12242-MS">Nghiem, 1983</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>].</p>
+\[ g_i = \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>После решения данной системы нелинейных уравнений относительно основных перменных <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> выполняется проверка стабильности рассматриваемой многокомпонентной системы. Фазовое состояние будет считаться стабильным, если:</p>
+<div class="math notranslate nohighlight">
+\[ \sum_{i=1}^{N_c} Y_i \leq 1. \]</div>
+<p>Рассмотрим некоторые численные алгоритмы решения данной системы нелинейных уравнений.</p>
+</section>
+<section id="pvt-sec-stability-pt-ss">
+<span id="id4"></span><h3>Метод последовательных подстановок<a class="headerlink" href="#pvt-sec-stability-pt-ss" title="Link to this heading">#</a></h3>
+<p>Одним из наиболее распространенных численных алгоритмов, среди применяемых к определению стабильности фазового состояния многокомпонентной системы, является <em>метод последовательных подстановок (successive substitution method)</em>, также называемый <a class="reference external" href="https://en.wikipedia.org/wiki/Fixed-point_iteration">методом простой итерации</a>, суть которого заключается в итерационном обновлении основных переменных с использованием следующего выражения:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{t}^{k+1} = f \left( \mathbf{t}^{k} \right), \]</div>
+<p>где <span class="math notranslate nohighlight">\(\mathbf{t}^{k+1} \in {\rm I\!R}^n\)</span> – вектор основных переменных на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации, <span class="math notranslate nohighlight">\(\mathbf{t}^{k} \in {\rm I\!R}^n\)</span> – вектор основных переменных на <span class="math notranslate nohighlight">\(\left( k \right)\)</span>-й итерации, <span class="math notranslate nohighlight">\(f \, : \, {\rm I\!R}^n \rightarrow {\rm I\!R}^n\)</span> – функция, принимающая на вход вектор основных переменных размерности <span class="math notranslate nohighlight">\(n\)</span> и возвращающая вектор размерности <span class="math notranslate nohighlight">\(n\)</span>, состоящий из значений нелинейных уравнений решаемой системы. Соответственно, такая система уравнений должна иметь решение, удовлетворяющее следующему соотношению:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{t}^{*} = f \left( \mathbf{t}^{*} \right), \]</div>
+<p>где <span class="math notranslate nohighlight">\(\mathbf{t}^{*} \in {\rm I\!R}^n\)</span> – вектор основных переменных, соответствующий решению системы нелинейных уравнений. Проверим, удовлетворяет ли рассматриваемая система нелинейных уравнений данному условию. Для этого преобразуем выражение, определяеющее положение стационарных точек функции TPD, следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+g_i
+&amp;= \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i \\
+&amp;= \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) - \ln z_i \\
+&amp;= \ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right), \; i = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>В процессе данного преобразования было введено обозначение для вектора отношений количеств вещества компонентов <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> в произвольной фазе к соответствующим мольным долям в рассматриваемой системе <span class="math notranslate nohighlight">\(z_i, \, i = 1 \, \ldots \, N_c\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ k_i = \frac{Y_i}{z_i}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Тогда рассматриваемую систему нелинейных уравнений можно преобразовать к следующему виду:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) &amp;= 0, \; i = 1 \, \ldots \, N_c, \\
+\ln k_i &amp;= \ln \phi_i \left( \mathbf{z} \right) - \ln \phi_i \left( \mathbf{y} \right), \; i = 1 \, \ldots \, N_c, \\
+\ln k_i &amp;= \ln k_i - \left( \ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) \right), \; i = 1 \, \ldots \, N_c, \\
+\ln k_i &amp;= \ln k_i - g_i, \; i = 1 \, \ldots \, N_c. \\
+\end{align} \end{split}\]</div>
+<p>Таким образом, метод последовательных подстановок может быть использован для решения рассматриваемой системы нелинейных уравнений относительно основных переменных <span class="math notranslate nohighlight">\(k_i, \, i = 1 \, \ldots \, N_c\)</span>, обновление которых на некоторой итерации осуществляется с использованием следующего выражения:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\ln k_i^{k+1} &amp;= \ln k_i^{k} - g_i^{k}, \; i = 1 \, \ldots \, N_c, \\
+k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>С учетом вышеизложенного далее будет представлен алгоритм метода последовательных постановок для решения задачи проверки стабильности фазового состояния системы.</p>
 <div class="algorithm admonition">
-<p class="admonition-title">Алгоритм. Анализ стабильности с использованием QNSS</p>
+<p class="admonition-title">Алгоритм. Анализ стабильности с использованием метода SS</p>
 <p><strong>Дано:</strong> Вектор компонентного состава исследуемой системы <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span>; термобарические условия <span class="math notranslate nohighlight">\(P\)</span> и <span class="math notranslate nohighlight">\(T\)</span>; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>; численная погрешность расчета <span class="math notranslate nohighlight">\(0 &lt; \epsilon_2 \leq 10^{-4}\)</span>.</p>
-<p><strong>Определить:</strong> Является ли однофазное состояние системы с компонентным составом <span class="math notranslate nohighlight">\(\mathbf{y}\)</span> при давлении <span class="math notranslate nohighlight">\(P\)</span> и температуре <span class="math notranslate nohighlight">\(T\)</span> стабильным.</p>
+<p><strong>Определить:</strong> Является ли однофазное состояние системы с компонентным составом <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> при давлении <span class="math notranslate nohighlight">\(P\)</span> и температуре <span class="math notranslate nohighlight">\(T\)</span> стабильным.</p>
 <p><strong>Псевдокод:</strong><br />
-<strong>def</strong> <span class="math notranslate nohighlight">\(\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \mathbf{\varphi} \in {\rm I\!R}^{N_c}\)</span> <span class="comment"># Функция для расчета вектора коэффициентов летучести</span><br />
+<strong>def</strong> <span class="math notranslate nohighlight">\(\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \boldsymbol{\varphi} \in {\rm I\!R}^{N_c}\)</span> <span class="comment"># Функция для расчета вектора коэффициентов летучести</span><br />
 <span class="math notranslate nohighlight">\(\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}\)</span> <span class="comment"># Инициализация набора (матрицы) начальных приближений</span><br />
 <span class="math notranslate nohighlight">\(\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}\)</span>  <span class="comment"># Расчет коэффициентов летучести для начального состава</span><br />
 <strong>for</strong> <span class="math notranslate nohighlight">\(i := 1\)</span> <strong>to</strong> <span class="math notranslate nohighlight">\(N\)</span> <strong>do</strong> <span class="comment"># Цикл перебора начальных приближений</span><br />
  <span class="math notranslate nohighlight">\(\mathbf{k} := \mathbf{K}\left[ i \right]\)</span> <span class="comment"># Вектор основных переменных</span><br />
- <span class="math notranslate nohighlight">\(\mathbf{n} := \mathbf{k} \cdot \mathbf{z}\)</span><br />
- <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i\)</span><br />
- <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}\)</span> <span class="comment"># Вектор невязок</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{Y} := \mathbf{k} \cdot \mathbf{z}\)</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{Y} \, / \, \sum_{i=1}^{N_c} Y_i\)</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{Y} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}\)</span> <span class="comment"># Вектор невязок</span><br />
  <span class="math notranslate nohighlight">\(c := 1\)</span> <span class="comment"># Счетчик итераций решения системы нелинейных уравнений</span><br />
- <span class="math notranslate nohighlight">\(\lambda := 1\)</span> <span class="comment"># Коэффициент релаксации (длина шага)</span><br />
  <strong>while</strong> <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2 &gt; \epsilon_1\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(c &lt; N_{iter}\)</span> <strong>do</strong> <span class="comment"># Цикл решения системы нелинейных уравнений</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{\Delta \ln k} := -\lambda \cdot \mathbf{g}\)</span> <span class="comment"># Вектор направления поиска решения</span><br />
-  <strong>if</strong> <span class="math notranslate nohighlight">\(\max \left( \left| \mathbf{\Delta \ln k} \right| \right) &gt; 6\)</span> <strong>then</strong> <span class="comment"># Проверка на модуль вариации переменной для каждого компонента</span><br />
-   <span class="math notranslate nohighlight">\(\lambda := \lambda \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)\)</span> <span class="comment"># Корректировка длины шага</span><br />
-   <span class="math notranslate nohighlight">\(\mathbf{\Delta \ln k} := \mathbf{\Delta \ln k} \cdot 6 \, / \max \left( \left| \mathbf{\Delta \ln k} \right| \right)\)</span> <span class="comment"># Корректировка вектора направления поиска решения</span><br />
-  <strong>end if</strong><br />
-  <span class="math notranslate nohighlight">\(\mathbf{g}_{\left( -1 \right)} := \mathbf{g}\)</span> <span class="comment"># Сохранение предыдущих значений вектора невязок</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{k} := \mathbf{k} \cdot \exp \left( \mathbf{\Delta \ln k} \right)\)</span> <span class="comment"># Расчет новых значений вектора основных переменных</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{n} := \mathbf{k} \cdot \mathbf{z}\)</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i\)</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{n} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}\)</span> <span class="comment"># Новые значения вектора невязок</span><br />
-  <span class="math notranslate nohighlight">\(\lambda := \lambda \left| \frac{\left(\mathbf{\Delta \ln k} \right)^\top \mathbf{g}_{\left( -1 \right)}}{\left(\mathbf{\Delta \ln k} \right)^\top \left(\mathbf{g} \, - \, \mathbf{g}_{\left( -1 \right)} \right)} \right|\)</span> <span class="comment"># Новое значение коэффициента релаксации</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{k} := \mathbf{k} \cdot \exp \left( - \mathbf{g} \right)\)</span> <span class="comment"># Расчет новых значений вектора основных переменных</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{Y} := \mathbf{k} \cdot \mathbf{z}\)</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{Y} \, / \, \sum_{i=1}^{N_c} Y_i\)</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{Y} + \ln \phi \left( \mathbf{y} \right) - \mathbf{h}\)</span> <span class="comment"># Новые значения вектора невязок</span><br />
   <span class="math notranslate nohighlight">\(c := c + 1\)</span> <span class="comment"># Обновление счетчика итераций</span><br />
  <strong>end while</strong><br />
- <span class="math notranslate nohighlight">\(TPD := - \ln \sum_{i=1}^{N_c} n_i\)</span> <span class="comment"># Расчет значения функции TPD</span><br />
+ <span class="math notranslate nohighlight">\(TPD := - \ln \sum_{i=1}^{N_c} Y_i\)</span> <span class="comment"># Расчет значения функции TPD</span><br />
  <strong>if</strong> <span class="math notranslate nohighlight">\(TPD &lt; -\epsilon_2\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(c &lt; N_{iter}\)</span> <strong>then</strong> <span class="comment"># Проверка условия стабильности</span><br />
   <span class="math notranslate nohighlight">\(is\_stable := \mathrm{False}\)</span><br />
   <strong>exit for</strong> <span class="comment"># Выход из цикла перебора начальных приближений</span><br />
@@ -843,6 +917,25 @@ D \left( \mathbf{r} \right)
  <span class="math notranslate nohighlight">\(is\_stable := \mathrm{True}\)</span><br />
 <strong>end for</strong></p>
 </div>
+<section id="pvt-sec-stability-pt-ss-init">
+<span id="id5"></span><h4>Начальные приближения<a class="headerlink" href="#pvt-sec-stability-pt-ss-init" title="Link to this heading">#</a></h4>
+<p>Итак, рассматриваемая задача анализа стабильности фазового состояния системы заключается в проверке значений функции TPD в ее стационарных точках. Как уже было отмечено ранее, для нахождения различных стационарных точек необходимо задаться множеством начальных приближений. В связи с этим очевидным недостатком данного подхода является конечность набора начальных приближений (и с точки зрения времени счета – их количество, ведь чем больше начальных приближений мы рассмотрим, тем с большей вероятностью найдем глобальный минимум функции TPD, однако это приведет к увеличению времени работы алгоритма). Таким образом, корректный выбор начальных приближений является одним из залогов успешного решения задачи определения стабильности фазового состояния системы.</p>
+<p>В работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено использовать корреляцию Уилсона для генерации начальных приближений углеводородной системы:</p>
+<div class="math notranslate nohighlight">
+\[ k_i^{go} = \frac{{P_c}_i}{P} \cdot \exp \left( 5.3727 \left(1 + \omega_i \right) \left(1 - \frac{{T_c}_i}{T} \right) \right), \; i = 1 \, \ldots \, N_c. \]</div>
+<p>То есть в качестве начальных приближений <span class="math notranslate nohighlight">\(k_i\)</span> в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] применялся набор из следующих векторов:</p>
+<div class="math notranslate nohighlight">
+\[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Использование этих двух начальных приближений зачастую бывает достаточным для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии, в работе [<a class="reference external" href="https://doi.org/10.2118/129844-PA">Li and Firoozabadi, 2012</a>] было предложено дополнить данный набор следующими начальными приближениями:</p>
+<div class="math notranslate nohighlight">
+\[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}}, \; \sqrt[3]{k_i^{go}}, \; \frac{1}{\sqrt[3]{k_i^{go}}}, \; k_i^{pure} \right\}, \; i = 1 \, \ldots \, N_c, \]</div>
+<p>где:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, &amp; i = \mathrm{specific \, component}, \\ \left( \epsilon / \left( N_c - 1 \right) \right) / z_i, &amp; i = \mathrm{others}. \end{cases} \end{split}\]</div>
+<p>Данный набор начальных приближений хорошо подходит для проверки стабильности систем, где мольная доля одного компонента много больше мольных долей других. Например, к таким системам относятся системы с водой в качестве компонента, в этом случае <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-3\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1021/acs.iecr.9b00695">Connolly et al, 2019</a>] (для водных растворов иногда имеет смысл задать <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-15\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fuel.2019.02.026">Li and Li, 2019</a>]). Для систем с высоким содержанием диоксида углерода рекомендуется <span class="math notranslate nohighlight">\(\epsilon = 0.05\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2019.06.002">Imai at al, 2019</a>].</p>
+</section>
+<section id="pvt-sec-stability-pt-ss-examples">
+<span id="id6"></span><h4>Примеры<a class="headerlink" href="#pvt-sec-stability-pt-ss-examples" title="Link to this heading">#</a></h4>
 <p>Рассмотрим реализацию данного алгоритма для приведенных выше примеров.</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
@@ -863,74 +956,51 @@ D \left( \mathbf{r} \right)
 <span class="n">eps2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Рассчитаем матрицу начальных приближений <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:</p>
+<p class="sd-card-text">Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ki</span> <span class="o">=</span> <span class="n">Pci</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">5.3727</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">wi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">Tci</span> <span class="o">/</span> <span class="n">T</span><span class="p">))</span> <span class="o">/</span> <span class="n">P</span> <span class="c1"># Wilson&#39;s correlation</span>
 <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">ki</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">ki</span><span class="p">])</span> <span class="c1"># Matrix of initial estimates</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-
-<span class="k">def</span> <span class="nf">condit</span><span class="p">(</span>
-    <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-    <span class="n">Niter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="n">k</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">lmbd</span> <span class="o">=</span> <span class="n">carry</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">condit_ss</span><span class="p">(</span><span class="n">carry</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">Niter</span><span class="p">):</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
-
-<span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
-    <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">hi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">yi</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">plnphi</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
-    <span class="n">k</span><span class="p">,</span> <span class="n">ki_k</span><span class="p">,</span> <span class="n">gi_k</span><span class="p">,</span> <span class="n">lmbd_k</span> <span class="o">=</span> <span class="n">carry</span>
-    <span class="n">dlnki</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbd_k</span> <span class="o">*</span> <span class="n">gi_k</span>
-    <span class="n">max_dlnki</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dlnki</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">max_dlnki</span> <span class="o">&gt;</span> <span class="mf">6.</span><span class="p">:</span>
-        <span class="n">relax</span> <span class="o">=</span> <span class="mf">6.</span> <span class="o">/</span> <span class="n">max_dlnki</span>
-        <span class="n">dlnki</span> <span class="o">*=</span> <span class="n">relax</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">relax</span> <span class="o">=</span> <span class="mf">1.</span>
-    <span class="n">ki_kp1</span> <span class="o">=</span> <span class="n">ki_k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">dlnki</span><span class="p">)</span>
+<p class="sd-card-text">Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update_ss</span><span class="p">(</span><span class="n">carry</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="p">):</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">ki_kp1</span> <span class="o">=</span> <span class="n">ki_k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">gi_k</span><span class="p">)</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki_kp1</span> <span class="o">*</span> <span class="n">yi</span>
     <span class="n">gi_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">plnphi</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
-    <span class="n">lmbd_kp1</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbd_k</span> <span class="o">*</span> <span class="n">relax</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dlnki</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gi_k</span><span class="p">)</span> <span class="o">/</span> <span class="n">dlnki</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gi_kp1</span> <span class="o">-</span> <span class="n">gi_k</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">lmbd_kp1</span> <span class="o">&gt;</span> <span class="mf">30.</span><span class="p">:</span>
-        <span class="n">lmbd_kp1</span> <span class="o">=</span> <span class="mf">30.</span>
-    <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ki_kp1</span><span class="p">,</span> <span class="n">gi_kp1</span><span class="p">,</span> <span class="n">lmbd_kp1</span>
+    <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ki_kp1</span><span class="p">,</span> <span class="n">gi_kp1</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Выполним расчет коэффициентов летучести для начального компонентного состава:</p>
+<p class="sd-card-text">Выполним расчет коэффициентов летучести для начального компонентного состава. Для этого будем использовать метод <code class="docutils literal notranslate"><span class="pre">getPT_lnphii</span></code> инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью <code class="docutils literal notranslate"><span class="pre">(Nc,)</span></code>) и возвращающий массив логарифмов коэффициентов летучести компонента такой же размерности:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
-<span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
-<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit_ss</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ss</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет функции TPD для различных начальных приближений:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
     <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
-    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
         <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
-    <span class="n">c</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
     <span class="n">TPD</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;For the initial guess #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">solution: </span><span class="si">{</span><span class="n">ni</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">):</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
@@ -942,7 +1012,7 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 2.2979639293154093e-09<br>	number of iterations: 4<br>	solution: [0.15 0.85]<br>	TPD: -2.1990009810648733e-10<br>For the initial guess #1:<br>	tolerance of equations: 1.1109749266420846e-08<br>	number of iterations: 4<br>	solution: [0.15 0.85]<br>	TPD: -8.832841121282723e-10<br>The system is stable: True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 4.109895458467242e-08<br>	number of iterations: 4<br>	k-values: [0.99999996 1.00000001]<br>	TPD: 3.819167204710612e-14<br>For the initial guess #1:<br>	tolerance of equations: 1.0848435916887825e-07<br>	number of iterations: 4<br>	k-values: [1.00000011 0.99999998]<br>	TPD: 2.6478819137313487e-13<br>The system is stable: True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -968,7 +1038,7 @@ D \left( \mathbf{r} \right)
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Рассчитаем матрицу начальных приближений <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>:</p>
+<p class="sd-card-text">Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ki</span> <span class="o">=</span> <span class="n">Pci</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">5.3727</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">wi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">Tci</span> <span class="o">/</span> <span class="n">T</span><span class="p">))</span> <span class="o">/</span> <span class="n">P</span> <span class="c1"># Wilson&#39;s correlation</span>
 <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">ki</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">ki</span><span class="p">])</span> <span class="c1"># Matrix of initial estimates</span>
 </pre></div>
@@ -978,24 +1048,24 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
-<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit_ss</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ss</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Выполним расчет функции TPD для различных начальных приближений:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
     <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
-    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
         <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
-    <span class="n">c</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
     <span class="n">TPD</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;For the initial guess #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">solution: </span><span class="si">{</span><span class="n">ni</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">):</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1007,7 +1077,7 @@ D \left( \mathbf{r} \right)
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 8.158547980652592e-08<br>	number of iterations: 6<br>	solution: [0.80316797 0.21351219]<br>	TPD: -0.01654257858678946<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 1.560751726609667e-07<br>	number of iterations: 8<br>	k-values: [0.89240885 2.13512244]<br>	TPD: -0.016542621413642863<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1019,11 +1089,417 @@ D \left( \mathbf{r} \right)
 </div>
 </div><p class="sd-card-text">Реализованный алгоритм проверки стабильности уже для первого начального приближения нашел решение системы нелинейных уравнений, характеризующееся отрицательным значением функции TPD, следовательно, однофазное состояние не является стабильным.</p>
 </div>
-</details><p>Представленный выше алгоритм можно использовать для проверки стабильности однофазного состояния системы. Для проверки стабильности многофазной системы также можно использовать представленный выше алгоритм: для этого достаточно проверить стабильность любой из фаз.</p>
-<p>Таким образом, в этом подразделе были выведен критерий стабильности для PT-термодинамики, а также представлен один из численных алгоритмов проверки стабильности фазового состояния. Пример реализации данного алгоритма представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">Следующие разделы</span></a> будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).</p>
+</details><p>Важно отметить, что метод последовательных подстановок может характеризоваться малой скоростью сходимости, в особенности для термобарических условий вблизи границы двухфазной области. Проиллюстрируем данное свойство следующим примером.</p>
+<!-- TODO: добавить анализ сходимости метода SS. См. 10.1016/0378-3812(82)85001-2, 10.1021/ie00042a032, 10.1002/aic.690210314 -->
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси следующего мольного состава:</p>
+<div class="pst-scrollable-table-container"><table class="table" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Компонент</p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{CH_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_2 H_6}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_3 H_8}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{n \mbox{-} C_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_{5+}}\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>Мольная доля</p></td>
+<td class="text-center"><p>0.7167</p></td>
+<td class="text-center"><p>0.0895</p></td>
+<td class="text-center"><p>0.0917</p></td>
+<td class="text-center"><p>0.0448</p></td>
+<td class="text-center"><p>0.0573</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<br>
+<p>Необходимо определить является ли однофазное состояние стабильным при давлении <span class="math notranslate nohighlight">\(17 \; МПа\)</span> и температуре <span class="math notranslate nohighlight">\(68 \; ^{\circ} C\)</span>.</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">17e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7167</span><span class="p">,</span> <span class="mf">0.0895</span><span class="p">,</span> <span class="mf">0.0917</span><span class="p">,</span> <span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.0573</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Pci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.599</span><span class="p">,</span> <span class="mf">4.872</span><span class="p">,</span> <span class="mf">4.248</span><span class="p">,</span> <span class="mf">3.796</span><span class="p">,</span> <span class="mf">2.398</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="c1"># Critical pressures [Pa]</span>
+<span class="n">Tci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">190.56</span><span class="p">,</span> <span class="mf">305.32</span><span class="p">,</span> <span class="mf">369.83</span><span class="p">,</span> <span class="mf">425.12</span><span class="p">,</span> <span class="mf">551.02</span><span class="p">])</span> <span class="c1"># Critical temperatures [K]</span>
+<span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.012</span><span class="p">,</span> <span class="mf">0.100</span><span class="p">,</span> <span class="mf">0.152</span><span class="p">,</span> <span class="mf">0.200</span><span class="p">,</span> <span class="mf">0.414</span><span class="p">])</span> <span class="c1"># Acentric factors</span>
+<span class="n">mwi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.016043</span><span class="p">,</span> <span class="mf">0.03007</span><span class="p">,</span> <span class="mf">0.044097</span><span class="p">,</span> <span class="mf">0.058123</span><span class="p">,</span> <span class="mf">0.120</span><span class="p">])</span> <span class="c1"># Molar mass [kg/gmole]</span>
+<span class="n">vsi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.1595</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1134</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0863</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0675</span><span class="p">,</span> <span class="mf">0.05661</span><span class="p">])</span> <span class="c1"># Volume shift parameters</span>
+<span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">0.002689</span><span class="p">,</span>
+    <span class="mf">0.008537</span><span class="p">,</span> <span class="mf">0.001662</span><span class="p">,</span>
+    <span class="mf">0.014748</span><span class="p">,</span> <span class="mf">0.004914</span><span class="p">,</span> <span class="mf">0.000866</span><span class="p">,</span>
+    <span class="mf">0.039265</span><span class="p">,</span> <span class="mf">0.021924</span><span class="p">,</span> <span class="mf">0.011676</span><span class="p">,</span> <span class="mf">0.006228</span><span class="p">,</span>
+<span class="p">])</span> <span class="c1"># Binary interaction parameters</span>
+<span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Рассчитаем матрицу начальных приближений <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ki</span> <span class="o">=</span> <span class="n">Pci</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">5.3727</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">wi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">Tci</span> <span class="o">/</span> <span class="n">T</span><span class="p">))</span> <span class="o">/</span> <span class="n">P</span> <span class="c1"># Wilson&#39;s correlation</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">ki</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">ki</span><span class="p">])</span> <span class="c1"># Matrix of initial estimates</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Выполним расчет коэффициентов летучести для начального компонентного состава:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>, численную погрешность расчета <span class="math notranslate nohighlight">\(\epsilon_2\)</span>. Для данного примера увеличим максимальное число итераций:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Niter</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># Number of iterations</span>
+<span class="n">eps1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
+<span class="n">eps2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit_ss</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ss</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Выполним расчет функции TPD для различных начальных приближений:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
+    <span class="n">gi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">ni</span><span class="o">/</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="n">hi</span>
+    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
+        <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
+    <span class="n">TPD</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;For the initial guess #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">):</span>
+        <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">break</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="output text_html">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 9.693056829498416e-07<br>	number of iterations: 186<br>	k-values: [1.00000264 0.99999854 0.99999547 0.99999243 0.99998243]<br>	TPD: 6.759037773920237e-13<br>For the initial guess #1:<br>	tolerance of equations: 9.116310679873821e-07<br>	number of iterations: 72<br>	k-values: [0.79433225 1.03491285 1.25365306 1.51437832 2.73407118]<br>	TPD: -0.0013880742861725052<br>The system is stable: False
+</pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <title>Copy to clipboard</title>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+  <rect x="8" y="8" width="12" height="12" rx="2"></rect>
+  <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path>
+</svg>
+    </button></div>
+</div>
+</div><p class="sd-card-text">По результатам расчетов метод последовательных подстановок для первого начального приближения сошелся к тривиальному решению за 186 итераций, а для следующего начального приближения нашел решение, характеризующееся отрицательным значением функции TPD, за 72 итерации. Таким образом, рассматриваемое однофазное состояние не является стабильным.</p>
+</div>
+</details><!-- TODO: показать на примере увеличение количества итераций метода последовательных подстановок вблизи критической точки -->
+<p>Существует также множество работ, посвященных разработке алгоритмов, направленных на оптимизацию метода последовательных подстановок. В работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено использовать метод GDEM. В работах [<a class="reference external" href="https://doi.org/10.2118/12242-MS">Nghiem, 1983</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>] авторы рассмотрели различные подходы к оптимизации метода последовательных подстановок путем введения длины шага итерации и его расчета на основе результатов предыдущей итерации. Примеры реализации некоторых из алгоритмов представлены <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>.</p>
+</section>
+</section>
+<section id="pvt-sec-stability-pt-newton">
+<span id="id7"></span><h3>Метод минимизации функции<a class="headerlink" href="#pvt-sec-stability-pt-newton" title="Link to this heading">#</a></h3>
+<p>К решению задачи определения стабильности некоторой системы можно подойти с точки зрения минимизации функции TPD:</p>
+<div class="math notranslate nohighlight">
+\[ \bar{D} \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i \right). \]</div>
+<p>Если использовать в качестве основных переменных мольные доли компонентов для произвольного состава <span class="math notranslate nohighlight">\(y_i, \, i = 1 \, \ldots \, N_c,\)</span>, то такая задача будет являться <em>задачей условной минимизации или задачей минимизации с ограничениями (constrained minimization)</em>. В качестве условий будут выступать следующие соотношения:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+&amp; y_i &gt; 0, \; i = 1 \, \ldots \, N_c, \\
+&amp; \sum_{i=1}^{N_c} y_i = 1.
+\end{align} \end{split}\]</div>
+<p>Решение задачи условной минимизации зачастую сложнее <em>безусловной (unconstrained minimization)</em>. В связи с этим имеет смысл исключить второе условие из рассмотрения путем замены основных переменных, например, на уже упомянутые ранее количества вещества компонентов в произвольной (мнимой) фазе:</p>
+<div class="math notranslate nohighlight">
+\[ Y_i = y_i \mathrm{e}^{-\bar{K}}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>В связи с изложенным выше при использовании <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> в качестве основных переменных положение стационарных точек функции TPD будет определяться следующей системой нелинейных уравнений:</p>
+<div class="math notranslate nohighlight">
+\[ g_i = \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>При этом в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено использовать вместо функции TPD ее модификацию:</p>
+<div class="math notranslate nohighlight">
+\[ \bar{D}^* \left( \mathbf{Y} \right) = 1 + \sum_{i=1}^{N_c} Y_i \left( \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i - 1 \right). \]</div>
+<p>Докажем, что замена функции <span class="math notranslate nohighlight">\(\bar{D} \left( \mathbf{y} \right)\)</span> на модифицированную <span class="math notranslate nohighlight">\(\bar{D}^* \left( \mathbf{Y} \right)\)</span> является допустимой для рассматриваемой задачи проверки стабильности фазового состояния.</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Используя <a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html"><span class="std std-doc">уравнение Гиббса-Дюгема</span></a> при постоянных (фиксированных) давлении и температуре, получим:</p>
+<div class="math notranslate nohighlight">
+\[ \sum_{i=1}^{N_c} n_i d \mu_i = 0. \]</div>
+<p>С учетом <a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">соотношения</span></a> между дифференциалом химического потенциала <span class="math notranslate nohighlight">\(i\)</span>-го компонента и дифференциалом логарифма его летучести данное равенство преобразуется следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\sum_{i=1}^{N_c} n_i RT d \ln f_i = 0, \\
+\sum_{i=1}^{N_c} n_i d \ln f_i = 0.
+\end{align} \end{split}\]</div>
+<p>Разделив левую и правую части на <span class="math notranslate nohighlight">\(\partial n_j, \, j = 1 \, \ldots \, N_c,\)</span>, получим:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+&amp; \sum_{i=1}^{N_c} n_i \frac{\partial \ln f_i}{\partial n_j} = 0, \\
+&amp; j = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>Далее воспользуемся соотношением между частными производными логарифма летучести и логарифма коэффициента летучести, полученным <a class="reference internal" href="#../2-EOS/EOS/Appendix-A-PD.md"><span class="xref myst">ранее</span></a>:</p>
+<div class="math notranslate nohighlight">
+\[ \frac{\partial \ln f_i}{\partial n_j}  = \frac{\partial \ln \phi_i}{\partial n_j} + \frac{\delta_{ij}}{n_i} - \frac{1}{n}. \]</div>
+<p>Подставив данное выражение в уравнение Гиббса-Дюгема и выполнив некоторые преобразования, получим:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+&amp; \sum_{i=1}^{N_c} n_i \frac{\partial \ln \phi_i}{\partial n_j} = 0, \\
+&amp; j = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+</div>
+</aside>
+<div class="proof admonition">
+<p class="admonition-title">Доказательство</p>
+<p>В рамках решения задачи стабильности многокомпонентной системы, сводимой к решению задачи поиска локальных минимумов функции TPD и проверки ее значений в них, замена функции TPD возможна при условии одинаковости положения (координат) стационарных точек и знака функции в них. Для проверки соответствия положения стационарных точек модифицированной функции TPD получим систему уравнений, характеризующую их координаты, которая определяется равенством нулю частных производных функции по основным переменным:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\frac{\partial \bar{D}^*}{\partial Y_j}
+&amp;= \frac{\partial}{\partial Y_j} \left( 1 + \sum_{i=1}^{N_c} Y_i \left( \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i - 1 \right) \right) \\
+&amp;= \sum_{i=1}^{N_c} \frac{\partial Y_i}{\partial Y_j} \left( \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i - 1 \right) + \sum_{i=1}^{N_c} Y_i \left( \frac{\partial \ln Y_i}{\partial Y_j} + \frac{\partial \ln \phi_i \left( \mathbf{y} \right)}{\partial Y_j} \right) \\
+&amp;= \sum_{i=1}^{N_c} \delta_{ij} \left( \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i - 1 \right) + \sum_{i=1}^{N_c} Y_i \left( \frac{1}{Y_i} \delta_{ij} + \frac{\partial \ln \phi_i \left( \mathbf{y} \right)}{\partial Y_j} \right) \\
+&amp;= \ln Y_j + \ln \phi_j \left( \mathbf{y} \right) - h_j - 1 + \sum_{i=1}^{N_c} \delta_{ij} + \sum_{i=1}^{N_c} Y_i \frac{\partial \ln \phi_i \left( \mathbf{y} \right)}{\partial Y_j} \\
+&amp;= \ln Y_j + \ln \phi_j \left( \mathbf{y} \right) - h_j, \; j = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>При выводе данного выражения использовалось <a class="reference internal" href="../1-TD/TD-12-GibbsDuhemEquation.html"><span class="std std-doc">уравнение Гиббса-Дюгема</span></a>.</p>
+<p>Таким образом, положение стационарных точек исходной и модифицированной функций TPD определяется одной и той же системой нелинейных уравнений. Получим выражение для модифицированной функции TPD в стационарных точках, в которых значения частных производных функции по основным переменным равны нулю:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\bar{D}^*_{sp}
+&amp;= 1 + \sum_{i=1}^{N_c} Y_i \left( \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i - 1 \right) \\
+&amp;= 1 - \sum_{i=1}^{N_c} Y_i + \sum_{i=1}^{N_c} Y_i \left( \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i \right) \\
+&amp;= 1 - \sum_{i=1}^{N_c} Y_i \\
+&amp;= 1 - \exp \left( -\bar{K} \right) \\
+&amp;= 1 - \exp \left( -\bar{D}_{sp} \right).
+\end{align} \end{split}\]</div>
+<p>Таким образом, при <span class="math notranslate nohighlight">\(\bar{D}_{sp} \geq 0\)</span> значения модифицированной функции TPD в стационарных точках также <span class="math notranslate nohighlight">\(D^*_{sp} \geq 0\)</span>. Если же <span class="math notranslate nohighlight">\(\bar{D}_{sp} &lt; 0\)</span>, то и <span class="math notranslate nohighlight">\(D^*_{sp} &lt; 0\)</span>. То есть модифицированная функция TPD имеет идентичные положения стационарных точек, как и исходная функция TPD, а также сохраняет знак в этих точках. Следовательно, в рамках задачи определения стабильности многокомпонентной системы замена функции TPD <span class="math notranslate nohighlight">\(\bar{D} \left( \mathbf{Y} \right)\)</span> на модифицированную <span class="math notranslate nohighlight">\(\bar{D}^* \left( \mathbf{Y} \right)\)</span> допустима.</p>
+</div>
+<p>Задачу минимизации функции TPD можно решать, используя метод Ньютона, являющийся алгоритмом второго порядка, то есть характеризующийся более быстрой сходимостью, по сравнению с рассмотренным ранее методом последовательных подстановок, относящимся к алгоритмам первого порядка. Для использования метода Ньютона необходимо получить аналитические выражения для вторых частных производных модифицированной функции TPD по основным переменным, формирующих матрицу гессиана <span class="math notranslate nohighlight">\(\mathbf{H} \in {\rm I\!R}^{N_c \times N_c}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+H_{ij}
+&amp;= \frac{\partial^2 \bar{D}^*}{\partial Y_i \partial Y_j} \\
+&amp;= \frac{\partial}{\partial Y_j} \left( \frac{\partial \bar{D}^*}{\partial Y_i} \right) \\
+&amp;= \frac{\partial}{\partial Y_j} \left( \ln Y_i + \ln \phi_i - h_i \right) \\
+&amp;= \frac{\delta_{ij}}{Y_i} + \frac{\partial \ln \phi_i}{\partial Y_j}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>Аналитические выражения частных производных логарифма коэффициента летучести с использованием уравнений состояния были получены <a class="reference internal" href="#../2-EOS/EOS/Appendix-A-PD.md"><span class="xref myst">ранее</span></a>.</p>
+<p>При этом задача минимизации модифицированной функции <span class="math notranslate nohighlight">\(\bar{D}^* \left( \mathbf{Y} \right)\)</span> по-прежнему является условной, поскольку должны рассматриваться значения вектора <span class="math notranslate nohighlight">\(\mathbf{Y}\)</span> имеющие физический смысл, то есть <span class="math notranslate nohighlight">\(Y_i &gt; 0, \, i = 1 \, \ldots \, N_c\)</span>. Для исключения данного условия автором работы [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено ввести следующую замену основных переменных:</p>
+<div class="math notranslate nohighlight">
+\[ \alpha_i = 2 \sqrt{Y_i}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>В этом случае значения вектора <span class="math notranslate nohighlight">\(\mathbf{Y}\)</span> всегда будут неотрицательными, поскольку <span class="math notranslate nohighlight">\(Y_i = \alpha_i^2 \, / \, 4, \, i = 1 \, \ldots \, N_c\)</span>. При использовании <span class="math notranslate nohighlight">\(\alpha_i, \, i = 1 \, \ldots \, N_c,\)</span> в качестве основных переменных положения стационарных точек модифицированной функции TPD будут определяться равенством нулю частных производных функции по основным переменным:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\frac{\partial \bar{D}^*}{\partial \alpha_j}
+&amp;= \frac{\partial \bar{D}^*}{\partial Y_j} \frac{\partial Y_j}{\partial \alpha_j} \\
+&amp;= \left( \ln Y_j + \ln \phi_j \left( \mathbf{y} \right) - h_j \right) \frac{\partial}{\partial \alpha_j} \left( \frac{\alpha_j^2}{4} \right) \\
+&amp;= \left( \ln Y_j + \ln \phi_j \left( \mathbf{y} \right) - h_j \right) \frac{\alpha_j}{2} \\
+&amp;= \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j \left( \mathbf{y} \right) - h_j \right), \; j = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>При этом изменится и аналитическое выражение элемента матрицы гессиана при использовании <span class="math notranslate nohighlight">\(\alpha_i, \, i = 1 \, \ldots \, N_c,\)</span> в качестве основных переменных:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \begin{align}
+\frac{\partial^2 \bar{D}^*}{\partial \alpha_j \partial \alpha_k}
+&amp;= \frac{\partial \bar{D}^*}{\partial \alpha_k} \left( \frac{\partial \bar{D}^*}{\partial \alpha_j} \right) \\
+&amp;= \frac{\partial \bar{D}^*}{\partial \alpha_k} \left( \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j - h_j \right) \right) \\
+&amp;= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial \sqrt{Y_j}}{\partial \alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial \alpha_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \\
+&amp;= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{1}{2 Y_j} \frac{\partial Y_j}{\alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial Y_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial Y_k}{\partial \alpha_k} \\
+&amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \sqrt{Y_j} \left( \frac{\delta_{jk}}{Y_j} + \frac{\partial \ln \phi_j}{\partial Y_k} \right) \\
+&amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \frac{\sqrt{Y_j Y_k} \delta_{jk}}{Y_j} + \sqrt{Y_j Y_k} \frac{\partial \ln \phi_j}{\partial Y_k} \\
+&amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \delta_{jk} + \sqrt{Y_j Y_k} \frac{\partial \ln \phi_j}{\partial Y_k}, \; j = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_c.
+\end{align} \end{split}\]</div>
+<p>В процессе получения данного выражения было использовано следующее соотношение: <span class="math notranslate nohighlight">\(\sqrt{Y_j Y_k} \delta_{jk} = Y_j \delta_{jk}, \, j = 1 \, \ldots \, N_c, \, k = 1 \, \ldots \, N_c\)</span>. То есть в результате поэлементного произведения некоторой матрицы с единичной матрицей получится диагональная матрица с элементами, соответствующими главной диагонали умножаемой матрицы.</p>
+<p>При использовании метода Ньютона для решения задачи оптимизации обновление основных переменных <span class="math notranslate nohighlight">\(\alpha_i, \, i = 1 \, \ldots \, N_c,\)</span> на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации осуществляется с использованием следующего выражения:</p>
+<div class="math notranslate nohighlight">
+\[ \boldsymbol{\alpha}^{k+1} = \boldsymbol{\alpha}^{k} + \Delta \boldsymbol{\alpha}^{k}, \]</div>
+<p>где вектор <span class="math notranslate nohighlight">\(\Delta \boldsymbol{\alpha}^{k} \in {\rm I\!R}^{N_c}\)</span> определяется при решении системы линейных уравнений:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{H}^{k} \Delta \boldsymbol{\alpha}^{k} = - \mathbf{g}^{k}. \]</div>
+<p>Таким образом, алгоритм определения стабильности фазового состояния с использованием метода Ньютона можно представить следующим образом:</p>
+<div class="algorithm admonition">
+<p class="admonition-title">Алгоритм. Анализ стабильности с использованием метода Ньютона</p>
+<p><strong>Дано:</strong> Вектор компонентного состава исследуемой системы <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span>; термобарические условия <span class="math notranslate nohighlight">\(P\)</span> и <span class="math notranslate nohighlight">\(T\)</span>; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>; численная погрешность расчета <span class="math notranslate nohighlight">\(0 &lt; \epsilon_2 \leq 10^{-4}\)</span>.</p>
+<p><strong>Определить:</strong> Является ли однофазное состояние системы с компонентным составом <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> при давлении <span class="math notranslate nohighlight">\(P\)</span> и температуре <span class="math notranslate nohighlight">\(T\)</span> стабильным.</p>
+<p><strong>Псевдокод:</strong><br />
+<strong>def</strong> <span class="math notranslate nohighlight">\(\phi \left( \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \boldsymbol{\varphi} \in {\rm I\!R}^{N_c}, \, \mathbf{\Phi} \in {\rm I\!R}^{N_c \times N_c}\)</span> <span class="multilinecomment"># Функция, возвращающая вектор коэффициентов летучести и матрицу их частных производных по количеству вещества компонентов</span><br />
+<span class="math notranslate nohighlight">\(\mathbf{K} := \left\{ \mathbf{k}_0, \, \mathbf{k}_1, \, \ldots, \, \mathbf{k}_N \right\}\)</span><br />
+<span class="math notranslate nohighlight">\(\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}\)</span><br />
+<strong>for</strong> <span class="math notranslate nohighlight">\(i := 1\)</span> <strong>to</strong> <span class="math notranslate nohighlight">\(N\)</span> <strong>do</strong><br />
+ <span class="math notranslate nohighlight">\(\mathbf{k} := \mathbf{K}\left[ i \right]\)</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{n} := \mathbf{k} \cdot \mathbf{z}\)</span><br />
+ <span class="math notranslate nohighlight">\(\boldsymbol{\alpha} := 2 \sqrt{\mathbf{n}}\)</span> <span class="comment"># Вектор основных переменных</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i\)</span><br />
+ <span class="math notranslate nohighlight">\(\boldsymbol{\varphi}, \, \mathbf{\Phi} := \phi \left( \mathbf{y} \right)\)</span> <span class="comment"># Расчет вектора коэффициентов летучести и матрицы их частных производных</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)\)</span> <span class="comment"># Вектор невязок</span><br />
+ <span class="math notranslate nohighlight">\(c := 1\)</span><br />
+ <strong>while</strong> <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2 &gt; \epsilon_1\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(c &lt; N_{iter}\)</span> <strong>do</strong><br />
+  <span class="math notranslate nohighlight">\(\mathbf{H} := \mathrm{diag} \left( {\frac{1}{2} \mathbf{g} }\right) + \mathbf{I} + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}\)</span> <span class="comment"># Гессиан</span><br />
+  <span class="math notranslate nohighlight">\(\Delta \boldsymbol{\alpha} := -\mathbf{H}^{-1} \mathbf{g}\)</span> <span class="comment"># Вектор изменения основных переменных</span><br />
+  <span class="math notranslate nohighlight">\(\boldsymbol{\alpha} := \boldsymbol{\alpha} + \Delta \boldsymbol{\alpha}\)</span> <span class="comment"># Обновление вектора основных переменных</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{n} := \boldsymbol{\alpha} \cdot \boldsymbol{\alpha} \, / \, 4\)</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i\)</span><br />
+  <span class="math notranslate nohighlight">\(\boldsymbol{\varphi}, \, \mathbf{\Phi} := \phi \left( \mathbf{y} \right)\)</span> <span class="comment"># Вектор коэффициентов летучести и матрица их частных производных</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)\)</span> <span class="comment"># Вектор невязок</span><br />
+  <span class="math notranslate nohighlight">\(c := c + 1\)</span><br />
+ <strong>end while</strong><br />
+ <span class="math notranslate nohighlight">\(TPD := - \ln \sum_{i=1}^{N_c} n_i\)</span><br />
+ <strong>if</strong> <span class="math notranslate nohighlight">\(TPD &lt; -\epsilon_2\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(c &lt; N_{iter}\)</span> <strong>then</strong><br />
+  <span class="math notranslate nohighlight">\(is\_stable := \mathrm{False}\)</span><br />
+  <strong>exit for</strong><br />
+ <strong>else</strong><br />
+  <strong>continue</strong><br />
+ <strong>end if</strong><br />
+<strong>else</strong><br />
+ <span class="math notranslate nohighlight">\(is\_stable := \mathrm{True}\)</span><br />
+<strong>end for</strong></p>
+</div>
+<section id="pvt-sec-stability-pt-newton-init">
+<span id="id8"></span><h4>Начальные приближения<a class="headerlink" href="#pvt-sec-stability-pt-newton-init" title="Link to this heading">#</a></h4>
+<p>Начальные значения вектора <span class="math notranslate nohighlight">\(\alpha_i, \, i = 1 \, \ldots \, N_c,\)</span> при использовании метода Ньютона для минимизации функции TPD могут быть получены аналогично способу, рассмотренному <a class="reference internal" href="#pvt-sec-stability-pt-ss-init"><span class="std std-ref">ранее</span></a> для метода последовательных подстановок. Однако поскольку метод Ньютона является алгоритмом второго порядка, то <a class="reference external" href="https://en.wikipedia.org/wiki/Fixed-point_iteration#Iterative_methods">обычно является менее стабильным</a> по сравнению с алгоритмами первого порядка для не полностью выпуклых функций. В связи с этим начальные приближения вектора основных переменных для метода Ньютона, рассчитанные с использованием корреляции Уилсона или другим способом, могут быть уточнены в ходе нескольких итераций метода последовательных подстановок. При этом, например, в работе [<a class="reference external" href="https://doi.org/10.1002/aic.10908">Hoteit and Firoozabadi, 2006</a>] количество итераций метода последовательных подстановок перед переключением на метод Ньютона для анализа стабильности определялось следующим условием:</p>
+<div class="math notranslate nohighlight">
+\[ \lVert \mathbf{g} \rVert_2 &gt; \epsilon_{ssi}, \]</div>
+<p>где <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2\)</span> – длина вектора невязки, а <span class="math notranslate nohighlight">\(\epsilon_{ssi} = 10^{-2}\)</span>.</p>
+</section>
+<section id="pvt-sec-stability-pt-newton-examples">
+<span id="id9"></span><h4>Примеры<a class="headerlink" href="#pvt-sec-stability-pt-newton-examples" title="Link to this heading">#</a></h4>
+<p>Рассмотрим применение метода Ньютона для определения стабильности однофазного состояния следующей системы:</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси следующего мольного состава:</p>
+<div class="pst-scrollable-table-container"><table class="table" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Компонент</p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{CH_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_2 H_6}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_3 H_8}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{n \mbox{-} C_4}\)</span></p></th>
+<th class="head text-center"><p><span class="math notranslate nohighlight">\(\mathrm{C_{5+}}\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>Мольная доля</p></td>
+<td class="text-center"><p>0.7167</p></td>
+<td class="text-center"><p>0.0895</p></td>
+<td class="text-center"><p>0.0917</p></td>
+<td class="text-center"><p>0.0448</p></td>
+<td class="text-center"><p>0.0573</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<br>
+<p>Необходимо определить является ли однофазное состояние стабильным при давлении <span class="math notranslate nohighlight">\(17 \; МПа\)</span> и температуре <span class="math notranslate nohighlight">\(68 \; ^{\circ} C\)</span>.</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">17e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7167</span><span class="p">,</span> <span class="mf">0.0895</span><span class="p">,</span> <span class="mf">0.0917</span><span class="p">,</span> <span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.0573</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущего примера. Начальные приближения рассчитаем по корреляции Уилсона:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ki</span> <span class="o">=</span> <span class="n">Pci</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">5.3727</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">wi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">Tci</span> <span class="o">/</span> <span class="n">T</span><span class="p">))</span> <span class="o">/</span> <span class="n">P</span> <span class="c1"># Wilson&#39;s correlation</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">ki</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">ki</span><span class="p">])</span> <span class="c1"># Matrix of initial estimates</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Выполним расчет коэффициентов летучести для начального компонентного состава:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>, численную погрешность расчета <span class="math notranslate nohighlight">\(\epsilon_2\)</span>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Niter</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># Number of iterations</span>
+<span class="n">eps1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
+<span class="n">eps2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">condit_newt</span><span class="p">(</span><span class="n">carry</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">Niter</span><span class="p">):</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">alphai</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Вектор изменения основных переменных будет определяться путем решения системы линейных уравнений с использованием <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html"><code class="docutils literal notranslate"><span class="pre">numpy.linalg.solve</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update_newt</span><span class="p">(</span><span class="n">carry</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="p">):</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">alphai_k</span><span class="p">,</span> <span class="n">gi_k</span><span class="p">,</span> <span class="n">H_k</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">dalphai_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span> <span class="o">-</span><span class="n">gi_k</span><span class="p">)</span>
+    <span class="n">alphai_kp1</span> <span class="o">=</span> <span class="n">alphai_k</span> <span class="o">+</span> <span class="n">dalphai_k</span>
+    <span class="n">sqrtni</span> <span class="o">=</span> <span class="n">alphai_kp1</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="n">sqrtni</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">xi</span> <span class="o">=</span> <span class="n">ni</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">lnphixi</span><span class="p">,</span> <span class="n">Zx</span><span class="p">,</span> <span class="n">dlnphixidnj</span> <span class="o">=</span> <span class="n">plnphi</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">xi</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">gi_kp1</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphixi</span> <span class="o">-</span> <span class="n">hi</span><span class="p">)</span>
+    <span class="n">H_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">gi_kp1</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sqrtni</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">sqrtni</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlnphixidnj</span>
+    <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">alphai_kp1</span><span class="p">,</span> <span class="n">gi_kp1</span><span class="p">,</span> <span class="n">H_kp1</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>. Для расчета коэффициентов летучестей и их частных производных по количеству вещества компонентов будем использовать метод <code class="docutils literal notranslate"><span class="pre">getPT_lnphii_Z_dnj</span></code> инициализированного класса с уравнением состояния, принимающий в качестве аргументов давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью <code class="docutils literal notranslate"><span class="pre">(Nc,)</span></code>) и возвращающий кортеж с логарифмами коэффициентов летучести компонентов в виде одномерного массива такой же размерности, коэффициентом сверхсжимаемости заданного компонентного состава, а также с матрицей размерностью <code class="docutils literal notranslate"><span class="pre">(Nc,</span> <span class="pre">Nc)</span></code>, состоящей из значений частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit_newt</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">Niter</span><span class="o">=</span><span class="n">Niter</span><span class="p">)</span>
+<span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_newt</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sd-card-text">Выполним расчет функции TPD для различных начальных приближений:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">ki</span> <span class="o">*</span> <span class="n">yi</span>
+    <span class="n">sqrtni</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span>
+    <span class="n">alphai</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">sqrtni</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">xi</span> <span class="o">=</span> <span class="n">ni</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">lnphixi</span><span class="p">,</span> <span class="n">Zx</span><span class="p">,</span> <span class="n">dlnphixidnj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">gi</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphixi</span> <span class="o">-</span> <span class="n">hi</span><span class="p">)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">gi</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sqrtni</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">sqrtni</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlnphixidnj</span>
+    <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">alphai</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
+        <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">alphai</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">carry</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">alphai</span> <span class="o">*</span> <span class="n">alphai</span> <span class="o">*</span> <span class="mf">0.25</span>
+    <span class="n">TPD</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;For the initial guess #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ni</span><span class="o">/</span><span class="n">yi</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">Niter</span><span class="p">):</span>
+        <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">break</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The system is stable: </span><span class="si">{</span><span class="n">is_stable</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="output text_html">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 5.541731326658373e-08<br>	number of iterations: 10<br>	k-values: [1.00000053 0.99999975 0.99999916 0.99999856 0.99999652]<br>	TPD: -1.6154392581926394e-08<br>For the initial guess #1:<br>	tolerance of equations: 1.7727103634236383e-10<br>	number of iterations: 14<br>	k-values: [0.79433382 1.03491309 1.25365183 1.51437503 2.73405569]<br>	TPD: -0.0013880743412057563<br>The system is stable: False
+</pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <title>Copy to clipboard</title>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+  <rect x="8" y="8" width="12" height="12" rx="2"></rect>
+  <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path>
+</svg>
+    </button></div>
+</div>
+</div><p class="sd-card-text">По результатам расчетов можно отметить, что подход к определению стабильности фазового состояния системы, основанный на минимизации функции TPD с использованием метода Ньютона, позволяет существенно снизить количество итераций по сравнению методом последовательных подстановок.</p>
+</div>
+</details><p>В данном примере начальные приближения рассчитывались с использованием корреляции Уилсона. Пример реализации алгоритма определения стабильности фазового состояния системы, основанного на применении метода последовательных подстановок для уточнения начальных приближений, представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>.</p>
+<p>Кроме того, важно отметить, что метод Ньютона для оптимизации функции нескольких переменных <a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html"><span class="std std-doc">сходится к ее локальному минимуму</span></a>, если матрица гессиана является <a class="reference internal" href="../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.html"><span class="std std-doc">положительно определенной матрицей</span></a>, то есть если функция является выпуклой для всех значений вектора основных переменных, что в общем не свойственно для рассматриваемой модифицированной функции TPD, за исключением локальных областей вблизи стационарных точек, что обуславливает и подтверждает необходимость наличия хорошего начального приближения. Однако на практике начальные приближения не гарантируют положительную определенность матрицы гессиана в этой точке. Для решения этой проблемы могут применяться различные подходы. Одним из таких является использование модифицированного разложения Шолески для нахождения вектора изменения основных переменных, позволяющего определить такую диагональную матрицу <span class="math notranslate nohighlight">\(\mathbf{E}\)</span>, элементы которой не на много больше, чем необходимо, чтобы матрица <span class="math notranslate nohighlight">\(\hat{\mathbf{H}}\)</span>, определяемая выражением:</p>
+<div class="math notranslate nohighlight">
+\[ \hat{\mathbf{H}} = \mathbf{H} + \mathbf{E}, \]</div>
+<p>являлась положительно определенной матрицей. Примеры алгоритмов модифицированного разложения Шолески рассмотрены в работах [<a class="reference external" href="https://doi.org/10.1137/0911064">Schnabel and Eskow, 1990</a>] и [<a class="reference external" href="https://doi.org/10.1137/S105262349833266X">Schnabel and Eskow, 1999</a>].</p>
+<p>Другим подходом к решению данной проблемы является использование аппроксимации гессиана на основе результатов предыдущих итераций, которая гарантирует положительную определенность. Такой подход лежит в основе квази-ньютоновских методов оптимизации, к которым относится, например, метод <a class="reference external" href="https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm">BFGS</a>. Применение данного метода к определению стабильности фазового состояния системы было рассмотрено в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>]. Впоследствии применение метода BFGS для решения данной задачи получило свое развитие в работах [<a class="reference external" href="https://doi.org/10.1002/aic.10908">Hoteit and Firoozabadi, 2006</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2015.07.035">Nichita and Petitfrere, 2015</a>].</p>
+</section>
+</section>
 </section>
 <section id="vt">
 <span id="pvt-sec-stability-vt"></span><h2>VT-термодинамика<a class="headerlink" href="#vt" title="Link to this heading">#</a></h2>
+<p>Таким образом, в данном разделе были получены критерии стабильности для различных формулировок, а также рассмотрены некоторые численные алгоритмы проверки стабильности фазового состояния. <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">Следующие разделы</span></a> будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).</p>
 </section>
 </section>
 
@@ -1091,7 +1567,21 @@ D \left( \mathbf{r} \right)
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-theory">Теоретические основы анализа стабильности фазового состояния системы</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-num">Численный подход к проверке стабильности фазового состояния системы</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-ss">Метод последовательных подстановок</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-ss-init">Начальные приближения</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-ss-examples">Примеры</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-newton">Метод минимизации функции</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-newton-init">Начальные приближения</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-sec-stability-pt-newton-examples">Примеры</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vt">VT-термодинамика</a></li>
 </ul>
   </nav></div>
@@ -1117,7 +1607,7 @@ By Daniel Skorov
 
   <p class="copyright">
     
-      © Copyright 2024.
+      © Copyright 2022 – 2025.
       <br/>
     
   </p>

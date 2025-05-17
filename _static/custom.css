@@ -141,5 +141,17 @@ div.algorithm .admonition-title:after {
     font-size: 0.8em;
     margin-top: 0.2em;
     font-style: italic;
+    text-align: right;
+}
+
+.multilinecomment {
+    color: var(--pst-comment-color);
+    float: right;
+    font-size: 0.8em;
+    margin-top: 0.2em;
+    font-style: italic;
+    overflow-wrap: break-word;
+    inline-size: 50%;
+    text-align: right;
 }
 
