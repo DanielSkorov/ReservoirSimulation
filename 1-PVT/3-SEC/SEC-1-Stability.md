@@ -298,13 +298,13 @@ vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([.025]) # Binary interaction parameters
 ```
 
-Импортируем класс с уравнением состояния и проинициализируем его.
+Проинициализируем класс с используемым уравнением состояния.
 
 ``` python
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 
-Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов воспользуемся методом `get_lnphiji_Zj`, принимающего в качестве аргументов давление, температуру и набор компонентных составов в виде двумерного массива, и возвращающего соответствующие коэффициенты летучести компонентов в виде двумерного массива и коэффициенты сверхсжимаемости в виде одномерного массива. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
+Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `get_lnphiji_Zj`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий соответствующие коэффициенты летучести компонентов в виде двумерного массива такой же размерности и коэффициенты сверхсжимаемости в виде одномерного массива для каждого компонентного состава. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
 
 ``` python
 yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
@@ -314,7 +314,7 @@ lnfji = lnphiji + np.log(P * yji)
 Gj = np.vecdot(yji, lnfji)
 ```
 
-Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого воспользуемся методом `get_lnfi`, принимающего на вход давление, температуру и компонентный состав в виде одномерного масива, и возвращающего логарифмы летучести компонентов в виде одномерного массива. Затем выслим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
+Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого будем использовать метод `get_lnfi`, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью `(Nc,)`) и возвращающий логарифмы летучести компонентов в виде одномерного массива такой же размерности. Затем выслим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
 lnfi = pr.getPT_lnfi(P, T, yi)
@@ -433,7 +433,7 @@ T = np.float64(10. + 273.15) # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
-Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
+Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов. Для выполнения вычислений будем использовать проинициализированный в предыдущем примере класс с уравнением состояния.
 
 ``` python
 lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
@@ -804,7 +804,7 @@ eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 ```
 
-Рассчитаем матрицу начальных приближений $\mathbf{K}$. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:
+Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений $\mathbf{K}$. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:
 
 ``` python
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -819,18 +819,18 @@ def condit_ss(carry, tol, Niter):
     return (k < Niter) & (np.linalg.norm(gi) > tol)
 ```
 
-Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа, и рассчитывать результаты для новой итерации:
+Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации:
 
 ``` python
 def update_ss(carry, hi, yi, plnphi):
-    k, ki_k, gi_k = carry
+    k, ki, gi = carry
     ki_kp1 = ki_k * np.exp(-gi_k)
     ni = ki_kp1 * yi
     gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
     return k + 1, ki_kp1, gi_kp1
 ```
 
-Выполним расчет коэффициентов летучести для начального компонентного состава:
+Выполним расчет коэффициентов летучести для начального компонентного состава. Для этого будем использовать метод `getPT_lnphii` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий массив логарифмов коэффициентов летучести компонента такой же размерности:
 
 ``` python
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
@@ -860,7 +860,7 @@ for i, ki in enumerate(K):
     print(f'For the initial guess #{i}:\n'
           f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
           f'\tnumber of iterations: {c}\n'
-          f'\tsolution: {ni}\n'
+          f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -923,7 +923,7 @@ for i, ki in enumerate(K):
     out1 += (f'For the initial guess #{i}:\n'
              f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
              f'\tnumber of iterations: {c}\n'
-             f'\tsolution: {ni}\n'
+             f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -972,7 +972,7 @@ T = np.float64(10. + 273.15) # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
-Рассчитаем матрицу начальных приближений $\mathbf{K}$:
+Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений $\mathbf{K}$:
 
 ``` python
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -1007,7 +1007,7 @@ for i, ki in enumerate(K):
     print(f'For the initial guess #{i}:\n'
           f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
           f'\tnumber of iterations: {c}\n'
-          f'\tsolution: {ni}\n'
+          f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -1053,7 +1053,7 @@ for i, ki in enumerate(K):
     out2 += (f'For the initial guess #{i}:\n'
              f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
              f'\tnumber of iterations: {c}\n'
-             f'\tsolution: {ni}\n'
+             f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -1130,7 +1130,7 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 Зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$. Для данного примера увеличим максимальное число итераций:
 
 ``` python
-Niter = 100 # Number of iterations
+Niter = 200 # Number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 ```
@@ -1157,7 +1157,7 @@ for i, ki in enumerate(K):
     print(f'For the initial guess #{i}:\n'
           f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
           f'\tnumber of iterations: {c}\n'
-          f'\tsolution: {ni}\n'
+          f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -1220,7 +1220,7 @@ for i, ki in enumerate(K):
     out3 += (f'For the initial guess #{i}:\n'
              f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
              f'\tnumber of iterations: {c}\n'
-             f'\tsolution: {ni}\n'
+             f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -1467,24 +1467,7 @@ T = np.float64(68. + 273.15) # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
-Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.
-
-``` python
-Pci = np.array([4.599, 4.872, 4.248, 3.796, 2.398]) * 1e6 # Critical pressures [Pa]
-Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02]) # Critical temperatures [K]
-wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414]) # Acentric factors
-mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120]) # Molar mass [kg/gmole]
-vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661]) # Volume shift parameters
-dij = np.array([
-    0.002689,
-    0.008537, 0.001662,
-    0.014748, 0.004914, 0.000866,
-    0.039265, 0.021924, 0.011676, 0.006228,
-]) # Binary interaction parameters
-pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-```
-
-Начальные приближения рассчитаем по корреляции Уилсона:
+Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущего примера. Начальные приближения рассчитаем по корреляции Уилсона:
 
 ``` python
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -1500,16 +1483,41 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 Зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$:
 
 ``` python
-Niter = 100 # Number of iterations
+Niter = 20 # Number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 ```
 
-Проинициализируем функции `condit` и `update`:
+Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:
 
 ``` python
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
-pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
+def condit_newt(carry, tol, Niter):
+    k, alphai, gi, H = carry
+    return (k < Niter) & (np.linalg.norm(gi) > tol)
+```
+
+Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Вектор изменения основных переменных будет определяться путем решения системы линейных уравнений с использованием [`numpy.linalg.solve`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html).
+
+``` python
+def update_newt(carry, hi, yi, plnphi):
+    k, alphai_k, gi_k, H_k = carry
+    dalphai_k = np.linalg.solve(H_k, -gi_k)
+    alphai_kp1 = alphai_k + dalphai_k
+    sqrtni = alphai_kp1 * 0.5
+    ni = sqrtni * sqrtni
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx, dlnphixidnj = plnphi(yi=xi, n=n)
+    gi_kp1 = sqrtni * (np.log(ni) + lnphixi - hi)
+    H_kp1 = np.diagflat(0.5 * gi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    return k + 1, alphai_kp1, gi_kp1, H_kp1
+```
+
+Проинициализируем функции `condit` и `update`. Для расчета коэффициентов летучестей и их частных производных по количеству вещества компонентов будем использовать метод `getPT_lnphii_Z_dnj` инициализированного класса с уравнением состояния, принимающий в качестве аргументов давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий кортеж с логарифмами коэффициентов летучести компонентов в виде одномерного массива такой же размерности, коэффициентом сверхсжимаемости заданного компонентного состава, а также с матрицей размерностью `(Nc, Nc)`, состоящей из значений частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества:
+
+``` python
+pcondit = partial(condit_newt, tol=eps1, Niter=Niter)
+pupdate = partial(update_newt, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -1517,17 +1525,23 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 ``` python
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    sqrtni = np.sqrt(ni)
+    alphai = 2. * sqrtni
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx, dlnphixidnj = pr.getPT_lnphii_Z_dnj(P, T, xi, n)
+    gi = sqrtni * (np.log(ni) + lnphixi - hi)
+    H = np.diagflat(0.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    carry = (1, alphai, gi, H)
     while pcondit(carry):
         carry = pupdate(carry)
-    c, ki, gi = carry
-    ni = ki * yi
+    c, alphai, gi, H = carry
+    ni = alphai * alphai * 0.25
     TPD = -np.log(ni.sum())
     print(f'For the initial guess #{i}:\n'
           f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
           f'\tnumber of iterations: {c}\n'
-          f'\tsolution: {ni}\n'
+          f'\tk-values: {ni/yi}\n'
           f'\tTPD: {TPD}\n')
     if (TPD < -eps2) & (c < Niter):
         is_stable = False
@@ -1538,16 +1552,93 @@ else:
 print(f'The system is stable: {is_stable}')
 ```
 
-```{glue:} glued_out3
+```{glue:} glued_out4
 ```
 
-По результатам расчетов метод последовательных подстановок для первого начального приближения сошелся к тривиальному решению за 186 итераций, а для следующего начального приближения нашел решение, характеризующееся отрицательным значением функции TPD, за 72 итерации. Таким образом, рассматриваемое однофазное состояние не является стабильным.
+По результатам расчетов можно отметить, что подход к определению стабильности фазового состояния системы, основанный на минимизации функции TPD с использованием метода Ньютона, позволяет существенно снизить количество итераций по сравнению методом последовательных подстановок.
 ````
 
+```{code-cell} python
+:tags: [remove-cell]
 
-В работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено использовать метод BFGS. Впоследствии применение метода BFGS для решение задачи стабильности получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\].
+P = np.float64(17e6) # Pressure [Pa]
+T = np.float64(68. + 273.15) # Temperature [K]
+yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
-Таким образом, в этом подразделе был выведен критерий стабильности для PT-термодинамики, а также рассмотрены некоторые численные алгоритмы проверки стабильности фазового состояния. [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).
+ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
+K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
+
+hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+
+Niter = 20 # Number of iterations
+eps1 = np.float64(1e-6) # Tolerance
+eps2 = np.float64(1e-4)
+
+def condit_newt(carry, tol, Niter):
+    k, alphai, gi, H = carry
+    return (k < Niter) & (np.linalg.norm(gi) > tol)
+
+def update_newt(carry, hi, plnphi):
+    k, alphai_k, gi_k, H_k = carry
+    dalphai_k = np.linalg.solve(H_k, -gi_k)
+    alphai_kp1 = alphai_k + dalphai_k
+    sqrtni = alphai_kp1 * 0.5
+    ni = sqrtni * sqrtni
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx, dlnphixidnj = plnphi(yi=xi, n=n)
+    gi_kp1 = sqrtni * (np.log(ni) + lnphixi - hi)
+    H_kp1 = np.diagflat(0.5 * gi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    return k + 1, alphai_kp1, gi_kp1, H_kp1
+
+pcondit = partial(condit_newt, tol=eps1, Niter=Niter)
+pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
+
+out4 = ''
+
+for i, ki in enumerate(K):
+    ni = ki * yi
+    sqrtni = np.sqrt(ni)
+    alphai = 2. * sqrtni
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx, dlnphixidnj = pr.getPT_lnphii_Z_dnj(P, T, xi, n)
+    gi = sqrtni * (np.log(ni) + lnphixi - hi)
+    H = np.diagflat(0.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    carry = (1, alphai, gi, H)
+    while pcondit(carry):
+        carry = pupdate(carry)
+    c, alphai, gi, H = carry
+    ni = alphai * alphai * 0.25
+    TPD = -np.log(ni.sum())
+    out4 += (f'For the initial guess #{i}:\n'
+             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\tnumber of iterations: {c}\n'
+             f'\tk-values: {ni/yi}\n'
+             f'\tTPD: {TPD}\n')
+    if (TPD < -eps2) & (c < Niter):
+        is_stable = False
+        break
+else:
+    is_stable = True
+
+out4 += f'The system is stable: {is_stable}'
+
+glue('glued_out4', MultilineText(out4))
+
+```
+
+В данном примере начальные приближения рассчитывались с использованием корреляции Уилсона. Пример реализации алгоритма определения стабильности фазового состояния системы, основанного на применении метода последовательных подстановок для уточнения начальных приближений, представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py).
+
+Кроме того, важно отметить, что метод Ньютона для оптимизации функции нескольких переменных [сходится к ее локальному минимуму](../../0-Math/1-OM/OM-0-Introduction.md), если матрица гессиана является [положительно определенной матрицей](../../0-Math/0-LAB/LAB-8-MatrixDefiniteness.md), то есть если функция является выпуклой для всех значений вектора основных переменных, что в общем не свойственно для рассматриваемой модифицированной функции TPD, за исключением локальных областей вблизи стационарных точек, что обуславливает и подтверждает необходимость наличия хорошего начального приближения. Однако на практике начальные приближения не гарантируют положительную определенность матрицы гессиана в этой точке. Для решения этой проблемы могут применяться различные подходы. Одним из таких является использование модифицированного разложения Шолески для нахождения вектора изменения основных переменных, позволяющего определить такую диагональную матрицу $\mathbf{E}$, элементы которой не на много больше, чем необходимо, чтобы матрица $\hat{\mathbf{H}}$, определяемая выражением:
+
+$$ \hat{\mathbf{H}} = \mathbf{H} + \mathbf{E}, $$
+
+являлась положительно определенной матрицей. Примеры алгоритмов модифицированного разложения Шолески рассмотрены в работах \[[Schnabel and Eskow, 1990](https://doi.org/10.1137/0911064)\] и \[[Schnabel and Eskow, 1999](https://doi.org/10.1137/S105262349833266X)\].
+
+Другим подходом к решению данной проблемы является использование аппроксимации гессиана на основе результатов предыдущих итераций, которая гарантирует положительную определенность. Такой подход лежит в основе квази-ньютоновских методов оптимизации, к которым относится, например, метод [BFGS](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm). Применение данного метода к определению стабильности фазового состояния системы было рассмотрено в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\]. Впоследствии применение метода BFGS для решения данной задачи получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\].
 
 (pvt-sec-stability-vt)=
 ## VT-термодинамика
+
+Таким образом, в данном разделе были получены критерии стабильности для различных формулировок, а также рассмотрены некоторые численные алгоритмы проверки стабильности фазового состояния. [Следующие разделы](SEC-2-RR.md) будут посвящены изучению уравнения Речфорда-Райса (уравнения фазовых концентраций).

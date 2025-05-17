@@ -183,11 +183,7 @@ stabres.kvji
 import numpy.typing as npt
 from functools import partial
 
-def condit(
-    carry: tuple[int, npt.NDArray[np.float64], np.float64, npt.NDArray[np.float64]],
-    tol: np.float64,
-    Niter: int,
-) -> bool:
+def condit(carry, tol, Niter):
     k, kvi, _, gi = carry
     return (k < Niter) & (np.linalg.norm(gi) > tol)
 
@@ -199,11 +195,7 @@ pcondit = partial(condit, tol=eps, Niter=Niter)
 ```{code-cell} python
 from typing import Callable
 
-def update_ssi_2p(
-    carry: tuple[int, npt.NDArray[np.float64], np.float64, npt.NDArray[np.float64]],
-    yi: npt.NDArray[np.float64],
-    plnphi: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
-) -> tuple[int, npt.NDArray[np.float64], np.float64, npt.NDArray[np.float64]]:
+def update_ssi_2p(carry, yi, plnphi):
     k, kvi_k, _, gi_k = carry
     kvi_kp1 = kvi_k * np.exp(-gi_k)
     F1 = solve2p_FGH(kvi_kp1, yi)
@@ -407,11 +399,7 @@ gji = np.log(kvji) + lnphiji[:-1] - lnphiji[-1]
 Создадим функцию, которая будет получать на вход результаты предыдущей итерации и возвращать результаты следующей итерации метода последовательных подстановок:
 
 ```{code-cell} python
-def update_ssi_Np(
-    carry: tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]],
-    yi: npt.NDArray[np.float64],
-    plnphi: Callable[[npt.NDArray[np.float64]], tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]],
-) -> tuple[int, npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+def update_ssi_Np(carry, yi, plnphi):
     k, kvji_k, Fj0, gji_k = carry
     kvji_kp1 = kvji_k * np.exp(-gji_k)
     Fj = solveNp(kvji_kp1, yi, Fj0)
