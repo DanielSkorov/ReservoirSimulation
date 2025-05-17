@@ -9,6 +9,9 @@ import numpy as np
 from stability import (
   _stabPT_ss,
   _stabPT_qnss,
+  _stabPT_newt,
+  _stabPT_ssnewt,
+  _stabPT_qnssnewt,
 )
 
 from rr import (
@@ -117,7 +120,8 @@ class flash2pPT(object):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Currently raises `NotImplementedError`),
-    - `'ss-newton'` (Currently raises `NotImplementedError`).
+    - `'ss-newton'` (Currently raises `NotImplementedError`),
+    - `'qnss-newton'` (Currently raises `NotImplementedError`).
 
     Default is `'ss'`.
 
@@ -127,17 +131,13 @@ class flash2pPT(object):
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'bfgs'` (Currently raises `NotImplementedError`),
-    - `'newton'` (Currently raises `NotImplementedError`),
-    - `'ss-newton'` (Currently raises `NotImplementedError`).
+    - `'newton'` (Newton's method),
+    - `'ss-newton'` (Newton's method with preceding successive
+      substitution iterations for initial guess improvement),
+    - `'qnss-newton'` (Newton's method with preceding quasi-newton
+      successive substitution iterations for initial guess improvement).
 
     Default is `'ss'`.
-
-  tol: float
-    Terminate successfully if the norm of the equilibrium equations
-    vector is less than `tol`. Default is `1e-5`.
-
-  maxiter: int
-    Maximum number of solver iterations. Default is `50`.
 
   runstab: bool
     If `True` then the algorithm will perform the stability test, for
@@ -166,6 +166,11 @@ class flash2pPT(object):
     this flag can be changed to `False` if the one-phase state will
     be unstable.
 
+  kwargs: dict
+    Other arguments for a phase split solver. It may contain such
+    arguments as `tol`, `maxiter` or others, depending on the selected
+    phase split solver.
+
   Methods
   -------
   run(P, T, yi) -> FlashResult
@@ -179,27 +184,24 @@ class flash2pPT(object):
     eos: EOSPTType,
     flashmethod: str = 'ss',
     stabmethod: str = 'ss',
-    tol: ScalarType = 1e-5,
-    maxiter: int = 50,
     runstab: bool = True,
     level: int = 0,
     stabkwargs: dict = {},
     useprev: bool = False,
     negativeflash: bool = True,
+    **kwargs,
   ) -> None:
     self.eos = eos
     self.runstab = runstab
     self.level = level
     self.useprev = useprev
-    self.preserved: bool = False
+    self.preserved = False
     self.prevkvji: None | MatrixType = None
     self.negativeflash = negativeflash
     if flashmethod == 'ss':
-      self.flashsolver = partial(_flash2pPT_ss,
-                                 eos=eos, tol=tol, maxiter=maxiter)
+      self.flashsolver = partial(_flash2pPT_ss, eos=eos, **kwargs)
     elif flashmethod == 'qnss':
-      self.flashsolver = partial(_flash2pPT_qnss,
-                                 eos=eos, tol=tol, maxiter=maxiter)
+      self.flashsolver = partial(_flash2pPT_qnss, eos=eos, **kwargs)
     elif flashmethod == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for flash calculations is not implemented yet.'
@@ -218,6 +220,16 @@ class flash2pPT(object):
       self.stabsolver = partial(_stabPT_ss, eos=eos, **stabkwargs)
     elif stabmethod == 'qnss':
       self.stabsolver = partial(_stabPT_qnss, eos=eos, **stabkwargs)
+    elif stabmethod == 'newton':
+      self.stabsolver = partial(_stabPT_newt, eos=eos, **stabkwargs)
+    elif stabmethod == 'bfgs':
+      raise NotImplementedError(
+        'The BFGS-method for the stability test is not implemented yet.'
+      )
+    elif stabmethod == 'ss-newton':
+      self.stabsolver = partial(_stabPT_ssnewt, eos=eos, **stabkwargs)
+    elif stabmethod == 'qnss-newton':
+      self.stabsolver = partial(_stabPT_qnssnewt, eos=eos, **stabkwargs)
     self._1pstab_yi = np.zeros_like(eos.mwi)
     self._1pstab_Fj = np.array([1., 0.])
     pass

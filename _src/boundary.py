@@ -366,27 +366,10 @@ class PsatPT(object):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Currently raises `NotImplementedError`),
-    - `'ss-newton'` (Currently raises `NotImplementedError`).
+    - `'ss-newton'` (Currently raises `NotImplementedError`),
+    - `'qnss-newton'` (Currently raises `NotImplementedError`).
 
     Default is `'ss'`.
-
-  tol: float
-    Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
-
-  maxiter: int
-    Maximum number of equilibrium equation solver iterations.
-    Default is `50`.
-
-  tol_tpd: float
-    Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol`. Default is `1e-6`.
-    The TPD-equation is the equation of equality to zero of the
-    tangent-plane distance, which determines the second phase
-    appearance.
-
-  maxiter_tpd: int
-    Maximum number of TPD-equation solver iterations. Default is `8`.
 
   improve_P0: bool
     Flag indicating whether or not to improve the initial guess of the
@@ -404,11 +387,16 @@ class PsatPT(object):
     compositions would be found by splitting the interval from `Pmin` to
     `Pmax` into `(Npoint - 1)` segments. The closest solution of the
     TPD-equation to the given value would be used as an initial guess for
-    the saturation pressure calculation.
+    the saturation pressure calculation. Default is `False`.
 
   stabkwargs: dict
     Dictionary that used to regulate the stability test procedure.
     Default is an empty dictionary.
+
+  kwargs: dict
+    Other arguments for the equilibrium equations solver and the
+    TPD-equation solver. It may contain such arguments as `tol`,
+    `maxiter`, `tol_tpd`, `maxiter_tpd` or others.
 
   Methods
   -------
@@ -423,27 +411,19 @@ class PsatPT(object):
     self,
     eos: EOSPTType,
     method: str = 'ss',
-    tol: ScalarType = 1e-5,
-    maxiter: int = 50,
-    tol_tpd: ScalarType = 1e-6,
-    maxiter_tpd: int = 8,
     improve_P0: bool = False,
     stabgrid: bool = False,
     stabkwargs: dict = {},
+    **kwargs,
   ) -> None:
     self.eos = eos
-    self.tol = tol
-    self.maxiter = maxiter
     self.improve_P0 = improve_P0
     self.stabgrid = stabgrid
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     if method == 'ss':
-      self.psatsolver = partial(_PsatPT_ss, eos=eos, tol=tol, maxiter=maxiter,
-                                tol_tpd=tol_tpd, maxiter_tpd=maxiter_tpd)
+      self.psatsolver = partial(_PsatPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
-      self.psatsolver = partial(_PsatPT_qnss, eos=eos, tol=tol,
-                                maxiter=maxiter, tol_tpd=tol_tpd,
-                                maxiter_tpd=maxiter_tpd)
+      self.psatsolver = partial(_PsatPT_qnss, eos=eos, **kwargs)
     elif method == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for the saturation pressure calculation is not '
@@ -457,6 +437,11 @@ class PsatPT(object):
     elif method == 'ss-newton':
       raise NotImplementedError(
         'The SS-Newton method for the saturation pressure calculation is '
+        'not implemented yet.'
+      )
+    elif method == 'qnss-newton':
+      raise NotImplementedError(
+        'The QNSS-Newton method for the saturation pressure calculation is '
         'not implemented yet.'
       )
     else:
@@ -618,7 +603,7 @@ def _solveTPDeqPT(
   maxiter: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
-) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType, bool]:
   """Solves the TPD-equation for the PT-based equations of state.
   The TPD-equation is the equation of equality to zero of the
   tangent-plane distance, which determines the phase appearance or

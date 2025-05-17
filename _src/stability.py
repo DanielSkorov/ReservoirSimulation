@@ -120,7 +120,9 @@ class stabilityPT(object):
     Default is `False`.
 
   kwargs: dict
-    Other arguments for a stability test solver.
+    Other arguments for a stability test solver. It may contain such
+    arguments as `tol`, `maxiter` or others, depending on the selected
+    stability test solver.
 
   Methods
   -------
@@ -142,7 +144,7 @@ class stabilityPT(object):
     self.level = level
     self.useprev = useprev
     self.prevkvji: None | tuple[VectorType] = None
-    self.preserved: bool = False
+    self.preserved = False
     if method == 'ss':
       self.stabsolver = partial(_stabPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
