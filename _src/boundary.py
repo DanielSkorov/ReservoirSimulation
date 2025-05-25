@@ -40,7 +40,7 @@ def getVT_Tspinodal(
   """Calculates the spinodal temperature for a given volume
   and composition of a mixture.
 
-  Arguments:
+  Parameters
   ----------
   V: float
     Volume of a mixture [m3].
@@ -145,7 +145,7 @@ def getVT_PcTc(
 ) -> tuple[ScalarType, ScalarType]:
   """Calculates the critical pressure and temperature of a mixture.
 
-  Arguments:
+  Parameters
   ----------
   yi: ndarray, shape (Nc,)
     Mole fractions of `Nc` components.
@@ -269,8 +269,8 @@ class SatResult(dict):
   """Container for saturation point calculation outputs with
   pretty-printing.
 
-  Attributes:
-  -----------
+  Attributes
+  ----------
   P: float
     Saturation pressure [Pa].
 
@@ -311,8 +311,8 @@ class PsatPT(object):
   Performs saturation pressure calculation for PT-based equations of
   state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   eos: EOSPTType
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
@@ -460,8 +460,8 @@ class PsatPT(object):
     """Performs the saturation pressure calculation for given temperature
     and composition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     T: float
       Temperature of a mixture [K].
 
@@ -609,8 +609,8 @@ def _solveTPDeqPT(
   tangent-plane distance, which determines the phase appearance or
   disappearance. The Newton's method is used to solve the TPD-equation.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P0: float
     Initial guess of the saturation pressure [Pa].
 
@@ -705,8 +705,8 @@ def _PsatPT_ss(
   """Successive substitution (SS) method for the saturation pressure
   calculation using a PT-based equation of state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.
@@ -866,8 +866,8 @@ def _PsatPT_qnss(
   For the details of the QNSS-method see: 10.1016/0378-3812(84)80013-8
   and 10.1016/0378-3812(85)90059-7.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.

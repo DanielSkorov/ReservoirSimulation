@@ -408,17 +408,3 @@ $$ \begin{align}
 $$ \mu_i \left( P_2,T, \mathbf{x}_2 \right) - \mu_i \left( P_1,T, \mathbf{x}_1 \right) = RT \ln \frac{f_i \left( P_2,T, \mathbf{x}_2 \right)}{f_i \left( P_1,T, \mathbf{x}_1 \right)}, \; i = 1 \, \ldots \, N_c. $$
 
 ```
-
-Тогда разница химических потенциалов между реальным и идеальным газами:
-
-$$ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = \mu_i^{rg} \left(P_1, T, \mathbf{x}_1 \right) - \mu_i^{ig} \left(P_1, T, \mathbf{x}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{f_i \left( P_1, T, \mathbf{x}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right). $$
-
-```{admonition} NB
-:class: note
-При этом, если давление $P_1$ достаточно низкое настолько, что при нем рассматриваемая система ведет себя, как идеальный газ, то:
-
-$$ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, \mathbf{x}_2 \right). $$
-
-```
-
-Данное соотношение между химическими потенциалами реального и идеального газов достаточно полезно, так как будет использоваться при определении других термодинамических параметров реальных систем с использованием [уравнений состояния](../2-EOS/EOS-0-Introduction.md#pvt-eos).

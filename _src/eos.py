@@ -21,8 +21,8 @@ class vdw(object):
   Computes fugacities of `Nc` components and the compressibility
   factor of a mixture using the van der Waals equation of state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   Pci: ndarray, shape (Nc,)
     Critical pressures of `Nc` components [Pa].
 
@@ -89,8 +89,8 @@ class vdw(object):
   ) -> ScalarType:
     """Computes the compressiblity factor of a mixture.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -121,8 +121,8 @@ class vdw(object):
   ) -> VectorType:
     """Computes fugacity coefficients of components.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -154,8 +154,8 @@ class vdw(object):
     """Computes fugacity coefficients of components and
     the compressiblity factor of a mixture.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -190,8 +190,8 @@ class vdw(object):
   ) -> VectorType:
     """Computes fugacities of components.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -218,8 +218,8 @@ class vdw(object):
     """Computes initial guess of k-values for given pressure,
     temperature and composition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -254,8 +254,8 @@ class vdw(object):
     of the van der Waals equation of state, and selectes an appropriate
     root based on the comparison of the Gibbs energy difference.
 
-    Arguments:
-    ----------
+    Parameters:
+    -----------
     A: float
       The coefficient in the cubic form of the van der Waals
       equation of state.
@@ -314,8 +314,8 @@ class pr78(object):
   factor of a mixture using the modified Peng-Robinson equation
   of state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   Pci: ndarray, shape (Nc,)
     Critical pressures of `Nc` components [Pa].
 
@@ -451,8 +451,8 @@ class pr78(object):
   ) -> ScalarType:
     """Computes the compressiblity factor of a mixture.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -487,8 +487,8 @@ class pr78(object):
   ) -> VectorType:
     """Computes fugacity coefficients of components.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -526,8 +526,8 @@ class pr78(object):
   ) -> VectorType:
     """Computes fugacities of components.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -553,8 +553,8 @@ class pr78(object):
     """Computes fugacity coefficients of components and
     the compressiblity factor of a mixture.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -597,8 +597,8 @@ class pr78(object):
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to pressure.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -659,8 +659,8 @@ class pr78(object):
     """Computes fugacities of components and their partial derivatives
     with respect to component mole numbers.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -731,8 +731,8 @@ class pr78(object):
     """Computes fugacities of components and their partial derivatives
     with respect to component mole numbers.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -766,8 +766,8 @@ class pr78(object):
     """Computes the compressibility factor for each composition
     of `Np` phases.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -803,8 +803,8 @@ class pr78(object):
     """Computes fugacity coefficients of components and
     the compressiblity factor for each composition of `Np` phases.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -852,8 +852,8 @@ class pr78(object):
     """Computes initial k-values for given pressure, temperature
     and composition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -916,8 +916,8 @@ class pr78(object):
   ) -> ScalarType:
     """Computes pressure for given volume, temperature and composition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     V: float
       Volume of a mixture [m3].
 
@@ -955,8 +955,8 @@ class pr78(object):
     Partial derivatives formulas were taken from the paper of M.L.
     Michelsen and R.A. Heidemann, 1981 (doi: 10.1002/aic.690270326).
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     V: float
       Volume of a mixture [m3].
 
@@ -1018,8 +1018,8 @@ class pr78(object):
     Calculation formulas were taken from the paper of M.L. Michelsen and
     R.A. Heidemann, 1981 (doi: 10.1002/aic.690270326).
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     V: float
       Volume of a mixture [m3].
 
@@ -1071,8 +1071,8 @@ class pr78(object):
   def getVT_vmin(self, T: ScalarType, yi: VectorType) -> ScalarType:
     """Calculates the minimal molar volume.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     T: float
       Temperature of a mixture [K].
 
@@ -1094,8 +1094,8 @@ class pr78(object):
     appropriate root based on the comparison of the Gibbs energy
     difference.
 
-    Arguments:
-    ----------
+    Parameters:
+    -----------
     A: float
       The coefficient in the cubic form of the modified Peng-Robinson
       equation of state.

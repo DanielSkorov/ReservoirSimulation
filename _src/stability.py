@@ -69,8 +69,8 @@ class stabilityPT(object):
   Checks the tangent-plane distance (TPD) at the local minima of
   the Gibbs energy function.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   eos: EOSPTType
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
@@ -167,8 +167,8 @@ class stabilityPT(object):
     """Performs the stability test for given pressure, temperature and
     composition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -209,8 +209,8 @@ def _stabPT_ss(
   """Successive Substitution (SS) method to perform the stability test
   using a PT-based equation of state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 
@@ -327,8 +327,8 @@ def _stabPT_qnss(
   initial guesses. Checks the TPD-value at a found local minima.
   For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 
@@ -456,8 +456,8 @@ def _stabPT_newt(
   """Newton's method for the stability test using a PT-based
   equation of state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 
@@ -598,8 +598,8 @@ def _stabPT_ssnewt(
   equation of state with preceding successive substitution iterations
   for initial guess improvement.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 
@@ -787,8 +787,8 @@ def _stabPT_qnssnewt(
   of k-values. For the details of the QNSS-method see
   10.1016/0378-3812(84)80013-8.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 

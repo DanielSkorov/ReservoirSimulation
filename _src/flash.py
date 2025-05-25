@@ -32,8 +32,8 @@ logger = logging.getLogger('flash')
 class FlashResult(dict):
   """Container for flash calculation outputs with pretty-printing.
 
-  Attributes:
-  -----------
+  Attributes
+  ----------
   yji: ndarray, shape (Np, Nc)
     Mole fractions of components in each phase. Two-dimensional
     array of real elements of size `(Np, Nc)`, where `Np` is
@@ -78,8 +78,8 @@ class flash2pPT(object):
 
   Performs two-phase flash calculations for isobaric-isothermal systems.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   eos: EOSPTType
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
@@ -238,8 +238,8 @@ class flash2pPT(object):
     """Performs flash calculations for given pressure, temperature and
     composition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     P: float
       Pressure of a mixture [Pa].
 
@@ -293,8 +293,8 @@ def _flash2pPT_ss(
   """Successive substitution method for two-phase flash calculations
   using a PT-based equation of state.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 
@@ -426,8 +426,8 @@ def _flash2pPT_qnss(
   find an equilibrium state by solving a system of non-linear equations.
   For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   P: float
     Pressure of a mixture [Pa].
 

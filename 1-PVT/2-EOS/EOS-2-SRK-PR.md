@@ -231,7 +231,7 @@ $$ \begin{cases} Z_c = \frac{1 - c B}{3}; \\ A = \left( c + 1 \right) B + \left(
 ```{code-cell} python
 import numpy as np
 
-def cardano(b: float, c: float, d: float) -> float:
+def cardano(b, c, d):
     p = (3. * c - b * b) / 3.
     q = (2. * b * b * b - 9. * b * c + 27. * d) / 27.
     s = q * q / 4. + p * p * p / 27.

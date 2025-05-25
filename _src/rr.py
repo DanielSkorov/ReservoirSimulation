@@ -70,8 +70,8 @@ def solve2p_FGH(
   Solves the Rachford-Rice equation for two-phase systems using
   the FGH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   kvi: ndarray, shape (Nc,)
     K-values of `Nc` components.
 
@@ -138,8 +138,8 @@ def solve2p_GH(
   Solves the Rachford-rice equation for two-phase systems using
   the GH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
-  Arguments
-  ---------
+  Parameters
+  ----------
   kvi: ndarray, shape (Nc,)
     K-values of `Nc` components.
 
@@ -214,9 +214,8 @@ def solveNp(
   and the backtracking line search technique to prevent leaving
   the feasible region. For the details see 10.2118/117752-PA.
 
-  Arguments
-  ---------
-
+  Parameters
+  ----------
   Kji: ndarray, shape (Np-1, Nc)
     K-values of `Nc` components in `Np-1` phases.
 
