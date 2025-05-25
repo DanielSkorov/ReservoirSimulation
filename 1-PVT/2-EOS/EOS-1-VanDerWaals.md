@@ -76,9 +76,9 @@ $$ \int_a^\infty f \left( x \right) dx = \lim_{b \rightarrow \infty} \int_a^b f 
 
 $$ \begin{alignat}{1}
 \int_V^\infty f \left( V \right) dV
-&= &\lim_{V \rightarrow \infty} \left( \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V} \right) \\
-&& - \left( \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V} \right) \\
-&= &\ln \frac{V}{V - n b_m} + n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} - \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V}.
+&= && \lim_{V \rightarrow \infty} \left( \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V} \right) \\
+&&& - \left( \ln \frac{V - n b_m}{V} - n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} + \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V} \right) \\
+&= && \ln \frac{V}{V - n b_m} + n \frac{\partial \left( n b_m \right)}{\partial n_i} \frac{1}{V - n b_m} - \frac{\partial \left( n^2 a_m \right)}{\partial n_i} \frac{1}{R T V}.
 \end{alignat} $$
 
 При преобразовании данного выражения было учтено:
