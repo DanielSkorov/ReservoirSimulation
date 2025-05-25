@@ -510,7 +510,7 @@ d \mu_i - R T \left( d \ln x_i + d \ln P \right) &amp;= R T d \ln \phi_i.
 <p class="admonition-title">NB</p>
 <p>Таким образом, если рассматривать квази-стационарный изотермический процесс с постоянным количеством вещества в системе, состоящей из нескольких фаз <span class="math notranslate nohighlight">\(N_p\)</span>, то равновесное состояние каждого компонента вместо равенства химических потенциалов компонентов будет определяться равенством летучестей компонентов в каждой из фаз соответственно:</p>
 <div class="math notranslate nohighlight">
-\[ f^j_i = f^{N_p}_i, \; i=1...N_c, \; j=1...N_p - 1. \]</div>
+\[ f_{ji} = f_{N_pi}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
 </div>
 <p><a id='pvt-td-fugacity-PT'></a>
 При этом, поскольку рассматривается равновесное состояние, то количество вещества каждого компонента постоянно, следовательно, летучесть компонента может быть рассчитана по коэффициенту летучести, определяемому следующим выражением:</p>
@@ -710,16 +710,7 @@ d \mu_i \left( P,T, \mathbf{x} \right) &amp;= RT d \ln f_i \left( P,T, \mathbf{x
 <div class="math notranslate nohighlight">
 \[ \mu_i \left( P_2,T, \mathbf{x}_2 \right) - \mu_i \left( P_1,T, \mathbf{x}_1 \right) = RT \ln \frac{f_i \left( P_2,T, \mathbf{x}_2 \right)}{f_i \left( P_1,T, \mathbf{x}_1 \right)}, \; i = 1 \, \ldots \, N_c. \]</div>
 </div>
-<p>Тогда разница химических потенциалов между реальным и идеальным газами:</p>
-<div class="math notranslate nohighlight">
-\[ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = \mu_i^{rg} \left(P_1, T, \mathbf{x}_1 \right) - \mu_i^{ig} \left(P_1, T, \mathbf{x}_1 \right) + RT \ln \left( \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{f_i \left( P_1, T, \mathbf{x}_1 \right)} \frac{{x_i}_1 P_1}{{x_i}_2 P_2} \right). \]</div>
-<div class="note admonition">
-<p class="admonition-title">NB</p>
-<p>При этом, если давление <span class="math notranslate nohighlight">\(P_1\)</span> достаточно низкое настолько, что при нем рассматриваемая система ведет себя, как идеальный газ, то:</p>
-<div class="math notranslate nohighlight">
-\[ \mu_i^{rg} \left(P_2, T, \mathbf{x}_2 \right) - \mu_i^{ig} \left(P_2, T, \mathbf{x}_2 \right) = RT \ln \frac{ f_i \left(P_2, T, \mathbf{x}_2 \right)}{{x_i}_2 P_2} = RT \ln \phi_i \left( P_2, T, \mathbf{x}_2 \right). \]</div>
-</div>
-<p>Данное соотношение между химическими потенциалами реального и идеального газов достаточно полезно, так как будет использоваться при определении других термодинамических параметров реальных систем с использованием <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html#pvt-eos"><span class="std std-ref">уравнений состояния</span></a>.</p>
+<p>Данный раздел завершает главу, посвященную изложению основ термодинамики, необходимых для выполения композиционного PVT-моделирования. В следующем разделе будут рассмотрены некоторые <a class="reference internal" href="../2-EOS/EOS-0-Introduction.html"><span class="std std-doc">уравнения состояния</span></a>, используемые на практике для расчета свойств многофазных многокомпонентных термодинамических систем.</p>
 </section>
 </section>
 

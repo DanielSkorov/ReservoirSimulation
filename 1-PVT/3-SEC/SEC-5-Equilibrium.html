@@ -405,33 +405,40 @@ document.write(`
 <p>В предыдущих разделах были представлены особенности проверки <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">стабильности фазового состояния системы</span></a>, а также получено <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a> и рассмотрены численные методы его решения для <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">двухфазной</span></a> и <a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">многофазной</span></a> систем. Данный раздел посвящен расчету равновесного фазового состояния, проводимому в том случае, если по результатам анализа стабильности текущее фазовое состояние оказалось нестабильным. Как и в случае анализа стабильности, расчет равновесного состояния также имеет различные формулировки (<a class="reference internal" href="#pvt-esc-equilibrium-pt">PT-термодинамика</a>, <a class="reference internal" href="#pvt-esc-equilibrium-vt">VT-термодинамика</a>).</p>
 <section id="pt">
 <span id="pvt-esc-equilibrium-pt"></span><h2>PT-термодинамика<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
-<p>Задача поиска равновесного состояния многокомпонентной (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) многофазной (<span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз) системы для фиксированных давления <span class="math notranslate nohighlight">\(P\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span>, количеств вещества компонентов в системе <span class="math notranslate nohighlight">\(n_i, \; i = 1 \, \ldots \, N_c\)</span> достаточно хорошо изучена и проработана. <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html"><span class="std std-doc">Ранее</span></a> было показано, что равновесное состояние характеризуется минимумом энергии Гиббса. При этом необходимым условием равновесного состояния является равенство химических потенциалов (или летучестей) соответствующих компонентов в фазах. Это условие определяет положение стационарных точек функции энергии Гиббса, <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">называемых</span></a> стационарными состояниями системы.</p>
-<p>В результате решения задачи поиска равновесного состояния системы требуется определить количества вещества компонентов в фазах, всего <span class="math notranslate nohighlight">\(N_c \times \left( N_p - 1 \right)\)</span> неизвестных с учетом ограничения <span class="math notranslate nohighlight">\(\sum_{j=1}^{N_p} n_i^j = n_i\)</span>, соответствующих положению минимума функции энергии Гиббса. Существует два основных направления решения данной задачи. Первое направление включает широкую группу подходов, основанных на <em><strong>методе последовательных подстановок</strong></em> <em>(successive (direct) substitution method)</em>. Данный метод, по сути, эквивалентен <a class="reference external" href="https://en.wikipedia.org/wiki/Gradient_descent">методу градиентного спуска</a> с длиной шага, равной единице, с точки зрения минимизации энергии Гиббса. Преимуществом данного метода является его относительная простота, поскольку нет необходимости в расчете многомерных матриц и вторых частных производных функции энергии Гиббса. Недостатком данного метода является необходимость сравнительно большого количества итераций для нахождения решения, при этом данный метод может сходиться к стационарным точкам функции. Метод последовательных подстановок подробно представлен в работах [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85002-4">Michelsen, 1982b</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(83)80115-0">Heidemann, 1983</a>; <a class="reference external" href="https://doi.org/10.1002/cjce.5450610414">Mehra et al, 1983</a>]. Другим направлением решения задачи поиска равновесного состояния является совокупность <a class="reference external" href="https://en.wikipedia.org/wiki/Global_optimization">методов глобальной оптимизации</a> функции энергии Гиббса, частично представленная в работах [<a class="reference external" href="https://doi.org/10.1016/S0098-1354(02)00144-8">Nichita et al, 2002</a>; <a class="reference external" href="https://doi.org/10.2118/04-05-TN2">Nichita et al, 2004</a>, <a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.08.039">Petitfrere and Nichita, 2014</a>]. В рамках данного курса подробно остановимся на методах определения равновесного состояния, относящихся к первому направлению.</p>
+<p>Задача поиска равновесного состояния многокомпонентной (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) многофазной (<span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз) системы для фиксированных давления <span class="math notranslate nohighlight">\(P\)</span>, температуры <span class="math notranslate nohighlight">\(T\)</span>, количеств вещества компонентов в системе <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c,\)</span> достаточно хорошо изучена и проработана. <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html"><span class="std std-doc">Ранее</span></a> было показано, что равновесное состояние характеризуется минимумом энергии Гиббса. При этом необходимым условием равновесного состояния является равенство химических потенциалов (или летучестей) соответствующих компонентов в фазах. Это условие определяет положение стационарных точек функции энергии Гиббса, <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">называемых</span></a> стационарными состояниями системы.</p>
+<p>В результате решения задачи поиска равновесного состояния системы требуется определить количества вещества компонентов в фазах, всего <span class="math notranslate nohighlight">\(N_c \times \left( N_p - 1 \right)\)</span> неизвестных с учетом ограничения <span class="math notranslate nohighlight">\(\sum_{j=1}^{N_p} n_{ji} = n_i, \, i = 1 \, \ldots \, N_c,\)</span> соответствующих положению минимума функции энергии Гиббса. Существует два основных направления решения данной задачи. Первое направление включает широкую группу подходов, основанных на <em><strong>методе последовательных подстановок</strong></em> <em>(successive (direct) substitution method)</em>. Данный метод, по сути, эквивалентен <a class="reference external" href="https://en.wikipedia.org/wiki/Gradient_descent">методу градиентного спуска</a> с длиной шага, равной единице, с точки зрения минимизации энергии Гиббса. Преимуществом данного метода является его относительная простота, поскольку нет необходимости в расчете многомерных матриц и вторых частных производных функции энергии Гиббса. Недостатком данного метода является необходимость сравнительно большого количества итераций для нахождения решения, при этом данный метод может сходиться к стационарным точкам функции. Метод последовательных подстановок подробно представлен в работах [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85002-4">Michelsen, 1982b</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(83)80115-0">Heidemann, 1983</a>; <a class="reference external" href="https://doi.org/10.1002/cjce.5450610414">Mehra et al, 1983</a>]. Другим направлением решения задачи поиска равновесного состояния является совокупность <a class="reference external" href="https://en.wikipedia.org/wiki/Global_optimization">методов глобальной оптимизации</a> функции энергии Гиббса, частично представленная в работах [<a class="reference external" href="https://doi.org/10.1016/S0098-1354(02)00144-8">Nichita et al, 2002</a>; <a class="reference external" href="https://doi.org/10.2118/04-05-TN2">Nichita et al, 2004</a>, <a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.08.039">Petitfrere and Nichita, 2014</a>]. В рамках данного курса подробно остановимся на методах определения равновесного состояния, относящихся к первому направлению.</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>При использовании двойного индексирования здесь и далее первый индекс будет обозначать фазу, второй – компонент. То есть под <span class="math notranslate nohighlight">\(y_{ji}\)</span> следует понимать мольную долю <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, а под, например, <span class="math notranslate nohighlight">\(f_{N_pk}\)</span> – летучесть <span class="math notranslate nohighlight">\(k\)</span>-го компонента в <span class="math notranslate nohighlight">\(N_p\)</span>-й фазе. При использовании одинарного индексирования будет явно указано отношение данного элемента к вектору, характеризующему свойства фаз или компонентов.</p>
+</div>
+</aside>
 <p>Отношение мольной доли <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, где <span class="math notranslate nohighlight">\(j = 1 \, \ldots \, N_p-1\)</span>, к мольной доли этого же компонента в референсной фазе (поскольку референсной фазой может быть любая, то здесь и далее под референсной фазой понимается фаза с индексом <span class="math notranslate nohighlight">\(N_p\)</span>) называется <em>константой фазового равновесия</em>:</p>
 <div class="math notranslate nohighlight">
-\[ K_i^j = \frac{y_i^j}{y_i^{N_p}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ K_{ji} = \frac{y_{ji}}{y_{N_pi}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Данный параметр также использовался при выводе <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнения Речфорда-Райса</span></a>.</p>
-<p>Ключевой особенностью метода последовательных подстановок является итеративное обновление констант фазового равновесия в процессе поиска равновесного состояния, осуществляемое с использованием следующего выражения:</p>
+<p>Ключевой особенностью метода последовательных подстановок является итеративное обновление констант фазового равновесия в процессе поиска равновесного состояния, осуществляемое с использованием следующего выражения для <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации:</p>
 <div class="math notranslate nohighlight">
-\[ {K_i^j}_{k+1} = {K_i^j}_{k} \frac{f_i \left( P, \, T, \, y_i^{N_p} \right)}{f_i \left( P, \, T, \, y_i^j \right)}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>где <span class="math notranslate nohighlight">\({K_i^j}_{k+1}\)</span> – константа фазового равновесия <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации, <span class="math notranslate nohighlight">\({K_i^j}_{k}\)</span> – константа фазового равновесия <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе на <span class="math notranslate nohighlight">\(k\)</span>-й итерации, <span class="math notranslate nohighlight">\(f_i \left( P, \, T, \, y_i^j \right)\)</span> – летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, <span class="math notranslate nohighlight">\(f_i \left( P, \, T, \, y_i^{N_p} \right)\)</span> – летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в референсной фазе.</p>
+\[ K_{ji}^{k+1} = K_{ji}^{k} \frac{f_{N_pi}}{f_{ji}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>где <span class="math notranslate nohighlight">\(K_{ji}^{k+1}\)</span> – константа фазового равновесия <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации, <span class="math notranslate nohighlight">\(K_{ji}^{k}\)</span> – константа фазового равновесия <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе на <span class="math notranslate nohighlight">\(k\)</span>-й итерации, <span class="math notranslate nohighlight">\(f_{ji}\)</span> – летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, <span class="math notranslate nohighlight">\(f_{N_pi}\)</span> – летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в референсной фазе с индексом <span class="math notranslate nohighlight">\(N_p\)</span>.</p>
 <p>Преобразуем данное выражение к следующему виду:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\ln {K_i^j}_{k+1} &amp;= \ln {K_i^j}_{k} + \ln f_i  \left( P, \, T, \, y_i^{N_p} \right) - \ln f_i \left( P, \, T, \, y_i^j \right), \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
-\Delta \ln {K_i^j}_{k} &amp;= \ln f_i  \left( P, \, T, \, y_i^j \right) - \ln f_i \left( P, \, T, \, y_i^{N_p} \right), \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
-\Delta \ln {K_i^j}_{k} &amp;= \ln {K_i^j}_{k} + \ln \varphi_i \left( P, \, T, \, y_i^j \right) - \ln \varphi_i  \left( P, \, T, \, y_i^{N_p} \right), \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c.
+\ln K_{ji}^{k+1} &amp;= \ln K_{ji}^{k} + \ln f_{N_pi} - \ln f_{ji}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
+\Delta \ln K_{ji}^{k} &amp;= \ln f_{ji} - \ln f_{N_pi}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
+\Delta \ln K_{ji}^{k} &amp;= \ln K_{ji}^{k} + \ln \varphi_{ji} - \ln \varphi_{N_pi}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
 <p>Тогда итеративное обновление констант фазового равновесия в методе последовательных подстановок записывается в следующем виде:</p>
 <div class="math notranslate nohighlight">
-\[ \ln {K_i^j}_{k+1} = \ln {K_i^j}_{k} - \Delta \ln {K_i^j}_{k}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ \ln K_{ji}^{k+1} = \ln K_{ji}^{k} - \Delta \ln K_{ji}^{k}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>В свою очередь, метод градиентного спуска для минимизации функции энергии Гиббса с выбранными в качестве основных переменных логарифмами констант фазового равновесия:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\ln {K_i^j}_{k+1}
-&amp;= \ln {K_i^j}_{k} - \lambda \left( \frac{\partial \bar{G}}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
-&amp;= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \frac{\partial \bar{G}}{\partial n_l^m} \right)_{P, \, T, \, n_i^j \neq n_l^m} \left( \frac{\partial n_l^m}{\partial \ln K_i^j} \right)_{P, \, T, \, K_l^m \neq K_i^j} \\
-&amp;= \ln {K_i^j}_{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \ln f_l \left( P, \, T, \, y_l^m \right) - \ln f_l \left( P, \, T, \, y_l^{N_p} \right) \right) U_{lmij}^{-1}.
+\ln K_{ji}^{k+1}
+&amp;= \ln K_{ji}^{k} - \lambda \left( \frac{\partial \bar{G}}{\partial \ln K_{ji}} \right)_{P, \, T, \, K_{ml} \neq K_{ji}} \\
+&amp;= \ln K_{ji}^{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \frac{\partial \bar{G}}{\partial n_{ml}} \right)_{P, \, T, \, n_{ji} \neq n_{ml}} \left( \frac{\partial n_{ml}}{\partial \ln K_{ji}} \right)_{P, \, T, \, K_{ml} \neq K_{ji}} \\
+&amp;= \ln K_{ji}^{k} - \lambda \sum_{l=1}^{N_c} \sum_{m=1}^{N_p-1} \left( \ln f_{ml} - \ln f_{N_pl} \right) U_{lmij}^{-1}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
 <p>В представленном выражении параметр <span class="math notranslate nohighlight">\(\lambda\)</span> характеризует длину шага, а <span class="math notranslate nohighlight">\(\bar{G} = G / \left(RT\right)\)</span> – приведенная энергия Гиббса системы. При преобразовании данного выражения учитывалось <a class="reference external" href="https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs">правило дифференцирования сложной функции от нескольких переменных</a>. Если принять</p>
 <div class="math notranslate nohighlight">
@@ -443,7 +450,7 @@ document.write(`
 <p>Рассмотрим алгоритм метода последовательных подстановок.</p>
 <div class="algorithm admonition">
 <p class="admonition-title">Алгоритм. Метод последовательных подстановок для определения равновесного состояния</p>
-<p><strong>Дано:</strong> Вектор компонентного состава исследуемой системы <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span>; термобарические условия <span class="math notranslate nohighlight">\(P\)</span> и <span class="math notranslate nohighlight">\(T\)</span>; количество вещества в системе <span class="math notranslate nohighlight">\(n=1 \, моль\)</span>; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; количество фаз в системе <span class="math notranslate nohighlight">\(N_p\)</span>; набор (тензор) начальных приближений констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K}_0 \in {\rm I\!R}^{N \times \left( N_p - 1 \right) \times N_c}\)</span>; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность <span class="math notranslate nohighlight">\(\epsilon\)</span>; длина шага <span class="math notranslate nohighlight">\(\lambda = 1\)</span>.</p>
+<p><strong>Дано:</strong> Вектор компонентного состава исследуемой системы <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span>; термобарические условия <span class="math notranslate nohighlight">\(P\)</span> и <span class="math notranslate nohighlight">\(T\)</span>; количество вещества в системе <span class="math notranslate nohighlight">\(n=1 \, моль\)</span>; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; количество фаз в системе <span class="math notranslate nohighlight">\(N_p\)</span>; набор (тензор) начальных приближений констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K}_0 \in {\rm I\!R}^{N \times \left( N_p - 1 \right) \times N_c}\)</span>; максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>; точность <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
 <p><strong>Определить:</strong> Компонентные составы фаз <span class="math notranslate nohighlight">\(\mathbf{Y} \in {\rm I\!R}^{ \left( N_p - 1 \right) \times N_c}\)</span> и мольные доли фаз <span class="math notranslate nohighlight">\(\mathbf{F} \in {\rm I\!R}^{N_p-1}\)</span> в системе, соответствующие равновесному состоянию.</p>
 <p><strong>Псевдокод:</strong><br />
 <strong>def</strong> <span class="math notranslate nohighlight">\(\phi \left( \mathbf{Y} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}, \, \ldots \right) \rightarrow \mathbf{\Phi} \in {\rm I\!R}^{\left( N_p - 1 \right) \times N_c}\)</span> <span class="comment"># Функция для расчета матрицы коэф-тов летучести</span><br />
@@ -458,7 +465,7 @@ document.write(`
  <span class="math notranslate nohighlight">\(\mathbf{g} := \ln \mathbf{K} + \ln \mathbf{\Phi} - \ln \mathbf{\varphi}\)</span> <span class="comment"># Матрица невязок</span><br />
  <span class="math notranslate nohighlight">\(k := 1\)</span> <span class="comment"># Счетчик итераций</span><br />
  <strong>while</strong> <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2 &gt; \epsilon\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(k &lt; N_{iter}\)</span> <strong>do</strong> <span class="comment"># Цикл решения системы нелинейных уравнений</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{K} := \mathbf{K} \cdot \exp \left( - \lambda \mathbf{g} \right)\)</span>  <span class="comment"># Обновление матрицы основных переменных</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{K} := \mathbf{K} \cdot \exp \left( - \mathbf{g} \right)\)</span>  <span class="comment"># Обновление матрицы основных переменных</span><br />
   <span class="math notranslate nohighlight">\(\mathbf{F} := R \left( \mathbf{K}, \, \mathbf{z} \right)\)</span> <span class="comment"># Вектор мольных долей фаз</span><br />
   <span class="math notranslate nohighlight">\(\mathbf{x} := \mathbf{z} \, / \left( \mathbf{F}^\top \left(\mathbf{K} - 1 \right) + 1 \right)\)</span> <span class="comment"># Компонентный состав референсной фазы</span><br />
   <span class="math notranslate nohighlight">\(\mathbf{Y} := \mathbf{K} \cdot \mathbf{x}\)</span> <span class="comment"># Матрица компонентных составов нереференсных фаз</span><br />
@@ -472,15 +479,15 @@ document.write(`
  <strong>end if</strong><br />
 <strong>end for</strong></p>
 </div>
-<p>Таким образом, метод последовательных подстановок характеризуется наличием двух <code class="docutils literal notranslate"><span class="pre">while</span></code>-циклов: внутренний цикл используется для решения уравнения Речфорда-Райса при фиксированных константах фазового равновесия, внешний цикл – для обновления констант фазового равновесия, исходя из необходимого условия равновесия.</p>
-<p>В качестве начальных приближений констант фазового равновесия для расчета равновесного состояния можно использовать тот же набор начальных приближений, что и для <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">проверки стабильности системы</span></a>. Кроме того, в качестве начального приближения к определению равновесного состояния можно использовать результаты анализа стабильности, одним из которых является вектор <span class="math notranslate nohighlight">\(Y_i, \; i = 1 \, \ldots \, N_c\)</span>, интерепретируемый как вектор количеств вещества компонентов в системе. Тогда вектор</p>
+<p>Таким образом, метод последовательных подстановок характеризуется наличием двух <code class="docutils literal notranslate"><span class="pre">while</span></code>-циклов: внутренний цикл используется для решения <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнения Речфорда-Райса</span></a> при фиксированных константах фазового равновесия, внешний цикл – для обновления констант фазового равновесия, исходя из необходимого условия равновесия.</p>
+<p>В качестве начальных приближений констант фазового равновесия для расчета равновесного состояния можно использовать тот же набор начальных приближений, что и для <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">проверки стабильности системы</span></a>. Кроме того, в качестве начального приближения к определению равновесного состояния можно использовать результаты анализа стабильности, одним из которых является вектор <span class="math notranslate nohighlight">\(Y_i, \; i = 1 \, \ldots \, N_c,\)</span> интерепретируемый как вектор количеств вещества компонентов в системе. Тогда вектор</p>
 <div class="math notranslate nohighlight">
 \[ y_i = \frac{Y_i}{\sum_{j=1}^{N_c} Y_j}, \; i = 1 \, \ldots \, N_c, \]</div>
 <p>представляет собой вектор мольных долей компонентов в системе. Следовательно, набор начальных приближений для расчета равновесного состояния:</p>
 <div class="math notranslate nohighlight">
 \[ \mathbf{K}_0 = \left\{ y_i \, / \, z_i, \; z_i  \, / \, y_i, \; i = 1 \, \ldots \, N_c \right\}. \]</div>
 <p>После определения равновесного состояния для <span class="math notranslate nohighlight">\(N_p\)</span>-фазной постановки задачи выполняется анализ стабильности системы. Если анализ стабильности показывает, что <span class="math notranslate nohighlight">\(N_p\)</span>-фазный компонентный состав не является стабильным, то выполняется поиск равновесного состояния для <span class="math notranslate nohighlight">\(\left( N_p+1 \right)\)</span>-фазной постановки.</p>
-<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>. Кроме того, для проверки стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Также на каждой итерации метода последовательных подстановок необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a>. Для решения уравнения в двухфазной постановке будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">реализация</a> <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">метода FGH</span></a>, для решения системы уравнений Речфорда-Райса – модифицированный метод [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>], реализация которого представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
+<p>Рассмотрим применения метода последовательных подстановок для нахождения равновесного состояния. В данном подразделе будет использоваться <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализация</a>. Кроме того, для проверки стабильности системы будет применяться метод последовательных подстановок, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Также на каждой итерации решения системы уравнений термодинамического равновесия необходимо решать <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">уравнение Речфорда-Райса</span></a>. Для решения уравнения в двухфазной постановке будет использоваться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">реализация</a> <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">метода FGH</span></a>, для решения системы уравнений Речфорда-Райса – модифицированный метод [<a class="reference external" href="https://doi.org/10.2118/117752-PA">Okuno et al, 2010</a>], реализация которого представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py">здесь</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
@@ -533,7 +540,7 @@ document.write(`
 <p>Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">)</span>
 <span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">stabres</span>
 </pre></div>
@@ -543,14 +550,14 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 False
 Tangent-plane distance:
--0.01654257858678946
+-0.016542621413642863
 Calculation completed successfully:
 True
 </pre></div>
 </div>
 </div>
 </div>
-<p>В результате проверки стабильности (путем вызова метода <code class="docutils literal notranslate"><span class="pre">run</span></code>) однофазное состояние системы оказалось нестабильным. В <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном тесту стабильности, применение метода QNSS для данного примера было представлено подробнее. Также был получен набор начальных приближений для проведения расчета равновесного состояния (принцип получения начальных приближений также подробнее был представлен в <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">разделе</span></a>, посвященном проверке стабильности некоторого состояния системы):</p>
+<p>В результате проверки стабильности (путем вызова метода <code class="docutils literal notranslate"><span class="pre">run</span></code>) однофазное состояние системы оказалось нестабильным. Также был получен набор начальных приближений для проведения расчета равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stabres</span><span class="o">.</span><span class="n">kvji</span>
@@ -558,12 +565,12 @@ True
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([0.87776755, 2.10009203]), array([1.13925378, 0.47616961]))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([0.8777675 , 2.10009246]), array([1.13925384, 0.47616951]))
 </pre></div>
 </div>
 </div>
 </div>
-<p>Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений. Проиницилизируем данную функцию.</p>
+<p>Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений теродинамического равновесия. Проиницилизируем данную функцию.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
@@ -627,12 +634,12 @@ True
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>For the initial guess #0:
-	tolerance of equations: 2.3732331226082408e-07
+	tolerance of equations: 2.3732334650579942e-07
 	number of iterations: 10
 	phase compositions:
 		[0.81827116 0.18172884]
 		[0.91760692 0.08239308]
-	phase mole fractions: 0.1772465313683731, 0.8227534686316269
+	phase mole fractions: 0.17724653136833962, 0.8227534686316604
 </pre></div>
 </div>
 </div>
@@ -648,7 +655,7 @@ True
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 True
 Tangent-plane distance:
--3.079791818553032e-08
+1.2806078420733526e-10
 Calculation completed successfully:
 True
 </pre></div>
@@ -662,7 +669,7 @@ True
 <span class="n">yji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yj1</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yj1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
 <span class="n">lnphiji</span><span class="p">,</span> <span class="n">Zj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)</span>
 <span class="n">lnfji</span> <span class="o">=</span> <span class="n">lnphiji</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
-<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfji</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vecdot</span><span class="p">(</span><span class="n">yji</span><span class="p">,</span> <span class="n">lnfji</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -671,7 +678,7 @@ True
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">)</span>
-<span class="n">Lj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yji</span> <span class="o">*</span> <span class="n">lnfi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -682,17 +689,17 @@ True
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 
 <span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная добавочная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Количество вещества диоксида углерода в системе, моль&#39;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная добавочная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">axins1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">([</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.89</span><span class="p">],</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.975</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">14.5</span><span class="p">,</span> <span class="mf">15.1</span><span class="p">),</span>
                         <span class="n">xticklabels</span><span class="o">=</span><span class="p">[],</span> <span class="n">yticklabels</span><span class="o">=</span><span class="p">[])</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">indicate_inset_zoom</span><span class="p">(</span><span class="n">axins1</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
-<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная добавочная</span><span class="se">\n</span><span class="s1">энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
 <span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y1i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y1i</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">),</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">axins1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y2i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y2i</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">),</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -708,7 +715,7 @@ True
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/b26e69988ee5a3063dfad83dbc824d60a8cac4bc8569903cd33fdfb89aa96a7c.png" src="../../_images/b26e69988ee5a3063dfad83dbc824d60a8cac4bc8569903cd33fdfb89aa96a7c.png" />
+<img alt="../../_images/a1745baf100b49ca8f07b12e02c234f6d1bd0723dd57e9834657e369d469d03c.png" src="../../_images/a1745baf100b49ca8f07b12e02c234f6d1bd0723dd57e9834657e369d469d03c.png" />
 </div>
 </div>
 <p>Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>. Стоит также отметить, что две точки, показанные на графике, соответствующие двухфазному равновесному состоянию, называются <em><strong>бинодальными точками</strong></em>.</p>
@@ -744,7 +751,7 @@ True
 <p>Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># level=1 means more cases of initial k-values</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># level=1 means more cases of initial k-values</span>
 <span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">stabres</span>
 </pre></div>
@@ -754,7 +761,7 @@ True
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 False
 Tangent-plane distance:
--1.073685330307677
+-1.073685357209667
 Calculation completed successfully:
 True
 </pre></div>
@@ -797,12 +804,12 @@ True
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>For the initial guess #0:
-	tolerance of equations: 6.277521721963762e-07
+	tolerance of equations: 6.277521420841364e-07
 	number of iterations: 5
 	phase compositions:
 		[0.00105886 0.98875662 0.01018452]
 		[0.20198554 0.19928141 0.59873305]
-	phase mole fractions: 0.5075758987077769, 0.49242410129222314
+	phase mole fractions: 0.507575898707777, 0.492424101292223
 </pre></div>
 </div>
 </div>
@@ -819,14 +826,14 @@ True
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 False
 Tangent-plane distance:
--3.425189957770404
+-3.425189957136501
 Calculation completed successfully:
 True
 </pre></div>
 </div>
 </div>
 </div>
-<p>По результатам проверки стабильности двухфазное равновесное состояние оказалось нестабильным, следовательно, необходимо выполнить расчет для трехфазного равновесного состояния. Остановимся подробнее на задании начального приближения для многофазного расчета равновесного состояния. Результатом двухфазного расчета равновесного состояния является некоторое состояние системы, характеризующиеся равенством летучестей соответствующих компонентов, компонентными составами фаз <span class="math notranslate nohighlight">\(y^1_i\)</span> и <span class="math notranslate nohighlight">\(y^2_i\)</span>, мольными долями фаз <span class="math notranslate nohighlight">\(F_1\)</span> и <span class="math notranslate nohighlight">\(F_2\)</span>, а также константами фазого равновесия <span class="math notranslate nohighlight">\(K_i^{12} = y^1_i \, / \, y^2_i\)</span>. Затем был проведен тест стабильности компонентного состава <span class="math notranslate nohighlight">\(y^2_i\)</span>, показавший его нестабильность, в ходе которого удалось подобрать некоторую мнимую фазу <em>(trial phase)</em> с компонентным составом <span class="math notranslate nohighlight">\(x_i\)</span> и константами фазового равновесия <span class="math notranslate nohighlight">\(K_i^{t2} = x_i \, / \, y^2_i\)</span>, также находящуюся в термодинамическом равновесии. Таким образом, набор констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K} = \left\{ K_i^{12}, \, K_i^{t2} \right\}\)</span> является хорошим начальным приближением для расчета трехфазного равновесного состояния, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2012.06.021">Li and Firoozabadi, 2012</a>]. При этом начальное приближение необходимо и для <a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">алгоритма</span></a> решения системы уравнений Речфорда-Райса, в качестве которого может выступить вектор <span class="math notranslate nohighlight">\(\mathbf{F} = \left( F_1, \, 0 \right)^\top\)</span>, поскольку мнимая фаза характеризуется пренебрежимо малой мольной долей.</p>
+<p>По результатам проверки стабильности двухфазное равновесное состояние оказалось нестабильным, следовательно, необходимо выполнить расчет для трехфазного равновесного состояния. Остановимся подробнее на задании начального приближения для многофазного расчета равновесного состояния. Результатом двухфазного расчета равновесного состояния является некоторое состояние системы, характеризующиеся равенством летучестей соответствующих компонентов, компонентными составами фаз <span class="math notranslate nohighlight">\(y_{1i}, \, i = 1 \, \ldots \, N_c,\)</span> и <span class="math notranslate nohighlight">\(y_{2i}, \, i = 1 \, \ldots \, N_c,\)</span>, мольными долями фаз <span class="math notranslate nohighlight">\(F_1\)</span> и <span class="math notranslate nohighlight">\(F_2\)</span>, а также константами фазого равновесия <span class="math notranslate nohighlight">\(K_{1i} = y_{1i} \, / \, y_{2i}, \, i = 1 \, \ldots \, N_c\)</span>. Затем был проведен тест стабильности компонентного состава <span class="math notranslate nohighlight">\(y_{2i}, \, i = 1 \, \ldots \, N_c,\)</span> показавший его нестабильность, в ходе которого удалось подобрать некоторую мнимую фазу <em>(trial phase)</em> с компонентным составом <span class="math notranslate nohighlight">\(x_i, \, i = 1 \, \ldots \, N_c,\)</span> и константами фазового равновесия <span class="math notranslate nohighlight">\(K_{ti} = x_i \, / \, y_{2i}, \, i = 1 \, \ldots \, N_c,\)</span> также находящуюся в термодинамическом равновесии. Таким образом, набор констант фазового равновесия <span class="math notranslate nohighlight">\(\mathbf{K} = \left\{ K_{1i}, \, K_{ti} \right\}\)</span> является хорошим начальным приближением для расчета трехфазного равновесного состояния, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2012.06.021">Li and Firoozabadi, 2012</a>]. При этом начальное приближение необходимо и для <a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">алгоритма</span></a> решения системы уравнений Речфорда-Райса, в качестве которого может выступить вектор <span class="math notranslate nohighlight">\(\mathbf{F} = \left( F_1, \, 0 \right)^\top\)</span>, поскольку мнимая фаза характеризуется пренебрежимо малой мольной долей.</p>
 <p>С учетом изложенного выше, сформируем матрицу констант фазового равновесия для первой итерации расчета трехфазного равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -837,7 +844,7 @@ True
 </div>
 <div class="cell_output docutils container">
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[5.24225188e-03, 4.96160994e+00, 1.70101163e-02],
-       [1.09678555e-10, 1.37290191e-21, 1.67019342e+00]])
+       [1.09678556e-10, 1.37290196e-21, 1.67019342e+00]])
 </pre></div>
 </div>
 </div>
@@ -921,7 +928,7 @@ True
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tolerance of equations: 6.81228525690268e-07
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tolerance of equations: 6.812285134095091e-07
 Number of iterations: 4
 Phase compositions:
 [[4.06762255e-03 9.95611408e-01 3.20969086e-04]
@@ -943,7 +950,7 @@ Phase mole fractions: [0.57733451 0.29739749 0.12526801]
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 True
 Tangent-plane distance:
-1.693957087148039e-09
+6.124767359968357e-12
 Calculation completed successfully:
 True
 </pre></div>
@@ -953,79 +960,79 @@ True
 <p>Таким образом, на представленных примерах было продемонстрировано применение метода последовательных подстановок для нахождения двух- и трехфазного равновесного состояния. Как уже было отмечено ранее, недостатком этого метода является сравнительно большое количество итераций и медленная сходимость для случаев вблизи <a class="reference internal" href="SEC-6-Saturation.html"><span class="std std-doc">линии насыщения</span></a> или вблизи <a class="reference internal" href="SEC-7-Criticality.html"><span class="std std-doc">критической точки</span></a>. Для ускорения могут применяться различные модификации данного метода, полученные авторами работ [<a class="reference external" href="https://doi.org/10.1002/cjce.5450610414">Mehra et al, 1983</a>; <a class="reference external" href="https://doi.org/10.1016/0378-3812(84)80013-8">Nghiem and Li, 1984</a>]. Реализация метода <em>QNSS</em> представлена <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>.</p>
 <p>Особенностью данных методов является введение коэффициента <em>длины шага итерации</em>, обозначенного в представленном выше алгоритме, как <span class="math notranslate nohighlight">\(\lambda\)</span>, и его расчет с использованием следующего выражения:</p>
 <div class="math notranslate nohighlight">
-\[ \lambda_{k} = \lambda_{k-1} \frac{\mathbf{g}_{k-1}^\top \mathbf{g}_{k-1}}{\mathbf{g}_{k-1}^\top \left( \mathbf{g}_{k-1} - \mathbf{g}_k \right)}, \]</div>
+\[ \lambda^{k} = \lambda^{k-1} \frac{\left( \mathbf{g}^\top \mathbf{g} \right)^{k-1}}{\left( \mathbf{g}^\top \mathbf{g} \right)^{k-1} - {\mathbf{g}^{k-1}}^\top \mathbf{g}^k}, \]</div>
 <p>а итерация записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \ln \mathbf{k}_{k+1} = \ln \mathbf{k}_k - \lambda_k \mathbf{g}_k. \]</div>
-<p>Стоит отметить, что в обоих случаях предполагается выполнение первой итерации с использованием метода последовательных подстановок, то есть <span class="math notranslate nohighlight">\(\lambda_0 = 1\)</span>. Оба метода могут быть распространены и на многофазные системы. В этом случае, например, вектор <span class="math notranslate nohighlight">\(\mathbf{g}\)</span> записывается следующим образом:</p>
+\[ \ln \mathbf{k}^{k+1} = \ln \mathbf{k}^k - \lambda^k \mathbf{g}^k. \]</div>
+<p>Стоит отметить, что в обоих случаях предполагается выполнение первой итерации с использованием метода последовательных подстановок, то есть <span class="math notranslate nohighlight">\(\lambda^0 = 1\)</span>. Оба метода могут быть распространены и на многофазные системы. В этом случае, например, вектор <span class="math notranslate nohighlight">\(\mathbf{g}\)</span> записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \mathbf{g} = \begin{bmatrix} \ln k_1^{1N_p} + \ln \phi_1^1 - \ln \phi_1^{N_p} \\ \ln k_2^{1N_p} + \ln \phi_2^1 - \ln \phi_2^{N_p} \\ \vdots \\ \ln k_{N_c}^{1N_p} + \ln \phi_{N_c}^1 - \ln \phi_{N_c}^{N_p} \\ \ln k_1^{2N_p} + \ln \phi_1^2 - \ln \phi_1^{N_p} \\ \ln k_2^{2N_p} + \ln \phi_2^2 - \ln \phi_2^{N_p} \\ \vdots \\ \ln k_{N_c}^{2N_p} + \ln \phi_{N_c}^2 - \ln \phi_{N_c}^{N_p} \\ \vdots \\ \ln k_{N_c}^{N_p-1,N_p} + \ln \phi_{N_c}^{N_p-1} - \ln \phi_{N_c}^{N_p} \end{bmatrix}. \end{split}\]</div>
-<p>Аналогично записывается вектор основных переменных. С другой стороны, поскольку метод последовательных подстановок является своеобразным упрощением метода градиентного спуска при рассмотрении задачи с точки зрения минимизации энергии Гиббса, то очевидным вариантом ускорения является применение метода Ньютона, требующего нахождение вторых частных производных функции энергии Гиббса по основным переменным. В качестве вектора основных переменных может выступать вектор количеств вещества компонентов в <span class="math notranslate nohighlight">\(N_p-1\)</span> фазах.</p>
-<p>Рассмотрим формулировку метода Ньютона для минимизации энергии Гиббса в двухфазной постановке. В качестве вектора основных переменных выберем вектор количеств вещества компонентов в жидкой фазе <span class="math notranslate nohighlight">\(n_i^L, \, i = 1 \, \ldots \, N_c\)</span>. Элемент вектора количеств вещества компонентов в газовой фазе обозначим <span class="math notranslate nohighlight">\(n_i^V, \, i = 1 \, \ldots \, N_c\)</span>. При этом количество вещества компонента в газовой фазе выражается через количество вещества компонента в системе <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c,\)</span> и количество вещества компонента в жидкой фазе следующим образом:</p>
+\[\begin{split} \mathbf{g} = \begin{bmatrix} \ln k_{11} + \ln \varphi_{11} - \ln \varphi_{N_p1} \\ \ln k_{12} + \ln \varphi_{12} - \ln \varphi_{N_p2} \\ \vdots \\ \ln k_{1N_c} + \ln \varphi_{1N_c} - \ln \varphi_{N_pN_c} \\ \ln k_{21} + \ln \varphi_{21} - \ln \varphi_{N_p1} \\ \ln k_{22} + \ln \varphi_{22} - \ln \varphi_{N_p2} \\ \vdots \\ \ln k_{2N_c} + \ln \varphi_{2N_c} - \ln \varphi_{N_pN_c} \\ \vdots \\ \ln k_{N_p-1,N_c} + \ln \varphi_{N_p-1,N_c} - \ln \varphi_{N_pN_c} \end{bmatrix}. \end{split}\]</div>
+<p>Аналогично записывается вектор основных переменных. С другой стороны, поскольку метод последовательных подстановок является своеобразным упрощением метода градиентного спуска при рассмотрении задачи с точки зрения минимизации энергии Гиббса, то очевидным вариантом ускорения является применение метода Ньютона, требующего нахождение вторых частных производных функции энергии Гиббса по основным переменным. В качестве вектора основных переменных может выступать вектор количеств вещества компонентов в <span class="math notranslate nohighlight">\(\left( N_p-1 \right)\)</span> фазах.</p>
+<p>Рассмотрим формулировку метода Ньютона для минимизации энергии Гиббса в двухфазной постановке. В качестве вектора основных переменных выберем вектор количеств вещества компонентов в жидкой фазе <span class="math notranslate nohighlight">\(n_{Li}, \, i = 1 \, \ldots \, N_c\)</span>. Элемент вектора количеств вещества компонентов в газовой фазе обозначим <span class="math notranslate nohighlight">\(n_{Vi}, \, i = 1 \, \ldots \, N_c\)</span>. При этом количество вещества компонента в газовой фазе выражается через количество вещества компонента в системе <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c,\)</span> и количество вещества компонента в жидкой фазе следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ n_i^V = n_i - n_i^L, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ n_{Vi} = n_i - n_{Li}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Количество вещества жидкой и газовой фаз можно получить через количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента:</p>
 <div class="math notranslate nohighlight">
-\[ n^L = \sum_{i = 1}^{N_c} n_i^L, \; n^V = \sum_{i = 1}^{N_c} n_i^V. \]</div>
+\[ n_L = \sum_{i = 1}^{N_c} n_{Li}, \; n_V = \sum_{i = 1}^{N_c} n_{Vi}. \]</div>
 <p>Для метода Ньютона необходимо получение аналитических выражений вектора градиента энергии Гиббса и матрицы гессиана. Выражение для элемента вектора градиента приведенной (безразмерной) энергии Гиббса было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>:</p>
 <div class="math notranslate nohighlight">
-\[ g_i = \ln f_i^L - \ln f_i^V, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ g_i = \ln f_{Li} - \ln f_{Vi}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Выразим летучесть <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе через коэффициент летучести и его количество вещества:</p>
 <div class="math notranslate nohighlight">
-\[ \ln f_i^j = \ln \varphi_i^j y_i^j P = \ln \varphi_i^j \frac{n_i^j}{n^j} P = \ln \varphi_i^j + \ln n_i^j - \ln n^j + \ln P, \; i = 1 \, \ldots \, N_c, \; j = \left\{L, \, V \right\}. \]</div>
+\[ \ln f_{ji} = \ln \varphi_{ji} y_{ji} P = \ln \varphi_{ji} \frac{n_{ji}}{n_j} P = \ln \varphi_{ji} + \ln n_{ji} - \ln n_j + \ln P, \; j = \left\{L, \, V \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Тогда элемент вектора градиента:</p>
 <div class="math notranslate nohighlight">
-\[ g_i = \ln \varphi_i^L + \ln n_i^L - \ln n^L - \left( \ln \varphi_i^V + \ln n_i^V - \ln n^V \right), \; i = 1 \, \ldots \, N_c. \]</div>
+\[ g_i = \ln \varphi_{Li} + \ln n_{Li} - \ln n_L - \left( \ln \varphi_{Vi} + \ln n_{Vi} - \ln n_V \right), \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Получим выражение для элемента матрицы гессиана:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{alignat}{1}
 H_{il}
-&amp;= &amp;&amp; \frac{\partial g_i}{\partial n_l^L} \\
-&amp;= &amp;&amp; \frac{\partial \ln \varphi_i^L}{\partial n_l^L} + \frac{\partial \ln n_i^L}{\partial n_l^L} - \frac{\partial \ln n^L}{\partial n_l^L} - \left( \frac{\partial \ln \varphi_i^V}{\partial n_l^V} \frac{\partial n_l^V}{\partial n_l^L} + \frac{\ln n_i^V}{\partial n_l^V} \frac{\partial n_l^V}{\partial n_l^L} - \frac{\partial \ln n^V}{\partial n_l^V} \frac{\partial n_l^V}{\partial n_l^L} \right), \\
+&amp;= &amp;&amp; \frac{\partial g_i}{\partial n_{Ll}} \\
+&amp;= &amp;&amp; \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}} + \frac{\partial \ln n_{Li}}{\partial n_{Ll}} - \frac{\partial \ln n_L}{\partial n_{Ll}} - \left( \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} \frac{\partial n_{Vl}}{\partial n_{Ll}} + \frac{\ln n_{Vi}}{\partial n_{Vl}} \frac{\partial n_{Vl}}{\partial n_{Ll}} - \frac{\partial \ln n_V}{\partial n_{Vl}} \frac{\partial n_{Vl}}{\partial n_{Ll}} \right), \\
 &amp;&amp;&amp; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
 \end{alignat} \end{split}\]</div>
 <p>Упростим некоторые слагаемые. Частная производная логарифма количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(L\)</span>-й фазе по количесту вещества <span class="math notranslate nohighlight">\(l\)</span>-го компонента в этой же фазе:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial \ln n_i^L}{\partial n_l^L} = \frac{1}{n_i^L} \frac{\partial n_i^L}{\partial n_l^L} = \frac{1}{n_i^L} \delta_{il}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \]</div>
+\[ \frac{\partial \ln n_{Li}}{\partial n_{Ll}} = \frac{1}{n_{Li}} \frac{\partial n_{Li}}{\partial n_{Ll}} = \frac{1}{n_{Li}} \delta_{il}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \]</div>
 <p>где <span class="math notranslate nohighlight">\(\delta_{il}, \, i = 1 \, \ldots \, N_c, \, l = 1 \, \ldots \, N_c,\)</span> представляет собой элемент <a class="reference external" href="https://en.wikipedia.org/wiki/Identity_matrix">единичной матрицы</a> – <a class="reference external" href="https://en.wikipedia.org/wiki/Kronecker_delta">дельта Кронекера</a>.</p>
 <p>Частная производная количества вещества фазы <span class="math notranslate nohighlight">\(L\)</span> по количеству вещества <span class="math notranslate nohighlight">\(l\)</span>-го компонента этой же фазы:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial \ln n^L}{\partial n_l^L} = \frac{1}{n^L} \frac{\partial n^L}{\partial n_l^L} = \frac{1}{n^L} \frac{\partial}{\partial n_l^L} \sum_{i=1}^{N_c} n_i^L = \frac{1}{n^L} \sum_{i=1}^{N_c} \frac{\partial n_i^L}{\partial n_l^L} = \frac{1}{n^L}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c. \]</div>
+\[ \frac{\partial \ln n_L}{\partial n_{Ll}} = \frac{1}{n_L} \frac{\partial n_L}{\partial n_{Ll}} = \frac{1}{n_L} \frac{\partial}{\partial n_{Ll}} \sum_{i=1}^{N_c} n_{Li} = \frac{1}{n_L} \sum_{i=1}^{N_c} \frac{\partial n_{Li}}{\partial n_{Ll}} = \frac{1}{n_L}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c. \]</div>
 <p>Частная производная количества вещества <span class="math notranslate nohighlight">\(l\)</span>-го компонента в <span class="math notranslate nohighlight">\(V\)</span>-й фазе по количеству вещества этого же компонента в фазе <span class="math notranslate nohighlight">\(L\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{\partial n_l^V}{\partial n_l^L} = \frac{\partial}{\partial n_l^L} \left( n_l - n_l^L \right) = -1, \; l = 1 \, \ldots \, N_c. \]</div>
+\[ \frac{\partial n_{Vl}}{\partial n_{Ll}} = \frac{\partial}{\partial n_{Ll}} \left( n_l - n_{Ll} \right) = -1, \; l = 1 \, \ldots \, N_c. \]</div>
 <p>С учетом изложенного выше элемент матрицы гессиана преобразуется к следующему виду:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
 H_{il}
-&amp;= \frac{\partial \ln \varphi_i^L}{\partial n_l^L} + \frac{\partial \ln \varphi_i^V}{\partial n_l^V} + \delta_{il} \left( \frac{1}{n_i^L} + \frac{1}{n_i^V} \right) - \left( \frac{1}{n^L} + \frac{1}{n^V} \right), \\
-&amp;= \frac{\partial \ln \varphi_i^L}{\partial n_l^L} + \frac{\partial \ln \varphi_i^V}{\partial n_l^V} + \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} \\
+&amp;= \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}} + \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} + \delta_{il} \left( \frac{1}{n_{Li}} + \frac{1}{n_{Vi}} \right) - \left( \frac{1}{n_L} + \frac{1}{n_V} \right), \\
+&amp;= \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}} + \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} + \delta_{il} \frac{n_i}{n_{Li} n_{Vi}} - \frac{n}{n_L n_V} \\
 &amp;= \Phi_{il} + U_{il}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c,
 \end{align} \end{split}\]</div>
 <p>где:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
-\Phi_{il} &amp;= \frac{\partial \ln \varphi_i^L}{\partial n_l^L} + \frac{\partial \ln \varphi_i^V}{\partial n_l^V}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \\
-U_{il} &amp;= \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} = \frac{1}{n^L n^V} \left( \delta_{il} \frac{n_i}{y_i^L y_i^V} - n \right), \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
+\Phi_{il} &amp;= \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}} + \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \\
+U_{il} &amp;= \delta_{il} \frac{n_i}{n_{Li} n_{Vi}} - \frac{n}{n_L n_V} = \frac{1}{n_L n_V} \left( \delta_{il} \frac{n_i}{y_{Li} y_{Vi}} - n \right), \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
 <p>Если рассматривается система с <span class="math notranslate nohighlight">\(n = 1 \, моль\)</span>, тогда выражение для элемента матрицы <span class="math notranslate nohighlight">\(\mathbf{U}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ U_{il} = \frac{1}{F^L F^V} \left(  \frac{\delta_{il}}{u_i} - 1 \right), \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \]</div>
-<p>где <span class="math notranslate nohighlight">\(u_i = y_i^L y_i^V \, / \, y_i\)</span>.</p>
+\[ U_{il} = \frac{1}{F_L F_V} \left(  \frac{\delta_{il}}{u_i} - 1 \right), \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \]</div>
+<p>где <span class="math notranslate nohighlight">\(u_i = y_{Li} y_{Vi} \, / \, y_i\)</span>.</p>
 <p>Причем матрица <span class="math notranslate nohighlight">\(\mathbf{U}\)</span> в данном выражении – это та же матрица <span class="math notranslate nohighlight">\(\mathbf{U}\)</span> в выражении для итерации метода градиентного спуска при минимизации энергии Гиббса относительно основных переменных, выраженных в виде логарифмов констант фазового равновесия. Частные производные логарифмов коэффициентов летучести компонентов могут быть получены с использованием средств <a class="reference external" href="https://en.wikipedia.org/wiki/Automatic_differentiation">автоматического дифференцирования</a> при использовании, например, библиотеки <a class="reference external" href="https://jax.readthedocs.io/en/latest/index.html">JAX</a>, либо воспользовавшись аналитическими выражениями для нахождения производных, полученными <a class="reference internal" href="../2-EOS/EOS-Appendix-A-PD.html"><span class="std std-doc">ранее</span></a> для кубических уравнений состояния.</p>
 <p>Таким образом, <a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html"><span class="doc std std-doc">система линейных уравнений</span></a> при рассмотрении проблемы поиска равновесеного состояния, как задачи минимизации энергии Гиббса, и при использовании метода Ньютона относительно количеств вещества компонентов в фазе <span class="math notranslate nohighlight">\(L\)</span> записывается в следующем виде:</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{H}_k \Delta \mathbf{n}^L_k = \mathbf{g}_k, \]</div>
-<p>где <span class="math notranslate nohighlight">\(k\)</span> – номер итерации. Эта система линейных уравнений разрешается относительно <span class="math notranslate nohighlight">\(\Delta \mathbf{n}^L_k\)</span> и впоследствии используется в итерации метода Ньютона:</p>
+\[ \mathbf{H}^k \Delta \mathbf{n}_L^k = \mathbf{g}^k, \]</div>
+<p>где <span class="math notranslate nohighlight">\(k\)</span> – номер итерации. Эта система линейных уравнений разрешается относительно <span class="math notranslate nohighlight">\(\Delta \mathbf{n}_L^k\)</span> и впоследствии используется в итерации метода Ньютона:</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{n}^L_{k+1} = \mathbf{n}^L_{k} - \Delta \mathbf{n}^L_k, \]</div>
+\[ \mathbf{n}_L^{k+1} = \mathbf{n}_L^{k} - \Delta \mathbf{n}_L^k, \]</div>
 <p>Однако метод Ньютона также можно использовать, если выбрать логарифмы констант фазового равновесия в качестве основных переменных. В этом случае система линейных уравнений и итерация минимизации энергии Гиббса записываются следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-&amp; \mathbf{J}_k \Delta \ln \mathbf{k}_k = \mathbf{g}_k, \\
-&amp; \ln \mathbf{k}_{k+1} = \ln \mathbf{k}_{k} - \Delta \ln \mathbf{k}_k,
+&amp; \mathbf{J}^k \Delta \ln \mathbf{k}^k = \mathbf{g}^k, \\
+&amp; \ln \mathbf{k}^{k+1} = \ln \mathbf{k}^{k} - \Delta \ln \mathbf{k}^k,
 \end{align} \end{split}\]</div>
-<p>где <span class="math notranslate nohighlight">\(\mathbf{J}_k = \mathbf{H}_k \mathbf{U}^{-1}_k.\)</span></p>
+<p>где <span class="math notranslate nohighlight">\(\mathbf{J}^k = \left( \mathbf{H} \mathbf{U}^{-1} \right)^k.\)</span></p>
 <aside class="margin sidebar">
 <p class="sidebar-title"></p>
 <div class="admonition- admonition">
@@ -1045,7 +1052,7 @@ U_{il} &amp;= \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} = \frac{1}
 <p>В обоих случаях на каждой итерации метода Ньютона требуется решение системы линейных уравнений для нахождения изменения основных переменных. Для этого могут применяться как <a class="reference external" href="https://en.wikipedia.org/wiki/Matrix_decomposition">прямые</a>, так и <a class="reference external" href="https://en.wikipedia.org/wiki/Iterative_method#Linear_systems">итеративные методы решения</a>. Обе группы методов решения системы линейных уравнений рассматривались <a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html"><span class="std std-doc">ранее</span></a>. Для систем с небольшим количеством компонентов, которые чаще всего и встречаются в гидродинамическом моделировании, рекомендуется применение прямых методов, основанных на <a class="reference internal" href="../../0-Math/0-LAB/LAB-9-Decomposition.html"><span class="std std-doc">разложении матриц</span></a>.</p>
 <p>Гессиан энергии Гиббса, элемент которого для рассматриваемого случая определяется выражением</p>
 <div class="math notranslate nohighlight">
-\[ H_{il} = \frac{\partial^2 G}{\partial n_i^L \partial n_l^l}, \]</div>
+\[ H_{il} = \frac{\partial^2 G}{\partial n_{Li} \partial n_{Ll}}, \]</div>
 <aside class="margin sidebar">
 <p class="sidebar-title"></p>
 <div class="admonition- admonition">
@@ -1056,7 +1063,7 @@ U_{il} &amp;= \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} = \frac{1}
 <p>представляет собой симметричную матрицу, которая в окресности решения является положительно определенной. Однако поскольку начальное приближение констант фазового равновесия может быть произвольным, то положительная определенность гессиана негарантирована. В качестве метода решения системы линейных уравнений в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85002-4">Michelsen, 1982</a>] рекомендуется применение <a class="reference external" href="https://doi.org/10.1137/0911064">модифицированного разложения Шолески</a>, которое позволяет определить минимальное изменение <span class="math notranslate nohighlight">\(\mathbf{E}\)</span> матрицы <span class="math notranslate nohighlight">\(\mathbf{H}\)</span>, гарантирующее положительную определенность матрицы <span class="math notranslate nohighlight">\(\mathbf{H} + \mathbf{E}\)</span>, и представить полученный результат в виде произведения двух нижнетреугольных матриц: <span class="math notranslate nohighlight">\(\mathbf{H} + \mathbf{E} = \mathbf{L}\mathbf{L}^\top\)</span>. При этом, если матрица <span class="math notranslate nohighlight">\(\mathbf{H}\)</span> является положительно определенной, то <span class="math notranslate nohighlight">\(\mathbf{E} = 0\)</span>. Затем, зная нижнетреугольную матрицу, определяется вектор изменения основных переменных. Подробнее применение разложений для решения систем линейных уравнений рассматривалось <a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html"><span class="std std-doc">ранее</span></a>.</p>
 <p>В случае использования логарифмов констант фазового равновесия система линейных уравнений записывается относительно якобиана <span class="math notranslate nohighlight">\(\mathbf{J}\)</span>. Поскольку матрица <span class="math notranslate nohighlight">\(\mathbf{J}\)</span> не является симметричной, то для разрешения системы линейных уравнений можно использовать <a class="reference external" href="https://en.wikipedia.org/wiki/LU_decomposition">LU-разложение</a>. Подробнее это также рассматривалось разделе, посвященном изучению <a class="reference internal" href="../../0-Math/0-LAB/LAB-10-LinearSystems.html"><span class="std std-doc">способов решения системы линейных уравнений</span></a>. Однако, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2014.11.017">Petitfrere and Nichita, 2015</a>], время, необходимое на решение системы линейных уравнений будет в два раза меньше, по сравнению с LU-разложением, если сначала определить <span class="math notranslate nohighlight">\(\Delta \mathbf{n}_L\)</span> с использованием представленного выше способа, а затем вычислить <span class="math notranslate nohighlight">\(\Delta \ln \mathbf{k}\)</span>, воспользовавшись соотношением:</p>
 <div class="math notranslate nohighlight">
-\[ \Delta \ln \mathbf{k}_k = \mathbf{U}_k \Delta \mathbf{n}^L_k. \]</div>
+\[ \Delta \ln \mathbf{k}^k = \mathbf{U}^k \Delta \mathbf{n}_L^k. \]</div>
 <!-- TODO: Показать изменение количества итераций с ростом давления для методов последовательных подстановок, Ньютона с гессианом H и Ньютона с якобианом J. См.: 10.1016/j.fluid.2014.11.017. Показать, почему метод последовательных подстановок плохо сходится вблизи линии насыщения или критической точки. -->
 <!-- TODO: Показать пример, где метод Ньютона не сходится к решению из-за плохого начального приближения и неположительно определенной матрицы гессиана. Показать, как для этой задачи будет работать метод Ньютона с модифицированным разложением Шолески. -->
 <aside class="margin sidebar">
@@ -1069,42 +1076,42 @@ U_{il} &amp;= \delta_{il} \frac{n_i}{n_i^L n_i^V} - \frac{n}{n^L n^V} = \frac{1}
 <p>Другим решением проблемы негарантированной положительной определенности гессиана является поиск хорошего начального приближения. В связи с этим различными авторами рассматривается комбинированное использование метода последовательных подстановок (и его улучшенных альтернатив) и метода Ньютона. В этом случае метод последовательных подстановок используется на нескольких начальных итерациях с целью улучшения начального приближения, после чего происходит переключение на метод Ньютона. Естественно, проверять на каждой итерации является ли гессиан положительно определенной матрицей, является излишне ресурсозатратным. В связи с этим различными авторами были предложены косвенные условия, характеризующие о возможности перехода на использование методов второго порядка. Так, например, авторами работы [<a class="reference external" href="https://doi.org/10.2118/9232-PA">Mehra et al, 1982</a>] были предложены следующие критерии для переключения:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{cases}
-\sum_{j=1}^{N_p-1} \sum_{i=1}^{N_c} g_i^j \leq 10^{-4}, \\
-\max_j \left| \frac{F^j_k - F^j_{k-1}}{F^j_{k-1}} \right| \leq 0.01 \lambda_k, \\
+\sum_{j=1}^{N_p-1} \sum_{i=1}^{N_c} g_{ji} \leq 10^{-4}, \\
+\max_j \left| \frac{F_j^k - F_j^{k-1}}{F_j^{k-1}} \right| \leq 0.01 \lambda^k, \\
 \sum_{j=1}^{N_p-1} L_j^2 \leq 10^{-8},
 \end{cases} \end{split}\]</div>
 <p>где</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-&amp; g_i^j = \ln K_i^{jR} + \ln \varphi_i^j - \ln \varphi_i^R, \; i = 1 \, \ldots \, N_c, \, j = 1 \, \ldots \, N_p-1, \\
-&amp; L_j = \sum_{i=1}^{N_c} \left( y_i^j - y_i^R \right), \; j = 1 \, \ldots \, N_p - 1.
+&amp; g_{ji} = \ln K_{ji} + \ln \varphi_{ji} - \ln \varphi_{N_pi}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \\
+&amp; L_j = \sum_{i=1}^{N_c} \left( y_{ji} - y_{N_pi} \right), \; j = 1 \, \ldots \, N_p - 1.
 \end{align} \end{split}\]</div>
 <p>Несколько иные условия переключения на методы второго порядка были предложены авторами работы [<a class="reference external" href="https://doi.org/10.2118/8285-PA">Nghiem et al, 1983</a>]:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{cases}
-\frac{\mathbf{g}_k^\top \mathbf{g}_k}{\mathbf{g}_{k-1}^\top {\mathbf{g}_{k-1}}} &gt; \epsilon_R, \\
-\left| F_k^V - F_{k-1}^V \right| &lt; \epsilon_V, \\
-\epsilon_L &lt; \mathbf{g}_k^\top \mathbf{g}_k &lt; \epsilon_U, \\
-0 &lt; F_k^V &lt; 1.
+\frac{\left( \mathbf{g}^\top \mathbf{g} \right)^k}{\left( \mathbf{g}^\top \mathbf{g} \right)^{k-1}} &gt; \epsilon_R, \\
+\left| F_V^k - F_V^{k-1} \right| &lt; \epsilon_V, \\
+\epsilon_L &lt; \left( \mathbf{g}^\top \mathbf{g} \right)^k &lt; \epsilon_U, \\
+0 &lt; F_V^k &lt; 1.
 \end{cases} \end{split}\]</div>
 <p>Первые два критерия свидетельствуют о медленной сходимости метода последовательных подстановок. Третий критерий показывает диапазон длины вектора невязок, при котором, по мнению авторов, наиболее рационально. Верхняя граница диапазона предотвращает преждевременное переключение на методы второго порядка. Несмотря на то что вблизи решения порядок сходимости метода Ньютона превышает порядок сходимости метода градиентного спуска, переключение с одного метода на другой не является целесообразным непосредственно вблизи решения. Наконец, последний критерий не допускает переключение на метод Ньютона, когда значения мольной доли одной из фаз равны нулю, принимая во внимание особенности задания начальных приближений, а также выражение для матрицы <span class="math notranslate nohighlight">\(\mathbf{U}\)</span>. Типовые значения параметров: <span class="math notranslate nohighlight">\(\epsilon_R = 0.6, \, \epsilon_V = 10^{-2}, \, \epsilon_L = 10^{-5}, \, \epsilon_U = 10^{-3}\)</span>.</p>
 <!-- TODO: Для этого же примера показать, как работает комбинированный метод с условиями переключения. -->
 <p>Третьим решением проблемы негарантированной положительной определенности матрицы гессиана является применение квази-ньютоновских методов, которые вместо гессиана <span class="math notranslate nohighlight">\(\mathbf{H}\)</span> используют его аппроксимацию <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, являющуюся гарантированно положительно определенной (стоит отметить, что не все квази-ньютоновские методы могут это гарантировать). Одним из таких алгоритмов является <a class="reference external" href="https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm">метод <em>BFGS</em></a>, рассмотренный <a class="reference internal" href="../../0-Math/1-OM/OM-0-Introduction.html"><span class="std std-doc">ранее</span></a>. Применение метода <em>BFGS</em> для расчета фазового равновесия и анализа стабильности рассматривалось авторами работ [<a class="reference external" href="https://doi.org/10.1002/aic.690330606">Ammar and Renon, 1987</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2015.07.035">Nichita and Petitfrere</a>]. Данный метод основан на следующей аппроксимации гессиана на <span class="math notranslate nohighlight">\(\left( k + 1 \right)\)</span>-й итерации:</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{B}_{k+1} = \mathbf{B}_k + \frac{\mathbf{y}_k \mathbf{y}_k^\top}{\mathbf{y}_k^\top \mathbf{p}_k} - \frac{\mathbf{B}_k \mathbf{p}_k \left( \mathbf{B}_k \mathbf{p}_k \right)^\top }{\mathbf{p}_k^\top \mathbf{B}_k \mathbf{p}_k }, \]</div>
+\[ \mathbf{B}^{k+1} = \mathbf{B}^k + \frac{\left(\mathbf{y} \mathbf{y}^\top \right)^k}{\left(\mathbf{y}^\top \mathbf{p}\right)^k} - \frac{\left( \mathbf{B} \mathbf{p} \left( \mathbf{B} \mathbf{p} \right)^\top \right)^k}{\left( \mathbf{p}^\top \mathbf{B} \mathbf{p} \right)^k}, \]</div>
 <p>где:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \begin{align} \mathbf{y}_k &amp;= \mathbf{g}_k - \mathbf{g}_{k-1}, \\ \mathbf{p}_k &amp;= \mathbf{n}^L_k - \mathbf{n}^L_{k-1}. \end{align} \end{split}\]</div>
+\[\begin{split} \begin{align} \mathbf{y}^k &amp;= \mathbf{g}^k - \mathbf{g}^{k-1}, \\ \mathbf{p}^k &amp;= \mathbf{n}_L^k - \mathbf{n}_L^{k-1}. \end{align} \end{split}\]</div>
 <p>В этом случае изменение основных переменных, количеств вещества жидкой фазы, записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{n}^L_{k+1} = \mathbf{n}^L_{k} - \lambda \mathbf{B}_k^{-1} \mathbf{g}_k, \]</div>
-<p>где <span class="math notranslate nohighlight">\(\lambda\)</span> – длина шага итерации, определяемая в ходе процедуры <em>line search</em>. Для вычисления матрицы <span class="math notranslate nohighlight">\(\mathbf{B}_{k+1}^{-1}\)</span> на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации может быть использована <a class="reference external" href="https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula">формула Шермана-Моррисона</a>:</p>
+\[ \mathbf{n}_L^{k+1} = \mathbf{n}_L^{k} - \lambda \left( \mathbf{B}^{-1} \mathbf{g} \right)^k, \]</div>
+<p>где <span class="math notranslate nohighlight">\(\lambda\)</span> – длина шага итерации, определяемая в ходе процедуры <em>line search</em>. Для вычисления матрицы <span class="math notranslate nohighlight">\(\mathbf{B}^{-1}\)</span> на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации может быть использована <a class="reference external" href="https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula">формула Шермана-Моррисона</a>:</p>
 <div class="math notranslate nohighlight">
-\[ \mathbf{B}_{k+1}^{-1} = \left( \mathbf{I} - \frac{\mathbf{p}_k \mathbf{y}_k^\top}{\mathbf{y}_k^\top \mathbf{p}_k} \right) \mathbf{B}_{k+1}^{-1} \left( \mathbf{I} - \frac{\mathbf{y}_k \mathbf{p}_k^\top}{\mathbf{y}_k^\top \mathbf{p}_k} \right) + \frac{\mathbf{p}_k \mathbf{p}_k^\top}{\mathbf{y}_k^\top \mathbf{p}_k}. \]</div>
+\[ \left( \mathbf{B}^{-1} \right)^{k+1} = \left( \mathbf{I} - \left( \frac{ \mathbf{p} \mathbf{y}^\top}{\mathbf{y}^\top \mathbf{p}} \right)^k \right) \left( \mathbf{B}^{-1} \right)^k \left( \mathbf{I} - \left( \frac{\mathbf{y} \mathbf{p}^\top}{\mathbf{y}^\top \mathbf{p}} \right)^k \right) + \left( \frac{\mathbf{p} \mathbf{p}^\top}{\mathbf{y}^\top \mathbf{p}} \right)^k. \]</div>
 <!-- TODO: Как это выражение получилось? -->
 <p>Метод <em>BFGS</em> может быть использован и в случае выбора логарифмов констант фазового равновесия в качестве основных переменных. В этом случае на <span class="math notranslate nohighlight">\(\left( k+1 \right)\)</span>-й итерации:</p>
 <div class="math notranslate nohighlight">
-\[ \ln \mathbf{k}_{k+1} = \ln \mathbf{k}_k - \lambda \mathbf{U} \mathbf{B}^{-1} \mathbf{g}. \]</div>
+\[ \ln \mathbf{k}^{k+1} = \ln \mathbf{k}^k - \lambda \mathbf{U} \mathbf{B}^{-1} \mathbf{g}. \]</div>
 <p>При этом на каждой итерации необходимо решать уравнение (систему уравнений) Речфорда-Райса для расчета мольных долей фаз и мольных долей компонентов в фазах.</p>
 <!-- TODO: Описать алгоритм BFGS для расчета равновесного состояния. -->
 <!-- TODO: Показать, как для представленного выше примера работает метод BFGS. -->

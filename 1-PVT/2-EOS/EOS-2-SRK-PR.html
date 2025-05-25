@@ -582,7 +582,7 @@ F \left( V \right)
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="k">def</span> <span class="nf">cardano</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">cardano</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">*</span> <span class="n">c</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.</span>
     <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="n">b</span> <span class="o">-</span> <span class="mf">9.</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="mf">27.</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="mf">27.</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">q</span> <span class="o">*</span> <span class="n">q</span> <span class="o">/</span> <span class="mf">4.</span> <span class="o">+</span> <span class="n">p</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">p</span> <span class="o">/</span> <span class="mf">27.</span>
@@ -825,21 +825,21 @@ F \left( V \right)
 &amp;= \int_0^P \left( \frac{1}{RT} \left( \frac{\partial V_{2p}}{\partial n_i} \right)_{P, T, n_{j \neq i}} - \frac{1}{P} \right) dP - \frac{c_i P}{RT} \\
 &amp;= \ln {\phi_i}_{2p} - \frac{b_i s_i P}{RT} . \\
 \end{align} \end{split}\]</div>
-<p>Необходимо также отметить, что введение параметров объемного сдвига не оказывает влияния на равновесное состояние, <a class="reference internal" href="../1-TD/TD-15-Fugacity.html#pvt-td-fugacity-equilibrium"><span class="std std-ref">определяемое</span></a> равенством летучестей компонентов в соответствующих фазах. То есть в равновесном состоянии при условии <span class="math notranslate nohighlight">\(\ln f_i^1 = \ln f_i^2\)</span> также будет выполняться соотношение <span class="math notranslate nohighlight">\(\ln {f_i^1}_{2p} = \ln {f_i^2}_{2p}\)</span>. Докажем данное утверждение.</p>
+<p>Необходимо также отметить, что введение параметров объемного сдвига не оказывает влияния на равновесное состояние, <a class="reference internal" href="../1-TD/TD-15-Fugacity.html#pvt-td-fugacity-equilibrium"><span class="std std-ref">определяемое</span></a> равенством летучестей соответствующих компонентов фазах. То есть в равновесном состоянии при условии <span class="math notranslate nohighlight">\(\ln f_{1i} = \ln f_{2i}, \, i = 1 \, \ldots \, N_c,\)</span> также будет выполняться соотношение <span class="math notranslate nohighlight">\(\ln {f_{1i}}_{2p} = \ln {f_{2i}}_{2p}, \, i = 1 \, \ldots \, N_c\)</span>. Докажем данное утверждение.</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
 <p>Рассмотрим две фазы <span class="math notranslate nohighlight">\(1\)</span> и <span class="math notranslate nohighlight">\(2\)</span>, в которых компоненты характеризуются следующими летучестями:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\ln f_i^1 &amp;= \ln \phi_i^1 + \ln y_i^1 P = \ln {\phi_i^1}_{2p} - \frac{b_i s_i P}{RT} + \ln y_i^1 P = \ln {f_i^1}_{2p} - \frac{b_i s_i P}{RT}, \\
-\ln f_i^2 &amp;= \ln \phi_i^2 + \ln y_i^2 P = \ln {\phi_i^2}_{2p} - \frac{b_i s_i P}{RT} + \ln y_i^2 P = \ln {f_i^2}_{2p} - \frac{b_i s_i P}{RT}.
+\ln f_{1i} &amp;= \ln \phi_{1i} + \ln y_{1i} P = \ln {\phi_{1i}}_{2p} - \frac{b_i s_i P}{RT} + \ln y_{1i} P = \ln {f_{1i}}_{2p} - \frac{b_i s_i P}{RT}, \; i = 1 \, \ldots \, N_c, \\
+\ln f_{2i} &amp;= \ln \phi_{2i} + \ln y_{2i} P = \ln {\phi_{2i}}_{2p} - \frac{b_i s_i P}{RT} + \ln y_{2i} P = \ln {f_{2i}}_{2p} - \frac{b_i s_i P}{RT}, \; i = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
-<p>Равновесное состояние характеризуется равенством летучестей компонентов для соответствующих фаз, следовательно:</p>
+<p>Равновесное состояние характеризуется равенством летучестей соответствующих компонентов в фазах, следовательно:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\ln f_i^1 &amp;= ln f_i^2 ,\\
-\ln {f_i^1}_{2p} - \frac{b_i s_i P}{RT} &amp;= \ln {f_i^2}_{2p} - \frac{b_i s_i P}{RT}, \\
-\ln {f_i^1}_{2p} &amp;= \ln {f_i^2}_{2p} .
+\ln f_{1i} &amp;= ln f_{2i}, \; i = 1 \, \ldots \, N_c, \\
+\ln {f_{1i}}_{2p} - \frac{b_i s_i P}{RT} &amp;= \ln {f_{2i}}_{2p} - \frac{b_i s_i P}{RT}, \; i = 1 \, \ldots \, N_c,  \\
+\ln {f_{1i}}_{2p} &amp;= \ln {f_{2i}}_{2p}. \; i = 1 \, \ldots \, N_c .
 \end{align} \end{split}\]</div>
 </div>
 <p>Таким образом учет параметров объемного сдвига не приводит к изменению равновесного состояния, в том числе не оказывает влияния на фазовые диаграммы.</p>

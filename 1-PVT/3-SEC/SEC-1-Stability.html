@@ -421,113 +421,133 @@ document.write(`
 <span id="pvt-sec-stability-pt"></span><h2>PT-термодинамика<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
 <section id="pvt-sec-stability-pt-theory">
 <span id="id2"></span><h3>Теоретические основы анализа стабильности фазового состояния системы<a class="headerlink" href="#pvt-sec-stability-pt-theory" title="Link to this heading">#</a></h3>
-<p>Пусть некоторая многокомпонентная макроскопическая система находится в равновесном состоянии и характеризуется давлением <span class="math notranslate nohighlight">\(P\)</span>, температурой <span class="math notranslate nohighlight">\(T\)</span> и количеством вещества всех компонентов <span class="math notranslate nohighlight">\(n_i, \; i=1..N_c\)</span>, где <span class="math notranslate nohighlight">\(N_c\)</span> – число компонентов, составляющих рассматриваемую систему. Можем ли мы использовать некоторое уравнение состояния для описания взаимосвязей между термодинамическими параметрами? Ответ на этот вопрос зависит от того, является ли рассматриваемая система гомогенной, то есть состоящей из одной сплошной фазы. Иными словами, является ли однофазное состояние рассматриваемой системы <em>стабильным</em>. Именно исследованию данного вопроса будет посвящен настоящий раздел. Однако, прежде чем переходить к рассмотрению темы стабильности фазового состояния системы, необходимо ввести ряд определений. Некоторые из них будут перекликаться с рассмотренными ранее темами, но при этом являться более обобщенными. Теоретическое изложение рассматриваемой проблемы соответствует работе [<a class="reference external" href="https://doi.org/10.2118/9806-PA">Baker et al, 1982</a>].</p>
+<p>Пусть некоторая многокомпонентная макроскопическая система находится в равновесном состоянии и характеризуется давлением <span class="math notranslate nohighlight">\(P\)</span>, температурой <span class="math notranslate nohighlight">\(T\)</span> и количеством вещества всех компонентов <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c,\)</span> где <span class="math notranslate nohighlight">\(N_c\)</span> – число компонентов, составляющих рассматриваемую систему. Можем ли мы использовать некоторое уравнение состояния для описания взаимосвязей между термодинамическими параметрами? Ответ на этот вопрос зависит от того, является ли рассматриваемая система гомогенной, то есть состоящей из одной сплошной фазы. Иными словами, является ли однофазное состояние рассматриваемой системы <em>стабильным</em>. Именно исследованию данного вопроса будет посвящен настоящий раздел. Однако, прежде чем переходить к рассмотрению темы стабильности фазового состояния системы, необходимо ввести ряд определений. Некоторые из них будут перекликаться с рассмотренными ранее темами, но при этом являться более обобщенными. Теоретическое изложение рассматриваемой проблемы соответствует работе [<a class="reference external" href="https://doi.org/10.2118/9806-PA">Baker et al, 1982</a>].</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>При использовании двойного индексирования здесь и далее первый индекс будет обозначать фазу, второй – компонент. То есть под <span class="math notranslate nohighlight">\(n_{ji}\)</span> следует понимать количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, а под, например, <span class="math notranslate nohighlight">\(\mu_{N_pk}\)</span> – химический потенциал <span class="math notranslate nohighlight">\(k\)</span>-го компонента в <span class="math notranslate nohighlight">\(N_p\)</span>-й фазе. При использовании одинарного индексирования будет явно указано отношение данного элемента к вектору, характеризующему свойства фаз или компонентов.</p>
+</div>
+</aside>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
 <p>Пусть имеется некоторая <span class="math notranslate nohighlight">\(j\)</span>-ая фаза, многофазной системы, состоящая из <span class="math notranslate nohighlight">\(N_c\)</span> компонентов, при этом количество вещества компонентов в фазе <span class="math notranslate nohighlight">\(j\)</span> определяется следующим <a class="reference internal" href="../../0-Math/0-LAB/LAB-1-Vectors.html"><span class="std std-doc">вектором</span></a>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \mathbf{n}^j = \begin{bmatrix} n_1^j \\ n_2^j \\ \vdots \\ n_{N_c}^j \end{bmatrix}. \end{split}\]</div>
+\[\begin{split} \mathbf{n}_j = \begin{bmatrix} n_{1j} \\ n_{2j} \\ \vdots \\ n_{N_cj} \end{bmatrix}, \; j = 1 \, \ldots \, N_p. \end{split}\]</div>
 <p>Если количество вещества компонентов в системе в целом определяется вектором</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \mathbf{n} = \begin{bmatrix} n_1 \\ n_2 \\ \vdots \\ n_{N_c} \end{bmatrix}, \end{split}\]</div>
 <p>то фаза <span class="math notranslate nohighlight">\(j\)</span> является <em><strong>допустимой</strong></em> <em>(admissible)</em>, если</p>
 <div class="math notranslate nohighlight">
-\[ 0 &lt; n_i^j &lt; n_i, \; i = 1 \ldots N_c.\]</div>
+\[ 0 &lt; n_{ji} &lt; n_i, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
 </div>
 <p>Иными словами, фаза является <em>допустимой</em>, если количество вещества каждого компонента, в нее входящего, меньше количества вещества этого же компонента в системе в целом. Все дальнейшие выкладки будут касаться допустимых фаз, в которых представлены все компоненты, не взаимодействующие друг с другом с образованием новых компонентов, то есть не вступающие в реакции. Кроме того, необходимо отметить, что здесь и далее нижний индекс будет характеризовать некоторый компонент, а верхний – некоторую фазу. Для допустимых фаз справедливо следущее соотношение:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} n_i^j = n_i, \]</div>
-<p>где <span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз в системе. При известных и заданных давлении и температуре рассматриваемой системы, а также количествах вещества компонентов в ней <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html"><span class="std std-doc">энергия Гиббса</span></a> некоторой фазы определяется количеством вещества каждого компонента в фазе, то есть:</p>
+\[ \sum_{j=1}^{N_p} n_{ji} = n_i, \; i = 1 \, \ldots \, N_c, \]</div>
+<p>где <span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз в системе, а <span class="math notranslate nohighlight">\(N_c\)</span> – число компонентов. При известных и заданных давлении и температуре рассматриваемой системы, а также количествах вещества компонентов в ней <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html"><span class="std std-doc">энергия Гиббса</span></a> некоторой фазы определяется количеством вещества каждого компонента в фазе, то есть:</p>
 <div class="math notranslate nohighlight">
-\[ G^j = G^j \left( \mathbf{n}^j \right). \]</div>
+\[ G_j = G_j \left( \mathbf{n}_j \right), \; j = 1 \, \ldots \, N_p. \]</div>
 <p>Учитывая <a class="reference internal" href="../1-TD/TD-9-Observables.html#pvt-td-observables-extensive"><span class="std std-ref">экстенсивность</span></a> энергии Гиббса, для многофазной системы справедливо следующее соотношение:</p>
 <div class="math notranslate nohighlight">
-\[ G \left( \mathbf{n} \right) = G \left( \mathbf{n}^1, \, \mathbf{n}^2, \, \ldots \, , \mathbf{n}^j \right) = \sum_{j=1}^{N_p} G^j \left( \mathbf{n}^j \right). \]</div>
+\[ G \left( \mathbf{n} \right) = G \left( \mathbf{n}_1, \, \mathbf{n}_2, \, \ldots, \, \mathbf{n}_{N_p} \right) = \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right). \]</div>
+<p>Здесь и далее вместо перечисления векторов количеств вещества компонентов в фазах, соответствующих некоторому состоянию, будем использовать обозначение <span class="math notranslate nohighlight">\(G \left( \mathbf{n}_1, \, \mathbf{n}_2, \, \ldots, \, \mathbf{n}_{N_p} \right) \equiv G \left( \hat{M} \right)\)</span>.</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
-<p>Некоторое <span class="math notranslate nohighlight">\(\hat{K}\)</span> состояние системы, характеризующееся <span class="math notranslate nohighlight">\(N_p\)</span> количеством <em>допустимых</em> фаз, удовлетворяющих закону сохранения масс, является <em><strong>равновесным</strong></em>, если:</p>
+<p>Некоторое <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span> состояние системы, характеризующееся <span class="math notranslate nohighlight">\(N_p\)</span> количеством <em>допустимых</em> фаз, удовлетворяющих закону сохранения масс, является <em><strong>равновесным</strong></em>, если:</p>
 <div class="math notranslate nohighlight">
-\[ G \left( \hat{K} \right) = \min_l G^l \left( \hat{L} \right), \]</div>
-<p>где минимум берется по всем состояниям <span class="math notranslate nohighlight">\(\hat{L}\)</span>, характеризующимся <span class="math notranslate nohighlight">\(K_p\)</span> количеством <em>допустимых</em> фаз, удовлетворяющих закону сохранения масс.</p>
+\[ G \left( \hat{M} \right) = \min_{\hat{K}} G \left( \hat{K} \right), \]</div>
+<p>где минимум берется по всем состояниям <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{r}_k, \, k = 1 \, \ldots \, K_p \right\}\)</span>, характеризующимся <span class="math notranslate nohighlight">\(K_p\)</span> количеством <em>допустимых</em> фаз, удовлетворяющих закону сохранения масс.</p>
 </div>
-<p>В данном определении необходимо отметить два момента. Первый: <em>равновесное состояние</em> характеризуется минимумом энергии Гиббса всей многофазной системы. Более подробно это рассматривалось <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html"><span class="std std-doc">ранее</span></a>. Второй: для того чтобы доказать, что некоторое состояние <span class="math notranslate nohighlight">\(\hat{K}\)</span> многофазной системы из <span class="math notranslate nohighlight">\(N_p\)</span> является <em>равновесным</em>, мы можем рассмотреть множество других состояний <span class="math notranslate nohighlight">\(\hat{L}\)</span>, каждое из которых будет характеризоваться своим количеством фаз <span class="math notranslate nohighlight">\(K_p\)</span>, и если в состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> с количеством фаз <span class="math notranslate nohighlight">\(N_p\)</span> энергия Гиббса меньше всего, то оно и будет равновесным.</p>
+<p>В данном определении необходимо отметить два момента. Первый: <em>равновесное состояние</em> характеризуется минимумом энергии Гиббса всей многофазной системы. Более подробно это рассматривалось <a class="reference internal" href="../1-TD/TD-14-PhaseEquilibrium.html"><span class="std std-doc">ранее</span></a>. Второй: для того чтобы доказать, что некоторое состояние <span class="math notranslate nohighlight">\(\hat{M}\)</span> многофазной системы из <span class="math notranslate nohighlight">\(N_p\)</span> фаз является <em>равновесным</em>, мы можем рассмотреть множество других состояний <span class="math notranslate nohighlight">\(\hat{K}\)</span>, каждое из которых будет характеризоваться своим числом фаз <span class="math notranslate nohighlight">\(K_p\)</span>, и если в состоянии <span class="math notranslate nohighlight">\(\hat{M}\)</span> с количеством фаз <span class="math notranslate nohighlight">\(N_p\)</span> энергия Гиббса меньше всего, то оно и будет равновесным.</p>
 <p>Представленное в предыдущем определении условие идентификации равновесного состояния, по сути, аналогично условию нахождения <a class="reference external" href="https://en.wikipedia.org/wiki/Maximum_and_minimum">глобального минимума функции</a>. <a class="reference external" href="https://en.wikipedia.org/wiki/First_derivative_test">Известно</a>, что необходимым условием для соответствия некоторого точки (состояния) глобальному минимуму функции (энергии Гиббса) является равенство нулю производной в этой точке (этом состоянии). Такое состояние, в котором энергия Гиббса всей многофазной многокомпонентной системы характеризуется равенством нулю частной производной по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-ой фазе при фиксированных давлении и температуре будет характеризоваться равенством химических потенциалов соответствующих компонентов в фазах.</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
-<p>Пусть многофазная многокомпонентная система находится при фиксированных давлении <span class="math notranslate nohighlight">\(P\)</span>, температуре <span class="math notranslate nohighlight">\(T\)</span> и количествах вещества компонентов в ней <span class="math notranslate nohighlight">\(n_i, \; i=1 \, \ldots \, N_c,\)</span> в некотором состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> с количеством фаз <span class="math notranslate nohighlight">\(N_p\)</span> с соответствующими количествами вещества компонентов <span class="math notranslate nohighlight">\(n_i^j, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p\)</span>. В этом состоянии частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_i^j\)</span> равна нулю:</p>
+<p>Пусть многофазная многокомпонентная система находится при фиксированных давлении <span class="math notranslate nohighlight">\(P\)</span>, температуре <span class="math notranslate nohighlight">\(T\)</span> и количествах вещества компонентов в ней <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c,\)</span> в некотором состоянии с количеством фаз <span class="math notranslate nohighlight">\(N_p\)</span> с соответствующими количествами вещества компонентов <span class="math notranslate nohighlight">\(n_{ji}, \, j = 1 \, \ldots \, N_p, \, i = 1 \, \ldots \, N_c\)</span>, в котором частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_{ji}\)</span> равна нулю:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i, l \neq j} = 0. \]</div>
+\[ \left( \frac{\partial G}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i} = 0, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Тогда для такого состояния системы будет справедливо следующее равенство:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i^j = \mu_i^{N_p}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p. \]</div>
+\[ \mu_{ji} = \mu_{N_pi}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
 </div>
 <p>Докажем  это следующим образом.</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
-<p>Учитывая экстенсивность энергии Гиббса, преобразуем частную производную энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_i^j\)</span> следующим образом:</p>
+<p>Учитывая экстенсивность энергии Гиббса, преобразуем частную производную энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_{ji}\)</span> следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l, k \neq i, l \neq j}
-&amp;= \frac{\partial}{\partial n_i^j} \left( \sum_{l=1}^{N_p} G^l \left( n_k^l \right) \right)_{P,T,n_k^l, k \neq i, l \neq j} \\
-&amp;= \frac{\partial}{\partial n_i^j} \left( \sum_{l=1}^{N_p-1} G^l \left( n_k^l \right) \right)_{P,T,n_k^l, k \neq i, l \neq j} + \left( \frac{\partial G^{N_p} \left( n_k^{N_p} \right)}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i} \\
-&amp;= \sum_{l=1}^{N_p-1} \left( \frac{\partial G^l \left( n_k^l \right)}{\partial n_i^j} \right)_{P,T,n_k^l, k \neq i, l \neq j} + \left( \frac{\partial G^{N_p} \left( n_k^{N_p} \right)}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i}.
+\left( \frac{\partial G}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i}
+&amp;= \frac{\partial}{\partial n_{ji}} \left( \sum_{l=1}^{N_p} G_l \left( \mathbf{n}_l \right) \right)_{P,T,n_{lk}, l \neq j, k \neq i} \\
+&amp;= \frac{\partial}{\partial n_{ji}} \left( \sum_{l=1}^{N_p-1} G_l \left( \mathbf{n}_l \right) \right)_{P,T,n_{lk}, l \neq j, k \neq i} + \left( \frac{\partial G_{N_p} \left( \mathbf{n}_{N_p} \right)}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i} \\
+&amp;= \sum_{l=1}^{N_p-1} \left( \frac{\partial G_l \left( \mathbf{n}_l \right)}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i} + \left( \frac{\partial G_{N_p} \left( \mathbf{n}_{N_p} \right)}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i}.
 \end{align} \end{split}\]</div>
 <p>Принимая во внимание, что энергия Гиббса <span class="math notranslate nohighlight">\(j\)</span>-й фазы зависит от количеств вещества компонентов в этой <span class="math notranslate nohighlight">\(j\)</span>-й фазе, то есть:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial G^l \left( n_k^l \right)}{\partial n_i^j} \right)_{P,T,n_k^l, k \neq i, l \neq j} = 0, \; l \neq j, \]</div>
-<p>частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_i^j\)</span>:</p>
+\[\begin{split} \left( \frac{\partial G_l \left( \mathbf{n}_l \right)}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i} = \begin{cases} \left( \frac{\partial G_j \left( \mathbf{n}_j \right)}{\partial n_{ji}} \right)_{P,T,n_{jk}, k \neq i}, \; &amp; \mathrm{if} \; l = j, \; l = 1 \, \ldots \, N_p - 1, \; j = 1 \, \ldots \, N_p, \\ 0, \; &amp; \mathrm{if} \; l \neq j, \; l = 1 \, \ldots \, N_p - 1, \; j = 1 \, \ldots \, N_p, \end{cases} \end{split}\]</div>
+<p>частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_{ji}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l, k \neq i, l \neq j} = \left( \frac{\partial G^j \left( n_k^j \right)}{\partial n_i^j} \right)_{P,T,n_k^j, k \neq i} + \left( \frac{\partial G^{N_p} \left( n_k^{N_p} \right)}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i}. \]</div>
-<p>Учитывая правило нахождение сложной функции, данное выражение преобразуется следующим образом:</p>
+\[ \left( \frac{\partial G}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i} = \left( \frac{\partial G_j \left( \mathbf{n}_j \right)}{\partial n_{ji}} \right)_{P,T,n_{jk}, k \neq i} + \left( \frac{\partial G_{N_p} \left( \mathbf{n}_{N_p} \right)}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i}. \]</div>
+<p>Учитывая правило нахождения сложной функции, данное выражение преобразуется следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l, k \neq i, l \neq j} = \left( \frac{\partial G^j \left( n_k^j \right)}{\partial n_i^j} \right)_{P,T,n_k^j, k \neq i} + \left( \frac{\partial n_k^{N_p}}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i} \left( \frac{\partial G^{N_p} \left( n_k^{N_p} \right)}{\partial n_k^{N_p}} \right)_{P,T,n_k^{N_p},k \neq i}. \]</div>
-<p>Выразим из закона сохранения масс количество вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента в <span class="math notranslate nohighlight">\(N_p\)</span>-й фазе:</p>
+\[ \left( \frac{\partial G}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i} = \left( \frac{\partial G_j \left( \mathbf{n}_j \right)}{\partial n_{ji}} \right)_{P,T,n_{jk}, k \neq i} + \left( \frac{\partial G_{N_p} \left( \mathbf{n}_{N_p} \right)}{\partial n_{N_pi}} \right)_{P,T,n_{N_pk},k \neq i} \left( \frac{\partial n_{N_pi}}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i}. \]</div>
+<p>Выразим количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(N_p\)</span>-й фазе через количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе в целом и в других фазах:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{l=1}^{N_p} n_k^l = n_k \Rightarrow n_k^{N_p} = n_k - \sum_{l=1}^{N_p-1} n_k^l. \]</div>
-<p>Тогда частная прозводная количества вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента в <span class="math notranslate nohighlight">\(l\)</span>-й фазе по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-ой фазе:</p>
+\[ \sum_{l=1}^{N_p} n_{li} = n_i, \; i = 1 \, \ldots \, N_c \Rightarrow n_{N_pi} = n_i - \sum_{l=1}^{N_p-1} n_{li}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Тогда частная прозводная количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(N_p\)</span>-й фазе по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-ой фазе:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial n_k^{N_p}}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i} = \left( \frac{\partial n_k}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i} - \sum_{l=1}^{N_p-1} \left( \frac{\partial n_k^l}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i,l \neq j} \]</div>
+\[ \left( \frac{\partial n_{N_pi}}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i} = \left( \frac{\partial n_i}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i} - \sum_{l=1}^{N_p-1} \left( \frac{\partial n_{li}}{\partial n_{ji}} \right)_{P,T,n_{lk},k \neq i,l \neq j}. \]</div>
 <p>Первое слагаемое в данном выражении равно нулю, поскольку количество вещества каждого компонента в системе в целом зафиксировано. Второе слагаемое можно представить следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \left( \frac{\partial n_k^l}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i,l \neq j} = \begin{cases} 1 &amp; \mathrm{if} \; k=i \land l=j, \; k=1 \ldots N_c, \, l=1 \ldots N_p, \\ 0 &amp; \mathrm{if} \; k \neq i \lor l \neq j, \; k=1 \ldots N_c, \, l=1 \ldots N_p. \end{cases} \end{split}\]</div>
+\[\begin{split} \left( \frac{\partial n_{li}}{\partial n_{ji}} \right)_{P,T,n_{lk},k \neq i,l \neq j} = \begin{cases} 1, &amp; \mathrm{if} \; l = j, \; l = 1 \ldots N_p - 1, \; j = 1 \, \ldots N_p, \\ 0, &amp; \mathrm{if} \; l \neq j, \; l = 1 \ldots N_p - 1, \; j = 1 \, \ldots N_p. \end{cases} \end{split}\]</div>
 <p>Таким образом,</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \left( \frac{\partial n_k^{N_p}}{\partial n_i^j} \right)_{P,T,n_k^{N_p},k \neq i} = \begin{cases} -1 &amp; \mathrm{if} \; k=i \land j=N_p, \\ 0 &amp; \mathrm{if} \; k \neq i \lor j \neq N_p. \end{cases} \end{split}\]</div>
-<p>С учетом этого частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_i^j\)</span>:</p>
+\[\begin{split} \left( \frac{\partial n_{N_pi}}{\partial n_{ji}} \right)_{P,T,n_{N_pk},k \neq i} = \begin{cases} -1, &amp; \mathrm{if} \; j = N_p, \; j = 1 \, \ldots \, N_p, \\ 0, &amp; \mathrm{if} \; j \neq N_p, \; j = 1 \, \ldots \, N_p. \end{cases} \end{split}\]</div>
+<p>С учетом этого частная производная энергии Гиббса всей системы по <span class="math notranslate nohighlight">\(n_{ji}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l, k \neq i, l \neq j} = \left( \frac{\partial G^j \left( n_k^j \right)}{\partial n_i^j} \right)_{P,T,n_k^j, k \neq i} - \left( \frac{\partial G^{N_p} \left( n_k^{N_p} \right)}{\partial n_i^{N_p}} \right)_{P,T,n_k^{N_p},k \neq i} = 0. \]</div>
+\[ \left( \frac{\partial G}{\partial n_{ji}} \right)_{P,T,n_{lk}, l \neq j, k \neq i} = \left( \frac{\partial G_j \left( \mathbf{n}_j \right)}{\partial n_{ji}} \right)_{P,T,n_{jk}, k \neq i} - \left( \frac{\partial G_{N_p} \left( \mathbf{n}_{N_p} \right)}{\partial n_{N_pi}} \right)_{P,T,n_{N_pk},k \neq i} = 0. \]</div>
 <p>Поскольку частная производная энергии Гиббса некоторой фазы по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в этой фазе при фиксированных давлении и температуре <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html"><span class="std std-doc">соответствует</span></a> химическому потенциалу <span class="math notranslate nohighlight">\(i\)</span>-го компонента в этой фазе, то:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i^j - \mu_i^{N_p} = 0, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p. \]</div>
+\[ \mu_{ji} - \mu_{N_pi} = 0, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p. \]</div>
 </div>
-<p><a class="reference internal" href="../1-TD/TD-15-Fugacity.html#pvt-td-fugacity-equilibrium"><span class="std std-ref">Ранее</span></a> было показано, что для изотермического квази-стационарного процесса равенство химических потенциалов равносильно равенству летучестей.</p>
-<p>Поскольу условие равенства нулю частной производной энергии Гиббса системы в целом по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-ой фазе при фиксированных давлении и температуре является необходимым, но не достаточным, то рассматриваемая система может характеризоваться набором состояний, удовлетворяющих данному условию. Такие состояния будем называть <em>стационарными</em>.</p>
+<p>Поскольу условие равенства нулю частной производной энергии Гиббса системы в целом по количеству вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-ой фазе при фиксированных давлении и температуре является необходимым для определения глобального минимума функции, но не достаточным, то рассматриваемая система может характеризоваться набором состояний, удовлетворяющих данному условию. Такие состояния будем называть <em>стационарными</em>.</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
-<p>Cостояние <span class="math notranslate nohighlight">\(\hat{L} = \left\{ \mathbf{n}^j, \; j = 1 \, \ldots K_p \right\}\)</span> является <em><strong>стационарным</strong></em>, если:</p>
+<p>Cостояние <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span> является <em><strong>стационарным</strong></em>, если:</p>
 <div class="math notranslate nohighlight">
-\[ \left( \frac{\partial G}{\partial n_i^j} \right)_{P,T,n_k^l,k \neq i, l \neq j} = 0, \; i=1 \, \ldots \, N_c, \; j = 1 \, \ldots K_p. \]</div>
+\[ \left( \frac{\partial G}{\partial n_{ji}} \right)_{P,T,n_{lk},k \neq i, l \neq j} = 0, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p. \]</div>
 </div>
-<p>Центральным для анализа стабильности фазового состояния системы является положение, определяющее, что стационарное состояние системы может быть определено путем идентификации общих точек касательной <a class="reference external" href="https://en.wikipedia.org/wiki/Hyperplane">гиперплоскости</a> к <a class="reference external" href="https://en.wikipedia.org/wiki/Hypersurface">гиперповерхности</a> функции энергии Гиббса. Приставки “гипер” необходимы при рассмотрении <span class="math notranslate nohighlight">\(N_c\)</span>-мерного пространства. Например, для двух компонентов функция энергии Гиббса представляет собой кривую на плоскости, касательной к которой является прямая. Для трех компонентов функция энергии Гиббса представляет собой поверхность, а касательная к ней – плоскость. Для <span class="math notranslate nohighlight">\(N_c\)</span> компонентов функция энергии Гиббса – гиперповерхность, касательная к ней – гиперплоскость. Далее под поверхностью и плоскостью будут пониматься именно гиперповерхность и гиперплоскость соответственно.</p>
+<p>Используя термин <em>стационарного</em> состояния, можно заменить данное выше определение <em>равновесного</em> состояния на следующее:</p>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p>Некоторое <em>стационарное</em> состояние системы <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span>, характеризующееся <span class="math notranslate nohighlight">\(N_p\)</span> количеством <em>допустимых</em> фаз, удовлетворяющих закону сохранения масс, является <em><strong>равновесным</strong></em>, если:</p>
+<div class="math notranslate nohighlight">
+\[ G \left( \hat{M} \right) \leq G \left( \hat{K} \right), \]</div>
+<p>где <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{r}_k, \, k = 1 \, \ldots \, K_p \right\}\)</span> обозначает другие <em>стационарные</em> состояния системы, характеризующиеся <span class="math notranslate nohighlight">\(K_p\)</span> количеством <em>допустимых</em> фаз, удовлетворяющих закону сохранения масс.</p>
+</div>
+<p>Центральным для анализа стабильности фазового состояния системы является положение, определяющее, что стационарное состояние системы может быть установлено путем идентификации общих точек касательной <a class="reference external" href="https://en.wikipedia.org/wiki/Hyperplane">гиперплоскости</a> к <a class="reference external" href="https://en.wikipedia.org/wiki/Hypersurface">гиперповерхности</a> функции энергии Гиббса. Приставки “гипер” необходимы при рассмотрении <span class="math notranslate nohighlight">\(N_c\)</span>-мерного пространства. Например, для двух компонентов функция энергии Гиббса представляет собой кривую на плоскости, касательной к которой является прямая. Для трех компонентов функция энергии Гиббса представляет собой поверхность, а касательная к ней – плоскость. Для <span class="math notranslate nohighlight">\(N_c\)</span> компонентов функция энергии Гиббса – гиперповерхность, касательная к ней – гиперплоскость. Далее под поверхностью и плоскостью будут пониматься именно гиперповерхность и гиперплоскость соответственно.</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
-<p>Пусть <span class="math notranslate nohighlight">\(\hat{K}\)</span> является некоторым состоянием системы, состоящей из <span class="math notranslate nohighlight">\(N_p\)</span> допустимых фаз, удовлетворяющих закону сохранения масс, с известным количеством вещества компонентов в фазах <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p\)</span>. Тогда <span class="math notranslate nohighlight">\(G \left( \hat{K} \right)\)</span> является стационарной точкой тогда и только тогда, когда <span class="math notranslate nohighlight">\(G\)</span> дифференциируема для всех <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span> и поверхность <span class="math notranslate nohighlight">\(G\)</span> имеет одинаковую касательную плоскость для каждого <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span>.</p>
+<p>Пусть <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span> является некоторым состоянием системы, определяемым <span class="math notranslate nohighlight">\(N_p\)</span> допустимыми фазами, удовлетворяющими закону сохранения масс. Тогда <span class="math notranslate nohighlight">\(G \left( \hat{M} \right)\)</span> является стационарной точкой тогда и только тогда, когда <span class="math notranslate nohighlight">\(G\)</span> дифференциируема для всех <span class="math notranslate nohighlight">\(\mathbf{n}_j, \, j = 1 \, \ldots \, N_p,\)</span> и поверхность <span class="math notranslate nohighlight">\(G \left( \hat{M} \right)\)</span> имеет одинаковую касательную плоскость для каждого <span class="math notranslate nohighlight">\(\mathbf{n}_j, \, j = 1 \, \ldots \, N_p\)</span>.</p>
 </div>
 <p>Приведем доказательство данной теоремы.</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
-<p>Пусть <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> является касательной плоскостью к поверхности <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> в точке <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span>, являющейся стационарной. Тогда <a class="reference external" href="https://en.wikipedia.org/wiki/Tangent">уравнение касательной</a> плоскости <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> к поверхности <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> в точке <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span> описывается следующим выражением:</p>
+<p>Пусть <span class="math notranslate nohighlight">\(L_j \left( \mathbf{r} \right), \, j = 1 \, \ldots \, N_p,\)</span> является касательной плоскостью к поверхности <span class="math notranslate nohighlight">\(G_j \left( \mathbf{r} \right)\)</span> в точке <span class="math notranslate nohighlight">\(\mathbf{n}_j, \, j = 1 \, \ldots \, N_p,\)</span> являющейся стационарной. Тогда <a class="reference external" href="https://en.wikipedia.org/wiki/Tangent">уравнение касательной</a> плоскости <span class="math notranslate nohighlight">\(L_j \left( \mathbf{r} \right)\)</span> к поверхности <span class="math notranslate nohighlight">\(G_j \left( \mathbf{r} \right)\)</span> в точке <span class="math notranslate nohighlight">\(\mathbf{n}_j\)</span> описывается следующим выражением:</p>
 <div class="math notranslate nohighlight">
-\[ L^j \left( \mathbf{r} \right) = G \left( \mathbf{n}^j \right) + \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} \left( r_i - n_i^j \right). \]</div>
-<p>Так как энергия Гиббса является экстенсивным параметром, то при фиксированных давлении и температуре для нее выполняется следующее <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html"><span class="std std-doc">свойство</span></a>:</p>
+\[ L_j \left( \mathbf{r} \right) = G_j \left( \mathbf{n}_j \right) + \sum_{i=1}^{N_c} \frac{\partial G_j}{\partial r_i} \bigg|_{n_{ji}} \left( r_i - n_{ji} \right), \; j = 1 \, \ldots \, N_p. \]</div>
+<p>При фиксированных давлении и температуре для энергии Гиббса выполняется следующее <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html"><span class="std std-doc">свойство</span></a>:</p>
 <div class="math notranslate nohighlight">
-\[ G \left( \mathbf{n}^j \right) = \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} n_i^j = \sum_{i=1}^{N_c} \mu_i^j n_i^j. \]</div>
+\[ G_j \left( \mathbf{n}_j \right) = \sum_{i=1}^{N_c} \frac{\partial G_j}{\partial r_i} \bigg|_{n_{ji}} n_{ji} = \sum_{i=1}^{N_c} \mu_{ji} n_{ji}, \; j = 1 \, \ldots \, N_p. \]</div>
 <p>Подставляя данное выражение в уравнение касательной поверхности, получим:</p>
 <div class="math notranslate nohighlight">
-\[ L^j \left( \mathbf{r} \right) = \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} n_i^j + \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} r_i - \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} n_i^j = \sum_{i=1}^{N_c} \frac{\partial G}{\partial r_i} \bigg|_{n_i^j} r_i = \sum_{i=1}^{N_c} \mu_i^j r_i. \]</div>
-<p>Поскольку для стационарного состояния выполняется условие постоянства химического потенциала компонентов, то есть химический потенциал каждого компонента не зависит от фазы, то есть <span class="math notranslate nohighlight">\(\mu_i^j = \mu_i^{N_p}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p-1,\)</span> в соответствии с приведенной выше леммой, то <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> также не будет зависеть от фазы <span class="math notranslate nohighlight">\(j\)</span>, следовательно, для всех <span class="math notranslate nohighlight">\(j\)</span> в стационарном состоянии уравнение касательной плоскости к поверхности энергии Гиббса одинаково. Верно и обратное: если все <span class="math notranslate nohighlight">\(L^j\)</span> одинаковы, то химические потенциалы компонентов равны, и состояние является стационарным.</p>
+\[\begin{split} \begin{align}
+L_j \left( \mathbf{r} \right)
+&amp;= \sum_{i=1}^{N_c} \frac{\partial G_j}{\partial r_i} \bigg|_{n_{ji}} n_{ji} + \sum_{i=1}^{N_c} \frac{\partial G_j}{\partial r_i} \bigg|_{n_{ji}} r_i - \sum_{i=1}^{N_c} \frac{\partial G_j}{\partial r_i} \bigg|_{n_{ji}} n_{ji} \\
+&amp;= \sum_{i=1}^{N_c} \frac{\partial G_j}{\partial r_i} \bigg|_{n_{ji}} r_i \\
+&amp;= \sum_{i=1}^{N_c} \mu_{ji} r_i, \; j = 1 \, \ldots \, N_p.
+\end{align} \end{split}\]</div>
+<p>Поскольку для стационарного состояния выполняется условие постоянства химического потенциала компонентов, то есть химический потенциал каждого компонента не зависит от фазы, то есть <span class="math notranslate nohighlight">\(\mu_{ji} = \mu_{N_pi}, \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c,\)</span> в соответствии с приведенной выше леммой, то <span class="math notranslate nohighlight">\(L_j \left( \mathbf{r} \right)\)</span> также не будет зависеть от фазы <span class="math notranslate nohighlight">\(j\)</span>, следовательно, для всех <span class="math notranslate nohighlight">\(j\)</span> в стационарном состоянии уравнение касательной плоскости к поверхности энергии Гиббса одинаково. Верно и обратное: если все <span class="math notranslate nohighlight">\(L_j\)</span> одинаковы, то химические потенциалы компонентов равны, и состояние является стационарным.</p>
 </div>
-<p>Представленная выше теорема говорит о том, что в стационарном состоянии <span class="math notranslate nohighlight">\(\hat{K}\)</span> касательная плоскость <span class="math notranslate nohighlight">\(L^j \left( \mathbf{r} \right)\)</span> к поверхности энергии Гиббса <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> одинакова для всех составов фаз <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p,\)</span> определяющих рассматриваемое стационарное состояние <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{n}^j, \; j = 1 \, \ldots N_p \right\}\)</span>. Однако в конечном счете нам необходимо установить, является ли стационарное состояние стабильным (равновесным). Для этого введем следующие обозначения.</p>
+<p>Представленная выше теорема говорит о том, что в стационарном состоянии <span class="math notranslate nohighlight">\(\hat{M}\)</span> касательная плоскость <span class="math notranslate nohighlight">\(L_j \left( \mathbf{r} \right)\)</span> к поверхности энергии Гиббса <span class="math notranslate nohighlight">\(G_j \left( \mathbf{r} \right)\)</span> одинакова для всех составов фаз <span class="math notranslate nohighlight">\(\mathbf{n}_j, \; j = 1 \, \ldots \, N_p,\)</span> определяющих рассматриваемое стационарное состояние <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots N_p \right\}\)</span>. Данное свойство будет проиллюстрировано примером в <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">разделе</span></a>, посвященном определению равновесного состояния системы. Однако целью данного раздела является установление стабильности некоторого стационарного состояния системы. Для этого введем следующие обозначения.</p>
 <p>Пусть <span class="math notranslate nohighlight">\(D \left( \mathbf{r} \right)\)</span> является функцией разности между энергией Гиббса <span class="math notranslate nohighlight">\(G \left( \mathbf{r} \right)\)</span> и функцией касательной плоскости к ней <span class="math notranslate nohighlight">\(L \left( \mathbf{r} \right)\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ D \left( \mathbf{r} \right) = G \left( \mathbf{r} \right) - L \left( \mathbf{r} \right). \]</div>
@@ -537,69 +557,80 @@ document.write(`
 <p>Далее будет показано, что при любых значениях <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> в равновесном состоянии функция <span class="math notranslate nohighlight">\(D \left( \mathbf{r} \right)\)</span> не принимает отрицательных значений. Однако прежде чем переходить к доказательству этого утверждения необходимо рассмотреть следующую лемму:</p>
 <div class="danger admonition">
 <p class="admonition-title">Лемма</p>
-<p>Разница между энергией Гиббса системы в <em>любом состоянии</em>, состоящей из <span class="math notranslate nohighlight">\(K_p\)</span> приемлемых фаз, компонентный состав которых <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p,\)</span> и удовлетворяющих закону сохранения масс, и энергией Гиббса в <em>стационарном состоянии</em> с <span class="math notranslate nohighlight">\(N_p\)</span> приемлемыми фазами, компонентный состав которых <span class="math notranslate nohighlight">\(\mathbf{n}^j, \; j = 1 \, \ldots \, N_p,\)</span> причем <span class="math notranslate nohighlight">\(K_p\)</span> может быть неравно <span class="math notranslate nohighlight">\(N_p\)</span>, есть сумма <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right)\)</span> по количеству фаз <span class="math notranslate nohighlight">\(K_p\)</span>, то есть:</p>
+<p>Разница между энергией Гиббса системы в <em>любом состоянии</em> <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{r}_k, \, k = 1 \, \ldots \, K_p \right\}\)</span>, состоящем из <span class="math notranslate nohighlight">\(K_p\)</span> приемлемых фаз, компонентный состав которых удовлетворяет закону сохранения масс, и энергией Гиббса в <em>стационарном состоянии</em> <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span> с <span class="math notranslate nohighlight">\(N_p\)</span> приемлемыми фазами, причем <span class="math notranslate nohighlight">\(K_p\)</span> может быть неравно <span class="math notranslate nohighlight">\(N_p\)</span>, есть сумма <span class="math notranslate nohighlight">\(D_k \left( \mathbf{r}_k \right), \, k = 1 \, \ldots \, K_p,\)</span> по количеству фаз <span class="math notranslate nohighlight">\(K_p\)</span>, то есть:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right) - \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) = \sum_{k=1}^{K_p} D \left( \mathbf{r}^k \right). \]</div>
+\[ \sum_{k=1}^{K_p} G_k \left( \mathbf{r}_k \right) - \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) = \sum_{k=1}^{K_p} D_k \left( \mathbf{r}_k \right). \]</div>
 </div>
 <p>Доказательство:</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
 <p>Поскольку система одна и та же, то выполняется закон сохранения масс:</p>
 <div class="math notranslate nohighlight">
-\[ n_i = \sum_{j=1}^{N_p} n_i^j = \sum_{k=1}^{K_p} r_i^k, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Для стационарного состояния характерно постоянство химического потенциала компонента <span class="math notranslate nohighlight">\(\mu_i^j\)</span> среди всех фаз <span class="math notranslate nohighlight">\(j = 1 \ldots N_p\)</span>. То есть справедливо следующее равенство:</p>
+\[ n_i = \sum_{j=1}^{N_p} n_{ji} = \sum_{k=1}^{K_p} r_{ki}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Для стационарного состояния характерно постоянство химического потенциала компонента <span class="math notranslate nohighlight">\(\mu_{ji}\)</span> среди всех фаз <span class="math notranslate nohighlight">\(j = 1 \, \ldots \, N_p\)</span>. То есть справедливо следующее равенство:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i^j = \mu_i^{N_p}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p. \]</div>
+\[ \mu_{ji} = \mu_{N_pi}, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Следовательно:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right)
-&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} \mu_i^j n_i^j \\
-&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} \mu_i^1 n_i^j \\
-&amp;= \sum_{i=1}^{N_c} \mu_i^1 \sum_{j=1}^{N_p} n_i^j \\
-&amp;= \sum_{i=1}^{N_c} \mu_i^1 \sum_{k=1}^{K_p} r_i^k \\
-&amp;= \sum_{k=1}^{K_p} \sum_{i=1}^{N_c} \mu_i^1 r_i^k \\
-&amp;= \sum_{k=1}^{K_p} L \left( \mathbf{r}^k \right).
+\sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right)
+&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} \mu_{ji} n_{ji} \\
+&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} \mu_{N_pi} n_{ji} \\
+&amp;= \sum_{i=1}^{N_c} \mu_{N_pi} \sum_{j=1}^{N_p} n_{ji} \\
+&amp;= \sum_{i=1}^{N_c} \mu_{N_pi} \sum_{k=1}^{K_p} r_{ki} \\
+&amp;= \sum_{k=1}^{K_p} \sum_{i=1}^{N_c} \mu_{N_pi} r_{ki} \\
+&amp;= \sum_{k=1}^{K_p} L_k \left( \mathbf{r}_k \right).
 \end{align} \end{split}\]</div>
 <p>Тогда</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right) - \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right)
-&amp; = \sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right) - \sum_{k=1}^{K_p} L \left( \mathbf{r}^k \right) \\
-&amp; = \sum_{k=1}^{K_p} \left( G \left( \mathbf{r}^k \right) - L \left( \mathbf{r}^k \right) \right) \\
-&amp; = \sum_{k=1}^{K_p} D \left( \mathbf{r}^k \right).
+\sum_{k=1}^{K_p} G_k \left( \mathbf{r}_k \right) - \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right)
+&amp; = \sum_{k=1}^{K_p} G_k \left( \mathbf{r}_k \right) - \sum_{k=1}^{K_p} L_k \left( \mathbf{r}_k \right) \\
+&amp; = \sum_{k=1}^{K_p} \left( G_k \left( \mathbf{r}_k \right) - L_k \left( \mathbf{r}_k \right) \right) \\
+&amp; = \sum_{k=1}^{K_p} D_k \left( \mathbf{r}_k \right).
 \end{align} \end{split}\]</div>
 </div>
 <p>Теперь можем перейти к доказательству основной теоремы:</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
-<p>Пусть система находится в некотором <em>стационарном</em> состоянии с количеством вещества в фазах <span class="math notranslate nohighlight">\(\mathbf{n}^j, j = 1 \, \ldots \, N_p,\)</span> причем значение энергии Гиббса для всех значений <span class="math notranslate nohighlight">\(\mathbf{r}^k\)</span> (количеств вещества компонентов в фазах <span class="math notranslate nohighlight">\(k, \; k = 1 \, \ldots \, K_p\)</span>) больше или равно касательной плоскости <span class="math notranslate nohighlight">\(L \left( \mathbf{r}^k \right)\)</span>, иными словами <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right) \geq 0, \; k = 1 \, \ldots \, K_p,\)</span> тогда данное стационарное состояние является <em><strong>равновесным</strong></em>.</p>
+<p>Пусть система находится в некотором <em>стационарном</em> состоянии <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span>. Причем значение энергии Гиббса в <em>любом другом состоянии</em> <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{r}_k, \, k = 1 \, \ldots \, K_p \right\}\)</span> больше или равно касательной плоскости <span class="math notranslate nohighlight">\(L_k \left( \mathbf{r}_k \right), \, k = 1 \, \ldots \, K_p,\)</span> иными словами <span class="math notranslate nohighlight">\(D_k \left( \mathbf{r}_k \right) \geq 0, \, k = 1 \, \ldots \, K_p,\)</span> тогда данное стационарное состояние <span class="math notranslate nohighlight">\(\hat{M}\)</span> является <em><strong>равновесным</strong></em>.</p>
 </div>
 <p>Докажем данную теорему.</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
-<p>Рассмотрим любое состояние системы с количеством вещества <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p\)</span>. Тогда из условия <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right) \geq 0, \; k = 1 \, \ldots \, K_p,\)</span> следует, что</p>
+<p>Рассмотрим любое состояние системы <span class="math notranslate nohighlight">\(\hat{K} = \left\{ \mathbf{r}_k, \, k = 1 \, \ldots \, K_p \right\}\)</span>. Тогда из условия <span class="math notranslate nohighlight">\(D_k \left( \mathbf{r}_k \right) \geq 0, \, k = 1 \, \ldots \, K_p,\)</span> следует, что</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{K_p} D \left( \mathbf{r}^k \right) \geq 0. \]</div>
+\[ \sum_{k=1}^{K_p} D_k \left( \mathbf{r}_k \right) \geq 0. \]</div>
 <p>Согласно доказанной ранее лемме, данное неравество можно записать следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right) - \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) \geq 0. \]</div>
+\[ \sum_{k=1}^{K_p} G_k \left( \mathbf{r}_k \right) - \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) \geq 0. \]</div>
 <p>Или:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) \leq \sum_{k=1}^{K_p} G \left( \mathbf{r}^k \right). \]</div>
-<p>То есть для любых <span class="math notranslate nohighlight">\(\mathbf{r}^k, \; k = 1 \, \ldots \, K_p,\)</span> энергия Гиббса системы получается больше, чем при <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span>, то есть состояние с <span class="math notranslate nohighlight">\(\mathbf{n}^j\)</span> характеризуется наименьшей энергией Гиббса, следовательно, оно является равновесным по определению.</p>
+\[\begin{split} \begin{align}
+\sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) &amp; \leq \sum_{k=1}^{K_p} G_k \left( \mathbf{r}_k \right), \\
+G \left( \hat{M} \right) &amp; \leq G \left( \hat{K} \right).
+\end{align} \end{split}\]</div>
+<p>То есть для любых <span class="math notranslate nohighlight">\(\mathbf{r}_k, \, k = 1 \, \ldots \, K_p,\)</span> энергия Гиббса системы получается больше, чем при <span class="math notranslate nohighlight">\(\mathbf{n}_j, \, j = 1 \, \ldots \, N_p,\)</span> то есть стационарное состояние <span class="math notranslate nohighlight">\(\hat{M} = \left\{ \mathbf{n}_j, \, j = 1 \, \ldots \, N_p \right\}\)</span> характеризуется наименьшей энергией Гиббса, следовательно, оно является равновесным по определению.</p>
 </div>
-<p>В результате доказательства этой теоремы данное ранее определение равновесного состояния, как состояния, характеризующегося наименьшей энергией Гиббса, можно переформулировать следующим образом:</p>
+<p>В результате доказательства этой теоремы данное ранее определение равновесного состояния, как стационарного состояния, характеризующегося наименьшей энергией Гиббса, можно переформулировать следующим образом:</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
 <p><em><strong>Равновесным состоянием</strong></em> называется такое <em>стационарное</em> состояние системы, при котором касательная гиперплоскость к гиперповерхности энергии Гиббса, проведенная в точке с компонентным составом этого состояния, не пересекает гиперповерхность энергии Гиббса в любых других точках.</p>
 </div>
-<p>Таким образом, анализ стабильности некоторого стационарного состояния многофазной многокомпонентной системы можно проводить посредством исследования функции <span class="math notranslate nohighlight">\(D \left( \mathbf{r}^k \right)\)</span>, определяемой расстоянием от гиперповерхности энергии Гиббса до касательной гиперплоскости, проведенной в точке с рассматриваемым стационарным состоянием. Эту функцию обычно называют <em>TPD – tangent plane distance</em>. Прежде чем переходить к рассмотрению примеров анализа стабильности необходимо необходимо отметить, что для квази-стационарного изотермического процесса <a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">справедливо</span></a> следующее преобразование:</p>
+<p>Таким образом, анализ стабильности некоторого стационарного состояния многофазной многокомпонентной системы можно проводить посредством исследования функции <span class="math notranslate nohighlight">\(D \left( \mathbf{r} \right)\)</span>, определяемой расстоянием от гиперповерхности энергии Гиббса до касательной гиперплоскости, проведенной в точке с рассматриваемым стационарным состоянием. Эту функцию обычно называют <em>TPD – tangent plane distance</em>. Прежде чем переходить к рассмотрению примеров анализа стабильности графическим способом необходимо выразить энергию Гиббса многофазной системы через <a class="reference internal" href="../1-TD/TD-15-Fugacity.html"><span class="std std-doc">летучести</span></a> компонентов в фазах:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} G \left( \mathbf{n}^j \right) = \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} \mu_i^j n_i^j = R T \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_i^j \ln f_i^j. \]</div>
-<p>Тогда <em>приведенная энергия Гиббса</em>:</p>
+\[\begin{split} \begin{align}
+\sum_{j=1}^{N_p} G_j \left( P, \, T, \, \mathbf{n}_j \right)
+&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \mu_{ji} \left( P, \, T, \, \mathbf{n}_j \right) \\
+&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \left( \mu_i \left( P^*, \, T \right) +  R T \ln \frac{f_{ji}}{P^*} \right) \\
+&amp;= \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \left( \mu_i \left( P^*, \, T \right) - R T \ln P^* \right) + R T \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \ln f_{ji} \\
+&amp;= \sum_{i=1}^{N_c} \left( \mu_i \left( P^*, \, T \right) - R T \ln P^* \right) \sum_{j=1}^{N_p} n_{ji} + R T \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \ln f_{ji} \\
+&amp;= \sum_{i=1}^{N_c} n_i \left( \mu_i \left( P^*, \, T \right) - R T \ln P^* \right) + R T \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \ln f_{ji} \\
+&amp;= \Lambda \left( T, \mathbf{n} \right) + R T \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \ln f_{ji}.
+\end{align} \end{split}\]</div>
+<p>Первое слагаемое в данном выражении <span class="math notranslate nohighlight">\(\Lambda \left( T, \mathbf{n} \right)\)</span> является функцией от температуры и количеств вещества компонентов в системе в целом, которые являются фиксированными для рассматриваемой задачи анализа стабильности. То есть данное слагаемое можно рассматривать в качестве константы в выражении для энергии Гиббса. Следовательно, приведенные выше теоретические выкладки анализа стабильности будут применимы для <em>приведенной добавочной энергии Гиббса</em>, определяемой выражением:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} \tilde{G} \left( \mathbf{n^j} \right) = \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_i^j \ln f_i^j. \]</div>
+\[ \tilde{G}^E = \sum_{j=1}^{N_p} \sum_{i=1}^{N_c} n_{ji} \ln f_{ji}. \]</div>
 <p>Рассмотрим применение анализа стабильности с использованием функции <em>TPD</em> на следующих примерах.</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
@@ -651,17 +682,17 @@ document.write(`
 </div>
 <p class="sd-card-text">Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная добавочная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Количество вещества диоксида углерода в системе, моль&#39;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная добавочная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/b3dda1a718fd7143370fc8a2d805d2efe28421c4a7d36250db689d34ea413672.png" src="../../_images/b3dda1a718fd7143370fc8a2d805d2efe28421c4a7d36250db689d34ea413672.png" />
+<img alt="../../_images/d7f04134f74070c964562fa1019d401920e72ff1a4df0c3014d2e4c0b05f106c.png" src="../../_images/d7f04134f74070c964562fa1019d401920e72ff1a4df0c3014d2e4c0b05f106c.png" />
 <br>
 <br>
 <p class="sd-card-text">Из представленного результата видно, что при рассматриваемых термобарических условиях касательная, проведенная в точке с заданным компонентным составом, не пересекает функцию энергии Гиббса, следовательно, можно сделать вывод о том, что однофазное состояние является стабильным. Более того, учитывая выпуклую вниз форму функции энергии Гиббса, можно заключить, что при любых компонентных составах данная система будет стабильна в однофазовом состоянии при рассматриваемых термобарических условиях.</p>
@@ -707,17 +738,17 @@ document.write(`
 </div>
 <p class="sd-card-text">Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Gj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Приведенная добавочная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Касательная&#39;</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Количество вещества диоксида углерода в системе, моль&#39;</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная энергия Гиббса&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Приведенная добавочная энергия Гиббса&#39;</span><span class="p">)</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/f3430c6fe6d93ded70ceb780369a00994f0d0cb8142bdeb2f639ed5a1b6038f1.png" src="../../_images/f3430c6fe6d93ded70ceb780369a00994f0d0cb8142bdeb2f639ed5a1b6038f1.png" />
+<img alt="../../_images/07499cc9731a777510b7e371da81a806ac61806f8f9a6aaa5f1c8bfecfc919cf.png" src="../../_images/07499cc9731a777510b7e371da81a806ac61806f8f9a6aaa5f1c8bfecfc919cf.png" />
 <br>
 <br>
 <p class="sd-card-text">Поскольку видно, что касательная, проведенная к функции энергии Гиббса в точке с рассматриваемым компонентным составом пересекает функцию энергии Гиббса, то однофазное состояние данной системы нестабильно. Построим зависимость функции TPD.</p>
@@ -746,15 +777,15 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
 D \left( \mathbf{r} \right)
-&amp;= G \left( \mathbf{r} \right) - \sum_{i=1}^{N_c} \mu_i \left( \mathbf{z} \right) r_i \\
+&amp;= G \left( \mathbf{r} \right) - L \left( \mathbf{r} \right) \\
 &amp;= \sum_{i=1}^{N_c} \mu_i \left( \mathbf{y} \right) r_i - \sum_{i=1}^{N_c} \mu_i \left( \mathbf{z} \right) r_i \\
 &amp;= \sum_{i=1}^{N_c} r_i \left( \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) \right) \geq 0, \; \forall \, \mathbf{r} \, : \, \sum_{i=1}^{N_c} r_i \leq \sum_{i=1}^{N_c} n_i, \; \mathbf{r} &gt; 0,
 \end{align} \end{split}\]</div>
 <p>где:
 <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> – произвольный состав рассматриваемой системы, моль;
-<span class="math notranslate nohighlight">\(\mathbf{y} = \mathbf{r} / \sum_{i=1}^{N_c} r_i\)</span> – мольные доли компонентов для произвольного состава, д.ед.;
+<span class="math notranslate nohighlight">\(\mathbf{y} = \mathbf{r} \, / \sum_{i=1}^{N_c} r_i\)</span> – мольные доли компонентов для произвольного состава, д.ед.;
 <span class="math notranslate nohighlight">\(\mathbf{\mu} \left( \mathbf{y} \right)\)</span> – химические потенциалы компонентов для произвольного состава системы, Дж/моль.;
-<span class="math notranslate nohighlight">\(\mathbf{z} = \mathbf{n} / \sum_{i=1}^{N_c} n_i\)</span> – заданный компонентный состав системы, д.ед.;
+<span class="math notranslate nohighlight">\(\mathbf{z} = \mathbf{n} \, / \sum_{i=1}^{N_c} n_i\)</span> – заданный компонентный состав системы, д.ед.;
 <span class="math notranslate nohighlight">\(\mathbf{\mu} \left( \mathbf{z} \right)\)</span> – химические потенциалы компонентов для заданного компонентного состава системы, Дж/моль.</p>
 </div>
 <aside class="margin sidebar">
@@ -795,7 +826,7 @@ D \left( \mathbf{r} \right)
 <p class="admonition-title">Доказательство</p>
 <p>Из приведенного выше соотношения выразим значения химического потенциала в точке, соответствующей стационарной точке функции TPD:</p>
 <div class="math notranslate nohighlight">
-\[ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z} \right) + K. \]</div>
+\[ \mu_i \left( \mathbf{y} \right) = \mu_i \left( \mathbf{z} \right) + K, \; i = 1 \, \ldots \, N_c - 1. \]</div>
 <p>Тогда, согласно представленной выше теореме, уравнение касательной к функции энергии Гиббса в этой точке с компонентным составом <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ L_y \left( \mathbf{x} \right) = \sum_{i=1}^{N_c} \mu_i \left( \mathbf{y} \right) x_i = \sum_{i=1}^{N_c} \mu_i \left( \mathbf{z} \right) x_i + K \sum_{i=1}^{N_c} x_i = L_z \left( \mathbf{x} \right) + K .\]</div>
@@ -840,9 +871,9 @@ D \left( \mathbf{y} \right) &amp;= \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mat
 <p>С учетом <span class="math notranslate nohighlight">\(\bar{K} \geq 0\)</span> можно записать следующее неравенство:</p>
 <div class="math notranslate nohighlight">
 \[ \ln \sum_{i=1}^{N_c} Y_i \leq 0 \Leftrightarrow \sum_{i=1}^{N_c} Y_i \leq 1. \]</div>
-<p>Стоит отметить, что значение <span class="math notranslate nohighlight">\(Y_i\)</span> можно условно интерпретировать как количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, действительно:</p>
+<p>Стоит отметить, что значение <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> можно условно интерпретировать как количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, действительно:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i. \]</div>
+\[ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c,. \]</div>
 <p>Таким образом, система нелинейных уравнений, определяющая условие стационарности функции TPD, записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ g_i = \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c. \]</div>
@@ -878,6 +909,13 @@ g_i
 \ln k_i &amp;= \ln k_i - \left( \ln k_i + \ln \phi_i \left( \mathbf{y} \right) - \ln \phi_i \left( \mathbf{z} \right) \right), \; i = 1 \, \ldots \, N_c, \\
 \ln k_i &amp;= \ln k_i - g_i, \; i = 1 \, \ldots \, N_c. \\
 \end{align} \end{split}\]</div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Метод последовательных подстановок может быть выражен относительно и других основных переменных, например, <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> или <span class="math notranslate nohighlight">\(\ln Y_i, \, i = 1 \, \ldots \, N_c\)</span>. Анализ сходимости численных алгоритмов проверки стабильности при использовании различных основных переменных был выполнен авторами [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2014.11.017">Petitfrere and Nichita, 2015</a>].</p>
+</div>
+</aside>
 <p>Таким образом, метод последовательных подстановок может быть использован для решения рассматриваемой системы нелинейных уравнений относительно основных переменных <span class="math notranslate nohighlight">\(k_i, \, i = 1 \, \ldots \, N_c\)</span>, обновление которых на некоторой итерации осуществляется с использованием следующего выражения:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
@@ -917,6 +955,13 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
  <span class="math notranslate nohighlight">\(is\_stable := \mathrm{True}\)</span><br />
 <strong>end for</strong></p>
 </div>
+<p>В данном алгоритме в качестве критерия, определяющего нестабильность рассматриваемого однофазового состояния, использовалось следующее выражение:</p>
+<div class="math notranslate nohighlight">
+\[ TPD = - \ln \sum_{i=1}^{N_c} Y_i &lt; -\epsilon_2, \]</div>
+<p>где значение <span class="math notranslate nohighlight">\(\epsilon_2\)</span> выбирается из диапазона <span class="math notranslate nohighlight">\(0 &lt; \epsilon_2 \leq 10^{-4}\)</span>. Использование такого подхода необходимо в связи с применением численного метода, в ходе которого система нелинейных уравнений разрешается с некоторой точностью. Его преимуществом является сравнительная простота вычисления, а недостатком – ложное отнесение состояний, характеризующихся <span class="math notranslate nohighlight">\(- \epsilon_2 &lt; TPD &lt; 0\)</span>, к стабильным. Альтернативный и более строгий критерий можно сформулировать следующим образом:</p>
+<div class="math notranslate nohighlight">
+\[ \left( - \ln \sum_{i=1}^{N_c} Y_i &lt; 0 \right) \land \left( \max_i k_i - \min_i k_i &gt; \epsilon_1 \right). \]</div>
+<p>Недостатком данной формулировки является необходимость нахождения минимального и максимального элемента вектора основных переменных <span class="math notranslate nohighlight">\(k_i, \, i = 1 \, \ldots \, N_c\)</span>.</p>
 <section id="pvt-sec-stability-pt-ss-init">
 <span id="id5"></span><h4>Начальные приближения<a class="headerlink" href="#pvt-sec-stability-pt-ss-init" title="Link to this heading">#</a></h4>
 <p>Итак, рассматриваемая задача анализа стабильности фазового состояния системы заключается в проверке значений функции TPD в ее стационарных точках. Как уже было отмечено ранее, для нахождения различных стационарных точек необходимо задаться множеством начальных приближений. В связи с этим очевидным недостатком данного подхода является конечность набора начальных приближений (и с точки зрения времени счета – их количество, ведь чем больше начальных приближений мы рассмотрим, тем с большей вероятностью найдем глобальный минимум функции TPD, однако это приведет к увеличению времени работы алгоритма). Таким образом, корректный выбор начальных приближений является одним из залогов успешного решения задачи определения стабильности фазового состояния системы.</p>
@@ -926,13 +971,13 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <p>То есть в качестве начальных приближений <span class="math notranslate nohighlight">\(k_i\)</span> в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] применялся набор из следующих векторов:</p>
 <div class="math notranslate nohighlight">
 \[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Использование этих двух начальных приближений зачастую бывает достаточным для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии, в работе [<a class="reference external" href="https://doi.org/10.2118/129844-PA">Li and Firoozabadi, 2012</a>] было предложено дополнить данный набор следующими начальными приближениями:</p>
+<p>Использование этих двух начальных приближений зачастую бывает достаточным для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии в работе [<a class="reference external" href="https://doi.org/10.2118/129844-PA">Li and Firoozabadi, 2012</a>] было предложено дополнить данный набор следующими начальными приближениями:</p>
 <div class="math notranslate nohighlight">
 \[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}}, \; \sqrt[3]{k_i^{go}}, \; \frac{1}{\sqrt[3]{k_i^{go}}}, \; k_i^{pure} \right\}, \; i = 1 \, \ldots \, N_c, \]</div>
 <p>где:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, &amp; i = \mathrm{specific \, component}, \\ \left( \epsilon / \left( N_c - 1 \right) \right) / z_i, &amp; i = \mathrm{others}. \end{cases} \end{split}\]</div>
-<p>Данный набор начальных приближений хорошо подходит для проверки стабильности систем, где мольная доля одного компонента много больше мольных долей других. Например, к таким системам относятся системы с водой в качестве компонента, в этом случае <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-3\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1021/acs.iecr.9b00695">Connolly et al, 2019</a>] (для водных растворов иногда имеет смысл задать <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-15\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fuel.2019.02.026">Li and Li, 2019</a>]). Для систем с высоким содержанием диоксида углерода рекомендуется <span class="math notranslate nohighlight">\(\epsilon = 0.05\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2019.06.002">Imai at al, 2019</a>].</p>
+<p>Данный набор начальных приближений хорошо подходит для проверки стабильности систем, где мольная доля одного компонента в потенциальной (мнимой) фазе много больше мольных долей других. Например, к таким системам относится смесь углеводородов с водой, в этом случае <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-3\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1021/acs.iecr.9b00695">Connolly et al, 2019</a>] (для водных растворов иногда имеет смысл задать <span class="math notranslate nohighlight">\(\epsilon = 1\mathrm{e}-15\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fuel.2019.02.026">Li and Li, 2019</a>]). Для систем с высоким содержанием диоксида углерода рекомендуется <span class="math notranslate nohighlight">\(\epsilon = 0.05\)</span>, согласно [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2019.06.002">Imai at al, 2019</a>].</p>
 </section>
 <section id="pvt-sec-stability-pt-ss-examples">
 <span id="id6"></span><h4>Примеры<a class="headerlink" href="#pvt-sec-stability-pt-ss-examples" title="Link to this heading">#</a></h4>
@@ -1208,13 +1253,13 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <p>К решению задачи определения стабильности некоторой системы можно подойти с точки зрения минимизации функции TPD:</p>
 <div class="math notranslate nohighlight">
 \[ \bar{D} \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i \right). \]</div>
-<p>Если использовать в качестве основных переменных мольные доли компонентов для произвольного состава <span class="math notranslate nohighlight">\(y_i, \, i = 1 \, \ldots \, N_c,\)</span>, то такая задача будет являться <em>задачей условной минимизации или задачей минимизации с ограничениями (constrained minimization)</em>. В качестве условий будут выступать следующие соотношения:</p>
+<p>Если использовать в качестве основных переменных мольные доли компонентов для произвольного состава <span class="math notranslate nohighlight">\(y_i, \, i = 1 \, \ldots \, N_c,\)</span>, то такая задача будет являться <em>задачей условной минимизации</em> или <em>задачей минимизации с ограничениями (constrained minimization)</em>. В качестве условий будут выступать следующие соотношения:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
 &amp; y_i &gt; 0, \; i = 1 \, \ldots \, N_c, \\
 &amp; \sum_{i=1}^{N_c} y_i = 1.
 \end{align} \end{split}\]</div>
-<p>Решение задачи условной минимизации зачастую сложнее <em>безусловной (unconstrained minimization)</em>. В связи с этим имеет смысл исключить второе условие из рассмотрения путем замены основных переменных, например, на уже упомянутые ранее количества вещества компонентов в произвольной (мнимой) фазе:</p>
+<p>Решение задачи условной минимизации зачастую сложнее <em>безусловной (unconstrained minimization)</em>. В связи с этим имеет смысл исключить данные условия из рассмотрения путем замены основных переменных. Для исключения второго условия в качестве основных переменных можно использовать уже упомянутые ранее количества вещества компонентов в произвольной (мнимой) фазе:</p>
 <div class="math notranslate nohighlight">
 \[ Y_i = y_i \mathrm{e}^{-\bar{K}}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>В связи с изложенным выше при использовании <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> в качестве основных переменных положение стационарных точек функции TPD будет определяться следующей системой нелинейных уравнений:</p>

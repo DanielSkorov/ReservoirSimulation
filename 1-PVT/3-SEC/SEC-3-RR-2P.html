@@ -394,11 +394,11 @@ document.write(`
 <p>В предыдущем <a class="reference internal" href="SEC-2-RR.html"><span class="std std-doc">разделе</span></a> был представлен вывод уравнения Речфорда-Райса (уравнения фазовых концентраций). Данный раздел посвящен подходам к решению данного уравнения для двухфазных систем.</p>
 <p>Рассмотрим двухфазную систему. Для такого случая уравнение Речфорда-Райса записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ R \left( F \right) = \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) + 1} = 0, \]</div>
-<p>где <span class="math notranslate nohighlight">\(F\)</span> – мольная доля нереференсной фазы, <span class="math notranslate nohighlight">\(y_i\)</span> – мольная доля компонента в системе, <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе, <span class="math notranslate nohighlight">\(K_i\)</span> – константа фазового равновесия (отношение мольной доли компонента в нереференсной фазе к мольной доли этого же компонента в референсной).</p>
+\[ R \left( f \right) = \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{f \left( K_i - 1 \right) + 1} = 0, \]</div>
+<p>где <span class="math notranslate nohighlight">\(f\)</span> – мольная доля нереференсной фазы, <span class="math notranslate nohighlight">\(y_i\)</span> – мольная доля компонента в системе, <span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов в системе, <span class="math notranslate nohighlight">\(K_i\)</span> – константа фазового равновесия (отношение мольной доли компонента в нереференсной фазе к мольной доли этого же компонента в референсной).</p>
 <p>С математической точки зрения уравнение Речфорда-Райса представляет собой сумму гипербол, поэтому наличие точки перегиба, то есть невыпуклый вид функции, осложняет применение численных методов для решения данного уравнения. Кроме того, одной из особенностей уравнения Речфорда-Райса является наличие <a class="reference external" href="https://en.wikipedia.org/wiki/Zeros_and_poles">полюсов</a> в точках, где знаменатель равен нулю:</p>
 <div class="math notranslate nohighlight">
-\[ F \left( K_i - 1 \right) + 1 = 0 \Rightarrow F = -\frac{1}{K_i - 1}, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ f \left( K_i - 1 \right) + 1 = 0 \Rightarrow f = -\frac{1}{K_i - 1}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Для наглядности рассмотрим поведение данного уравнения на следующем примере.</p>
 <div class="exercise admonition">
 <p class="admonition-title">Пример</p>
@@ -421,9 +421,9 @@ document.write(`
 <span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-3</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">segments</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">segments</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">eps</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">eps</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yi</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">F</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">p1</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">segments</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">eps</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">eps</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yi</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">f</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">p1</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">pole</span> <span class="ow">in</span> <span class="n">poles</span><span class="p">:</span>
     <span class="n">p2</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">pole</span><span class="p">,</span> <span class="n">pole</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">p3</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">fill_betweenx</span><span class="p">([</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -454,22 +454,22 @@ document.write(`
 <p>Для начала необходимо описать тот результат, который необходимо получить. Поскольку численные методы решения нелинейных уравнений, в том числе метод Ньютона, показывают свою эффективность для выпуклых функций, а уравнение Речфорда-Райса не является таковым, то необходимо путем замены переменных преобразовать рассматриваемую функцию в выпуклую на интервале, содержащем искомый корень.</p>
 <p>Стоит отметить, что для того чтобы уравнение Речфорда-Райса имело хотя бы один корень, необходимо, чтобы хотя бы одно из слагаемых суммы</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) + 1} \]</div>
+\[ \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ f \left( K_i - 1 \right) + 1} \]</div>
 <p>было отрицательным и хотя бы одно было положительным. Это возможно в том случае, если хотя бы одна из констант фазового равновесия будет меньше единицы, и хотя бы одна константа фазового равновесия будет больше единицы. Таким образом, дальнейшее рассмотрение справедливо с учетом сформулированного условия.</p>
 <p>Кроме того, ранее было показано, что уравнение Речфорда-Райса имеет <span class="math notranslate nohighlight">\(N_c\)</span> асимптот, абсциссы которых описываются выражением:</p>
 <div class="math notranslate nohighlight">
-\[ F = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ f = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>При этом для того чтобы мольные доли компонентов в фазах, определяемые выражением:</p>
 <div class="math notranslate nohighlight">
-\[ y_i^R = \frac{y_i}{F \left( K_i - 1 \right) + 1}, \; i = 1 \, \ldots \, N_c, \]</div>
+\[ y_{Ri} = \frac{y_i}{f \left( K_i - 1 \right) + 1}, \; i = 1 \, \ldots \, N_c, \]</div>
 <p>были положительными, необходимо, чтобы было положительным следующее выражение:</p>
 <div class="math notranslate nohighlight">
-\[ F \left( K_i - 1 \right) + 1 &gt; 0, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ f \left( K_i - 1 \right) + 1 &gt; 0, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Пусть <span class="math notranslate nohighlight">\(K_1 &gt; K_i &gt; K_{N_c}, \; i = 2 \, \ldots \, N_c-1\)</span>, то есть константы фазового равновесия расположены по убыванию, тогда часть из них будет больше единицы, а часть из них меньше. Тогда представленное выше неравенство преобразуется в систему неравенств:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{cases}
-F &gt; \frac{1}{1 - K_i}, \; i = 1 \, \ldots \,, \; K_i &gt; 1, \\
-F &lt; \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1.
+f &gt; \frac{1}{1 - K_i}, \; i = 1 \, \ldots \,, \; K_i &gt; 1, \\
+f &lt; \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1.
 \end{cases} \end{split}\]</div>
 <p>Ряд, определяемый выражением</p>
 <div class="math notranslate nohighlight">
@@ -479,7 +479,7 @@ F &lt; \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1.
 \[ \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1, \]</div>
 <p>содержит только положительные значения, причем наименьшее из них соответствует наименьшей константе фазового равновесия <span class="math notranslate nohighlight">\(K_{N_c}\)</span>. Таким образом, диапазон значений:</p>
 <div class="math notranslate nohighlight">
-\[ F \in \left( \frac{1}{1 - K_1}, \, \frac{1}{1 - K_{N_c}} \right) \]</div>
+\[ f \in \left( \frac{1}{1 - K_1}, \, \frac{1}{1 - K_{N_c}} \right) \]</div>
 <p>определяет отрезок с необходимым корнем уравнения. Использование данного отрезка вместо отрезка физичных значений <span class="math notranslate nohighlight">\(\left[0, \, 1 \right]\)</span> было впервые предложено и обосновано в работе [<a class="reference external" href="http://doi.org/10.1016/0378-3812(89)80072-X">Whitson and Michelsen, 1989</a>] и получило название <em>negative flash window (NF-window)</em>.</p>
 <aside class="margin sidebar">
 <p class="sidebar-title"></p>
@@ -493,17 +493,17 @@ F &lt; \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1.
 \[ c_i = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Тогда уравнение Речфорда-Райса преобразуется к следующему виду:</p>
 <div class="math notranslate nohighlight">
-\[ R \left( F \right) = \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} = 0. \]</div>
+\[ R \left( f \right) = \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} = 0. \]</div>
 <p>А отрезок NF-window:</p>
 <div class="math notranslate nohighlight">
-\[ F \in \left( с_1, \, с_{N_c} \right). \]</div>
+\[ f \in \left( с_1, \, с_{N_c} \right). \]</div>
 <p>Введем новую переменную:</p>
 <div class="math notranslate nohighlight">
-\[ a = \frac{F - c_1}{c_{N_c} - F}. \]</div>
-<p>При этом отрезок NF-window <span class="math notranslate nohighlight">\(F \in \left( с_1, \, с_{N_c} \right)\)</span> эквивалентен интервалу <span class="math notranslate nohighlight">\(a \in \left(0, \, +\infty \right)\)</span>. Уравнение Речфорда-Райса преобразуется следующим образом:</p>
+\[ a = \frac{f - c_1}{c_{N_c} - f}. \]</div>
+<p>При этом отрезок NF-window <span class="math notranslate nohighlight">\(f \in \left( с_1, \, с_{N_c} \right)\)</span> эквивалентен интервалу <span class="math notranslate nohighlight">\(a \in \left(0, \, +\infty \right)\)</span>. Уравнение Речфорда-Райса преобразуется следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} \frac{y_i}{F - c_i} &amp;= 0, \\
+\sum_{i=1}^{N_c} \frac{y_i}{f - c_i} &amp;= 0, \\
 \sum_{i=1}^{N_c} \frac{y_i}{\frac{c_{N_c} a + c_1}{a + 1} - c_i} &amp;= 0, \\
 \left( a + 1 \right) \sum_{i=1}^{N_c} \frac{y_i}{c_{N_c} a + c_1 - c_i a - c_i} &amp;= 0, \\
 \left( a + 1 \right) \left( \frac{y_1}{\left( c_{N_c} - c_1 \right) a} + \sum_{i=2}^{N_c-1} \frac{y_i}{c_{N_c} a + c_1 - c_i a - c_i} - \frac{y_{N_c}}{c_{N_c} - c_1} \right) &amp;= 0, \\
@@ -539,13 +539,13 @@ F &lt; \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1.
 \end{align} \end{split}\]</div>
 <p>Анализируя данное выражение, можно заключить, что для того чтобы показать, что вторая частная производная функции <span class="math notranslate nohighlight">\(G \left( a \right)\)</span> по <span class="math notranslate nohighlight">\(a\)</span> больше нуля на интервале <span class="math notranslate nohighlight">\(a \in \left(0, \, +\infty \right)\)</span>, необходимо доказать следующее неравенство:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{d_i}{d_i + 1} &gt; 0, i = 2 \, \ldots \, N_c - 1. \]</div>
+\[ \frac{d_i}{d_i + 1} &gt; 0, \; i = 2 \, \ldots \, N_c - 1. \]</div>
 <p>Для этого выполним следующие преобразования:</p>
 <div class="math notranslate nohighlight">
 \[ \frac{d_i}{d_i + 1} = \frac{c_1 - c_i}{c_{N_c} - c_i} = \frac{\left( K_1 - K_i \right) \left( 1 - K_{N_c} \right)}{\left( K_{N_c} - K_i \right) \left( 1 - K_1 \right)}, \; i = 2 \, \ldots \, N_c - 1. \]</div>
 <p>Поскольку <span class="math notranslate nohighlight">\(\left( K_1 - K_i \right) &gt; 0, \; \left( 1 - K_{N_c} \right) &gt; 0, \; \left( K_{N_c} - K_i \right) &lt; 0, \; \left( 1 - K_1 \right) &lt; 0\)</span>, то:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{d_i}{d_i + 1} &gt; 0, i = 2 \, \ldots \, N_c - 1. \]</div>
+\[ \frac{d_i}{d_i + 1} &gt; 0, \; i = 2 \, \ldots \, N_c - 1. \]</div>
 <p>Следовательно, вторая частная производная функции <span class="math notranslate nohighlight">\(G \left( a \right)\)</span> по <span class="math notranslate nohighlight">\(a\)</span> больше нуля на интервале <span class="math notranslate nohighlight">\(a \in \left(0, \, +\infty \right)\)</span>, и функция <span class="math notranslate nohighlight">\(G \left( a \right)\)</span> является выпуклой на этом интервале.</p>
 </div>
 <p>Построим график функции <span class="math notranslate nohighlight">\(G \left( a \right)\)</span> для рассматриваемых коэффициентов фазового равновесия:</p>
@@ -660,8 +660,8 @@ F &lt; \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i &lt; 1.
     <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
 
 <span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">eq</span> <span class="o">=</span> <span class="n">carry</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -686,7 +686,7 @@ Iteration i = 4:
 	a = np.float64(1.9902535274929716)
 	eq = np.float64(2.4088155408978353e-11)
 
-Solution of the Rachford-Rice equation: F = np.float64(0.7483702932849309)
+Solution of the Rachford-Rice equation: f = np.float64(0.7483702932849309)
 </pre></div>
 </div>
 </div>
@@ -705,8 +705,8 @@ Solution of the Rachford-Rice equation: F = np.float64(0.7483702932849309)
     <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
 
 <span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">eq</span> <span class="o">=</span> <span class="n">carry</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -731,7 +731,7 @@ Iteration i = 4:
 	a = np.float64(1.990253525993566)
 	eq = np.float64(2.605641876569794e-10)
 
-Solution of the Rachford-Rice equation: F = np.float64(0.7483702930333983)
+Solution of the Rachford-Rice equation: f = np.float64(0.7483702930333983)
 </pre></div>
 </div>
 </div>
@@ -814,8 +814,8 @@ Solution of the Rachford-Rice equation: F = np.float64(0.7483702930333983)
     <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
 
 <span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">eq</span> <span class="o">=</span> <span class="n">carry</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -844,7 +844,7 @@ Iteration i = 5:
 	a = np.float64(-0.07679238592476864)
 	eq = np.float64(2.5419165471458324e-14)
 
-Solution of the Rachford-Rice equation: F = np.float64(-583179988.8231626)
+Solution of the Rachford-Rice equation: f = np.float64(-583179988.8231626)
 </pre></div>
 </div>
 </div>
@@ -852,41 +852,41 @@ Solution of the Rachford-Rice equation: F = np.float64(-583179988.8231626)
 <p>Метод Ньютона сошелся к решению, находящемуся за пределами NF-window. Причина – перелет на первой итерации. Таким образом, необходимо доработать представленный алгоритм для повышения его устойчивости. Рассмотрим <a class="reference external" href="http://www.numdam.org/article/NAM_1869_2_8__17_0.pdf">теорему Дарбу</a>, позволяющую определить наличие и отсутствие перелета на итерации:</p>
 <div class="danger admonition">
 <p class="admonition-title">Теорема</p>
-<p>Пусть <span class="math notranslate nohighlight">\(x_0\)</span> является начальным приближением уравнения <span class="math notranslate nohighlight">\(f \left( x \right) = 0\)</span>. Выпуклая функция <span class="math notranslate nohighlight">\(f \left( x \right)\)</span> непрерывна и дважды дифференциируема на рассматриваемом интервале. Условием отсутствия перелета при использовании метода Ньютона и начальном приближении <span class="math notranslate nohighlight">\(x_0\)</span> является:</p>
+<p>Пусть <span class="math notranslate nohighlight">\(x_0\)</span> является начальным приближением уравнения <span class="math notranslate nohighlight">\(g \left( x \right) = 0\)</span>. Выпуклая функция <span class="math notranslate nohighlight">\(g \left( x \right)\)</span> непрерывна и дважды дифференциируема на рассматриваемом интервале. Условием отсутствия перелета при использовании метода Ньютона и начальном приближении <span class="math notranslate nohighlight">\(x_0\)</span> является:</p>
 <div class="math notranslate nohighlight">
-\[ f \left( x_0 \right) f'' \left( x_0 \right) &gt; 0. \]</div>
+\[ g \left( x_0 \right) g'' \left( x_0 \right) &gt; 0. \]</div>
 </div>
-<p>Иными словами, необходимо доказать, что если выполняется условие <span class="math notranslate nohighlight">\(f \left( x_0 \right) \, f'' \left( x_0 \right) &gt; 0\)</span>, то расчетный шаг <span class="math notranslate nohighlight">\(h_0 = - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)}\)</span> меньше расстояния <span class="math notranslate nohighlight">\(h = x^* - x_0\)</span> от начального приближения <span class="math notranslate nohighlight">\(x_0\)</span> до решения уравнения <span class="math notranslate nohighlight">\(x^*\)</span>.</p>
+<p>Иными словами, необходимо доказать, что если выполняется условие <span class="math notranslate nohighlight">\(g \left( x_0 \right) \, g'' \left( x_0 \right) &gt; 0\)</span>, то расчетный шаг <span class="math notranslate nohighlight">\(h_0 = - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)}\)</span> меньше расстояния <span class="math notranslate nohighlight">\(h = x^* - x_0\)</span> от начального приближения <span class="math notranslate nohighlight">\(x_0\)</span> до решения уравнения <span class="math notranslate nohighlight">\(x^*\)</span>.</p>
 <div class="proof admonition">
 <p class="admonition-title">Доказательство</p>
-<p>Для начала отметим, что условие <span class="math notranslate nohighlight">\(f \left( x_0 \right) \, f'' \left( x_0 \right) &gt; 0\)</span> эквивалентно тому, что обе функции <span class="math notranslate nohighlight">\(f \left( x_0 \right)\)</span> и <span class="math notranslate nohighlight">\(f'' \left( x_0 \right)\)</span> имеют один знак в точке <span class="math notranslate nohighlight">\(x_0\)</span>. Это может быть верно в двух случаях.</p>
-<p>Пусть <span class="math notranslate nohighlight">\(f \left( x_0 \right) &gt; 0\)</span> и <span class="math notranslate nohighlight">\(f'' \left( x_0 \right) &gt; 0\)</span>. Тогда имеется выпуклая вниз функция <span class="math notranslate nohighlight">\(f \left( x \right)\)</span>, которая может иметь два пересечения с осью абсцисс:</p>
-<img alt="../../_images/9f88b1a1ffb3831207b6ebe0fb9b79b2b1c7e4d7be662170acfd9d16bb472f5e.png" src="../../_images/9f88b1a1ffb3831207b6ebe0fb9b79b2b1c7e4d7be662170acfd9d16bb472f5e.png" />
+<p>Для начала отметим, что условие <span class="math notranslate nohighlight">\(g \left( x_0 \right) \, g'' \left( x_0 \right) &gt; 0\)</span> эквивалентно тому, что обе функции <span class="math notranslate nohighlight">\(g \left( x_0 \right)\)</span> и <span class="math notranslate nohighlight">\(g'' \left( x_0 \right)\)</span> имеют один знак в точке <span class="math notranslate nohighlight">\(x_0\)</span>. Это может быть верно в двух случаях.</p>
+<p>Пусть <span class="math notranslate nohighlight">\(g \left( x_0 \right) &gt; 0\)</span> и <span class="math notranslate nohighlight">\(g'' \left( x_0 \right) &gt; 0\)</span>. Тогда имеется выпуклая вниз функция <span class="math notranslate nohighlight">\(g \left( x \right)\)</span>, которая может иметь два пересечения с осью абсцисс:</p>
+<img alt="../../_images/cdea662c84172c8bea84e822b0ce6f6944a27abcf0968c739b9b175b10a8f975.png" src="../../_images/cdea662c84172c8bea84e822b0ce6f6944a27abcf0968c739b9b175b10a8f975.png" />
 <br>
 <br>
-<p>Если <span class="math notranslate nohighlight">\(f' \left( x \right) &gt; 0\)</span>, то <span class="math notranslate nohighlight">\(h_0 = x_1 - x_0 &lt; 0\)</span> и <span class="math notranslate nohighlight">\(h = x^* - x_0 &lt; 0\)</span>. Если же <span class="math notranslate nohighlight">\(f' \left( x \right) &lt; 0\)</span>, то <span class="math notranslate nohighlight">\(h_0 = x_1 - x_0 &gt; 0\)</span> и <span class="math notranslate nohighlight">\(h = x^* - x_0 &gt; 0\)</span>. Разложим функцию <span class="math notranslate nohighlight">\(f \left( x \right)\)</span> в ряд Тейлора вблизи точки <span class="math notranslate nohighlight">\(x^*\)</span>:</p>
+<p>Если <span class="math notranslate nohighlight">\(g' \left( x \right) &gt; 0\)</span>, то <span class="math notranslate nohighlight">\(h_0 = x_1 - x_0 &lt; 0\)</span> и <span class="math notranslate nohighlight">\(h = x^* - x_0 &lt; 0\)</span>. Если же <span class="math notranslate nohighlight">\(g' \left( x \right) &lt; 0\)</span>, то <span class="math notranslate nohighlight">\(h_0 = x_1 - x_0 &gt; 0\)</span> и <span class="math notranslate nohighlight">\(h = x^* - x_0 &gt; 0\)</span>. Разложим функцию <span class="math notranslate nohighlight">\(g \left( x \right)\)</span> в ряд Тейлора вблизи точки <span class="math notranslate nohighlight">\(x^*\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ f \left( x^* \right) = 0 \approx f \left( x_0 \right) + \left( x^* - x_0 \right) f' \left( x_0 \right) + \frac{\left( x^* - x_0 \right)^2}{2} f'' \left( x_0 \right). \]</div>
+\[ g \left( x^* \right) = 0 \approx g \left( x_0 \right) + \left( x^* - x_0 \right) g' \left( x_0 \right) + \frac{\left( x^* - x_0 \right)^2}{2} g'' \left( x_0 \right). \]</div>
 <p>С учетом представленных выше обозначений:</p>
 <div class="math notranslate nohighlight">
-\[ f \left( x_0 \right) + h f' \left( x_0 \right) + \frac{h^2}{2} f'' \left( x_0 \right) = 0. \]</div>
+\[ g \left( x_0 \right) + h g' \left( x_0 \right) + \frac{h^2}{2} g'' \left( x_0 \right) = 0. \]</div>
 <p>Данное выражение можно преобразовать следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ h = - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)} - \frac{h^2}{2} \frac{f'' \left( x_0 \right)}{f' \left( x_0 \right)}. \]</div>
+\[ h = - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)} - \frac{h^2}{2} \frac{g'' \left( x_0 \right)}{g' \left( x_0 \right)}. \]</div>
 <p>На первой итерации метода Ньютона:</p>
 <div class="math notranslate nohighlight">
-\[ x_1 = x_0 - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)}. \]</div>
+\[ x_1 = x_0 - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)}. \]</div>
 <p>Тогда</p>
 <div class="math notranslate nohighlight">
-\[ h_0 = - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)}. \]</div>
+\[ h_0 = - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)}. \]</div>
 <p>С учетом этого выражение выше можно записать:</p>
 <div class="math notranslate nohighlight">
-\[ h = h_0 - \frac{h^2}{2} \frac{f'' \left( x_0 \right)}{f' \left( x_0 \right)}. \]</div>
+\[ h = h_0 - \frac{h^2}{2} \frac{g'' \left( x_0 \right)}{g' \left( x_0 \right)}. \]</div>
 <p>Разделим левую и правую части на <span class="math notranslate nohighlight">\(h\)</span> и преобразуем:</p>
 <div class="math notranslate nohighlight">
-\[ 1 - \frac{h_0}{h} = - \frac{h}{2} \frac{f'' \left( x_0 \right)}{f' \left( x_0 \right)}. \]</div>
-<p>Таким образом, если <span class="math notranslate nohighlight">\(f'' \left( x_0 \right) &gt; 0, \; f' \left( x \right) &gt; 0, \; h &lt; 0\)</span>, то <span class="math notranslate nohighlight">\(1 - \frac{h_0}{h} &gt; 0\)</span>, следовательно <span class="math notranslate nohighlight">\(h_0 &lt; h\)</span>. Если же <span class="math notranslate nohighlight">\(f'' \left( x_0 \right) &gt; 0, \; f' \left( x \right) &lt; 0, \; h &gt; 0\)</span>, то <span class="math notranslate nohighlight">\(1 - \frac{h_0}{h} &gt; 0\)</span>, следовательно <span class="math notranslate nohighlight">\(h_0 &lt; h\)</span>.</p>
-<p>Аналогичным образом доказывается для случая, когда <span class="math notranslate nohighlight">\(f \left( x_0 \right) &lt; 0\)</span> и <span class="math notranslate nohighlight">\(f'' \left( x_0 \right) &lt; 0\)</span>.</p>
+\[ 1 - \frac{h_0}{h} = - \frac{h}{2} \frac{g'' \left( x_0 \right)}{g' \left( x_0 \right)}. \]</div>
+<p>Таким образом, если <span class="math notranslate nohighlight">\(g'' \left( x_0 \right) &gt; 0, \; g' \left( x \right) &gt; 0, \; h &lt; 0\)</span>, то <span class="math notranslate nohighlight">\(1 - \frac{h_0}{h} &gt; 0\)</span>, следовательно <span class="math notranslate nohighlight">\(h_0 &lt; h\)</span>. Если же <span class="math notranslate nohighlight">\(g'' \left( x_0 \right) &gt; 0, \; g' \left( x \right) &lt; 0, \; h &gt; 0\)</span>, то <span class="math notranslate nohighlight">\(1 - \frac{h_0}{h} &gt; 0\)</span>, следовательно <span class="math notranslate nohighlight">\(h_0 &lt; h\)</span>.</p>
+<p>Аналогичным образом доказывается для случая, когда <span class="math notranslate nohighlight">\(g \left( x_0 \right) &lt; 0\)</span> и <span class="math notranslate nohighlight">\(g'' \left( x_0 \right) &lt; 0\)</span>.</p>
 </div>
 <p>Таким образом, при <span class="math notranslate nohighlight">\(a_0 &gt; a^*\)</span> условие <span class="math notranslate nohighlight">\(G \left( a_0 \right) \, G'' \left( a_0 \right) &gt; 0\)</span> не выполняется, поскольку <span class="math notranslate nohighlight">\(G \left( a_0 \right) &lt; 0\)</span> и <span class="math notranslate nohighlight">\(G'' \left( a_0 \right) &gt; 0\)</span>, следовательно, представленный выше алгоритм может иметь перелет на первой итерации и сходиться к корню, находящемуся вне заданного интервала. Для того чтобы гарантированно находить корень в нужном диапазоне, могут применяться модификации метода Ньютона, например, совмещение метода Ньютона и <a class="reference external" href="https://en.wikipedia.org/wiki/Bisection_method">метода бисекции</a>. Однако авторами работы [<a class="reference external" href="https://doi.org/10.1016/j.fluid.2013.05.030">Nichita and Leibovici, 2013</a>] было предложено рассмотреть другую выпуклую функцию, которая имеет тот же корень, что и <span class="math notranslate nohighlight">\(G \left( a \right)\)</span>:</p>
 <div class="math notranslate nohighlight">
@@ -971,8 +971,8 @@ Solution of the Rachford-Rice equation: F = np.float64(-583179988.8231626)
     <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
 
 <span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">eq</span> <span class="o">=</span> <span class="n">carry</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution of the Rachford-Rice equation: </span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1005,7 +1005,7 @@ Iteration i = 6:
 	a = np.float64(1.0000000248843093)
 	eq = np.float64(5.551115330329282e-17)
 
-Solution of the Rachford-Rice equation: F = np.float64(-7.656710589033492)
+Solution of the Rachford-Rice equation: f = np.float64(-7.656710589033492)
 </pre></div>
 </div>
 </div>
@@ -1013,44 +1013,45 @@ Solution of the Rachford-Rice equation: F = np.float64(-7.656710589033492)
 <p>Таким образом, метод Ньютона сошелся на корне, находящимся в нужном диапазоне. Следовательно, для повышения устойчивости численного метода решения уравнения Речфорда-Райса необходимо проверять условие <span class="math notranslate nohighlight">\(G \left( a_0 \right) \, ? \, 0\)</span>. Если <span class="math notranslate nohighlight">\(G \left( a_0 \right) &lt; 0\)</span>, то выбирается формулировка <span class="math notranslate nohighlight">\(H \left( a \right)\)</span>, иначе – формулировка <span class="math notranslate nohighlight">\(G \left( a \right)\)</span>. Проверка данного условия для начального приближения <span class="math notranslate nohighlight">\(a_0\)</span> позволяет повысить устойчивость численного алгоритма решения уравнения Речфорда-Райса. Однако, с точки зрения практической значимости, хороший численный метод отличает не только его устойчивость, но и его эффективность <em>(rapidness)</em> – количество затрачиваемых итераций на поиск решения заданной точности. Зачастую повышение эффективности численного метода связывают с поиском наиболее точного начального приближения, для определения которого необходимо минимум вычислений, а также с <em>линеаризацией</em> функции, то есть с ее преобразованием к виду, максимально приближенному к линейной зависимости, поскольку для решения линейного уравнения необходима ровно одна ньютоновская итерация.</p>
 <p>Для получения выражения для начального приближения рассмотрим следующий вид уравнения Речфорда-Райса, полученный авторами работы [<a class="reference external" href="https://doi.org/10.1016/0378-3812(92)85069-K">Leibovici and Neoschil, 1992</a>]:</p>
 <div class="math notranslate nohighlight">
-\[ L \left( F \right) = \left( F - c_1 \right) \left( c_{N_c} - F \right) \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} = 0. \]</div>
-<p>Функция <span class="math notranslate nohighlight">\(L \left( F \right)\)</span> не является монотонной и не является выпуклой на интервале NF-window <span class="math notranslate nohighlight">\(F \in \left( с_1, \, с_{N_c} \right)\)</span>, однако в большинстве случаев ее график близок к линейному. Построим график этой функции для рассматриваемого примера.</p>
+\[ L \left( f \right) = \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} = 0. \]</div>
+<p>Функция <span class="math notranslate nohighlight">\(L \left( f \right)\)</span> не является монотонной и не является выпуклой на интервале NF-window <span class="math notranslate nohighlight">\(f \in \left( с_1, \, с_{N_c} \right)\)</span>, однако в большинстве случаев ее график близок к линейному. Построим график этой функции для рассматриваемого примера.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">L</span> <span class="o">=</span> <span class="p">(</span><span class="n">F</span> <span class="o">-</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">F</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">ci</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">L</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">-</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">f</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">ci</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fig5</span><span class="p">,</span> <span class="n">ax5</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ax5</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax5</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">ax5</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">ax5</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
-<span class="n">ax5</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;L(F)&#39;</span><span class="p">)</span>
+<span class="n">ax5</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+<span class="n">ax5</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;L(f)&#39;</span><span class="p">)</span>
+<span class="n">ax5</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">ax5</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/6ccadaf4375994d059e2588e6ca23f1d283ef03632f804f18854b67db77a1c2f.png" src="../../_images/6ccadaf4375994d059e2588e6ca23f1d283ef03632f804f18854b67db77a1c2f.png" />
+<img alt="../../_images/d6182adcaef5f88c36e661ae6193aea1f9850c760d95011625411c0e88fdde15.png" src="../../_images/d6182adcaef5f88c36e661ae6193aea1f9850c760d95011625411c0e88fdde15.png" />
 </div>
 </div>
-<p>Преобразуем выражение для функции <span class="math notranslate nohighlight">\(L \left( F \right)\)</span> к следующему виду:</p>
+<p>Преобразуем выражение для функции <span class="math notranslate nohighlight">\(L \left( f \right)\)</span> к следующему виду:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-L \left( F \right)
-&amp;= \left( F - c_1 \right) \left( c_{N_c} - F \right) \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} \\
-&amp;= y_1 \left( c_{N_c} - F \right) + \left( F - c_1 \right) \left( c_{N_c} - F \right) \sum_{i=2}^{N_c-1} \frac{y_i}{F - c_i} - y_{N_c} \left( F - c_1 \right).
+L \left( f \right)
+&amp;= \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} \\
+&amp;= y_1 \left( c_{N_c} - f \right) + \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=2}^{N_c-1} \frac{y_i}{f - c_i} - y_{N_c} \left( f - c_1 \right).
 \end{align} \end{split}\]</div>
-<p>В точке <span class="math notranslate nohighlight">\(F = c_1\)</span> значение функции <span class="math notranslate nohighlight">\(L \left( F \right)\)</span>:</p>
+<p>В точке <span class="math notranslate nohighlight">\(f = c_1\)</span> значение функции <span class="math notranslate nohighlight">\(L \left( f \right)\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ L \left( c_1 \right) = y_1 \left( c_{N_c} - c_1 \right). \]</div>
-<p>В точке <span class="math notranslate nohighlight">\(F = c_{N_c}\)</span> значение функции <span class="math notranslate nohighlight">\(L \left( F \right)\)</span>:</p>
+<p>В точке <span class="math notranslate nohighlight">\(f = c_{N_c}\)</span> значение функции <span class="math notranslate nohighlight">\(L \left( f \right)\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ L \left( c_{N_c} \right) = - y_{N_c} \left( c_{N_c} - c_1 \right). \]</div>
 <p>Уравнение прямой, проходящей через эти две точки, записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ l \left( F \right) = - \left( y_1 + y_{N_c} \right) F + \left( y_1 c_{N_c} + y_{N_c} c_1 \right). \]</div>
+\[ l \left( f \right) = - \left( y_1 + y_{N_c} \right) f + \left( y_1 c_{N_c} + y_{N_c} c_1 \right). \]</div>
 <p>Эта прямая пересекает ось абсцисс в точке:</p>
 <div class="math notranslate nohighlight">
-\[ F_0 = \frac{y_1 c_{N_c} + y_{N_c} c_1}{y_1 + y_{N_c}}. \]</div>
+\[ f_0 = \frac{y_1 c_{N_c} + y_{N_c} c_1}{y_1 + y_{N_c}}. \]</div>
 <p>Или относительно переменной <span class="math notranslate nohighlight">\(a\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[ a_0 = \frac{y_1}{y_{N_c}}. \]</div>
@@ -1234,12 +1235,12 @@ a^G_{k+1}
 </div>
 </div><p class="sd-card-text">Тогда мольная доля нереференсной фазы:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">carry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>F = np.float64(32967.21655939691)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>f = np.float64(32967.21655939691)
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1300,12 +1301,12 @@ a^G_{k+1}
 </div>
 </div><p class="sd-card-text">Тогда мольная доля нереференсной фазы:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">carry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>F = np.float64(0.9923052440762278)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>f = np.float64(0.9923052440762278)
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1361,12 +1362,12 @@ a^G_{k+1}
 </div>
 </div><p class="sd-card-text">Мольная доля нереференсной фазы:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">carry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>F = np.float64(-7.656710648638137)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>f = np.float64(-7.656710648638137)
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1420,12 +1421,12 @@ a^G_{k+1}
 </div>
 </div><p class="sd-card-text">Мольная доля нереференсной фазы:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">carry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>F = np.float64(-264.5387723733895)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>f = np.float64(-264.5387723733895)
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1491,12 +1492,12 @@ a^G_{k+1}
 </div>
 </div><p class="sd-card-text">Мольная доля нереференсной фазы:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">carry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">F</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ci</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>F = np.float64(1.00600180530878)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>f = np.float64(1.00600180530878)
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>

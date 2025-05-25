@@ -43,7 +43,7 @@ P_c &= \sum_{i=1}^{N_c} {P_c}_i y_i, \; i = 1 \, \ldots \, N_c,
 Пусть имеется $1 \; моль$ смеси из метана и диоксида углерода с мольной долей метана $0.1$. Необходимо определить состояние системы при псевдокритических давлении и температуре.
 ```
 
-Для решения данной задачи будем использовать [уравнение состояние Пенга-Робинсона](../2-EOS/EOS-2-SRK-PR.md) и его [реализацию](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py). Кроме того, для проверки стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен [ранее](SEC-1-Stability.md), реализованный [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). Для расчета [равновесного состояния](SEC-5-Equilibrium.md) – также метод QNSS и его [реализацию](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py).
+Для решения данной задачи будем использовать [уравнение состояние Пенга-Робинсона](../2-EOS/EOS-2-SRK-PR.md) и его [реализацию](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py). Кроме того, для проверки стабильности системы будет применяться метод последовательных подстановок, алгоритм которого был рассмотрен [ранее](SEC-1-Stability.md), реализованный [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py). Для расчета [равновесного состояния](SEC-5-Equilibrium.md) – также метод последовательных подстановок и его [реализацию](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py).
 
 ```{code-cell} python
 import sys
@@ -85,7 +85,7 @@ print(f'Pcmix = {P / 1e6} MPa, Tcmix = {T - 273.15} C')
 Выполним проверку стабильности равновесного состояния:
 
 ```{code-cell} python
-stab = stabilityPT(pr, method='qnss')
+stab = stabilityPT(pr, method='ss')
 stabres = stab.run(P, T, yi)
 stabres
 ```
@@ -93,7 +93,7 @@ stabres
 Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:
 
 ```{code-cell} python
-flash = flash2pPT(pr, stabmethod='qnss', flashmethod='qnss')
+flash = flash2pPT(pr, stabmethod='ss', flashmethod='ss')
 flashres = flash.run(P, T, yi)
 flashres
 ```
@@ -315,7 +315,7 @@ $$ F = F \left( V, \, T, \, n_1, \, n_2, \, \ldots \, n_{N_c-1}, \, n \right). $
 Допуская, что стабильность каждой из фаз является внутренним свойством самой фазы, то есть принимая отсутствие зависимости термодинамических потенциалов от количества вещества системы, дифференциал энергии Гельмгольца записывается следующим образом:
 
 $$ \begin{align}
-dF
+\mathrm{d} F
 &= \frac{\partial F}{\partial V} \mathrm{d} V + \frac{\partial F}{\partial T} \mathrm{d} T + \sum_{i=1}^{N_c-1} \frac{\partial F}{\partial n_i} \mathrm{d} n_i \\
 &= -P \mathrm{d} V - S \mathrm{d} T + \sum_{i=1}^{N_c-1} \mu_i \mathrm{d} n_i \\
 &= \sum_{k=1}^r p_k \zeta_k.

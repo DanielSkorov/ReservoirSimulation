@@ -231,7 +231,7 @@ $$ \begin{cases} Z_c = \frac{1 - c B}{3}; \\ A = \left( c + 1 \right) B + \left(
 ```{code-cell} python
 import numpy as np
 
-def cardano(b: float, c: float, d: float) -> float:
+def cardano(b, c, d):
     p = (3. * c - b * b) / 3.
     q = (2. * b * b * b - 9. * b * c + 27. * d) / 27.
     s = q * q / 4. + p * p * p / 27.
@@ -539,23 +539,23 @@ $$ \begin{align}
 &= \ln {\phi_i}_{2p} - \frac{b_i s_i P}{RT} . \\
 \end{align} $$
 
-Необходимо также отметить, что введение параметров объемного сдвига не оказывает влияния на равновесное состояние, [определяемое](../1-TD/TD-15-Fugacity.md#pvt-td-fugacity-equilibrium) равенством летучестей компонентов в соответствующих фазах. То есть в равновесном состоянии при условии $\ln f_i^1 = \ln f_i^2$ также будет выполняться соотношение $\ln {f_i^1}_{2p} = \ln {f_i^2}_{2p}$. Докажем данное утверждение.
+Необходимо также отметить, что введение параметров объемного сдвига не оказывает влияния на равновесное состояние, [определяемое](../1-TD/TD-15-Fugacity.md#pvt-td-fugacity-equilibrium) равенством летучестей соответствующих компонентов фазах. То есть в равновесном состоянии при условии $\ln f_{1i} = \ln f_{2i}, \, i = 1 \, \ldots \, N_c,$ также будет выполняться соотношение $\ln {f_{1i}}_{2p} = \ln {f_{2i}}_{2p}, \, i = 1 \, \ldots \, N_c$. Докажем данное утверждение.
 
 ```{admonition} Доказательство
 :class: proof
 Рассмотрим две фазы $1$ и $2$, в которых компоненты характеризуются следующими летучестями:
 
 $$ \begin{align}
-\ln f_i^1 &= \ln \phi_i^1 + \ln y_i^1 P = \ln {\phi_i^1}_{2p} - \frac{b_i s_i P}{RT} + \ln y_i^1 P = \ln {f_i^1}_{2p} - \frac{b_i s_i P}{RT}, \\
-\ln f_i^2 &= \ln \phi_i^2 + \ln y_i^2 P = \ln {\phi_i^2}_{2p} - \frac{b_i s_i P}{RT} + \ln y_i^2 P = \ln {f_i^2}_{2p} - \frac{b_i s_i P}{RT}.
+\ln f_{1i} &= \ln \phi_{1i} + \ln y_{1i} P = \ln {\phi_{1i}}_{2p} - \frac{b_i s_i P}{RT} + \ln y_{1i} P = \ln {f_{1i}}_{2p} - \frac{b_i s_i P}{RT}, \; i = 1 \, \ldots \, N_c, \\
+\ln f_{2i} &= \ln \phi_{2i} + \ln y_{2i} P = \ln {\phi_{2i}}_{2p} - \frac{b_i s_i P}{RT} + \ln y_{2i} P = \ln {f_{2i}}_{2p} - \frac{b_i s_i P}{RT}, \; i = 1 \, \ldots \, N_c.
 \end{align} $$
 
-Равновесное состояние характеризуется равенством летучестей компонентов для соответствующих фаз, следовательно:
+Равновесное состояние характеризуется равенством летучестей соответствующих компонентов в фазах, следовательно:
 
 $$ \begin{align}
-\ln f_i^1 &= ln f_i^2 ,\\
-\ln {f_i^1}_{2p} - \frac{b_i s_i P}{RT} &= \ln {f_i^2}_{2p} - \frac{b_i s_i P}{RT}, \\
-\ln {f_i^1}_{2p} &= \ln {f_i^2}_{2p} .
+\ln f_{1i} &= ln f_{2i}, \; i = 1 \, \ldots \, N_c, \\
+\ln {f_{1i}}_{2p} - \frac{b_i s_i P}{RT} &= \ln {f_{2i}}_{2p} - \frac{b_i s_i P}{RT}, \; i = 1 \, \ldots \, N_c,  \\
+\ln {f_{1i}}_{2p} &= \ln {f_{2i}}_{2p}. \; i = 1 \, \ldots \, N_c .
 \end{align} $$
 
 ```

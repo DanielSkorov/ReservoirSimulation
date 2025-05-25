@@ -415,7 +415,7 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i y_i, \; i = 1 \, \ldots \, N_c,
 <p class="admonition-title">Пример</p>
 <p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана и диоксида углерода с мольной долей метана <span class="math notranslate nohighlight">\(0.1\)</span>. Необходимо определить состояние системы при псевдокритических давлении и температуре.</p>
 </div>
-<p>Для решения данной задачи будем использовать <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализацию</a>. Кроме того, для проверки стабильности системы будет применяться метод QNSS, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Для расчета <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">равновесного состояния</span></a> – также метод QNSS и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">реализацию</a>.</p>
+<p>Для решения данной задачи будем использовать <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализацию</a>. Кроме того, для проверки стабильности системы будет применяться метод последовательных подстановок, алгоритм которого был рассмотрен <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>, реализованный <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Для расчета <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">равновесного состояния</span></a> – также метод последовательных подстановок и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">реализацию</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
@@ -470,7 +470,7 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i y_i, \; i = 1 \, \ldots \, N_c,
 <p>Выполним проверку стабильности равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">)</span>
 <span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">stabres</span>
 </pre></div>
@@ -480,7 +480,7 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i y_i, \; i = 1 \, \ldots \, N_c,
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 False
 Tangent-plane distance:
--0.004053320447365545
+-0.004053335728641305
 Calculation completed successfully:
 True
 </pre></div>
@@ -490,7 +490,7 @@ True
 <p>Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">stabmethod</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">,</span> <span class="n">flashmethod</span><span class="o">=</span><span class="s1">&#39;qnss&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">stabmethod</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">,</span> <span class="n">flashmethod</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">)</span>
 <span class="n">flashres</span> <span class="o">=</span> <span class="n">flash</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">flashres</span>
 </pre></div>
@@ -498,12 +498,12 @@ True
 </div>
 <div class="cell_output docutils container">
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase composition:
-[[0.87389624 0.12610376]
- [0.9196896  0.0803104 ]]
+[[0.87389661 0.12610339]
+ [0.91968868 0.08031132]]
 Phase mole fractions:
-[0.42996619 0.57003381]
+[0.42995826 0.57004174]
 Phase compressibility factors:
-[0.44121581 0.21140204]
+[0.44121499 0.21140309]
 Calculation completed successfully:
 True
 </pre></div>
@@ -520,7 +520,7 @@ True
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase densities: [267.51409751 575.9898083 ] kg/m3
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase densities: [267.51466573 575.98660251] kg/m3
 </pre></div>
 </div>
 </div>
@@ -566,7 +566,7 @@ True
 <p>Допуская, что стабильность каждой из фаз является внутренним свойством самой фазы, то есть принимая отсутствие зависимости термодинамических потенциалов от количества вещества системы, дифференциал энергии Гельмгольца записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-dF
+\mathrm{d} F
 &amp;= \frac{\partial F}{\partial V} \mathrm{d} V + \frac{\partial F}{\partial T} \mathrm{d} T + \sum_{i=1}^{N_c-1} \frac{\partial F}{\partial n_i} \mathrm{d} n_i \\
 &amp;= -P \mathrm{d} V - S \mathrm{d} T + \sum_{i=1}^{N_c-1} \mu_i \mathrm{d} n_i \\
 &amp;= \sum_{k=1}^r p_k \zeta_k.

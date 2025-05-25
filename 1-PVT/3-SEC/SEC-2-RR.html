@@ -391,101 +391,108 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-rr">
 <span id="id1"></span><h1>Уравнение Речфорда-Райса<a class="headerlink" href="#pvt-esc-rr" title="Link to this heading">#</a></h1>
-<p>Рассмотрим многофазную (<span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз) многокомпонентную (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) систему с количеством вещества в системе <span class="math notranslate nohighlight">\(n\)</span>. Количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе обозначим <span class="math notranslate nohighlight">\(n_i\)</span>, причем сумма количеств вещества всех компонентов будет составлять количество вещества всей системы:</p>
+<p>Рассмотрим многофазную (<span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз) многокомпонентную (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) систему с количеством вещества в системе <span class="math notranslate nohighlight">\(n\)</span>. Количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе обозначим <span class="math notranslate nohighlight">\(n_i, \, i = 1 \, \ldots \, N_c,\)</span> причем сумма количеств вещества всех компонентов будет составлять количество вещества всей системы:</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{i=1}^{N_c} n_i = n. \]</div>
-<p>Пусть количество вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы будет <span class="math notranslate nohighlight">\(n^j\)</span>, тогда сумма количеств вещества всех фаз также будет составлять количество вещества всей системы:</p>
+<p>Пусть количество вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы будет <span class="math notranslate nohighlight">\(n_j, \, j = 1 \, \ldots \, N_p,\)</span> тогда сумма количеств вещества всех фаз также будет составлять количество вещества всей системы:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} n^j = n. \]</div>
-<p>Обозначим количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе <span class="math notranslate nohighlight">\(n_i^j\)</span>, следовательно:</p>
+\[ \sum_{j=1}^{N_p} n_j = n. \]</div>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>При использовании двойного индексирования здесь и далее первый индекс будет обозначать фазу, второй – компонент. То есть под <span class="math notranslate nohighlight">\(n_{ji}\)</span> следует понимать количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе, а под, например, <span class="math notranslate nohighlight">\(y_{Rk}\)</span> – мольную долю <span class="math notranslate nohighlight">\(k\)</span>-го компонента в <span class="math notranslate nohighlight">\(R\)</span>-й фазе. При использовании одинарного индексирования будет явно указано отношение данного элемента к вектору, характеризующему свойства фаз или компонентов.</p>
+</div>
+</aside>
+<p>Обозначим количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе <span class="math notranslate nohighlight">\(n_{ji}, \, j = 1 \, \ldots \, N_p, \, i = 1 \, \ldots \, N_c,\)</span> следовательно:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} n_i^j &amp;= n^j, \; j = 1 \, \ldots \, N_p, \\
-\sum_{j=1}^{N_p} n_i^j &amp;= n_i, \; i = 1 \, \ldots \, N_c, \\
-\sum_{i=1}^{N_c} \sum_{j=1}^{N_p} n_i^j &amp;= n.
+\sum_{i=1}^{N_c} n_{ji} &amp;= n_j, \; j = 1 \, \ldots \, N_p, \\
+\sum_{j=1}^{N_p} n_{ji} &amp;= n_i, \; i = 1 \, \ldots \, N_c, \\
+\sum_{i=1}^{N_c} \sum_{j=1}^{N_p} n_{ji} &amp;= n.
 \end{align} \end{split}\]</div>
-<p>Пусть мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе в целом обозначается <span class="math notranslate nohighlight">\(y_i\)</span> и характеризует отношение количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента к количеству вещества всей системы, то есть:</p>
+<p>Пусть мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в системе в целом обозначается <span class="math notranslate nohighlight">\(y_i, \, i = 1 \, \ldots \, N_c,\)</span> и характеризует отношение количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента к количеству вещества всей системы, то есть:</p>
 <div class="math notranslate nohighlight">
 \[ y_i = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Причем,</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{i=1}^{N_c} y_i = 1. \]</div>
-<p>Пусть мольная доля <span class="math notranslate nohighlight">\(j\)</span>-й фазы в системе обозначается <span class="math notranslate nohighlight">\(F^j\)</span> и соответствует следующему выражению:</p>
+<p>Пусть мольная доля <span class="math notranslate nohighlight">\(j\)</span>-й фазы в системе обозначается <span class="math notranslate nohighlight">\(f_j, \, j = 1 \, \ldots \, N_p,\)</span> и соответствует следующему выражению:</p>
 <div class="math notranslate nohighlight">
-\[ F^j = \frac{n^j}{n}, \; j = 1 \, \ldots \, N_p. \]</div>
+\[ f_j = \frac{n_j}{n}, \; j = 1 \, \ldots \, N_p. \]</div>
 <p>То есть мольная доля <span class="math notranslate nohighlight">\(j\)</span>-й фазы характеризует отношение количества вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы к количеству вещества всей систеы. При этом</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^{N_p} F^j = 1. \]</div>
-<p>Пусть мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе обозначается <span class="math notranslate nohighlight">\(y_i^j\)</span>, характеризует отношение количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе к количеству вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы. Математически это записывается следующим образом:</p>
+\[ \sum_{j=1}^{N_p} f_j = 1. \]</div>
+<p>Пусть мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе обозначается <span class="math notranslate nohighlight">\(y_{ji}, \, j = 1 \, \ldots \, N_p, \, i = 1 \, \ldots \, N_c,\)</span> и характеризует отношение количества вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента в <span class="math notranslate nohighlight">\(j\)</span>-й фазе к количеству вещества <span class="math notranslate nohighlight">\(j\)</span>-й фазы. Математически это записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ y_i^j = \frac{n_i^j}{n^j}, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ y_{ji} = \frac{n_{ji}}{n_j}, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Причем,</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i^j = 1, \; j = 1 \, \ldots \, N_p. \]</div>
+\[ \sum_{i=1}^{N_c} y_{ji} = 1, \; j = 1 \, \ldots \, N_p. \]</div>
 <p>Введем понятие константы фазового равновесия (<em>k-value</em>):</p>
 <div class="tip admonition">
 <p class="admonition-title">Определение</p>
 <p><em><strong>Константа фазового равновесия</strong></em> <span class="math notranslate nohighlight">\(i\)</span>-го компонента (коэффициент распределения) характеризует отношение мольной доли компонента в фазе <span class="math notranslate nohighlight">\(j\)</span> к мольной доли этого же компонета в референсной фазе <span class="math notranslate nohighlight">\(R\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ K_i^{jR} = \frac{y_i^j}{y_i^R}, \; j = \left\{ 1 \, \ldots \, N_p \right\} - \left\{ R \right\}. \]</div>
+\[ K_{ji} = \frac{y_{ji}}{y_{Ri}}, \; j = \left\{ 1 \, \ldots \, N_p \right\} - \left\{ R \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
 </div>
 <p>При этом</p>
 <div class="math notranslate nohighlight">
-\[ K_i^{RR} = \frac{y_i^R}{y_i^R} = 1. \]</div>
+\[ K_{Ri} = \frac{y_{Ri}}{y_{Ri}} = 1, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Кроме того, необходимо отметить, что референсной фазой может быть любая. Рассмотрим следующее соотношение:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} n_i^k = n_i, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ \sum_{k=1}^{N_p} n_{ki} = n_i, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Разделим левую и правую части данного выражения на количество вещества системы <span class="math notranslate nohighlight">\(n\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} \frac{n_i^k}{n} = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>В левой части выражения домножим числитель и знаменатель каждого слагаемого на количество вещества соответствующей <span class="math notranslate nohighlight">\(k\)</span>-й фазы <span class="math notranslate nohighlight">\(n^k\)</span>:</p>
+\[ \sum_{k=1}^{N_p} \frac{n_{ki}}{n} = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>В левой части выражения домножим числитель и знаменатель каждого слагаемого на количество вещества соответствующей <span class="math notranslate nohighlight">\(k\)</span>-й фазы <span class="math notranslate nohighlight">\(n_k, \, k = 1 \, \ldots \, N_p\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} \frac{n_i^k}{n} \frac{n^k}{n^k} = \sum_{k=1}^{N_p} \frac{n_i^k}{n^k} \frac{n^k}{n} = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ \sum_{k=1}^{N_p} \frac{n_{ki}}{n} \frac{n_k}{n_k} = \sum_{k=1}^{N_p} \frac{n_{ki}}{n_k} \frac{n_k}{n} = \frac{n_i}{n}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>С учетом представленных выше соотношений, данное выражение преобразуется к следующему:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} y_i^k F^k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>В левой части выражения выразим <span class="math notranslate nohighlight">\(y_i^k\)</span> через константу фазового равновесия:</p>
+\[ \sum_{k=1}^{N_p} y_{ki} f_k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>В левой части выражения выразим <span class="math notranslate nohighlight">\(y_{ki}, \, k = 1 \, \ldots \, N_p, \, i = 1 \, \ldots \, N_c,\)</span> через константу фазового равновесия (для простоты обозначения в качестве референсной выберем фазу с индексом <span class="math notranslate nohighlight">\(N_p\)</span>):</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{k=1}^{N_p} K_i^{kR} y_i^R F^k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Поскольку <span class="math notranslate nohighlight">\(y_i^R\)</span> в левой части выражения не зависит от индекса суммирования <span class="math notranslate nohighlight">\(k\)</span>, то ее можно вынести за знак суммирования:</p>
+\[ \sum_{k=1}^{N_p} K_{ki} y_{N_pi} f_k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Поскольку мольная доля <span class="math notranslate nohighlight">\(i\)</span>-го компонента в референсной фазе <span class="math notranslate nohighlight">\(N_p\)</span>, обозначаемая <span class="math notranslate nohighlight">\(y_{N_pi}, \, i = 1 \, \ldots \, N_c,\)</span> в левой части выражения не зависит от индекса суммирования <span class="math notranslate nohighlight">\(k\)</span>, то ее можно вынести за знак суммирования:</p>
 <div class="math notranslate nohighlight">
-\[ y_i^R \sum_{k=1}^{N_p} K_i^{kR} F^k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ y_{N_pi} \sum_{k=1}^{N_p} K_{ki} f_k = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Тогда:</p>
 <div class="math notranslate nohighlight">
-\[ y_i^R = \frac{y_i}{\sum_{k=1}^{N_p} K_i^{kR} F^k}, \; i = 1 \, \ldots \, N_c. \]</div>
-<p>Поскольку <span class="math notranslate nohighlight">\(y_i^j = K_i^{jR} y_i^R, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1\)</span>, то:</p>
+\[ y_{N_pi} = \frac{y_i}{\sum_{k=1}^{N_p} K_{ki} f_k}, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Поскольку <span class="math notranslate nohighlight">\(y_{ji} = K_{ji} y_{N_pi}, \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c\)</span>, то:</p>
 <div class="math notranslate nohighlight">
-\[ y_i^j = \frac{y_i K_i^{jR}}{\sum_{k=1}^{N_p} K_i^{kR} F^k}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_p - 1. \]</div>
-<p>Здесь и далее в качестве референсной фазы принята фаза с индексом <span class="math notranslate nohighlight">\(j = N_p\)</span>. Учитывая</p>
+\[ y_{ji} = \frac{y_i K_{ji}}{\sum_{k=1}^{N_p} K_{ki} f_k}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \]</div>
+<p>Учитывая</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i^j = 1, \; j = 1 \, \ldots \, N_p, \]</div>
+\[ \sum_{i=1}^{N_c} y_{ji} = 1, \; j = 1 \, \ldots \, N_p, \]</div>
 <p>можно записать следующую систему уравнений:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} y_i^j - \sum_{i=1}^{N_c} y_i^R = 0, \; j = 1 \, \ldots \, N_p - 1. \]</div>
-<p>Подставляя полученные ранее выражения для мольной доли <span class="math notranslate nohighlight">\(i\)</span>-го компонента в фазе <span class="math notranslate nohighlight">\(j\)</span> и референсной фазе <span class="math notranslate nohighlight">\(R\)</span>, получим:</p>
+\[ \sum_{i=1}^{N_c} y_{ji} - \sum_{i=1}^{N_c} y_{N_pi} = 0, \; j = 1 \, \ldots \, N_p - 1. \]</div>
+<p>Подставляя полученные ранее выражения для мольной доли <span class="math notranslate nohighlight">\(i\)</span>-го компонента в фазе <span class="math notranslate nohighlight">\(j\)</span> и референсной фазе <span class="math notranslate nohighlight">\(N_p\)</span>, получим:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} y_i^j - \sum_{i=1}^{N_c} y_i^R &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \left( y_i^j - y_i^R \right) &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \left( \frac{y_i K_i^{jR}}{\sum_{k=1}^{N_p} K_i^{kR} F^k} - \frac{y_i}{\sum_{k=1}^{N_p} K_i^{kR} F^k} \right) &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p} K_i^{kR} F^k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1.
+\sum_{i=1}^{N_c} y_{ji} - \sum_{i=1}^{N_c} y_{N_pi} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
+\sum_{i=1}^{N_c} \left( y_{ji} - y_{N_pi} \right) &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
+\sum_{i=1}^{N_c} \left( \frac{y_i K_{ji}}{\sum_{k=1}^{N_p} K_{ki} f_k} - \frac{y_i}{\sum_{k=1}^{N_p} K_{ki} f_k} \right) &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
+\sum_{i=1}^{N_c} \frac{y_i \left( K_{ji} - 1 \right)}{\sum_{k=1}^{N_p} K_{ki} f_k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1.
 \end{align} \end{split}\]</div>
-<p>С учетом <span class="math notranslate nohighlight">\(\sum_{k=1}^{N_p} F^k = 1\)</span> представленную выше систему уравнений можно преобразовать следующим образом:</p>
+<p>С учетом <span class="math notranslate nohighlight">\(\sum_{k=1}^{N_p} f_k = 1\)</span> представленную выше систему уравнений можно преобразовать следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p} K_i^{kR} F^k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} K_i^{kR} F^k + K_i^{RR} F^R} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} K_i^{kR} F^k + 1 - \sum_{k=1}^{N_p-1} F^k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
-\sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} F^k \left( K_i^{kR} - 1 \right) + 1} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1. \\
+\sum_{i=1}^{N_c} \frac{y_i \left( K_{ji} - 1 \right)}{\sum_{k=1}^{N_p} K_{ki} f_k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
+\sum_{i=1}^{N_c} \frac{y_i \left( K_{ji} - 1 \right)}{\sum_{k=1}^{N_p-1} K_{ki} f_k + K_{N_pi} f_{N_p}} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
+\sum_{i=1}^{N_c} \frac{y_i \left( K_{ji} - 1 \right)}{\sum_{k=1}^{N_p-1} K_{ki} f_k + 1 - \sum_{k=1}^{N_p-1} f_k} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1, \\
+\sum_{i=1}^{N_c} \frac{y_i \left( K_{ji} - 1 \right)}{\sum_{k=1}^{N_p-1} f_k \left( K_{ki} - 1 \right) + 1} &amp;= 0, \; j = 1 \, \ldots \, N_p - 1. \\
 \end{align} \end{split}\]</div>
 <p>Таким образом, система уравнений</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{i=1}^{N_c} \frac{y_i \left( K_i^{jR} - 1 \right)}{\sum_{k=1}^{N_p-1} F^k \left( K_i^{kR} - 1 \right) + 1} = 0, \; j = 1 \, \ldots \, N_p - 1, \]</div>
-<p>называется <em><strong>системой уравнений Речфорда-Райса (системой уравнений фазовых концентраций)</strong></em>. Она содержит <span class="math notranslate nohighlight">\(N_p - 1\)</span> уравнений и разрешается относительно <span class="math notranslate nohighlight">\(F^k, \; k = 1 \, \ldots \, N_p - 1,\)</span> неизвестных при фиксировании значений констант фазового равновесия. После определения мольных долей фаз мольные доли компонентов в них определяются с использованием полученных ранее выражений:</p>
+\[ \sum_{i=1}^{N_c} \frac{y_i \left( K_{ji} - 1 \right)}{\sum_{k=1}^{N_p-1} f_k \left( K_{ki} - 1 \right) + 1} = 0, \; j = 1 \, \ldots \, N_p - 1, \]</div>
+<p>называется <em><strong>системой уравнений Речфорда-Райса (системой уравнений фазовых концентраций)</strong></em>. Она содержит <span class="math notranslate nohighlight">\(\left( N_p - 1 \right)\)</span> уравнений и разрешается относительно <span class="math notranslate nohighlight">\(f_k, \, k = 1 \, \ldots \, N_p - 1,\)</span> неизвестных при фиксировании значений констант фазового равновесия. После определения мольных долей фаз мольные доли компонентов в них определяются с использованием полученных ранее выражений:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
-y_i^R &amp;= \frac{y_i}{\sum_{k=1}^{N_p-1} F^k \left( K_i^{kR} - 1 \right) + 1}, \\
-y_i^j &amp;=  K_i^{jR} y_i^R, \; j = 1 \, \ldots \, N_p - 1. \\
+y_{N_pi} &amp;= \frac{y_i}{\sum_{k=1}^{N_p-1} f_k \left( K_{ki} - 1 \right) + 1}, \; i = 1 \, \ldots \, N_c, \\
+y_{ji} &amp;=  K_{ji} y_{N_pi}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c. \\
 \end{align} \end{split}\]</div>
 <p>В следующих разделах подробнее остановимся на численных методах решения уравнения Речфорда-Райса для <a class="reference internal" href="SEC-3-RR-2P.html"><span class="std std-doc">двухфазной</span></a> и <a class="reference internal" href="SEC-4-RR-NP.html"><span class="std std-doc">многофазной</span></a> систем.</p>
 </section>

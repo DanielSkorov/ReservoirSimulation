@@ -18,13 +18,13 @@ kernelspec:
 
 Рассмотрим двухфазную систему. Для такого случая уравнение Речфорда-Райса записывается следующим образом:
 
-$$ R \left( F \right) = \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) + 1} = 0, $$
+$$ R \left( f \right) = \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{f \left( K_i - 1 \right) + 1} = 0, $$
 
-где $F$ – мольная доля нереференсной фазы, $y_i$ – мольная доля компонента в системе, $N_c$ – количество компонентов в системе, $K_i$ – константа фазового равновесия (отношение мольной доли компонента в нереференсной фазе к мольной доли этого же компонента в референсной).
+где $f$ – мольная доля нереференсной фазы, $y_i$ – мольная доля компонента в системе, $N_c$ – количество компонентов в системе, $K_i$ – константа фазового равновесия (отношение мольной доли компонента в нереференсной фазе к мольной доли этого же компонента в референсной).
 
 С математической точки зрения уравнение Речфорда-Райса представляет собой сумму гипербол, поэтому наличие точки перегиба, то есть невыпуклый вид функции, осложняет применение численных методов для решения данного уравнения. Кроме того, одной из особенностей уравнения Речфорда-Райса является наличие [полюсов](https://en.wikipedia.org/wiki/Zeros_and_poles) в точках, где знаменатель равен нулю:
 
-$$ F \left( K_i - 1 \right) + 1 = 0 \Rightarrow F = -\frac{1}{K_i - 1}, \; i = 1 \, \ldots \, N_c. $$
+$$ f \left( K_i - 1 \right) + 1 = 0 \Rightarrow f = -\frac{1}{K_i - 1}, \; i = 1 \, \ldots \, N_c. $$
 
 Для наглядности рассмотрим поведение данного уравнения на следующем примере.
 
@@ -62,9 +62,9 @@ from matplotlib import pyplot as plt
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 eps = 1e-3
 for i in range(segments.shape[0] - 1):
-    F = np.linspace(segments[i]+eps, segments[i+1]-eps, 100, endpoint=True)
-    R = np.sum(yi * (kvi - 1.) / (F[:,None] * (kvi - 1.) + 1), axis=1)
-    p1, = ax1.plot(F, R, lw=2., c='b', zorder=4)
+    f = np.linspace(segments[i]+eps, segments[i+1]-eps, 100, endpoint=True)
+    R = np.sum(yi * (kvi - 1.) / (f[:,None] * (kvi - 1.) + 1), axis=1)
+    p1, = ax1.plot(f, R, lw=2., c='b', zorder=4)
 for pole in poles:
     p2, = ax1.plot([pole, pole], [-1., 1.], lw=2., ls='--', c='r', zorder=4)
 p3 = ax1.fill_betweenx([-1., 1.], 0., 1., color='g', alpha=0.2, zorder=3)
@@ -90,27 +90,27 @@ ax1.grid(zorder=1)
 
 Стоит отметить, что для того чтобы уравнение Речфорда-Райса имело хотя бы один корень, необходимо, чтобы хотя бы одно из слагаемых суммы
 
-$$ \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ F \left( K_i - 1 \right) + 1} $$
+$$ \sum_{i=1}^{N_c} \frac{y_i \left( K_i - 1 \right)}{ f \left( K_i - 1 \right) + 1} $$
 
 было отрицательным и хотя бы одно было положительным. Это возможно в том случае, если хотя бы одна из констант фазового равновесия будет меньше единицы, и хотя бы одна константа фазового равновесия будет больше единицы. Таким образом, дальнейшее рассмотрение справедливо с учетом сформулированного условия.
 
 Кроме того, ранее было показано, что уравнение Речфорда-Райса имеет $N_c$ асимптот, абсциссы которых описываются выражением:
 
-$$ F = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. $$
+$$ f = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. $$
 
 При этом для того чтобы мольные доли компонентов в фазах, определяемые выражением:
 
-$$ y_i^R = \frac{y_i}{F \left( K_i - 1 \right) + 1}, \; i = 1 \, \ldots \, N_c, $$
+$$ y_{Ri} = \frac{y_i}{f \left( K_i - 1 \right) + 1}, \; i = 1 \, \ldots \, N_c, $$
 
 были положительными, необходимо, чтобы было положительным следующее выражение:
 
-$$ F \left( K_i - 1 \right) + 1 > 0, \; i = 1 \, \ldots \, N_c. $$
+$$ f \left( K_i - 1 \right) + 1 > 0, \; i = 1 \, \ldots \, N_c. $$
 
 Пусть $K_1 > K_i > K_{N_c}, \; i = 2 \, \ldots \, N_c-1$, то есть константы фазового равновесия расположены по убыванию, тогда часть из них будет больше единицы, а часть из них меньше. Тогда представленное выше неравенство преобразуется в систему неравенств:
 
 $$ \begin{cases}
-F > \frac{1}{1 - K_i}, \; i = 1 \, \ldots \,, \; K_i > 1, \\
-F < \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i < 1.
+f > \frac{1}{1 - K_i}, \; i = 1 \, \ldots \,, \; K_i > 1, \\
+f < \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i < 1.
 \end{cases} $$
 
 Ряд, определяемый выражением
@@ -123,7 +123,7 @@ $$ \frac{1}{1 - K_i}, \; i = \ldots\, N_c, \; K_i < 1, $$
 
 содержит только положительные значения, причем наименьшее из них соответствует наименьшей константе фазового равновесия $K_{N_c}$. Таким образом, диапазон значений:
 
-$$ F \in \left( \frac{1}{1 - K_1}, \, \frac{1}{1 - K_{N_c}} \right) $$
+$$ f \in \left( \frac{1}{1 - K_1}, \, \frac{1}{1 - K_{N_c}} \right) $$
 
 определяет отрезок с необходимым корнем уравнения. Использование данного отрезка вместо отрезка физичных значений $\left[0, \, 1 \right]$ было впервые предложено и обосновано в работе \[[Whitson and Michelsen, 1989](http://doi.org/10.1016/0378-3812(89)80072-X)\] и получило название *negative flash window (NF-window)*.
 
@@ -140,20 +140,20 @@ $$ c_i = \frac{1}{1 - K_i}, \; i = 1 \, \ldots \, N_c. $$
 
 Тогда уравнение Речфорда-Райса преобразуется к следующему виду:
 
-$$ R \left( F \right) = \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} = 0. $$
+$$ R \left( f \right) = \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} = 0. $$
 
 А отрезок NF-window:
 
-$$ F \in \left( с_1, \, с_{N_c} \right). $$
+$$ f \in \left( с_1, \, с_{N_c} \right). $$
 
 Введем новую переменную:
 
-$$ a = \frac{F - c_1}{c_{N_c} - F}. $$
+$$ a = \frac{f - c_1}{c_{N_c} - f}. $$
 
-При этом отрезок NF-window $F \in \left( с_1, \, с_{N_c} \right)$ эквивалентен интервалу $a \in \left(0, \, +\infty \right)$. Уравнение Речфорда-Райса преобразуется следующим образом:
+При этом отрезок NF-window $f \in \left( с_1, \, с_{N_c} \right)$ эквивалентен интервалу $a \in \left(0, \, +\infty \right)$. Уравнение Речфорда-Райса преобразуется следующим образом:
 
 $$ \begin{align}
-\sum_{i=1}^{N_c} \frac{y_i}{F - c_i} &= 0, \\
+\sum_{i=1}^{N_c} \frac{y_i}{f - c_i} &= 0, \\
 \sum_{i=1}^{N_c} \frac{y_i}{\frac{c_{N_c} a + c_1}{a + 1} - c_i} &= 0, \\
 \left( a + 1 \right) \sum_{i=1}^{N_c} \frac{y_i}{c_{N_c} a + c_1 - c_i a - c_i} &= 0, \\
 \left( a + 1 \right) \left( \frac{y_1}{\left( c_{N_c} - c_1 \right) a} + \sum_{i=2}^{N_c-1} \frac{y_i}{c_{N_c} a + c_1 - c_i a - c_i} - \frac{y_{N_c}}{c_{N_c} - c_1} \right) &= 0, \\
@@ -195,7 +195,7 @@ $$ \begin{align}
 
 Анализируя данное выражение, можно заключить, что для того чтобы показать, что вторая частная производная функции $G \left( a \right)$ по $a$ больше нуля на интервале $a \in \left(0, \, +\infty \right)$, необходимо доказать следующее неравенство:
 
-$$ \frac{d_i}{d_i + 1} > 0, i = 2 \, \ldots \, N_c - 1. $$
+$$ \frac{d_i}{d_i + 1} > 0, \; i = 2 \, \ldots \, N_c - 1. $$
 
 Для этого выполним следующие преобразования:
 
@@ -203,7 +203,7 @@ $$ \frac{d_i}{d_i + 1} = \frac{c_1 - c_i}{c_{N_c} - c_i} = \frac{\left( K_1 - K_
 
 Поскольку $\left( K_1 - K_i \right) > 0, \; \left( 1 - K_{N_c} \right) > 0, \; \left( K_{N_c} - K_i \right) < 0, \; \left( 1 - K_1 \right) < 0$, то:
 
-$$ \frac{d_i}{d_i + 1} > 0, i = 2 \, \ldots \, N_c - 1. $$
+$$ \frac{d_i}{d_i + 1} > 0, \; i = 2 \, \ldots \, N_c - 1. $$
 
 Следовательно, вторая частная производная функции $G \left( a \right)$ по $a$ больше нуля на интервале $a \in \left(0, \, +\infty \right)$, и функция $G \left( a \right)$ является выпуклой на этом интервале.
 ```
@@ -296,8 +296,8 @@ while pcondit(carry):
     carry = pupdate(carry)
 
 i, a, _, eq = carry
-F = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {F = }')
+f = (a * ci[-1] + ci[0]) / (a + 1.)
+print(f'Solution of the Rachford-Rice equation: {f = }')
 ```
 
 Анализируя результаты, можно отметить, что метод Ньютона успешно нашел решение за пять итераций. Кроме того, можно отметить, что метод Ньютона [сходится немонотонно](https://en.wikipedia.org/wiki/Newton%27s_method#Fourier_conditions), то есть, если обозначить $a^*$ как решение уравнения, то на нулевой итерации $a_0 > a^*, \; G \left( a_0 \right) < 0$, а на первой итерации $a_1 < a^*, \; G \left( a_1 \right) > 0$. В этом случае значение на первой итерации, по сути, является перелетом *(overshoot)*. Такое поведение иногда может приводить к колебаниям вокруг решения уравнения или выходу за границы рассматриваемого интервала (NF-window). Появление перелета на первой итерации обуславливается двумя факторами: начальным приближением и видом (формулировкой) решаемого уравнения. Рассмотрим путь сходимости метода Ньютона для другого начального приближения:
@@ -314,8 +314,8 @@ while pcondit(carry):
     carry = pupdate(carry)
 
 i, a, _, eq = carry
-F = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {F = }')
+f = (a * ci[-1] + ci[0]) / (a + 1.)
+print(f'Solution of the Rachford-Rice equation: {f = }')
 ```
 
 Видно, что для данного начального приближения метод Ньютона сошелся к решению без перелетов. Таким образом, выбор начального приближения и вида (формулировки) решаемого уравнения может непосредственно влиять на устойчивость *(robustness)* численного метода. Для наглядности рассмотрим следующий пример.
@@ -387,28 +387,28 @@ while pcondit(carry):
     carry = pupdate(carry)
 
 i, a, _, eq = carry
-F = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {F = }')
+f = (a * ci[-1] + ci[0]) / (a + 1.)
+print(f'Solution of the Rachford-Rice equation: {f = }')
 ```
 
 Метод Ньютона сошелся к решению, находящемуся за пределами NF-window. Причина – перелет на первой итерации. Таким образом, необходимо доработать представленный алгоритм для повышения его устойчивости. Рассмотрим [теорему Дарбу](http://www.numdam.org/article/NAM_1869_2_8__17_0.pdf), позволяющую определить наличие и отсутствие перелета на итерации:
 
 ```{admonition} Теорема
 :class: danger
-Пусть $x_0$ является начальным приближением уравнения $f \left( x \right) = 0$. Выпуклая функция $f \left( x \right)$ непрерывна и дважды дифференциируема на рассматриваемом интервале. Условием отсутствия перелета при использовании метода Ньютона и начальном приближении $x_0$ является:
+Пусть $x_0$ является начальным приближением уравнения $g \left( x \right) = 0$. Выпуклая функция $g \left( x \right)$ непрерывна и дважды дифференциируема на рассматриваемом интервале. Условием отсутствия перелета при использовании метода Ньютона и начальном приближении $x_0$ является:
 
-$$ f \left( x_0 \right) f'' \left( x_0 \right) > 0. $$
+$$ g \left( x_0 \right) g'' \left( x_0 \right) > 0. $$
 
 ```
 
-Иными словами, необходимо доказать, что если выполняется условие $f \left( x_0 \right) \, f'' \left( x_0 \right) > 0$, то расчетный шаг $h_0 = - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)}$ меньше расстояния $h = x^* - x_0$ от начального приближения $x_0$ до решения уравнения $x^*$.
+Иными словами, необходимо доказать, что если выполняется условие $g \left( x_0 \right) \, g'' \left( x_0 \right) > 0$, то расчетный шаг $h_0 = - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)}$ меньше расстояния $h = x^* - x_0$ от начального приближения $x_0$ до решения уравнения $x^*$.
 
 ````{admonition} Доказательство
 :class: proof
 
-Для начала отметим, что условие $f \left( x_0 \right) \, f'' \left( x_0 \right) > 0$ эквивалентно тому, что обе функции $f \left( x_0 \right)$ и $f'' \left( x_0 \right)$ имеют один знак в точке $x_0$. Это может быть верно в двух случаях.
+Для начала отметим, что условие $g \left( x_0 \right) \, g'' \left( x_0 \right) > 0$ эквивалентно тому, что обе функции $g \left( x_0 \right)$ и $g'' \left( x_0 \right)$ имеют один знак в точке $x_0$. Это может быть верно в двух случаях.
 
-Пусть $f \left( x_0 \right) > 0$ и $f'' \left( x_0 \right) > 0$. Тогда имеется выпуклая вниз функция $f \left( x \right)$, которая может иметь два пересечения с осью абсцисс:
+Пусть $g \left( x_0 \right) > 0$ и $g'' \left( x_0 \right) > 0$. Тогда имеется выпуклая вниз функция $g \left( x \right)$, которая может иметь два пересечения с осью абсцисс:
 
 ```{glue:} glued_fig_1
 ```
@@ -416,37 +416,37 @@ $$ f \left( x_0 \right) f'' \left( x_0 \right) > 0. $$
 <br>
 <br>
 
-Если $f' \left( x \right) > 0$, то $h_0 = x_1 - x_0 < 0$ и $h = x^* - x_0 < 0$. Если же $f' \left( x \right) < 0$, то $h_0 = x_1 - x_0 > 0$ и $h = x^* - x_0 > 0$. Разложим функцию $f \left( x \right)$ в ряд Тейлора вблизи точки $x^*$:
+Если $g' \left( x \right) > 0$, то $h_0 = x_1 - x_0 < 0$ и $h = x^* - x_0 < 0$. Если же $g' \left( x \right) < 0$, то $h_0 = x_1 - x_0 > 0$ и $h = x^* - x_0 > 0$. Разложим функцию $g \left( x \right)$ в ряд Тейлора вблизи точки $x^*$:
 
-$$ f \left( x^* \right) = 0 \approx f \left( x_0 \right) + \left( x^* - x_0 \right) f' \left( x_0 \right) + \frac{\left( x^* - x_0 \right)^2}{2} f'' \left( x_0 \right). $$
+$$ g \left( x^* \right) = 0 \approx g \left( x_0 \right) + \left( x^* - x_0 \right) g' \left( x_0 \right) + \frac{\left( x^* - x_0 \right)^2}{2} g'' \left( x_0 \right). $$
 
 С учетом представленных выше обозначений:
 
-$$ f \left( x_0 \right) + h f' \left( x_0 \right) + \frac{h^2}{2} f'' \left( x_0 \right) = 0. $$
+$$ g \left( x_0 \right) + h g' \left( x_0 \right) + \frac{h^2}{2} g'' \left( x_0 \right) = 0. $$
 
 Данное выражение можно преобразовать следующим образом:
 
-$$ h = - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)} - \frac{h^2}{2} \frac{f'' \left( x_0 \right)}{f' \left( x_0 \right)}. $$
+$$ h = - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)} - \frac{h^2}{2} \frac{g'' \left( x_0 \right)}{g' \left( x_0 \right)}. $$
 
 На первой итерации метода Ньютона:
 
-$$ x_1 = x_0 - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)}. $$
+$$ x_1 = x_0 - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)}. $$
 
 Тогда
 
-$$ h_0 = - \frac{f \left( x_0 \right)}{f' \left( x_0 \right)}. $$
+$$ h_0 = - \frac{g \left( x_0 \right)}{g' \left( x_0 \right)}. $$
 
 С учетом этого выражение выше можно записать:
 
-$$ h = h_0 - \frac{h^2}{2} \frac{f'' \left( x_0 \right)}{f' \left( x_0 \right)}. $$
+$$ h = h_0 - \frac{h^2}{2} \frac{g'' \left( x_0 \right)}{g' \left( x_0 \right)}. $$
 
 Разделим левую и правую части на $h$ и преобразуем:
 
-$$ 1 - \frac{h_0}{h} = - \frac{h}{2} \frac{f'' \left( x_0 \right)}{f' \left( x_0 \right)}. $$
+$$ 1 - \frac{h_0}{h} = - \frac{h}{2} \frac{g'' \left( x_0 \right)}{g' \left( x_0 \right)}. $$
 
-Таким образом, если $f'' \left( x_0 \right) > 0, \; f' \left( x \right) > 0, \; h < 0$, то $1 - \frac{h_0}{h} > 0$, следовательно $h_0 < h$. Если же $f'' \left( x_0 \right) > 0, \; f' \left( x \right) < 0, \; h > 0$, то $1 - \frac{h_0}{h} > 0$, следовательно $h_0 < h$.
+Таким образом, если $g'' \left( x_0 \right) > 0, \; g' \left( x \right) > 0, \; h < 0$, то $1 - \frac{h_0}{h} > 0$, следовательно $h_0 < h$. Если же $g'' \left( x_0 \right) > 0, \; g' \left( x \right) < 0, \; h > 0$, то $1 - \frac{h_0}{h} > 0$, следовательно $h_0 < h$.
 
-Аналогичным образом доказывается для случая, когда $f \left( x_0 \right) < 0$ и $f'' \left( x_0 \right) < 0$.
+Аналогичным образом доказывается для случая, когда $g \left( x_0 \right) < 0$ и $g'' \left( x_0 \right) < 0$.
 
 ````
 
@@ -464,13 +464,13 @@ y = a * x * x + b * x + c
 D = np.sqrt(b * b - 4. * a * c)
 x1 = (-b + D) / 2. / a
 x2 = (-b - D) / 2. / a
-ax_1.plot(x, y, lw=2., c='b', label='f(x)', zorder=3)
+ax_1.plot(x, y, lw=2., c='b', label='g(x)', zorder=3)
 
 x0 = 5.
 y0 = a * x0 * x0 + b * x0 + c
 xp = np.array([x0, (a * x0 * x0 - c) / (2. * a * x0 + b)])
 yp = (2. * a * x0 + b) * xp + (c - a * x0 * x0)
-ax_1.plot(xp, yp, lw=1., ls='--', c='maroon', label="f'(x)", zorder=4)
+ax_1.plot(xp, yp, lw=1., ls='--', c='maroon', label="g'(x)", zorder=4)
 ax_1.plot([x0, x0,], [y0, 0.,], 'o', lw=0., ms=6., mfc='lightcoral', mec='maroon', zorder=5)
 ax_1.plot([x0, x0], [0., y0], c='k', lw=.5, ls='--', zorder=4)
 ax_1.text(x0, -.3, '$x_0$', ha='center', va='top')
@@ -478,13 +478,13 @@ ax_1.plot(xp[1], 0., 'o', lw=0., ms=6., mfc='cyan', mec='teal', zorder=5)
 ax_1.text(xp[1], -.3, '$x_1$', ha='center', va='top')
 ax_1.plot(x1, 0., 'o', lw=0., ms=6., mfc='lime', mec='forestgreen', zorder=5)
 ax_1.text(x1, -.3, '$x*$', ha='center', va='top')
-ax_1.text(4., 2., r"$f \/ ' (x) > 0$", ha='center', va='top', c='maroon')
+ax_1.text(4., 2., r"$g \/ ' (x) > 0$", ha='center', va='top', c='maroon')
 
 x0 = -5.
 y0 = a * x0 * x0 + b * x0 + c
 xp = np.array([x0, (a * x0 * x0 - c) / (2. * a * x0 + b)])
 yp = (2. * a * x0 + b) * xp + (c - a * x0 * x0)
-ax_1.plot(xp, yp, lw=1., ls='--', c='turquoise', label="f'(x)", zorder=4)
+ax_1.plot(xp, yp, lw=1., ls='--', c='turquoise', label="g'(x)", zorder=4)
 ax_1.plot([x0, x0,], [y0, 0.,], 'o', lw=0., ms=6., mfc='lightcoral', mec='maroon', zorder=5)
 ax_1.plot([x0, x0], [0., y0], c='k', lw=.5, ls='--', zorder=4)
 ax_1.text(x0, -.3, '$x_0$', ha='center', va='top')
@@ -492,14 +492,14 @@ ax_1.plot(xp[1], 0., 'o', lw=0., ms=6., mfc='cyan', mec='teal', zorder=5)
 ax_1.text(xp[1], -.3, '$x_1$', ha='center', va='top')
 ax_1.plot(x2, 0., 'o', lw=0., ms=6., mfc='lime', mec='forestgreen', zorder=5)
 ax_1.text(x2, -.3, '$x*$', ha='center', va='top')
-ax_1.text(-4., 2., r"$f \/ ' (x) < 0$", ha='center', va='top', c='turquoise')
+ax_1.text(-4., 2., r"$g \/ ' (x) < 0$", ha='center', va='top', c='turquoise')
 
 ax_1.plot([xmin, xmax], [0., 0.], lw=.5, c='k', zorder=2)
 ax_1.plot([0., 0.], [-2., 10.], lw=.5, c='k', zorder=2)
 ax_1.set_xlim(xmin, xmax)
 ax_1.set_xlabel('x')
 ax_1.set_ylim(-2., 10.)
-ax_1.set_ylabel('f(x)')
+ax_1.set_ylabel('g(x)')
 ax_1.grid(zorder=1)
 
 from myst_nb import glue
@@ -589,52 +589,53 @@ while pcondit(carry):
     carry = pupdate(carry)
 
 i, a, _, eq = carry
-F = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {F = }')
+f = (a * ci[-1] + ci[0]) / (a + 1.)
+print(f'Solution of the Rachford-Rice equation: {f = }')
 ```
 
 Таким образом, метод Ньютона сошелся на корне, находящимся в нужном диапазоне. Следовательно, для повышения устойчивости численного метода решения уравнения Речфорда-Райса необходимо проверять условие $G \left( a_0 \right) \, ? \, 0$. Если $G \left( a_0 \right) < 0$, то выбирается формулировка $H \left( a \right)$, иначе – формулировка $G \left( a \right)$. Проверка данного условия для начального приближения $a_0$ позволяет повысить устойчивость численного алгоритма решения уравнения Речфорда-Райса. Однако, с точки зрения практической значимости, хороший численный метод отличает не только его устойчивость, но и его эффективность *(rapidness)* – количество затрачиваемых итераций на поиск решения заданной точности. Зачастую повышение эффективности численного метода связывают с поиском наиболее точного начального приближения, для определения которого необходимо минимум вычислений, а также с *линеаризацией* функции, то есть с ее преобразованием к виду, максимально приближенному к линейной зависимости, поскольку для решения линейного уравнения необходима ровно одна ньютоновская итерация.
 
 Для получения выражения для начального приближения рассмотрим следующий вид уравнения Речфорда-Райса, полученный авторами работы \[[Leibovici and Neoschil, 1992](https://doi.org/10.1016/0378-3812(92)85069-K)\]:
 
-$$ L \left( F \right) = \left( F - c_1 \right) \left( c_{N_c} - F \right) \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} = 0. $$
+$$ L \left( f \right) = \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} = 0. $$
 
-Функция $L \left( F \right)$ не является монотонной и не является выпуклой на интервале NF-window $F \in \left( с_1, \, с_{N_c} \right)$, однако в большинстве случаев ее график близок к линейному. Построим график этой функции для рассматриваемого примера.
+Функция $L \left( f \right)$ не является монотонной и не является выпуклой на интервале NF-window $f \in \left( с_1, \, с_{N_c} \right)$, однако в большинстве случаев ее график близок к линейному. Построим график этой функции для рассматриваемого примера.
 
 ```{code-cell} python
-F = np.linspace(ci[0] + 1e-3, ci[-1] - 1e-3, 1000, endpoint=True)
-L = (F - ci[0]) * (ci[-1] - F) * np.sum(yi / (F[:,None] - ci), axis=1)
+f = np.linspace(ci[0] + 1e-3, ci[-1] - 1e-3, 1000, endpoint=True)
+L = (f - ci[0]) * (ci[-1] - f) * np.sum(yi / (f[:,None] - ci), axis=1)
 fig5, ax5 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax5.plot(F, L, lw=2., c='m', zorder=3)
+ax5.plot(f, L, lw=2., c='m', zorder=3)
 ax5.plot([ci[0], ci[-1]], [0., 0.], lw=0.5, c='k', zorder=2)
-ax5.set_xlabel('F')
-ax5.set_ylabel('L(F)')
+ax5.set_xlabel('f')
+ax5.set_ylabel('L(f)')
+ax5.set_xlim(ci[0], ci[-1])
 ax5.grid(zorder=1)
 ```
 
-Преобразуем выражение для функции $L \left( F \right)$ к следующему виду:
+Преобразуем выражение для функции $L \left( f \right)$ к следующему виду:
 
 $$ \begin{align}
-L \left( F \right)
-&= \left( F - c_1 \right) \left( c_{N_c} - F \right) \sum_{i=1}^{N_c} \frac{y_i}{F - c_i} \\
-&= y_1 \left( c_{N_c} - F \right) + \left( F - c_1 \right) \left( c_{N_c} - F \right) \sum_{i=2}^{N_c-1} \frac{y_i}{F - c_i} - y_{N_c} \left( F - c_1 \right).
+L \left( f \right)
+&= \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} \\
+&= y_1 \left( c_{N_c} - f \right) + \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=2}^{N_c-1} \frac{y_i}{f - c_i} - y_{N_c} \left( f - c_1 \right).
 \end{align} $$
 
-В точке $F = c_1$ значение функции $L \left( F \right)$:
+В точке $f = c_1$ значение функции $L \left( f \right)$:
 
 $$ L \left( c_1 \right) = y_1 \left( c_{N_c} - c_1 \right). $$
 
-В точке $F = c_{N_c}$ значение функции $L \left( F \right)$:
+В точке $f = c_{N_c}$ значение функции $L \left( f \right)$:
 
 $$ L \left( c_{N_c} \right) = - y_{N_c} \left( c_{N_c} - c_1 \right). $$
 
 Уравнение прямой, проходящей через эти две точки, записывается следующим образом:
 
-$$ l \left( F \right) = - \left( y_1 + y_{N_c} \right) F + \left( y_1 c_{N_c} + y_{N_c} c_1 \right). $$
+$$ l \left( f \right) = - \left( y_1 + y_{N_c} \right) f + \left( y_1 c_{N_c} + y_{N_c} c_1 \right). $$
 
 Эта прямая пересекает ось абсцисс в точке:
 
-$$ F_0 = \frac{y_1 c_{N_c} + y_{N_c} c_1}{y_1 + y_{N_c}}. $$
+$$ f_0 = \frac{y_1 c_{N_c} + y_{N_c} c_1}{y_1 + y_{N_c}}. $$
 
 Или относительно переменной $a$:
 
@@ -846,8 +847,8 @@ while pcondit(carry):
 
 ``` python
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{F = }')
+f = (ci[0] + a * ci[-1]) / (1. + a)
+print(f'{f = }')
 ```
 
 ```{glue:} glued_out2
@@ -908,9 +909,9 @@ while pcondit(carry):
     out1 += out
 
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
+f = (ci[0] + a * ci[-1]) / (1. + a)
 
-out2 = f'{F = }'
+out2 = f'{f = }'
 
 class MultilineText(object):
     def __init__(self, text):
@@ -993,8 +994,8 @@ while pcondit(carry):
 
 ``` python
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{F = }')
+f = (ci[0] + a * ci[-1]) / (1. + a)
+print(f'{f = }')
 ```
 
 ```{glue:} glued_out4
@@ -1026,9 +1027,9 @@ while pcondit(carry):
     out3 += out
 
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
+f = (ci[0] + a * ci[-1]) / (1. + a)
 
-out4 = f'{F = }'
+out4 = f'{f = }'
 
 glue('glued_out3', MultilineText(out3))
 glue('glued_out4', MultilineText(out4))
@@ -1080,8 +1081,8 @@ while pcondit(carry):
 
 ``` python
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{F = }')
+f = (ci[0] + a * ci[-1]) / (1. + a)
+print(f'{f = }')
 ```
 
 ```{glue:} glued_out6
@@ -1116,9 +1117,9 @@ while pcondit(carry):
     out5 += out
 
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
+f = (ci[0] + a * ci[-1]) / (1. + a)
 
-out6 = f'{F = }'
+out6 = f'{f = }'
 
 glue('glued_out5', MultilineText(out5))
 glue('glued_out6', MultilineText(out6))
@@ -1167,8 +1168,8 @@ while pcondit(carry):
 
 ``` python
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{F = }')
+f = (ci[0] + a * ci[-1]) / (1. + a)
+print(f'{f = }')
 ```
 
 ```{glue:} glued_out8
@@ -1202,9 +1203,9 @@ while pcondit(carry):
     out7 += out
 
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
+f = (ci[0] + a * ci[-1]) / (1. + a)
 
-out8 = f'{F = }'
+out8 = f'{f = }'
 
 glue('glued_out7', MultilineText(out7))
 glue('glued_out8', MultilineText(out8))
@@ -1265,8 +1266,8 @@ while pcondit(carry):
 
 ``` python
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{F = }')
+f = (ci[0] + a * ci[-1]) / (1. + a)
+print(f'{f = }')
 ```
 
 ```{glue:} glued_out10
@@ -1298,9 +1299,9 @@ while pcondit(carry):
     out9 += out
 
 a = carry[1]
-F = (ci[0] + a * ci[-1]) / (1. + a)
+f = (ci[0] + a * ci[-1]) / (1. + a)
 
-out10 = f'{F = }'
+out10 = f'{f = }'
 
 glue('glued_out9', MultilineText(out9))
 glue('glued_out10', MultilineText(out10))
