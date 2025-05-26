@@ -32,15 +32,9 @@ $$ \mathbf{A} \mathbf{x}, $$
 
 $$ \mathbf{A} = \begin{bmatrix} 3 & 2 & 1 \\ 2 & 3 & 1 \\ 2 & 1 & 3 \end{bmatrix}, \; \mathbf{x} = \begin{bmatrix} x \\ y \\ z \end{bmatrix}. $$
 
-```{code-cell} python
-from sympy import Matrix, Symbol
-A = Matrix([[3, 2, 1], [2, 3, 1], [2, 1, 3]])
-x = Symbol('x')
-y = Symbol('y')
-z = Symbol('z')
-X = Matrix([[x], [y], [z]])
-A * X
-```
+Тогда в результате произведения матрицы $\mathbf{A}$ и вектора $\mathbf{x}$ получится вектор:
+
+$$ \mathbf{A} \mathbf{x} = \begin{bmatrix} 3x + 2y + z \\ 2x + 3y + z \\ 2x + y + 3z \end{bmatrix}. $$
 
 Правые части уравнений также можно представить в виде матрицы-столбца $\mathbf{b}$:
 

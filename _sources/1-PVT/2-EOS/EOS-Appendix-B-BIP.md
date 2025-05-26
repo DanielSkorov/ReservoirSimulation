@@ -33,293 +33,13 @@ $$ \begin{align} a &= -0.70421 \cdot 10^{-5} \lg \omega - 0.132 \cdot 10^{-7}; \
 Данная корреляция получена регрессией для алканового ряда до нормального декана. Также, зависимости коэффициента попарного взаимодействия между диоксидом углерода и углеводородными компонентами исследуются в работах \[[Mulliken and Sandler, 1980](https://doi.org/10.1021/i260076a033); [Turek et al, 1984](https://doi.org/10.2118/9231-PA); [Nishiumi et al, 1988](https://doi.org/10.1016/0378-3812(88)80049-9); [Pedersen et al, 2001](https://doi.org/10.1016/S0378-3812(01)00562-3); [Mutelet et al, 2005](https://doi.org/10.1016/j.fluid.2005.10.001); [Vitu et al, 2008](https://doi.org/10.1016/j.supflu.2007.11.015); [Fateen et al, 2013](https://doi.org/10.1016/j.jare.2012.03.004)\].
 
 <a id='pvt-eos-appendix-bip-nishumi'></a>
-В работе \[[Nishiumi et al, 1988](https://doi.org/10.1016/0378-3812(88)80049-9)\] приводится обобщенная зависимость коэффициентов попарного взаимодействия для углеводородных (алканов до $C_{20}$, алкенов, циклоалканов, ароматических углвеодородов) и неуглеводородных компонентов (диоксида углерода, азота и сероводорода) для уравнения состояния Пенга-Робинсона в следующем виде:
+В работе \[[Nishiumi et al, 1988](https://doi.org/10.1016/0378-3812(88)80049-9)\] приводится обобщенная зависимость коэффициентов попарного взаимодействия для углеводородных (алканов до $C_{20}$, алкенов, циклоалканов, ароматических углеводородов) и неуглеводородных компонентов (диоксида углерода, азота и сероводорода) для уравнения состояния Пенга-Робинсона в следующем виде:
 
 $$ m_{ij} = 1 - \delta_{ij} = C + D \frac{{V_c}_i}{{V_c}_j} + E \left( \frac{{V_c}_i}{{V_c}_j} \right)^2. $$
 
 В данном уравнении коэффициенты $C, \; D, \; E$ зависят от ацентрических факторов, а также типа компонента:
 
 $$ \begin{align} C &= c_1 + c_2 \left| \omega_i - \omega_j \right|; \\ D &= d_1 + d_2 \left| \omega_i - \omega_j \right|. \end{align}$$
-
-В следующей таблице приводятся группы коэффициентов $c_1, \; c_2, \; d_1, \; d_2, \; E$ в зависимости от типа компонента:
-
-````{div} full-width
-<style type="text/css">
-.tg  {border-color:#ccc;border-spacing:0;margin:20px auto;}
-.tg td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:1px;color:#333;
-  font-family:Palatino, sans-serif;font-size:14px;overflow:hidden;padding:10px 16px;word-break:normal;}
-.tg th{border-color:#ccc;border-style:solid;border-width:1px;color:#333;
-  font-family:Palatino, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 16px;word-break:normal;}
-.tg .tg-0pky{border-color:inherit;text-align:center;vertical-align:center}
-.tg .tg-1pky{background-color:#f0f0f0;border-color:inherit;text-align:center;vertical-align:center;font-weight:bold}
-.tg .tg-abip{background-color:#f9f9f9;border-color:inherit;text-align:center;vertical-align:center}
-</style>
-<table class="tg">
-    <thead>
-        <tr>
-            <th class="tg-1pky"></th>
-            <th class="tg-1pky">Алканы<br>C<sub>1</sub> – C<sub>16</sub></th>
-            <th class="tg-1pky">Циклоалканы</th>
-            <th class="tg-1pky">Алкены</th>
-            <th class="tg-1pky">Ароматические<br>у/в</th>
-            <th class="tg-1pky">Алканы<br>C<sub>18</sub> – C<sub>20</sub></th>
-            <th class="tg-1pky">Диоксид<br>углерода</th>
-            <th class="tg-1pky">Сероводород</th>
-            <th class="tg-1pky">Азот</th>
-            <th class="tg-1pky">Ацетилен</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td class="tg-1pky">Алканы<br>C<sub>1</sub> – C<sub>16</sub></td>
-            <td class="tg-0pky">1</td>
-            <td class="tg-0pky">1</td>
-            <td class="tg-0pky">2</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">4</td>
-            <td class="tg-0pky">5</td>
-            <td class="tg-0pky">7</td>
-            <td class="tg-0pky">8</td>
-            <td class="tg-0pky">10</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Циклоалканы</td>
-            <td class="tg-0pky">1</td>
-            <td class="tg-0pky">1</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">5</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Алкены</td>
-            <td class="tg-0pky">2</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">2</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">4</td>
-            <td class="tg-0pky">6</td>
-            <td class="tg-0pky">7</td>
-            <td class="tg-0pky">8</td>
-            <td class="tg-0pky">9</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Ароматические<br>у/в</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">3</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">6</td>
-            <td class="tg-0pky">7</td>
-            <td class="tg-0pky">12</td>
-            <td class="tg-0pky">11</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Алканы<br>C<sub>18</sub> – C<sub>20</sub></td>
-            <td class="tg-0pky">4</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">4</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">4</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Диоксид<br>углерода</td>
-            <td class="tg-0pky">5</td>
-            <td class="tg-0pky">5</td>
-            <td class="tg-0pky">6</td>
-            <td class="tg-0pky">6</td>
-            <td class="tg-0pky">4</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">12</td>
-            <td class="tg-0pky">13</td>
-            <td class="tg-0pky">-</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Азот</td>
-            <td class="tg-0pky">7</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">7</td>
-            <td class="tg-0pky">7</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">12</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">14</td>
-            <td class="tg-0pky">-</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Сероводород</td>
-            <td class="tg-0pky">8</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">8</td>
-            <td class="tg-0pky">12</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">13</td>
-            <td class="tg-0pky">14</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-        </tr>
-        <tr>
-            <td class="tg-1pky">Ацетилен</td>
-            <td class="tg-0pky">10</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">9</td>
-            <td class="tg-0pky">11</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-            <td class="tg-0pky">-</td>
-        </tr>
-    </tbody>
-</table>
-````
-
-Для каждой группы значения коэффициентов $c_1, \; c_2, \; d_1, \; d_2, \; E$:
-
-<style type="text/css">
-.tb  {border-color:#ccc;border-spacing:0;margin:20px auto;}
-.tb td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:1px;color:#333;
-  font-family:Palatino, sans-serif;font-size:14px;overflow:hidden;padding:10px 44px;word-break:normal;}
-.tb th{border-color:#ccc;border-style:solid;border-width:1px;color:#333;
-  font-family:Palatino, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 44px;word-break:normal;}
-.tb .tb-0pky{border-color:inherit;text-align:center;vertical-align:center}
-.tb .tb-1pky{background-color:#f0f0f0;border-color:inherit;text-align:center;vertical-align:center;font-weight:bold}
-.tb .tb-abip{background-color:#f9f9f9;border-color:inherit;text-align:center;vertical-align:center}
-</style>
-<table class="tb">
-    <thead>
-        <tr>
-            <th class="tb-1pky">Группа</th>
-            <th class="tb-1pky">c<sub>1</sub></th>
-            <th class="tb-1pky">c<sub>2</sub></th>
-            <th class="tb-1pky">d<sub>1</sub></th>
-            <th class="tb-1pky">d<sub>2</sub></th>
-            <th class="tb-1pky">E</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td class="tb-abip">1</td>
-            <td class="tb-0pky">1.041</td>
-            <td class="tb-0pky">0.11</td>
-            <td class="tb-0pky">-0.0403</td>
-            <td class="tb-0pky">0.0367</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">2</td>
-            <td class="tb-0pky">1.017</td>
-            <td class="tb-0pky">-0.417</td>
-            <td class="tb-0pky">-0.0124</td>
-            <td class="tb-0pky">0.0852</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">3</td>
-            <td class="tb-0pky">1.025</td>
-            <td class="tb-0pky">0.317</td>
-            <td class="tb-0pky">-0.0385</td>
-            <td class="tb-0pky">-0.0258</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">4</td>
-            <td class="tb-0pky">0.823</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0.0673</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">-0.0051</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">5</td>
-            <td class="tb-0pky">0.883</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0.0023</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">6</td>
-            <td class="tb-0pky">0.948</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">-0.0084</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">7</td>
-            <td class="tb-0pky">0.982</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">-0.0241</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">8</td>
-            <td class="tb-0pky">0.907</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0.0109</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">9</td>
-            <td class="tb-0pky">1.090</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">-0.1435</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">10</td>
-            <td class="tb-0pky">0.855</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">11</td>
-            <td class="tb-0pky">0.965</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">12</td>
-            <td class="tb-0pky">1.016</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">13</td>
-            <td class="tb-0pky">0.894</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-        <tr>
-            <td class="tb-abip">14</td>
-            <td class="tb-0pky">0.848</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-            <td class="tb-0pky">0</td>
-        </tr>
-    </tbody>
-</table>
 
 Также зависимости коэффициента попарного взаимодействия между азотом и углеводородными компонентами исследуются в работах \[[Katz and Firoozabadi, 1978](https://doi.org/10.2118/6721-PA); [Mehra, 1981](http://dx.doi.org/10.11575/PRISM/13997); [Pedersen et al, 2001](https://doi.org/10.1016/S0378-3812(01)00562-3); [Privat et al, 2008](https://doi.org/10.1021/ie800636h); [Privat et al, 2008](https://doi.org/10.1021/ie071524b); [Fateen et al, 2013](https://doi.org/10.1016/j.jare.2012.03.004)\].
 
@@ -338,42 +58,485 @@ $$ k_{ij} \left( T \right) = \frac{-\frac{1}{2} \sum_k^{N_g} \sum_l^{N_g} \left(
 
 Коэффициенты $A_{kl} = A_{lk}, \; B_{kl} = B_{lk}$ в МПа представлены в работе \[[Qian et al, 2013](https://doi.org/10.1021/ie402541h)\] и следующих таблицах соответственно:
 
-```{code-cell} python
-:tags: ['full-width', 'remove-input']
+<table class="table">
+  <caption>Коэффициенты Aₖₗ (МПа)</caption>
+  <thead>
+    <tr>
+      <th colspan="2" rowspan="2">&nbsp;</th>
+      <th colspan="13">Группы</th>
+    </tr>
+    <tr>
+      <th>CH₃</th>
+      <th>CH₂</th>
+      <th>CH</th>
+      <th>C</th>
+      <th>CH₄</th>
+      <th>C₂H₆</th>
+      <th>CO₂</th>
+      <th>N₂</th>
+      <th>H₂S</th>
+      <th>SH</th>
+      <th>H₂</th>
+      <th>C₂H₄</th>
+      <th>H₂O</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="14" class="rotate">Группы</th>
+    </tr>
+    <tr>
+      <th>CH₃</th>
+      <td>0</td>
+      <td>75</td>
+      <td>262</td>
+      <td>397</td>
+      <td>33</td>
+      <td>9</td>
+      <td>164</td>
+      <td>53</td>
+      <td>158</td>
+      <td>800</td>
+      <td>203</td>
+      <td>7</td>
+      <td>3557</td>
+    </tr>
+    <tr>
+      <th>CH₂</th>
+      <td>75</td>
+      <td>0</td>
+      <td>51</td>
+      <td>89</td>
+      <td>37</td>
+      <td>31</td>
+      <td>137</td>
+      <td>82</td>
+      <td>135</td>
+      <td>460</td>
+      <td>132</td>
+      <td>60</td>
+      <td>4324</td>
+    </tr>
+    <tr>
+      <th>CH</th>
+      <td>262</td>
+      <td>51</td>
+      <td>0</td>
+      <td>-306</td>
+      <td>145</td>
+      <td>174</td>
+      <td>184</td>
+      <td>365</td>
+      <td>194</td>
+      <td>426</td>
+      <td>415</td>
+      <td>177</td>
+      <td>971</td>
+    </tr>
+    <tr>
+      <th>C</th>
+      <td>397</td>
+      <td>89</td>
+      <td>-306</td>
+      <td>0</td>
+      <td>264</td>
+      <td>333</td>
+      <td>288</td>
+      <td>264</td>
+      <td>305</td>
+      <td>683</td>
+      <td>226</td>
+      <td>320</td>
+      <td>–</td>
+    </tr>
+    <tr>
+      <th>CH₄</th>
+      <td>33</td>
+      <td>37</td>
+      <td>145</td>
+      <td>264</td>
+      <td>0</td>
+      <td>13</td>
+      <td>137</td>
+      <td>38</td>
+      <td>181</td>
+      <td>704</td>
+      <td>156</td>
+      <td>15</td>
+      <td>2265</td>
+    </tr>
+    <tr>
+      <th>C₂H₆</th>
+      <td>9</td>
+      <td>31</td>
+      <td>174</td>
+      <td>333</td>
+      <td>13</td>
+      <td>0</td>
+      <td>136</td>
+      <td>62</td>
+      <td>157</td>
+      <td>–</td>
+      <td>138</td>
+      <td>8</td>
+      <td>2333</td>
+    </tr>
+    <tr>
+      <th>CO₂</th>
+      <td>164</td>
+      <td>137</td>
+      <td>184</td>
+      <td>288</td>
+      <td>137</td>
+      <td>136</td>
+      <td>0</td>
+      <td>98</td>
+      <td>135</td>
+      <td>470</td>
+      <td>266</td>
+      <td>73</td>
+      <td>559</td>
+    </tr>
+    <tr>
+      <th>N₂</th>
+      <td>53</td>
+      <td>82</td>
+      <td>365</td>
+      <td>264</td>
+      <td>38</td>
+      <td>62</td>
+      <td>98</td>
+      <td>0</td>
+      <td>320</td>
+      <td>1044</td>
+      <td>65</td>
+      <td>89</td>
+      <td>2574</td>
+    </tr>
+    <tr>
+      <th>H₂S</th>
+      <td>158</td>
+      <td>135</td>
+      <td>194</td>
+      <td>305</td>
+      <td>181</td>
+      <td>157</td>
+      <td>135</td>
+      <td>320</td>
+      <td>0</td>
+      <td>-77</td>
+      <td>146</td>
+      <td>–</td>
+      <td>604</td>
+    </tr>
+    <tr>
+      <th>SH</th>
+      <td>800</td>
+      <td>460</td>
+      <td>426</td>
+      <td>683</td>
+      <td>704</td>
+      <td>–</td>
+      <td>470</td>
+      <td>1044</td>
+      <td>-77</td>
+      <td>0</td>
+      <td>–</td>
+      <td>–</td>
+      <td>31</td>
+    </tr>
+    <tr>
+      <th>H₂</th>
+      <td>203</td>
+      <td>132</td>
+      <td>415</td>
+      <td>226</td>
+      <td>156</td>
+      <td>138</td>
+      <td>266</td>
+      <td>65</td>
+      <td>146</td>
+      <td>–</td>
+      <td>0</td>
+      <td>151</td>
+      <td>831</td>
+    </tr>
+    <tr>
+      <th>C₂H₄</th>
+      <td>7</td>
+      <td>60</td>
+      <td>177</td>
+      <td>320</td>
+      <td>15</td>
+      <td>8</td>
+      <td>73</td>
+      <td>89</td>
+      <td>–</td>
+      <td>–</td>
+      <td>151</td>
+      <td>0</td>
+      <td>1632</td>
+    </tr>
+    <tr>
+      <th>H₂O</th>
+      <td>3557</td>
+      <td>4324</td>
+      <td>971</td>
+      <td>–</td>
+      <td>2265</td>
+      <td>2333</td>
+      <td>559</td>
+      <td>2574</td>
+      <td>604</td>
+      <td>31</td>
+      <td>831</td>
+      <td>1632</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<br>
 
-import pandas as pd
-pd.options.display.max_columns = None
-cols = ['CH3', 'CH2', 'CH', 'C', 'CH4', 'C2H6', 'CH (aro)', 'C (aro)', 'C (fused aro rings)', 'CH2 (cyclic)', 'CH (cyclic) | C (cyclic)', 'CO2', 'N2',
-        'H2S', 'SH', 'H2', 'C2H4', 'CH2 (alkenic) | CH (alkenic)', 'C (alkenic)', 'CH (cycloalkenic) | C (cycloalkenic)', 'H2O']
-df_a = pd.read_excel(io='../../_src/bip.xlsx', sheet_name='A', usecols='D:Y', skiprows=[0, 1, 2], index_col=0)
-dct = dict(zip(list(df_a.columns), cols))
-df_a_mod = df_a.rename(index=dct)
-df_a_mod = df_a_mod.rename(columns=dct)
-df_a_mod.style\
-    .format(precision=0)\
-    .set_table_attributes('style="font-size: 10px"')\
-    .set_table_styles([
-        {'selector': 'th.col_heading', 'props': 'text-align: center;'},
-        {'selector': 'td', 'props': 'text-align: center;'},
-    ], overwrite=False)
-```
+<table class="table">
+  <caption>Коэффициенты Bₖₗ (МПа)</caption>
+  <thead>
+    <tr>
+      <th colspan="2" rowspan="2">&nbsp;</th>
+      <th colspan="13">Группы</th>
+    </tr>
+    <tr>
+      <th>CH₃</th>
+      <th>CH₂</th>
+      <th>CH</th>
+      <th>C</th>
+      <th>CH₄</th>
+      <th>C₂H₆</th>
+      <th>CO₂</th>
+      <th>N₂</th>
+      <th>H₂S</th>
+      <th>SH</th>
+      <th>H₂</th>
+      <th>C₂H₄</th>
+      <th>H₂O</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="14" class="rotate">Группы</th>
+    </tr>
+    <tr>
+      <th>CH₃</th>
+      <td>0</td>
+      <td>166</td>
+      <td>389</td>
+      <td>804</td>
+      <td>-35</td>
+      <td>-30</td>
+      <td>269</td>
+      <td>87</td>
+      <td>241</td>
+      <td>2109</td>
+      <td>317</td>
+      <td>39</td>
+      <td>11195</td>
+    </tr>
+    <tr>
+      <th>CH₂</th>
+      <td>166</td>
+      <td>0</td>
+      <td>80</td>
+      <td>315</td>
+      <td>108</td>
+      <td>85</td>
+      <td>255</td>
+      <td>203</td>
+      <td>138</td>
+      <td>627</td>
+      <td>147</td>
+      <td>79</td>
+      <td>12126</td>
+    </tr>
+    <tr>
+      <th>CH</th>
+      <td>389</td>
+      <td>80</td>
+      <td>0</td>
+      <td>-251</td>
+      <td>302</td>
+      <td>352</td>
+      <td>762</td>
+      <td>522</td>
+      <td>308</td>
+      <td>515</td>
+      <td>726</td>
+      <td>118</td>
+      <td>568</td>
+    </tr>
+    <tr>
+      <th>C</th>
+      <td>804</td>
+      <td>315</td>
+      <td>-251</td>
+      <td>0</td>
+      <td>532</td>
+      <td>204</td>
+      <td>346</td>
+      <td>773</td>
+      <td>-143</td>
+      <td>1544</td>
+      <td>1812</td>
+      <td>-248</td>
+      <td>–</td>
+    </tr>
+    <tr>
+      <th>CH₄</th>
+      <td>-35</td>
+      <td>108</td>
+      <td>302</td>
+      <td>532</td>
+      <td>0</td>
+      <td>7</td>
+      <td>194</td>
+      <td>37</td>
+      <td>289</td>
+      <td>1496</td>
+      <td>93</td>
+      <td>30</td>
+      <td>4722</td>
+    </tr>
+    <tr>
+      <th>C₂H₆</th>
+      <td>-30</td>
+      <td>85</td>
+      <td>352</td>
+      <td>204</td>
+      <td>7</td>
+      <td>0</td>
+      <td>240</td>
+      <td>85</td>
+      <td>217</td>
+      <td>–</td>
+      <td>150</td>
+      <td>19</td>
+      <td>5147</td>
+    </tr>
+    <tr>
+      <th>CO₂</th>
+      <td>269</td>
+      <td>255</td>
+      <td>762</td>
+      <td>346</td>
+      <td>194</td>
+      <td>240</td>
+      <td>0</td>
+      <td>221</td>
+      <td>201</td>
+      <td>900</td>
+      <td>268</td>
+      <td>115</td>
+      <td>278</td>
+    </tr>
+    <tr>
+      <th>N₂</th>
+      <td>87</td>
+      <td>203</td>
+      <td>522</td>
+      <td>773</td>
+      <td>37</td>
+      <td>85</td>
+      <td>221</td>
+      <td>0</td>
+      <td>550</td>
+      <td>1872</td>
+      <td>70</td>
+      <td>109</td>
+      <td>5490</td>
+    </tr>
+    <tr>
+      <th>H₂S</th>
+      <td>241</td>
+      <td>138</td>
+      <td>308</td>
+      <td>-143</td>
+      <td>289</td>
+      <td>217</td>
+      <td>201</td>
+      <td>550</td>
+      <td>0</td>
+      <td>156</td>
+      <td>824</td>
+      <td>–</td>
+      <td>599</td>
+    </tr>
+    <tr>
+      <th>SH</th>
+      <td>2109</td>
+      <td>627</td>
+      <td>515</td>
+      <td>1544</td>
+      <td>1496</td>
+      <td>–</td>
+      <td>900</td>
+      <td>1872</td>
+      <td>156</td>
+      <td>0</td>
+      <td>–</td>
+      <td>–</td>
+      <td>-114</td>
+    </tr>
+    <tr>
+      <th>H₂</th>
+      <td>317</td>
+      <td>147</td>
+      <td>726</td>
+      <td>1812</td>
+      <td>93</td>
+      <td>150</td>
+      <td>268</td>
+      <td>70</td>
+      <td>824</td>
+      <td>–</td>
+      <td>0</td>
+      <td>165</td>
+      <td>-138</td>
+    </tr>
+    <tr>
+      <th>C₂H₄</th>
+      <td>39</td>
+      <td>79</td>
+      <td>118</td>
+      <td>-248</td>
+      <td>30</td>
+      <td>19</td>
+      <td>115</td>
+      <td>109</td>
+      <td>–</td>
+      <td>–</td>
+      <td>165</td>
+      <td>0</td>
+      <td>1612</td>
+    </tr>
+    <tr>
+      <th>H₂O</th>
+      <td>11195</td>
+      <td>12126</td>
+      <td>568</td>
+      <td>–</td>
+      <td>4722</td>
+      <td>5147</td>
+      <td>278</td>
+      <td>5490</td>
+      <td>599</td>
+      <td>-114</td>
+      <td>-138</td>
+      <td>1612</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<br>
 
-```{code-cell} python
-:tags: ['full-width', 'remove-input']
-
-df_b = pd.read_excel(io='../../_src/bip.xlsx', sheet_name='B', usecols='D:Y', skiprows=[0, 1, 2], index_col=0)
-df_b_mod = df_b.rename(index=dct)
-df_b_mod = df_b_mod.rename(columns=dct)
-df_b_mod.style\
-    .format(precision=0)\
-    .set_table_attributes('style="font-size: 10px"')\
-    .set_table_styles([
-        {'selector': 'th.col_heading', 'props': 'text-align: center;'},
-        {'selector': 'td', 'props': 'text-align: center;'},
-    ], overwrite=False)
-```
-
-Рассмотрим пример расчета коэффициента попарного взаимодействия с использованием данного выражения. В качестве примера возьмем смесь нормального бутана $ \left( CH_3 - CH_2 - CH_2 - CH_3 \right) $ и пропана $ \left( CH_3 - CH_2 - CH_3 \right) $ при температуре $T = 303.15 \; K$.
+Рассмотрим пример расчета коэффициента попарного взаимодействия с использованием данного выражения. В качестве примера возьмем смесь нормального бутана $\left( CH_3 - CH_2 - CH_2 - CH_3 \right)$ и пропана $\left( CH_3 - CH_2 - CH_3 \right)$ при температуре $T = 303.15 \; K$.
 
 ```{code-cell} python
 R = 8.314472 # Universal gas constant [J/mol/K]
