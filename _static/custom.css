@@ -43,6 +43,23 @@ body {
 .table thead tr {
     border-bottom-width: 0;
     border-bottom-color: var(--pst-table-border-custom-color);
+    text-align: center;
+    font-size: 12px;
+}
+.table td {
+    text-align: center;
+    font-size: 12px;
+}
+.table th {
+    text-align: center;
+    font-size: 12px;
+}
+.table .rotate {
+    -ms-writing-mode: tb-rl;
+    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
 }
 
 
