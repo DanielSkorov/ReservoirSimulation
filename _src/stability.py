@@ -453,8 +453,10 @@ def _stabPT_newt(
   maxiter: int = 20,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
-  """Newton's method for the stability test using a PT-based
-  equation of state.
+  """Newton's method for the stability test using a PT-based equation
+  of state. A switch to the successive substitution iteration is
+  implemented if the Newton's method does not decrease the norm of the
+  gradient.
 
   Parameters
   ----------
@@ -546,11 +548,24 @@ def _stabPT_newt(
       xi = ni / n
       lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
       gi = sqrtni * (np.log(ni) + lnphixi - hi)
-      gnorm = np.linalg.norm(gi)
-      logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s',
-        k, ni/yi, gnorm,
-      )
+      gnormkp1 = np.linalg.norm(gi)
+      if gnormkp1 < gnorm:
+        gnorm = gnormkp1
+        logger.debug(
+          'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
+        )
+      else:
+        ni *= np.exp(-gi / sqrtni)
+        sqrtni = np.sqrt(ni)
+        alphaik = 2. * sqrtni
+        n = ni.sum()
+        xi = ni / n
+        lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
+        gi = sqrtni * (np.log(ni) + lnphixi - hi)
+        gnorm = np.linalg.norm(gi)
+        logger.debug(
+          'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
+        )
     if (gnorm < tol) & (np.isfinite(kvik).all()):
       TPD = -np.log(ni.sum())
       if (TPD < eps):
@@ -594,9 +609,11 @@ def _stabPT_ssnewt(
   maxiter_ss: int = 10,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
-  """Newton's method for the stability test using a PT-based
-  equation of state with preceding successive substitution iterations
-  for initial guess improvement.
+  """Newton's method for the stability test using a PT-based equation
+  of state with preceding successive substitution iterations for initial
+  guess improvement. A switch to the successive substitution iteration
+  is implemented if the Newton's method does not decrease the norm of
+  the gradient.
 
   Parameters
   ----------
@@ -730,11 +747,26 @@ def _stabPT_ssnewt(
           xi = ni / n
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
-          gnorm = np.linalg.norm(gi)
-          logger.debug(
-            'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
-            k, ni/yi, gnorm,
-          )
+          gnormkp1 = np.linalg.norm(gi)
+          if gnormkp1 < gnorm:
+            gnorm = gnormkp1
+            logger.debug(
+              'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              k, ni/yi, gnorm,
+            )
+          else:
+            ni *= np.exp(-gi / sqrtni)
+            sqrtni = np.sqrt(ni)
+            alphaik = 2. * sqrtni
+            n = ni.sum()
+            xi = ni / n
+            lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
+            gi = sqrtni * (np.log(ni) + lnphixi - hi)
+            gnorm = np.linalg.norm(gi)
+            logger.debug(
+              'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              k, ni/yi, gnorm,
+            )
         if (k < maxiter) & (np.isfinite(alphaik).all()):
           TPD = -np.log(ni.sum())
           if (TPD < eps):
@@ -933,11 +965,26 @@ def _stabPT_qnssnewt(
           xi = ni / n
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
-          gnorm = np.linalg.norm(gi)
-          logger.debug(
-            'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
-            k, ni/yi, gnorm,
-          )
+          gnormkp1 = np.linalg.norm(gi)
+          if gnormkp1 < gnorm:
+            gnorm = gnormkp1
+            logger.debug(
+              'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              k, ni/yi, gnorm,
+            )
+          else:
+            ni *= np.exp(-gi / sqrtni)
+            sqrtni = np.sqrt(ni)
+            alphaik = 2. * sqrtni
+            n = ni.sum()
+            xi = ni / n
+            lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
+            gi = sqrtni * (np.log(ni) + lnphixi - hi)
+            gnorm = np.linalg.norm(gi)
+            logger.debug(
+              'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              k, ni/yi, gnorm,
+            )
         if (k < maxiter) & (np.isfinite(alphaik).all()):
           TPD = -np.log(ni.sum())
           if (TPD < eps):
