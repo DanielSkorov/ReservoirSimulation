@@ -514,8 +514,8 @@ class pr78(object):
     B = bm * PRT
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
-    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     return -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
 
   def getPT_lnfi(
@@ -581,8 +581,8 @@ class pr78(object):
     B = bm * PRT
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
-    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     return (
       -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi,
       Z - PRT * yi.dot(self.vsi_bi),
@@ -626,17 +626,18 @@ class pr78(object):
     B = bm * PRT
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
-    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     lnphii = -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
     ddmdA = np.array([0., 1., -B])[:,None]
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = 1. / (Z - B * .41421356) - 1. / (Z + B * 2.41421356)
-    dfZdB = (- 0.41421356 / (Z - B * 0.41421356)
-             - 2.41421356 / (Z + B * 2.41421356))
+    dfZdZ = (1. / (Z - B * 0.414213562373095)
+             - 1. / (Z + B * 2.414213562373095))
+    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
+             - 2.414213562373095 / (Z + B * 2.414213562373095))
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
@@ -681,6 +682,9 @@ class pr78(object):
     logarithms of the fugacity coefficients with respect to component
     mole numbers.
     """
+    d1 = 1. - np.sqrt(2.)
+    d2 = 1. + np.sqrt(2.)
+    d12 = 1. / (d2 - d1)
     RT = R * T
     PRT = P / RT
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
@@ -692,17 +696,18 @@ class pr78(object):
     B = bm * PRT
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
-    gphii = .35355339 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * .41421356) / (Z + B * 2.41421356))
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     lnphii = -gZ + self.bi * (Z - 1.) / bm + gphii * fZ - PRT * self.vsi_bi
     ddmdA = np.array([0., 1., -B])[:,None]
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = 1. / (Z - B * .41421356) - 1. / (Z + B * 2.41421356)
-    dfZdB = (- 0.41421356 / (Z - B * 0.41421356)
-             - 2.41421356 / (Z + B * 2.41421356))
+    dfZdZ = (1. / (Z - B * 0.414213562373095)
+             - 1. / (Z + B * 2.414213562373095))
+    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
+             - 2.414213562373095 / (Z + B * 2.414213562373095))
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
@@ -714,7 +719,8 @@ class pr78(object):
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
     dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
-                  + (self.bi / bm**2)[:,None] * dbmdnj) * (.35355339 * A / B)
+                  + (self.bi / bm**2)[:,None] * dbmdnj)
+                 * (0.3535533905932738 * A / B)
                  + gphii[:,None] * (dAdnj / A - dBdnj / B))
     dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
                   + (fZ * dgphiidnj + gphii[:,None] * dfZdnj)
@@ -831,9 +837,10 @@ class pr78(object):
     Aj = alphamj * PRT / RT
     Bj = bmj * PRT
     Zj = np.vectorize(self.solve_eos)(Aj, Bj)
-    gphiji = ((.35355339 * Aj / Bj)[:,None]
+    gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
               * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
-    fZj = np.log((Zj - Bj * 0.41421356) / (Zj + Bj * 2.41421356))
+    fZj = np.log((Zj - Bj * 0.414213562373095)
+                 / (Zj + Bj * 2.414213562373095))
     lnphiji = (self.bi * ((Zj - 1.) / bmj)[:,None]
                + gphiji * fZj[:,None]
                - np.log(Zj - Bj)[:,None]
@@ -975,8 +982,8 @@ class pr78(object):
     each component and a matrix of their partial derivatives with
     respect to component mole numbers.
     """
-    d1 = 2.41421356
-    d2 = -.41421356
+    d1 = 2.414213562373095
+    d2 = -0.414213562373095
     v = V / n
     RT = R * T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
@@ -1039,8 +1046,8 @@ class pr78(object):
     -------
     The cubic form of the Helmholtz energy Taylor series decomposition.
     """
-    d1 = 2.41421356
-    d2 = -.41421356
+    d1 = 2.414213562373095
+    d2 = -0.414213562373095
     v = V / n
     RT = R * T
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
@@ -1131,11 +1138,11 @@ class pr78(object):
       x2 = (-r - D) * .5
       fdG = lambda Z1, Z2: (np.log((Z2 - B) / (Z1 - B))
                             + (Z1 - Z2)
-                            + np.log((Z1 - B * 0.41421356)
-                                     * (Z2 + B * 2.41421356)
-                                     / (Z1 + B * 2.41421356)
-                                     / (Z2 - B * 0.41421356))
-                              * 0.35355339 * A / B)
+                            + np.log((Z1 - B * 0.414213562373095)
+                                     * (Z2 + B * 2.414213562373095)
+                                     / (Z1 + B * 2.414213562373095)
+                                     / (Z2 - B * 0.414213562373095))
+                              * 0.3535533905932738 * A / B)
       if x2 > 0:
         dG = fdG(x0, x2)
         if dG < 0.:

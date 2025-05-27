@@ -18,6 +18,8 @@ from rr import (
   solve2p_FGH,
 )
 
+from typing import Callable
+
 from custom_types import (
   ScalarType,
   VectorType,
@@ -207,12 +209,14 @@ class flash2pPT(object):
         'The BFGS-method for flash calculations is not implemented yet.'
       )
     elif flashmethod == 'newton':
-      raise NotImplementedError(
-        "The Newton's method for flash calculations is not implemented yet."
-      )
+      self.flashsolver = partial(_flash2pPT_newt, eos=eos, **kwargs)
     elif flashmethod == 'ss-newton':
       raise NotImplementedError(
         'The SS-Newton method for flash calculations is not implemented yet.'
+      )
+    elif flashmethod == 'qnss-newton':
+      raise NotImplementedError(
+        'The QNSS-Newton method for flash calculations is not implemented yet.'
       )
     else:
       raise ValueError(f'The unknown flash-method: {flashmethod}.')
@@ -350,12 +354,12 @@ def _flash2pPT_ss(
     logger.debug('The kv-loop iteration number = %s', i)
     k = 0
     kvik = kvi0.flatten()
+    lnkvik = np.log(kvik)
     Fv = solve2p_FGH(kvik, yi)
     yli = yi / ((kvik - 1.) * Fv + 1.)
     yvi = yli * kvik
     lnphili, Zl = eos.getPT_lnphii_Z(P, T, yli)
     lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
-    lnkvik = np.log(kvik)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
     logger.debug(
@@ -483,12 +487,12 @@ def _flash2pPT_qnss(
     logger.debug('The kv-loop iteration number = %s', i)
     k = 0
     kvik = kvi0.flatten()
+    lnkvik = np.log(kvik)
     Fv = solve2p_FGH(kvik, yi)
     yli = yi / ((kvik - 1.) * Fv + 1.)
     yvi = yli * kvik
     lnphili, Zl = eos.getPT_lnphii_Z(P, T, yli)
     lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
-    lnkvik = np.log(kvik)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
     lmbd = 1.
@@ -554,3 +558,87 @@ def _flash2pPT_qnss(
                        Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
                        gnorm=gnorm, success=False)
 
+
+def _flash2pPT_newt(
+  P: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  kvji0: tuple[VectorType],
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 30,
+  negativeflash: bool = True,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> FlashResult:
+  logger.debug(
+    "Flash Calculation (Newton's method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s",
+    P, T, yi,
+  )
+  U = np.full(shape=(eos.Nc, eos.Nc), fill_value=-1.)
+  for i, kvi0 in enumerate(kvji0):
+    logger.debug('The kv-loop iteration number = %s', i)
+    k = 0
+    kvik = kvi0.flatten()
+    lnkvik = np.log(kvik)
+    Fv = solve2p_FGH(kvik, yi)
+    yli = yi / ((kvik - 1.) * Fv + 1.)
+    yvi = yli * kvik
+    lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
+    lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
+    gi = lnkvik + lnphivi - lnphili
+    gnorm = np.linalg.norm(gi)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
+      k, kvik, gnorm, Fv,
+    )
+    while (gnorm > tol) & (k < maxiter):
+      ui = yi / (yli * yvi) - 1.
+      FvFl = 1. / (Fv * (1. - Fv))
+      np.fill_diagonal(U, ui)
+      H = U * FvFl + (dlnphividnj + dlnphilidnj)
+      dnvi = linsolver(H, -gi)
+      dlnkvi = U.dot(dnvi) * FvFl
+      k += 1
+      lnkvik += dlnkvi
+      kvik = np.exp(lnkvik)
+      Fv = solve2p_FGH(kvik, yi)
+      yli = yi / ((kvik - 1.) * Fv + 1.)
+      yvi = yli * kvik
+      lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
+      lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
+      gi = lnkvik + lnphivi - lnphili
+      gnorm = np.linalg.norm(gi)
+      logger.debug(
+        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
+        k, kvik, gnorm, Fv,
+      )
+    if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
+        & ((Fv < 1.) & (1. - Fv < 1.) | negativeflash)):
+      rhol = yli.dot(eos.mwi) / Zl
+      rhov = yvi.dot(eos.mwi) / Zv
+      kvji = np.atleast_2d(kvik)
+      if rhov < rhol:
+        yji = np.vstack([yvi, yli])
+        Fj = np.array([Fv, 1. - Fv])
+        Zj = np.array([Zv, Zl])
+      else:
+        yji = np.vstack([yli, yvi])
+        Fj = np.array([1. - Fv, Fv])
+        Zj = np.array([Zl, Zv])
+      logger.info(
+        'Two-phase flash P = %s Pa, T = %s K, yi = %s:\n\t'
+        'Fj = %s\n\tyji = %s\n\tgnorm = %s\n\tNiter = %s',
+        P, T, yi, Fj, yji, gnorm, k,
+      )
+      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
+                         success=True)
+  else:
+    logger.warning(
+      "Two-phase flash calculations terminates unsuccessfully. "
+      "The solution method was Newton, EOS: %s. Parameters:"
+      "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
+      eos.name, P, T, yi, kvji0,
+    )
+    return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
+                       Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
+                       gnorm=gnorm, success=False)
