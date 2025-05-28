@@ -181,6 +181,87 @@ class flash(unittest.TestCase):
     self.assertTrue((res.gnorm < tol) & (res.success))
     pass
 
+  def test_08(self):
+    P = np.float64(8.7625e6)
+    T = np.float64(316.48)
+    yi = np.array([
+      0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
+    ])
+    Pci = np.array([73.36, 45.99, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.20, 166.67, 338.81, 466.12, 611.11, 777.78, 972.22])
+    wi = np.array([0.225, 0.008, 0.126, 0.244, 0.639, 1.000, 1.281])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    mwi = np.array([0.044, 0.016, 0.037, 0.072, 0.161, 0.312, 0.495])
+    dij = np.array([
+      0.05,
+      0.05, 0.00853,
+      0.05, 0.02064, 0.00271,
+      0.09, 0.05428, 0.02079, 0.00863,
+      0.09, 0.09301, 0.04829, 0.02887, 0.00615,
+      0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-5
+    flash = flash2pPT(pr, flashmethod='ss', stabmethod='ss', tol=tol,
+                      maxiter=211)
+    res = flash.run(P, T, yi)
+    self.assertTrue((res.gnorm < tol) & (res.success))
+    pass
+
+  def test_09(self):
+    P = np.float64(8.7625e6)
+    T = np.float64(316.48)
+    yi = np.array([
+      0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
+    ])
+    Pci = np.array([73.36, 45.99, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.20, 166.67, 338.81, 466.12, 611.11, 777.78, 972.22])
+    wi = np.array([0.225, 0.008, 0.126, 0.244, 0.639, 1.000, 1.281])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    mwi = np.array([0.044, 0.016, 0.037, 0.072, 0.161, 0.312, 0.495])
+    dij = np.array([
+      0.05,
+      0.05, 0.00853,
+      0.05, 0.02064, 0.00271,
+      0.09, 0.05428, 0.02079, 0.00863,
+      0.09, 0.09301, 0.04829, 0.02887, 0.00615,
+      0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-5
+    flash = flash2pPT(pr, flashmethod='qnss', stabmethod='ss', tol=tol,
+                      maxiter=35)
+    res = flash.run(P, T, yi)
+    self.assertTrue((res.gnorm < tol) & (res.success))
+    pass
+
+  def test_10(self):
+    P = np.float64(8.7625e6)
+    T = np.float64(316.48)
+    yi = np.array([
+      0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
+    ])
+    Pci = np.array([73.36, 45.99, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.20, 166.67, 338.81, 466.12, 611.11, 777.78, 972.22])
+    wi = np.array([0.225, 0.008, 0.126, 0.244, 0.639, 1.000, 1.281])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    mwi = np.array([0.044, 0.016, 0.037, 0.072, 0.161, 0.312, 0.495])
+    dij = np.array([
+      0.05,
+      0.05, 0.00853,
+      0.05, 0.02064, 0.00271,
+      0.09, 0.05428, 0.02079, 0.00863,
+      0.09, 0.09301, 0.04829, 0.02887, 0.00615,
+      0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-5
+    flash = flash2pPT(pr, flashmethod='newton', stabmethod='ss', tol=tol,
+                      maxiter=12, forcenewton=True)
+    res = flash.run(P, T, yi)
+    self.assertTrue((res.gnorm < tol) & (res.success))
+    pass
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=0)

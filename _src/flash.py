@@ -55,10 +55,11 @@ class FlashResult(dict):
     the number of phases and `Nc` is the number of components.
 
   gnorm: float
-    Norm of a vector of equilibrium equations.
+    The norm of the vector of equilibrium equations.
 
   success: bool
-    Whether or not the procedure exited successfully.
+    A boolean flag indicating whether or not the procedure exited
+    successfully.
   """
   def __getattr__(self, name: str) -> object:
     try:
@@ -78,7 +79,8 @@ class FlashResult(dict):
 class flash2pPT(object):
   """Two-phase flash calculations.
 
-  Performs two-phase flash calculations for isobaric-isothermal systems.
+  Performs two-phase flash calculations for a given pressure [Pa],
+  temperature [K] and composition of a mixture.
 
   Parameters
   ----------
@@ -93,24 +95,26 @@ class flash2pPT(object):
       is used to generate initial guesses of k-values.
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components and the phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (`ndarray` of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
 
     If the solution method would be one of `'newton'` or `'ss-newton'`
     then it also must have:
 
     - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients, the mixture compressibility factor, and partial
-      derivatives of logarithms of the fugacity coefficients with
-      respect to components mole numbers which are an `ndarray` of
-      shape `(Nc, Nc)`.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients (`ndarray` of shape `(Nc,)`), the mixture
+      compressibility factor, and partial derivatives of logarithms of
+      the fugacity coefficients with respect to components mole numbers
+      (`ndarray` of shape `(Nc, Nc)`) for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape
-      `(Nc,)`.
+      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -121,9 +125,11 @@ class flash2pPT(object):
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'bfgs'` (Currently raises `NotImplementedError`),
-    - `'newton'` (Currently raises `NotImplementedError`),
-    - `'ss-newton'` (Currently raises `NotImplementedError`),
-    - `'qnss-newton'` (Currently raises `NotImplementedError`).
+    - `'newton'` (Newton's method),
+    - `'ss-newton'` (Newton's method with preceding successive
+      substitution iterations for initial guess improvement),
+    - `'qnss-newton'` (Newton's method with preceding quasi-newton
+      successive substitution iterations for initial guess improvement).
 
     Default is `'ss'`.
 
@@ -170,7 +176,7 @@ class flash2pPT(object):
 
   kwargs: dict
     Other arguments for a phase split solver. It may contain such
-    arguments as `tol`, `maxiter` or others, depending on the selected
+    arguments as `tol`, `maxiter` and others, depending on the selected
     phase split solver.
 
   Methods
@@ -256,10 +262,13 @@ class flash2pPT(object):
     Returns
     -------
     Flash calculation results as an instance of `FlashResult` object.
-    Important attributes are: `yji` the component mole fractions in
-    each phase, `Fj` the phase mole fractions, `Zj` the compressibility
-    factors of each phase, `success` a boolean flag indicating if the
-    calculation completed successfully.
+    Important attributes are:
+
+    - `yji` the component mole fractions in each phase,
+    - `Fj` the phase mole fractions,
+    - `Zj` the compressibility factors of each phase,
+    - `success` a boolean flag indicating if the calculation completed
+      successfully.
     """
     kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
     if self.useprev and self.preserved:
@@ -316,13 +325,15 @@ def _flash2pPT_ss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components and the phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (`ndarray` of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights of shape `(Nc,)`.
+      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -341,10 +352,13 @@ def _flash2pPT_ss(
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
-  Important attributes are: `yji` the component mole fractions
-  in each phase, `Fj` the phase mole fractions, `Zj` the compressibility
-  factors of each phase, `success` a boolean flag indicating if the
-  calculation completed successfully.
+  Important attributes are:
+
+  - `yji` the component mole fractions in each phase,
+  - `Fj` the phase mole fractions,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
   logger.debug(
     'Flash Calculation (SS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
@@ -449,13 +463,15 @@ def _flash2pPT_qnss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components and the phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (`ndarray` of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights of shape `(Nc,)`.
+      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -474,10 +490,13 @@ def _flash2pPT_qnss(
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
-  Important attributes are: `yji` the component mole fractions
-  in each phase, `Fj` the phase mole fractions, `Zj` the compressibility
-  factors of each phase, `success` a boolean flag indicating if the
-  calculation completed successfully.
+  Important attributes are:
+
+  - `yji` the component mole fractions in each phase,
+  - `Fj` the phase mole fractions,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
   logger.debug(
     'Flash Calculation (QNSS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
@@ -568,8 +587,78 @@ def _flash2pPT_newt(
   tol: ScalarType = 1e-5,
   maxiter: int = 30,
   negativeflash: bool = True,
+  forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
+  """Performs minimization of the Gibbs energy function using the
+  Newton's method and a PT-based equation of state. A switch to the
+  successive substitution iteration is implemented if the Newton's
+  method does not decrease the norm of the gradient.
+
+  Parameters
+  ----------
+  P: float
+    Pressure of a mixture [Pa].
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  kvji0: tuple[ndarray]
+    Initial guesses for k-values of components.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (`ndarray` of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+  tol: float
+    Terminate the Newton's method successfully if the norm of the
+    gradient of Gibbs energy function is less than `tol`.
+    Default is `1e-6`.
+
+  maxiter: int
+    Maximum number of solver iterations. Default is `50`.
+
+  negativeflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the condition to
+    switch from Newton's method to successive substitution iterations.
+
+  linsolver: Callable[[ndarray, ndarray], ndarray]
+    Function that accepts matrix A and vector b and finds vector x,
+    which is the solution of the system of linear equations Ax = b.
+    Default is `numpy.linalg.solve`.
+
+  Returns
+  -------
+  Flash calculation results as an instance of `FlashResult` object.
+  Important attributes are:
+
+  - `yji` the component mole fractions in each phase,
+  - `Fj` the phase mole fractions,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
+  """
   logger.debug(
     "Flash Calculation (Newton's method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s",
     P, T, yi,
@@ -607,11 +696,27 @@ def _flash2pPT_newt(
       lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
       lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
       gi = lnkvik + lnphivi - lnphili
-      gnorm = np.linalg.norm(gi)
-      logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
-        k, kvik, gnorm, Fv,
-      )
+      gnormkp1 = np.linalg.norm(gi)
+      if gnormkp1 < gnorm or forcenewton:
+        gnorm = gnormkp1
+        logger.debug(
+          'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
+          k, kvik, gnorm, Fv,
+        )
+      else:
+        lnkvik -= gi
+        kvik = np.exp(lnkvik)
+        Fv = solve2p_FGH(kvik, yi)
+        yli = yi / ((kvik - 1.) * Fv + 1.)
+        yvi = yli * kvik
+        lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
+        lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
+        gi = lnkvik + lnphivi - lnphili
+        gnorm = np.linalg.norm(gi)
+        logger.debug(
+          'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
+          k, kvik, gnorm, Fv,
+        )
     if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
         & ((Fv < 1.) & (1. - Fv < 1.) | negativeflash)):
       rhol = yli.dot(eos.mwi) / Zl
@@ -635,9 +740,9 @@ def _flash2pPT_newt(
   else:
     logger.warning(
       "Two-phase flash calculations terminates unsuccessfully. "
-      "The solution method was Newton, EOS: %s. Parameters:"
+      "The solution method was Newton (forced = %s), EOS: %s. Parameters:"
       "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
-      eos.name, P, T, yi, kvji0,
+      forcenewton, eos.name, P, T, yi, kvji0,
     )
     return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
                        Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),

@@ -25,29 +25,36 @@ class StabResult(dict):
   Attributes
   ----------
   stable: bool
-    A boolean flag indicating if a one-phase state is stable.
+    A boolean flag indicating if the one-phase state is stable.
 
   TPD: float
-    Tangent-plane distance at a local minima of a potential energy
-    function.
+    The tangent-plane distance at a local minimum of the potential
+    energy function.
 
   Z: float
-    Compressibility factor of tested mixture at given pressure
-    and temperature.
+    The compressibility factor of the tested mixture at a given
+    pressure and temperature.
 
-  yti: ndarray, shape (Nc,) | None
-    Trial-phase composition if it was found. `Nc` is the number of
-    components.
+  yti: ndarray, shape (Nc,)
+    The trial-phase composition if it was found. `Nc` is the number
+    of components.
 
-  kvji: tuple[ndarray] | None
-    Initial guesses of k-values of `Nc` components for further
-    flash calculations if the trial phase composition was found.
+  kvji: tuple[ndarray]
+    K-values of `Nc` components in the trial phase and given mixture.
+    They may be further used as an initial guess for flash calculations.
 
   gnorm: float
-    Norm of a vector of equilibrium equations.
+    The norm of the vector of equilibrium equations.
 
   success: bool
-    Whether or not the procedure exited successfully.
+    A boolean flag indicating whether or not the procedure exited
+    successfully. For the stability test algorithms, it is always
+    `True` because the divergence of an algorithm is usually caused
+    by the vicinity to the stability test limit locus outside of
+    which the tangent plane distance function has only a trivial
+    solution. Between STLL and the phase boundary, there is a
+    non-trivial positive solution that leads to the stability of the
+    one-phase state.
   """
   def __getattr__(self, name: str) -> object:
     try:
@@ -66,7 +73,7 @@ class StabResult(dict):
 class stabilityPT(object):
   """Stability test based on the Gibbs energy analysis.
 
-  Checks the tangent-plane distance (TPD) at the local minima of
+  Checks the tangent-plane distance (TPD) at the local minimum of
   the Gibbs energy function.
 
   Parameters
@@ -79,20 +86,21 @@ class stabilityPT(object):
       This method is used to generate initial guesses of k-values.
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This `getPT_lnphii_Z` method must accept the pressure,
-      temperature and composition of a phase and returns a tuple of
-      logarithms of the fugacity coefficients of components and the
-      phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (`ndarray` of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
 
     If the solution method would be one of `'newton'` or `'ss-newton'`
     then it also must have:
 
     - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients, the mixture compressibility factor, and partial
-      derivatives of logarithms of the fugacity coefficients with
-      respect to components mole numbers which are an `ndarray` of
-      shape `(Nc, Nc)`.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients (`ndarray` of shape `(Nc,)`), the mixture
+      compressibility factor, and partial derivatives of logarithms of
+      the fugacity coefficients with respect to components mole numbers
+      (`ndarray` of shape `(Nc, Nc)`) for a given pressure [Pa],
+      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
 
   method: str
     Type of solver. Should be one of:
@@ -110,9 +118,7 @@ class stabilityPT(object):
 
   level: int
     Regulates a set of initial k-values obtained by the method
-    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`, which means
-    that the most simple approach is used to generate initial k-values
-    for the stability test.
+    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
 
   useprev: bool
     Allows to preseve previous calculation results (if the solution is
@@ -121,13 +127,13 @@ class stabilityPT(object):
 
   kwargs: dict
     Other arguments for a stability test solver. It may contain such
-    arguments as `tol`, `maxiter` or others, depending on the selected
+    arguments as `tol`, `maxiter` and others appropriate for the selected
     stability test solver.
 
   Methods
   -------
   run(P, T, yi) -> StabResult
-    This method performs stability test procedure for given pressure
+    This method performs stability test procedure for a given pressure
     `P: float` in [Pa], temperature `T: float` in [K], composition
     `yi: ndarray` of `Nc` components, and returns stability test
     results as an instance of `StabResult`.
@@ -164,8 +170,8 @@ class stabilityPT(object):
     pass
 
   def run(self, P: ScalarType, T: ScalarType, yi: VectorType) -> StabResult:
-    """Performs the stability test for given pressure, temperature and
-    composition.
+    """Performs the stability test for a given pressure, temperature
+    and composition.
 
     Parameters
     ----------
@@ -181,10 +187,13 @@ class stabilityPT(object):
     Returns
     -------
     Stability test results as an instance of `StabResult`. Important
-    properties are: `stab` a boolean flag indicating if a one-phase
-    state is stable, `TPD` the tangent-plane distance at a local minima
-    of the Gibbs energy function, `success` a boolean flag indicating
-    if the calculation completed successfully.
+    attributes are:
+
+    - `stab` a boolean flag indicating if a one-phase state is stable,
+    - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+      energy function,
+    - `success` a boolean flag indicating if the calculation completed
+      successfully.
     """
     kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
     if self.useprev and self.preserved:
@@ -247,10 +256,13 @@ def _stabPT_ss(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a boolean flag indicating if a one-phase
-  state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a boolean flag indicating
-  if the calculation completed successfully.
+  attributes are:
+
+  - `stab` a boolean flag indicating if a one-phase state is stable,
+  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+    energy function,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
   logger.debug(
     'Stability Test (SS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
@@ -453,7 +465,8 @@ def _stabPT_newt(
   maxiter: int = 20,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
-  """Newton's method for the stability test using a PT-based equation
+  """Performs minimization of the Michelsen's modified tangent-plane
+  distance function using the Newton's method and a PT-based equation
   of state. A switch to the successive substitution iteration is
   implemented if the Newton's method does not decrease the norm of the
   gradient.
@@ -496,8 +509,8 @@ def _stabPT_newt(
 
   tol: float
     Terminate the Newton's method successfully if the norm of the
-    vector of equilibrium equations is less than `tol`. Default is
-    `1e-6`.
+    gradient of Michelsen's modified tangent-plane distance function
+    is less than `tol`. Default is `1e-6`.
 
   maxiter: int
     Maximum number of the Newton's method iterations. Default is `20`.
@@ -510,10 +523,13 @@ def _stabPT_newt(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a boolean flag indicating if a one-phase
-  state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a boolean flag indicating
-  if the calculation completed successfully.
+  attributes are:
+
+  - `stab` a boolean flag indicating if a one-phase state is stable,
+  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+    energy function,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
   logger.debug(
     "Stability Test (Newton's method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s",
@@ -609,11 +625,12 @@ def _stabPT_ssnewt(
   maxiter_ss: int = 10,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
-  """Newton's method for the stability test using a PT-based equation
-  of state with preceding successive substitution iterations for initial
-  guess improvement. A switch to the successive substitution iteration
-  is implemented if the Newton's method does not decrease the norm of
-  the gradient.
+  """Performs minimization of the Michelsen's modified tangent-plane
+  distance function using the Newton's method and a PT-based equation
+  of state. A switch to the successive substitution iteration is
+  implemented if the Newton's method does not decrease the norm of the
+  gradient. Preceding successive substitution iterations are implemented
+  to improve the initial guess of k-values.
 
   Parameters
   ----------
@@ -653,8 +670,8 @@ def _stabPT_ssnewt(
 
   tol: float
     Terminate the Newton's method successfully if the norm of the
-    vector of equilibrium equations is less than `tol`. Default is
-    `1e-6`.
+    gradient of Michelsen's modified tangent-plane distance function
+    is less than `tol`. Default is `1e-6`.
 
   maxiter: int
     Maximum number of the Newton's method iterations. Default is `20`.
@@ -675,10 +692,13 @@ def _stabPT_ssnewt(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a boolean flag indicating if a one-phase
-  state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a boolean flag indicating
-  if the calculation completed successfully.
+  attributes are:
+
+  - `stab` a boolean flag indicating if a one-phase state is stable,
+  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+    energy function,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
   logger.debug(
     'Stability Test (SS + Newton method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
@@ -810,14 +830,14 @@ def _stabPT_qnssnewt(
   maxiter_qnss: int = 10,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
-  """Newton's method for the stability test using a PT-based
-  equation of state with preceding quasi-newton successive substitution
-  iterations for initial guess improvement.
+  """Performs minimization of the Michelsen's modified tangent-plane
+  distance function using the Newton's method and a PT-based equation
+  of state. A switch to the quasi-newton successive substitution (QNSS)
+  iteration is implemented if the Newton's method does not decrease the
+  norm of the gradient. Preceding successive substitution iterations are
+  implemented to improve the initial guess of k-values.
 
-  Before the Newton's method, the algorithm performs the Quasi-Newton
-  Successive Substitution (QNSS) iterations to improve initial guesses
-  of k-values. For the details of the QNSS-method see
-  10.1016/0378-3812(84)80013-8.
+  For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
 
   Parameters
   ----------
@@ -857,8 +877,8 @@ def _stabPT_qnssnewt(
 
   tol: float
     Terminate the Newton's method successfully if the norm of the
-    vector of equilibrium equations is less than `tol`. Default is
-    `1e-6`.
+    gradient of Michelsen's modified tangent-plane distance function
+    is less than `tol`. Default is `1e-6`.
 
   maxiter: int
     Maximum number of the Newton's method iterations. Default is `20`.
@@ -879,10 +899,13 @@ def _stabPT_qnssnewt(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a boolean flag indicating if a one-phase
-  state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a boolean flag indicating
-  if the calculation completed successfully.
+  attributes are:
+
+  - `stab` a boolean flag indicating if a one-phase state is stable,
+  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+    energy function,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
   logger.debug(
     'Stability Test (QNSS + Newton)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
