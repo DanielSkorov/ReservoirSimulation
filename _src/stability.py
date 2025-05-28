@@ -463,6 +463,7 @@ def _stabPT_newt(
   eps: ScalarType = -1e-4,
   tol: ScalarType = 1e-6,
   maxiter: int = 20,
+  forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
@@ -515,6 +516,11 @@ def _stabPT_newt(
   maxiter: int
     Maximum number of the Newton's method iterations. Default is `20`.
 
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the condition to
+    switch from Newton's method to successive substitution iterations.
+    Default is `False`.
+
   linsolver: Callable[[ndarray, ndarray], ndarray]
     Function that accepts matrix A and vector b and finds vector x,
     which is the solution of the system of linear equations Ax = b.
@@ -565,7 +571,7 @@ def _stabPT_newt(
       lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
       gi = sqrtni * (np.log(ni) + lnphixi - hi)
       gnormkp1 = np.linalg.norm(gi)
-      if gnormkp1 < gnorm:
+      if (gnormkp1 < gnorm) or (forcenewton):
         gnorm = gnormkp1
         logger.debug(
           'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
@@ -623,6 +629,7 @@ def _stabPT_ssnewt(
   maxiter: int = 20,
   tol_ss: ScalarType = 1e-2,
   maxiter_ss: int = 10,
+  forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
@@ -683,6 +690,11 @@ def _stabPT_ssnewt(
   maxiter_ss: int
     Maximum number of the successive substitution iterations.
     Default is `10`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the condition to
+    switch from Newton's method to successive substitution iterations.
+    Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     Function that accepts matrix A and vector b and finds vector x,
@@ -768,7 +780,7 @@ def _stabPT_ssnewt(
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
           gnormkp1 = np.linalg.norm(gi)
-          if gnormkp1 < gnorm:
+          if (gnormkp1 < gnorm) or (forcenewton):
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
@@ -828,6 +840,7 @@ def _stabPT_qnssnewt(
   maxiter: int = 20,
   tol_qnss: ScalarType = 1e-2,
   maxiter_qnss: int = 10,
+  forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
@@ -890,6 +903,11 @@ def _stabPT_qnssnewt(
   maxiter_qnss: int
     Maximum number of the quasi-newton successive substitution
     iterations. Default is `10`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the condition to
+    switch from Newton's method to successive substitution iterations.
+    Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     Function that accepts matrix A and vector b and finds vector x,
@@ -989,7 +1007,7 @@ def _stabPT_qnssnewt(
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
           gnormkp1 = np.linalg.norm(gi)
-          if gnormkp1 < gnorm:
+          if (gnormkp1 < gnorm) or (forcenewton):
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',

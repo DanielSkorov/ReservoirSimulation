@@ -642,6 +642,7 @@ def _flash2pPT_newt(
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
     switch from Newton's method to successive substitution iterations.
+    Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     Function that accepts matrix A and vector b and finds vector x,
@@ -697,7 +698,7 @@ def _flash2pPT_newt(
       lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
       gi = lnkvik + lnphivi - lnphili
       gnormkp1 = np.linalg.norm(gi)
-      if gnormkp1 < gnorm or forcenewton:
+      if (gnormkp1 < gnorm) or (forcenewton):
         gnorm = gnormkp1
         logger.debug(
           'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
