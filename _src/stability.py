@@ -87,20 +87,20 @@ class stabilityPT(object):
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
       This method must return a tuple of logarithms of the fugacity
-      coefficients of components (`ndarray` of shape `(Nc,)`) and the
+      coefficients of components (ndarray of shape `(Nc,)`) and the
       phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
     If the solution method would be one of `'newton'` or `'ss-newton'`
     then it also must have:
 
     - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
       This method must return a tuple of logarithms of the fugacity
-      coefficients (`ndarray` of shape `(Nc,)`), the mixture
+      coefficients (ndarray of shape `(Nc,)`), the mixture
       compressibility factor, and partial derivatives of logarithms of
       the fugacity coefficients with respect to components mole numbers
-      (`ndarray` of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (`ndarray` of shape `(Nc,)`).
+      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
   method: str
     Type of solver. Should be one of:
@@ -237,10 +237,10 @@ def _stabPT_ss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This `getPT_lnphii_Z` method must accept the pressure,
-      temperature and composition of a phase and returns a tuple of
-      logarithms of the fugacity coefficients of components and the
-      phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (ndarray of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -291,9 +291,9 @@ def _stabPT_ss(
       logger.debug(
         'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
       )
-    if (k < maxiter) & (np.isfinite(kvik).all()):
+    if (gnorm < tol) & (np.isfinite(kvik).all()):
       TPD = -np.log(ni.sum())
-      if (TPD < eps):
+      if TPD < eps:
         logger.info(
           'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
           'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -358,10 +358,10 @@ def _stabPT_qnss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This `getPT_lnphii_Z` method must accept the pressure,
-      temperature and composition of a phase and returns a tuple of
-      logarithms of the fugacity coefficients of components and the
-      phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (ndarray of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -419,14 +419,14 @@ def _stabPT_qnss(
         'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
         k, kvik, gnorm, lmbd,
       )
-      if (gnorm < tol):
+      if gnorm < tol:
         break
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if (k < maxiter) & (np.isfinite(kvik).all()):
+    if (gnorm < tol) & (np.isfinite(kvik).all()):
       TPD = -np.log(ni.sum())
-      if (TPD < eps):
+      if TPD < eps:
         logger.info(
           'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
           'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -491,18 +491,18 @@ def _stabPT_newt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This `getPT_lnphii_Z` method must accept the pressure,
-      temperature and composition of a phase and returns a tuple of
-      logarithms of the fugacity coefficients of components and the
-      phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (ndarray of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      This `getPT_lnphii_Z_dnj` method must accept the pressure,
-      temperature, phase composition and its mole number and returns a
-      tuple of logarithms of the fugacity coefficients of components,
-      the phase compressibility factor and the partial derivatives of
-      logarithms of the fugacity coefficients of components with
-      respect to component's mole numbers.
+    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method must return a tuple of logarithms of the fugacity
+      coefficients (ndarray of shape `(Nc,)`), the mixture
+      compressibility factor, and partial derivatives of logarithms of
+      the fugacity coefficients with respect to components mole numbers
+      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -571,7 +571,7 @@ def _stabPT_newt(
       lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
       gi = sqrtni * (np.log(ni) + lnphixi - hi)
       gnormkp1 = np.linalg.norm(gi)
-      if (gnormkp1 < gnorm) or (forcenewton):
+      if (gnormkp1 < gnorm) | (forcenewton):
         gnorm = gnormkp1
         logger.debug(
           'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
@@ -590,7 +590,7 @@ def _stabPT_newt(
         )
     if (gnorm < tol) & (np.isfinite(kvik).all()):
       TPD = -np.log(ni.sum())
-      if (TPD < eps):
+      if TPD < eps:
         logger.info(
           'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
           'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -626,7 +626,7 @@ def _stabPT_ssnewt(
   eos: EOSPTType,
   eps: ScalarType = -1e-4,
   tol: ScalarType = 1e-6,
-  maxiter: int = 20,
+  maxiter: int = 30,
   tol_ss: ScalarType = 1e-2,
   maxiter_ss: int = 10,
   forcenewton: bool = False,
@@ -658,18 +658,18 @@ def _stabPT_ssnewt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This `getPT_lnphii_Z` method must accept the pressure,
-      temperature and composition of a phase and returns a tuple of
-      logarithms of the fugacity coefficients of components and the
-      phase compressibility factor.
+      This method must return a tuple of logarithms of the fugacity
+      coefficients of components (ndarray of shape `(Nc,)`) and the
+      phase compressibility factor for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      This `getPT_lnphii_Z_dnj` method must accept the pressure,
-      temperature, phase composition and its mole number and returns a
-      tuple of logarithms of the fugacity coefficients of components,
-      the phase compressibility factor and the partial derivatives of
-      logarithms of the fugacity coefficients of components with
-      respect to component's mole numbers.
+    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method must return a tuple of logarithms of the fugacity
+      coefficients (ndarray of shape `(Nc,)`), the mixture
+      compressibility factor, and partial derivatives of logarithms of
+      the fugacity coefficients with respect to components mole numbers
+      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -681,14 +681,15 @@ def _stabPT_ssnewt(
     is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of the Newton's method iterations. Default is `20`.
+    Maximum number of iterations (total number, for both methods).
+    Default is `30`.
 
   tol_ss: float
     Switch to the Newton's method if the norm of the vector of
     equilibrium equations is less than `tol_ss`. Default is `1e-2`.
 
   maxiter_ss: int
-    Maximum number of the successive substitution iterations.
+    Maximum number of successive substitution iterations.
     Default is `10`.
 
   forcenewton: bool
@@ -713,7 +714,7 @@ def _stabPT_ssnewt(
     successfully.
   """
   logger.debug(
-    'Stability Test (SS + Newton method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
+    'Stability Test (SS-Newton method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
     P, T, yi,
   )
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
@@ -740,9 +741,9 @@ def _stabPT_ssnewt(
         'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
       )
     if np.isfinite(kvik).all():
-      if (gnorm < tol):
+      if gnorm < tol:
         TPD = -np.log(ni.sum())
-        if (TPD < eps):
+        if TPD < eps:
           logger.info(
             'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
             'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -755,7 +756,6 @@ def _stabPT_ssnewt(
                             TPD=TPD, Z=Z, Zt=Zx, lnphiyi=lnphiyi,
                             lnphiyti=lnphixi, success=True)
       else:
-        k = 0
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
         n = ni.sum()
@@ -780,7 +780,7 @@ def _stabPT_ssnewt(
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
           gnormkp1 = np.linalg.norm(gi)
-          if (gnormkp1 < gnorm) or (forcenewton):
+          if (gnormkp1 < gnorm) | (forcenewton):
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
@@ -799,9 +799,9 @@ def _stabPT_ssnewt(
               'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
-        if (k < maxiter) & (np.isfinite(alphaik).all()):
+        if (gnorm < tol) & (np.isfinite(alphaik).all()):
           TPD = -np.log(ni.sum())
-          if (TPD < eps):
+          if TPD < eps:
             logger.info(
               'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
               'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -837,7 +837,7 @@ def _stabPT_qnssnewt(
   eos: EOSPTType,
   eps: ScalarType = -1e-4,
   tol: ScalarType = 1e-6,
-  maxiter: int = 20,
+  maxiter: int = 30,
   tol_qnss: ScalarType = 1e-2,
   maxiter_qnss: int = 10,
   forcenewton: bool = False,
@@ -876,13 +876,13 @@ def _stabPT_qnssnewt(
       logarithms of the fugacity coefficients of components and the
       phase compressibility factor.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      This `getPT_lnphii_Z_dnj` method must accept the pressure,
-      temperature, phase composition and its mole number and returns a
-      tuple of logarithms of the fugacity coefficients of components,
-      the phase compressibility factor and the partial derivatives of
-      logarithms of the fugacity coefficients of components with
-      respect to component's mole numbers.
+    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      This method must return a tuple of logarithms of the fugacity
+      coefficients (ndarray of shape `(Nc,)`), the mixture
+      compressibility factor, and partial derivatives of logarithms of
+      the fugacity coefficients with respect to components mole numbers
+      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
+      temperature [K] and composition (ndarray of shape `(Nc,)`).
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -894,15 +894,16 @@ def _stabPT_qnssnewt(
     is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of the Newton's method iterations. Default is `20`.
+    Maximum number of iterations (total number, for both methods).
+    Default is `30`.
 
   tol_qnss: float
     Switch to the Newton's method if the norm of the vector of
     equilibrium equations is less than `tol_qnss`. Default is `1e-2`.
 
   maxiter_qnss: int
-    Maximum number of the quasi-newton successive substitution
-    iterations. Default is `10`.
+    Maximum number of quasi-newton successive substitution iterations.
+    Default is `10`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
@@ -926,7 +927,7 @@ def _stabPT_qnssnewt(
     successfully.
   """
   logger.debug(
-    'Stability Test (QNSS + Newton)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
+    'Stability Test (QNSS-Newton)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
     P, T, yi,
   )
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
@@ -961,15 +962,15 @@ def _stabPT_qnssnewt(
         'Iteration (QNSS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
         k, kvik, gnorm, lmbd,
       )
-      if (gnorm < tol_qnss):
+      if gnorm < tol_qnss:
         break
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
     if np.isfinite(kvik).all():
-      if (gnorm < tol):
+      if gnorm < tol:
         TPD = -np.log(ni.sum())
-        if (TPD < eps):
+        if TPD < eps:
           logger.info(
             'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
             'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -982,7 +983,6 @@ def _stabPT_qnssnewt(
                             TPD=TPD, Z=Z, Zt=Zx, lnphiyi=lnphiyi,
                             lnphiyti=lnphixi, success=True)
       else:
-        k = 0
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
         n = ni.sum()
@@ -1007,7 +1007,7 @@ def _stabPT_qnssnewt(
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
           gnormkp1 = np.linalg.norm(gi)
-          if (gnormkp1 < gnorm) or (forcenewton):
+          if (gnormkp1 < gnorm) | (forcenewton):
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
@@ -1026,9 +1026,9 @@ def _stabPT_qnssnewt(
               'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
-        if (k < maxiter) & (np.isfinite(alphaik).all()):
+        if (gnorm < tol) & (np.isfinite(alphaik).all()):
           TPD = -np.log(ni.sum())
-          if (TPD < eps):
+          if TPD < eps:
             logger.info(
               'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
               'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
@@ -1054,5 +1054,4 @@ def _stabPT_qnssnewt(
     return StabResult(stable=True, yti=xi, kvji=kvji, gnorm=gnorm, TPD=TPD,
                       Z=Z, Zt=Zx, lnphiyi=lnphiyi, lnphiyti=lnphixi,
                       success=True)
-
 

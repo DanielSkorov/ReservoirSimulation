@@ -117,7 +117,7 @@ def getVT_Tspinodal(
       k, lmbdk, zetai, Tk, dT,
     )
     k += 1
-  if k < maxiter:
+  if np.abs(lmbdk) < tol:
     return Tk, zetai
   logger.warning(
     "The spinodal temperature was not found using %s:"
@@ -245,7 +245,7 @@ def getVT_PcTc(
       k, kappak, T, Ck, dkappa,
     )
     k += 1
-  if k < maxiter:
+  if np.abs(dkappa) < tol:
     Pc = eos.getVT_P(vk, T, yi)
     logger.info(
       'Critical point for yi = %s:\n\tPc = %s Pa\n\tTc = %s K'
@@ -340,7 +340,7 @@ class PsatPT(object):
       This method should return a tuple of logarithms of the fugacity
       coefficients, the mixture compressibility factor, and partial
       derivatives of logarithms of the fugacity coefficients with
-      respect to components mole numbers which are an `ndarray` of
+      respect to components mole numbers which are an ndarray of
       shape `(Nc, Nc)`.
 
     If the `improve_P0` is set to `True` and the `stabgrid` is set to
