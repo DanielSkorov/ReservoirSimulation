@@ -324,36 +324,53 @@ class PsatPT(object):
       is used to generate initial guesses of k-values.
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components and the phase compressibility factor.
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor.
 
     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components, the phase compressibility factor and
-      the partial derivatives of the logarithms of the fugacity
-      coefficients of components with respect to pressure.
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
 
-    If the solution method would be one of `'newton'` or `'ss-newton'`
-    then it also must have:
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients, the mixture compressibility factor, and partial
-      derivatives of logarithms of the fugacity coefficients with
-      respect to components mole numbers which are an ndarray of
-      shape `(Nc, Nc)`.
+    If the solution method would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then it also must have:
+
+    - `getPT_lnphii_Z_dnj_dP(P, T, yi, n) -> tuple[ndarray, float, ndarray, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition and
+      phase mole number [mol] this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a matrix of shape `(Nc, Nc)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to their mole numbers.
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to pressure.
 
     If the `improve_P0` is set to `True` and the `stabgrid` is set to
     `False` then it also must have:
 
     - `getPT_lnphii(P, T, yi) -> ndarray`
-      This method must return logarithms of the fugacity coefficients
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method must return logarithms of the fugacity coefficients
       of components.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape
+      A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -394,9 +411,8 @@ class PsatPT(object):
     Default is an empty dictionary.
 
   kwargs: dict
-    Other arguments for the equilibrium equations solver and the
-    TPD-equation solver. It may contain such arguments as `tol`,
-    `maxiter`, `tol_tpd`, `maxiter_tpd` or others.
+    Other arguments for a Psat-solver. It may contain such arguments
+    as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others.
 
   Methods
   -------
@@ -628,37 +644,41 @@ def _solveTPDeqPT(
     the following methods:
 
     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components, the phase compressibility factor and
-      the partial derivatives of the logarithms of the fugacity
-      coefficients of components with respect to pressure. The
-      arguments are: `P: float` is pressure [Pa], `T: float` is
-      temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
-      components mole fractions.
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
 
   maxiter: int
-    Maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `8`.
 
   tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
   Pmax: float
-    Upper bound of the saturation pressure [Pa]. If the saturation
+    The upper bound of the saturation pressure [Pa]. If the saturation
     pressure at any iteration is greater than `Pmax`, then the bisection
     update would be used. Default is `1e8` [Pa].
 
   Pmin: float
-    Lower bound of the saturation pressure [Pa]. If the saturation
+    The lower bound of the saturation pressure [Pa]. If the saturation
     pressure at any iteration is less than `Pmin`, then the bisection
     update would be used. Default is `1.0` [Pa].
 
   Returns
   -------
-  A tuple of the saturation pressure, an array of the natural logarithms
-  of components in the trial phase and in the mixture, their
-  compressibility factors and a flag indicating if the equation was
-  solved successfully.
+  A tuple of:
+  - the saturation pressure,
+  - an array of the natural logarithms of components in the trial phase,
+  - the same for the initial composition of the mixture,
+  - compressibility factors for both mixtures,
+  - a flag indicating if the equation was solved successfully.
   """
   logger.debug('Solving the TPD equation:')
   k = 0
@@ -726,18 +746,20 @@ def _PsatPT_ss(
     the following methods:
 
     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components, the phase compressibility factor and
-      the partial derivatives of the logarithms of the fugacity
-      coefficients of components with respect to pressure. The
-      arguments are: `P: float` is pressure [Pa], `T: float` is
-      temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
-      components mole fractions.
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape
+      A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -748,7 +770,7 @@ def _PsatPT_ss(
     the equation vector is less than `tol`. Default is `1e-5`.
 
   maxiter: int
-    Maximum number of equilibrium equation solver iterations.
+    The maximum number of equilibrium equation solver iterations.
     Default is `50`.
 
   tol_tpd: float
@@ -759,22 +781,25 @@ def _PsatPT_ss(
     appearance or disappearance.
 
   maxiter_tpd: int
-    Maximum number of TPD-equation solver iterations. Default is `8`.
+    The maximum number of TPD-equation solver iterations.
+    Default is `8`.
 
   Pmax: float
-    Upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
 
   Pmin: float
-    Lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
 
   Returns
   -------
   Saturation pressure calculation results as an instance of the
-  `SatResult`. Important attributes are: `P` the saturation pressure
-  in [Pa], `T` the saturation temperature in [K], `yji` the component
-  mole fractions in each phase, `Zj` the compressibility factors of
-  each phase, `success` a boolean flag indicating if the calculation
-  completed successfully.
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
   """
   logger.debug(
     'Saturation pressure calculation using the SS-method:\n'
@@ -783,17 +808,14 @@ def _PsatPT_ss(
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   k = 0
-  xi = stab0.yti
-  kvik = xi / yi
-  lnkvik = np.log(kvi)
   Pk = P0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
   lnphixi = stab0.lnphiyti
   lnphiyi = stab0.lnphiyi
   Zx = stab0.Zt
   Zy = stab0.Z
-  ni = xi
-  n = ni.sum()
-  TPD = -np.log(n)
   gi = lnkvik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
@@ -801,19 +823,17 @@ def _PsatPT_ss(
     k, kvik, gnorm, Pk,
   )
   while (gnorm > tol) and (k < maxiter):
-    dlnkvi = - gi
+    dlnkvi = -gi
     k += 1
     lnkvik += dlnkvi
     kvik = np.exp(lnkvik)
     ni = kvi * yi
-    n = ni.sum()
-    TPD = -np.log(n)
-    xi = ni / n
+    xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s',
       k, kvik, gnorm, Pk,
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
@@ -887,18 +907,20 @@ def _PsatPT_qnss(
     the following methods:
 
     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method should return a tuple of logarithms of the fugacity
-      coefficients of components, the phase compressibility factor and
-      the partial derivatives of the logarithms of the fugacity
-      coefficients of components with respect to pressure. The
-      arguments are: `P: float` is pressure [Pa], `T: float` is
-      temperature [K], and `yi: ndarray`, shape `(Nc,)` is an array of
-      components mole fractions.
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape
+      A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -909,7 +931,7 @@ def _PsatPT_qnss(
     the equation vector is less than `tol`. Default is `1e-5`.
 
   maxiter: int
-    Maximum number of equilibrium equation solver iterations.
+    The maximum number of equilibrium equation solver iterations.
     Default is `50`.
 
   tol_tpd: float
@@ -920,22 +942,25 @@ def _PsatPT_qnss(
     appearance or disappearance.
 
   maxiter_tpd: int
-    Maximum number of TPD-equation solver iterations. Default is `8`.
+    The maximum number of TPD-equation solver iterations.
+    Default is `8`.
 
   Pmax: float
-    Upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
 
   Pmin: float
-    Lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
 
   Returns
   -------
   Saturation pressure calculation results as an instance of the
-  `SatResult`. Important attributes are: `P` the saturation pressure
-  in [Pa], `T` the saturation temperature in [K], `yji` the component
-  mole fractions in each phase, `Zj` the compressibility factors of
-  each phase, `success` a boolean flag indicating if the calculation
-  completed successfully.
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
   """
   logger.debug(
     'Saturation pressure calculation using the QNSS-method:\n'
@@ -944,22 +969,19 @@ def _PsatPT_qnss(
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   k = 0
-  xi = stab0.yti
-  kvik = xi / yi
-  lnkvik = np.log(kvik)
   Pk = P0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
   lnphixi = stab0.lnphiyti
   lnphiyi = stab0.lnphiyi
   Zx = stab0.Zt
   Zy = stab0.Z
-  ni = xi
-  n = ni.sum()
-  TPD = -np.log(n)
   gi = np.log(kvik) + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   lmbd = 1.
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s\n\tPk = %s',
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s\n\tP = %s',
     k, kvik, gnorm, lmbd, Pk,
   )
   while (gnorm > tol) and (k < maxiter):
@@ -974,9 +996,7 @@ def _PsatPT_qnss(
     lnkvik += dlnkvi
     kvik = np.exp(lnkvik)
     ni = kvik * yi
-    n = ni.sum()
-    TPD = -np.log(n)
-    xi = ni / n
+    xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
@@ -1014,4 +1034,63 @@ def _PsatPT_qnss(
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
+
+
+# def _PsatPT_newt(
+#   P0: ScalarType,
+#   T: ScalarType,
+#   yi: VectorType,
+#   stab0: StabResult,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 50,
+#   Pmax: ScalarType = 1e8,
+#   Pmin: ScalarType = 1.,
+#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+# ) -> SatResult:
+#   logger.debug(
+#     "Saturation pressure calculation using the Newton's method:\n"
+#     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+#   )
+#   J = np.empty(shape=(eos.Nc + 1, eos.Nc + 1))
+#   gi = np.empty(shape=(eos.Nc + 1,))
+#   I = np.eye(eos.Nc)
+#   k = 0
+#   Pk = P0
+#   ni = stab0.yti
+#   kvik = ni / yi
+#   lnkvik = np.log(kvik)
+#   n = ni.sum()
+#   xi = ni / n
+#   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi, n)
+#   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+#   gi[:Nc] = np.log(kvik) + lnphixi - lnphiyi
+#   gi[-1] = -np.log(n)
+#   gnorm = np.linalg.norm(gi)
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+#     k, kvik, Pk, gnorm,
+#   )
+#   while (gnorm > tol) and (k < maxiter):
+#     J[:Nc,:Nc] = I + ni * dlnphixidnj
+#     J[-1,:Nc] = xi * (gi[:-1] - xi.dot(gi[:-1]))
+#     J[:Nc,-1] = Pk * (dlnphixidP - dlnphiyidP)
+#     J[-1,-1] = xi.dot(bi1)
+#     dlnkvilnP = linsolver(J, -gi)
+#     k += 1
+#     lnkvik += dlnkvilnP[:-1]
+#     Pk *= np.exp(dlnkvilnP[-1])
+#     kvik = np.exp(lnkvik)
+#     ni = kvik * yi
+#     n = ni.sum()
+#     xi = ni / n
+#     lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi, n)
+#     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+#     gi[:Nc] = lnkvik + lnphixi - lnphiyi
+#     gi[-1] = -np.log(n)
+#     gnorm = np.linalg.norm(gi)
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+#       k, kvik, Pk, gnorm,
+#     )
 

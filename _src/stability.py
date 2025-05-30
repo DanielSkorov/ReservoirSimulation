@@ -86,21 +86,28 @@ class stabilityPT(object):
       This method is used to generate initial guesses of k-values.
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    If the solution method would be one of `'newton'` or `'ss-newton'`
-    then it also must have:
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+    If the solution method would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then it also must have:
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
   method: str
     Type of solver. Should be one of:
@@ -237,10 +244,13 @@ def _stabPT_ss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -251,7 +261,7 @@ def _stabPT_ss(
     vector is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `50`.
+    The maximum number of solver iterations. Default is `50`.
 
   Returns
   -------
@@ -358,10 +368,13 @@ def _stabPT_qnss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -372,7 +385,7 @@ def _stabPT_qnss(
     vector is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `50`.
+    The maximum number of solver iterations. Default is `50`.
 
   Returns
   -------
@@ -491,18 +504,25 @@ def _stabPT_newt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -514,7 +534,8 @@ def _stabPT_newt(
     is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of the Newton's method iterations. Default is `20`.
+    The maximum number of the Newton's method iterations.
+    Default is `20`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
@@ -522,9 +543,10 @@ def _stabPT_newt(
     Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    Function that accepts matrix A and vector b and finds vector x,
-    which is the solution of the system of linear equations Ax = b.
-    Default is `numpy.linalg.solve`.
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
   -------
@@ -658,18 +680,25 @@ def _stabPT_ssnewt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -681,7 +710,7 @@ def _stabPT_ssnewt(
     is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of iterations (total number, for both methods).
+    The maximum number of iterations (total number, for both methods).
     Default is `30`.
 
   tol_ss: float
@@ -689,7 +718,7 @@ def _stabPT_ssnewt(
     equilibrium equations is less than `tol_ss`. Default is `1e-2`.
 
   maxiter_ss: int
-    Maximum number of successive substitution iterations.
+    The maximum number of successive substitution iterations.
     Default is `10`.
 
   forcenewton: bool
@@ -698,9 +727,10 @@ def _stabPT_ssnewt(
     Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    Function that accepts matrix A and vector b and finds vector x,
-    which is the solution of the system of linear equations Ax = b.
-    Default is `numpy.linalg.solve`.
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
   -------
@@ -871,18 +901,25 @@ def _stabPT_qnssnewt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This `getPT_lnphii_Z` method must accept the pressure,
-      temperature and composition of a phase and returns a tuple of
-      logarithms of the fugacity coefficients of components and the
-      phase compressibility factor.
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
   eps: float
     System will be considered unstable when `TPD < eps`.
@@ -894,7 +931,7 @@ def _stabPT_qnssnewt(
     is less than `tol`. Default is `1e-6`.
 
   maxiter: int
-    Maximum number of iterations (total number, for both methods).
+    The maximum number of iterations (total number, for both methods).
     Default is `30`.
 
   tol_qnss: float
@@ -902,8 +939,8 @@ def _stabPT_qnssnewt(
     equilibrium equations is less than `tol_qnss`. Default is `1e-2`.
 
   maxiter_qnss: int
-    Maximum number of quasi-newton successive substitution iterations.
-    Default is `10`.
+    The maximum number of quasi-newton successive substitution
+    iterations. Default is `10`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
@@ -911,9 +948,10 @@ def _stabPT_qnssnewt(
     Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    Function that accepts matrix A and vector b and finds vector x,
-    which is the solution of the system of linear equations Ax = b.
-    Default is `numpy.linalg.solve`.
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
   -------

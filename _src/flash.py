@@ -95,26 +95,34 @@ class flash2pPT(object):
       is used to generate initial guesses of k-values.
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    If the solution method would be one of `'newton'` or `'ss-newton'`
-    then it also must have:
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+    If the solution method would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then it also must have:
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -321,15 +329,19 @@ def _flash2pPT_ss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -339,7 +351,7 @@ def _flash2pPT_ss(
     vector is less than `tol`. Default is `1e-5`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `30`.
+    The maximum number of solver iterations. Default is `30`.
 
   negativeflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -413,7 +425,7 @@ def _flash2pPT_ss(
                          success=True)
   else:
     logger.warning(
-      "Two-phase flash calculations terminates unsuccessfully. "
+      "Two-phase flash calculation terminates unsuccessfully. "
       "The solution method was SS, EOS: %s. Parameters:"
       "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
       eos.name, P, T, yi, kvji0,
@@ -459,15 +471,19 @@ def _flash2pPT_qnss(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -477,7 +493,7 @@ def _flash2pPT_qnss(
     vector is less than `tol`. Default is `1e-5`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `30`.
+    The maximum number of solver iterations. Default is `30`.
 
   negativeflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -609,18 +625,23 @@ def _flash2pPT_newt(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -631,7 +652,7 @@ def _flash2pPT_newt(
     Default is `1e-6`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `30`.
+    The maximum number of solver iterations. Default is `30`.
 
   negativeflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -643,9 +664,10 @@ def _flash2pPT_newt(
     Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    Function that accepts matrix A and vector b and finds vector x,
-    which is the solution of the system of linear equations Ax = b.
-    Default is `numpy.linalg.solve`.
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
   -------
@@ -738,7 +760,7 @@ def _flash2pPT_newt(
                          success=True)
   else:
     logger.warning(
-      "Two-phase flash calculations terminates unsuccessfully. "
+      "Two-phase flash calculation terminates unsuccessfully. "
       "The solution method was Newton (forced: %s), EOS: %s. Parameters:"
       "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
       forcenewton, eos.name, P, T, yi, kvji0,
@@ -788,23 +810,31 @@ def _flash2pPT_ssnewt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -814,14 +844,14 @@ def _flash2pPT_ssnewt(
     vector is less than `tol`. Default is `1e-5`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `30`.
+    The maximum number of solver iterations. Default is `30`.
 
   tol_ss: float
     Switch to the Newton's method if the norm of the vector of
     equilibrium equations is less than `tol_ss`. Default is `1e-2`.
 
   maxiter_ss: int
-    Maximum number of the successive substitution iterations.
+    The maximum number of the successive substitution iterations.
     Default is `10`.
 
   negativeflash: bool
@@ -834,9 +864,10 @@ def _flash2pPT_ssnewt(
     Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    Function that accepts matrix A and vector b and finds vector x,
-    which is the solution of the system of linear equations Ax = b.
-    Default is `numpy.linalg.solve`.
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
   -------
@@ -973,7 +1004,7 @@ def _flash2pPT_ssnewt(
                              success=True)
   else:
     logger.warning(
-      "Two-phase flash calculations terminates unsuccessfully. "
+      "Two-phase flash calculation terminates unsuccessfully. "
       "The solution method was SS-Newton (forced: %s), EOS: %s. Parameters:"
       "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
       forcenewton, eos.name, P, T, yi, kvji0,
@@ -1025,23 +1056,31 @@ def _flash2pPT_qnssnewt(
     the following methods:
 
     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients of components (ndarray of shape `(Nc,)`) and the
-      phase compressibility factor for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      This method must return a tuple of logarithms of the fugacity
-      coefficients (ndarray of shape `(Nc,)`), the mixture
-      compressibility factor, and partial derivatives of logarithms of
-      the fugacity coefficients with respect to components mole numbers
-      (ndarray of shape `(Nc, Nc)`) for a given pressure [Pa],
-      temperature [K] and composition (ndarray of shape `(Nc,)`).
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition
+      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients (ndarray of shape
+        `(Nc,)`),
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers (ndarray of shape
+        `(Nc, Nc)`) .
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      Vector of components molecular weights [kg/mol] of shape `(Nc,)`.
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
 
     - `name: str`
       The EOS name (for proper logging).
@@ -1051,15 +1090,15 @@ def _flash2pPT_qnssnewt(
     vector is less than `tol`. Default is `1e-5`.
 
   maxiter: int
-    Maximum number of solver iterations. Default is `30`.
+    The maximum number of solver iterations. Default is `30`.
 
   tol_qnss: float
     Switch to the Newton's method if the norm of the vector of
     equilibrium equations is less than `tol_qnss`. Default is `1e-2`.
 
   maxiter_qnss: int
-    Maximum number of the usi-newton successive substitution iterations.
-    Default is `10`.
+    The maximum number of quasi-newton successive substitution
+    iterations. Default is `10`.
 
   negativeflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -1071,9 +1110,10 @@ def _flash2pPT_qnssnewt(
     Default is `False`.
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    Function that accepts matrix A and vector b and finds vector x,
-    which is the solution of the system of linear equations Ax = b.
-    Default is `numpy.linalg.solve`.
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
   -------
@@ -1225,7 +1265,7 @@ def _flash2pPT_qnssnewt(
                              success=True)
   else:
     logger.warning(
-      "Two-phase flash calculations terminates unsuccessfully. "
+      "Two-phase flash calculation terminates unsuccessfully. "
       "The solution method was QNSS-Newton (forced: %s), EOS: %s. Parameters:"
       "\n\tP = %s Pa, T = %s K\n\tyi = %s\n\tkvji = %s.",
       forcenewton, eos.name, P, T, yi, kvji0,
