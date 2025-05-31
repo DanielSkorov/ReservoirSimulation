@@ -17,6 +17,7 @@ MatrixType = np.ndarray[tuple[int, int], np.dtype[DType]]
 class EOSPTType(Protocol):
   name: str
   mwi: VectorType
+  Nc: int
 
   def getPT_Z(
     self,

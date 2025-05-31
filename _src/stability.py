@@ -480,9 +480,9 @@ def _stabPT_newt(
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
-  distance function using the Newton's method and a PT-based equation
+  distance function using Newton's method and a PT-based equation
   of state. A switch to the successive substitution iteration is
-  implemented if the Newton's method does not decrease the norm of the
+  implemented if Newton's method does not decrease the norm of the
   gradient.
 
   Parameters
@@ -529,13 +529,12 @@ def _stabPT_newt(
     Default is `-1e-4`.
 
   tol: float
-    Terminate the Newton's method successfully if the norm of the
-    gradient of Michelsen's modified tangent-plane distance function
-    is less than `tol`. Default is `1e-6`.
+    Terminate Newton's method successfully if the norm of the gradient
+    of Michelsen's modified tangent-plane distance function is less than
+    `tol`. Default is `1e-6`.
 
   maxiter: int
-    The maximum number of the Newton's method iterations.
-    Default is `20`.
+    The maximum number of Newton's method iterations. Default is `20`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
@@ -655,9 +654,9 @@ def _stabPT_ssnewt(
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
-  distance function using the Newton's method and a PT-based equation
+  distance function using Newton's method and a PT-based equation
   of state. A switch to the successive substitution iteration is
-  implemented if the Newton's method does not decrease the norm of the
+  implemented if Newton's method does not decrease the norm of the
   gradient. Preceding successive substitution iterations are implemented
   to improve the initial guess of k-values.
 
@@ -705,17 +704,17 @@ def _stabPT_ssnewt(
     Default is `-1e-4`.
 
   tol: float
-    Terminate the Newton's method successfully if the norm of the
-    gradient of Michelsen's modified tangent-plane distance function
-    is less than `tol`. Default is `1e-6`.
+    Terminate Newton's method successfully if the norm of the gradient
+    of Michelsen's modified tangent-plane distance function is less than
+    `tol`. Default is `1e-6`.
 
   maxiter: int
     The maximum number of iterations (total number, for both methods).
     Default is `30`.
 
   tol_ss: float
-    Switch to the Newton's method if the norm of the vector of
-    equilibrium equations is less than `tol_ss`. Default is `1e-2`.
+    Switch to Newton's method if the norm of the vector of equilibrium
+    equations is less than `tol_ss`. Default is `1e-2`.
 
   maxiter_ss: int
     The maximum number of successive substitution iterations.
@@ -874,11 +873,11 @@ def _stabPT_qnssnewt(
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
-  distance function using the Newton's method and a PT-based equation
-  of state. A switch to the quasi-newton successive substitution (QNSS)
-  iteration is implemented if the Newton's method does not decrease the
-  norm of the gradient. Preceding successive substitution iterations are
-  implemented to improve the initial guess of k-values.
+  distance function using Newton's method and a PT-based equation of
+  state. A switch to the quasi-newton successive substitution (QNSS)
+  iteration is implemented if Newton's method does not decrease the
+  norm of the gradient. Preceding successive substitution iterations
+  are implemented to improve the initial guess of k-values.
 
   For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
 
@@ -926,17 +925,17 @@ def _stabPT_qnssnewt(
     Default is `-1e-4`.
 
   tol: float
-    Terminate the Newton's method successfully if the norm of the
-    gradient of Michelsen's modified tangent-plane distance function
-    is less than `tol`. Default is `1e-6`.
+    Terminate Newton's method successfully if the norm of the gradient
+    of Michelsen's modified tangent-plane distance function is less than
+    `tol`. Default is `1e-6`.
 
   maxiter: int
     The maximum number of iterations (total number, for both methods).
     Default is `30`.
 
   tol_qnss: float
-    Switch to the Newton's method if the norm of the vector of
-    equilibrium equations is less than `tol_qnss`. Default is `1e-2`.
+    Switch to Newton's method if the norm of the vector of equilibrium
+    equations is less than `tol_qnss`. Default is `1e-2`.
 
   maxiter_qnss: int
     The maximum number of quasi-newton successive substitution

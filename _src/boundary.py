@@ -10,6 +10,8 @@ from utils import (
   mineig_rayquot,
 )
 
+from typing import Callable
+
 from custom_types import (
   ScalarType,
   VectorType,
@@ -345,7 +347,8 @@ class PsatPT(object):
     If the solution method would be one of `'newton'`, `'ss-newton'` or
     `'qnss-newton'` then it also must have:
 
-    - `getPT_lnphii_Z_dnj_dP(P, T, yi, n) -> tuple[ndarray, float, ndarray, ndarray]`
+    - `getPT_lnphii_Z_dnj_dP(P, T, yi, n) -> tuple[ndarray, float,
+                                                   ndarray, ndarray]`
       For a given pressure [Pa], temperature [K], phase composition and
       phase mole number [mol] this method should return a tuple of:
 
@@ -354,7 +357,7 @@ class PsatPT(object):
       - the phase compressibility factor,
       - a matrix of shape `(Nc, Nc)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
-        respect to their mole numbers.
+        respect to their mole numbers,
       - a vector of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to pressure.
@@ -376,13 +379,16 @@ class PsatPT(object):
     - `name: str`
       The EOS name (for proper logging).
 
+    - `Nc: int`
+      The number of components in the system.
+
   method: str
     Type of the solver. Should be one of:
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'bfgs'` (Currently raises `NotImplementedError`),
-    - `'newton'` (Currently raises `NotImplementedError`),
+    - `'newton'` (Newton's method),
     - `'ss-newton'` (Currently raises `NotImplementedError`),
     - `'qnss-newton'` (Currently raises `NotImplementedError`).
 
@@ -446,10 +452,11 @@ class PsatPT(object):
         'implemented yet.'
       )
     elif method == 'newton':
-      raise NotImplementedError(
-        "The Newton's method for the saturation pressure calculation is not "
-        "implemented yet."
-      )
+      self.psatsolver = partial(_PsatPT_newtA, eos=eos, **kwargs)
+    elif method == 'newton-b':
+      self.psatsolver = partial(_PsatPT_newtB, eos=eos, **kwargs)
+    elif method == 'newton-c':
+      self.psatsolver = partial(_PsatPT_newtC, eos=eos, **kwargs)
     elif method == 'ss-newton':
       raise NotImplementedError(
         'The SS-Newton method for the saturation pressure calculation is '
@@ -623,7 +630,7 @@ def _solveTPDeqPT(
   """Solves the TPD-equation for the PT-based equations of state.
   The TPD-equation is the equation of equality to zero of the
   tangent-plane distance, which determines the phase appearance or
-  disappearance. The Newton's method is used to solve the TPD-equation.
+  disappearance. Newton's method is used to solve the TPD-equation.
 
   Parameters
   ----------
@@ -680,7 +687,6 @@ def _solveTPDeqPT(
   - compressibility factors for both mixtures,
   - a flag indicating if the equation was solved successfully.
   """
-  logger.debug('Solving the TPD equation:')
   k = 0
   Pk = P0
   lnkvi = np.log(yti / yi)
@@ -694,7 +700,6 @@ def _solveTPDeqPT(
     # Pkp1 = Pk * np.exp(dlnP)
     dP = - TPD / dTPDdP
     Pkp1 = Pk + dP
-    logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
     if Pkp1 > Pmax:
       Pk = .5 * (Pk + Pmax)
     elif Pkp1 < Pmin:
@@ -705,7 +710,10 @@ def _solveTPDeqPT(
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
     TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
-  logger.debug('Iteration #%s:\n\tP = %s\n\tTPD = %s', k, Pk, TPD)
+  logger.debug(
+    'Solution of the TPD-equation:\n\tP = %s\n\tTPD = %s\n\tNiter = %s',
+    Pk, TPD, k,
+  )
   return Pk, lnphixi, lnphiyi, Zx, Zy, k < maxiter
 
 
@@ -819,7 +827,7 @@ def _PsatPT_ss(
   gi = lnkvik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tPk = %s',
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s',
     k, kvik, gnorm, Pk,
   )
   while (gnorm > tol) and (k < maxiter):
@@ -827,7 +835,7 @@ def _PsatPT_ss(
     k += 1
     lnkvik += dlnkvi
     kvik = np.exp(lnkvik)
-    ni = kvi * yi
+    ni = kvik * yi
     xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
@@ -855,8 +863,8 @@ def _PsatPT_ss(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation terminates unsuccessfully. "
-      "The solution method was SS, EOS: %s. Parameters:"
+      "Saturation pressure calculation using the SS-method terminates "
+      "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
     )
@@ -882,7 +890,7 @@ def _PsatPT_qnss(
   equation of state.
 
   Performs the Quasi-Newton Successive Substitution (QNSS) method to
-  find an equilibrium state by solving a system of non-linear equations.
+  find an equilibrium state by solving a system of nonlinear equations.
   For the details of the QNSS-method see: 10.1016/0378-3812(84)80013-8
   and 10.1016/0378-3812(85)90059-7.
 
@@ -1026,8 +1034,8 @@ def _PsatPT_qnss(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation terminates unsuccessfully. "
-      "The solution method was QNSS, EOS: %s. Parameters:"
+      "Saturation pressure calculation using the QNSS-method terminates "
+      "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
     )
@@ -1036,61 +1044,569 @@ def _PsatPT_qnss(
                      success=False)
 
 
-# def _PsatPT_newt(
-#   P0: ScalarType,
-#   T: ScalarType,
-#   yi: VectorType,
-#   stab0: StabResult,
-#   eos: EOSPTType,
-#   tol: ScalarType = 1e-5,
-#   maxiter: int = 50,
-#   Pmax: ScalarType = 1e8,
-#   Pmin: ScalarType = 1.,
-#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
-# ) -> SatResult:
-#   logger.debug(
-#     "Saturation pressure calculation using the Newton's method:\n"
-#     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
-#   )
-#   J = np.empty(shape=(eos.Nc + 1, eos.Nc + 1))
-#   gi = np.empty(shape=(eos.Nc + 1,))
-#   I = np.eye(eos.Nc)
-#   k = 0
-#   Pk = P0
-#   ni = stab0.yti
-#   kvik = ni / yi
-#   lnkvik = np.log(kvik)
-#   n = ni.sum()
-#   xi = ni / n
-#   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi, n)
-#   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-#   gi[:Nc] = np.log(kvik) + lnphixi - lnphiyi
-#   gi[-1] = -np.log(n)
-#   gnorm = np.linalg.norm(gi)
-#   logger.debug(
-#     'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
-#     k, kvik, Pk, gnorm,
-#   )
-#   while (gnorm > tol) and (k < maxiter):
-#     J[:Nc,:Nc] = I + ni * dlnphixidnj
-#     J[-1,:Nc] = xi * (gi[:-1] - xi.dot(gi[:-1]))
-#     J[:Nc,-1] = Pk * (dlnphixidP - dlnphiyidP)
-#     J[-1,-1] = xi.dot(bi1)
-#     dlnkvilnP = linsolver(J, -gi)
-#     k += 1
-#     lnkvik += dlnkvilnP[:-1]
-#     Pk *= np.exp(dlnkvilnP[-1])
-#     kvik = np.exp(lnkvik)
-#     ni = kvik * yi
-#     n = ni.sum()
-#     xi = ni / n
-#     lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi, n)
-#     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-#     gi[:Nc] = lnkvik + lnphixi - lnphiyi
-#     gi[-1] = -np.log(n)
-#     gnorm = np.linalg.norm(gi)
-#     logger.debug(
-#       'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
-#       k, kvik, Pk, gnorm,
-#     )
+def _PsatPT_newtA(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 20,
+  Pmax: ScalarType = 1e8,
+  Pmin: ScalarType = 1.,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> SatResult:
+  """This function calculates saturation pressure by solving a system of
+  nonlinear equations using Newton's method. The system incorporates
+  the condition of equal fugacity for all components in both phases, as
+  well as the requirement that the sum of mole numbers of components in
+  the trial phase equals unity.
 
+  The formulation of the system of nonlinear equations is based on the
+  paper of M.L. Michelsen: 10.1016/0378-3812(80)80001-X.
+
+  Parameters
+  ----------
+  P0: float
+    Initial guess of the saturation pressure [Pa]. It should be inside
+    the two-phase region.
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation pressure.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
+
+    - `getPT_lnphii_Z_dnj_dP(P, T, yi, n) -> tuple[ndarray, float,
+                                                   ndarray, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition and
+      phase mole number [mol] this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a matrix of shape `(Nc, Nc)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to their mole numbers,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to pressure.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  tol: float
+    Terminate the solver successfully if the norm of a vector of
+    nonlinear equations is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of solver iterations. Default is `20`.
+
+  Pmax: float
+    The pressure upper bound. Default is `1e8` [Pa].
+
+  Pmin: float
+    The pressure lower bound. Default is `1.0` [Pa].
+
+  linsolver: Callable[[ndarray, ndarray], ndarray]
+    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+    a vector `b` of shape `(Nc+1,)` and finds a vector `x` of shape
+    `(Nc+1,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
+
+  Returns
+  -------
+  Saturation pressure calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    "Saturation pressure calculation using Newton's method (A-form):\n"
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+  )
+  Nc = eos.Nc
+  J = np.empty(shape=(Nc + 1, Nc + 1))
+  J[-1,-1] = 0.
+  gi = np.empty(shape=(Nc + 1,))
+  I = np.eye(Nc)
+  k = 0
+  Pk = P0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
+  n = ni.sum()
+  xi = ni / n
+  lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi,
+                                                                   n)
+  lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+  gi[:Nc] = lnkvik + lnphixi - lnphiyi
+  gi[-1] = n - 1.
+  gnorm = np.linalg.norm(gi)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+    k, kvik, Pk, gnorm,
+  )
+  while (gnorm > tol) and (k < maxiter):
+    J[:Nc,:Nc] = I + ni * dlnphixidnj
+    J[-1,:Nc] = ni
+    J[:Nc,-1] = Pk * (dlnphixidP - dlnphiyidP)
+    dlnkvilnP = linsolver(J, -gi)
+    k += 1
+    lnkvik += dlnkvilnP[:-1]
+    Pkp1 = Pk * np.exp(dlnkvilnP[-1])
+    if Pkp1 > Pmax:
+      Pk = .5 * (Pk + Pmax)
+    elif Pkp1 < Pmin:
+      Pk = .5 * (Pmin + Pk)
+    else:
+      Pk = Pkp1
+    kvik = np.exp(lnkvik)
+    ni = kvik * yi
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T,
+                                                                     xi, n)
+    lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+    gi[:Nc] = lnkvik + lnphixi - lnphiyi
+    gi[-1] = n - 1.
+    gnorm = np.linalg.norm(gi)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+      k, kvik, Pk, gnorm,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation pressure for T = %s K, yi = %s:\n\t'
+      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      T, yi, Pk, xi, gnorm, k,
+    )
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation using Newton's method (A-form) "
+      "terminates unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+      eos.name, P0, T, yi, Pmin, Pmax,
+    )
+    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
+
+
+def _PsatPT_newtB(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 20,
+  Pmax: ScalarType = 1e8,
+  Pmin: ScalarType = 1.,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> SatResult:
+  """This function calculates saturation pressure by solving a system of
+  nonlinear equations using Newton's method. The system incorporates
+  the condition of equal fugacity for all components in both phases, as
+  well as the requirement that the tangent-plane distance is zero at
+  the saturation curve.
+
+  The formulation of the system of nonlinear equations is based on the
+  paper of L.X. Nghiem and Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+  Parameters
+  ----------
+  P0: float
+    Initial guess of the saturation pressure [Pa]. It should be inside
+    the two-phase region.
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation pressure.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
+
+    - `getPT_lnphii_Z_dnj_dP(P, T, yi, n) -> tuple[ndarray, float,
+                                                   ndarray, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition and
+      phase mole number [mol] this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a matrix of shape `(Nc, Nc)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to their mole numbers,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to pressure.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  tol: float
+    Terminate the solver successfully if the norm of a vector of
+    nonlinear equations is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of solver iterations. Default is `20`.
+
+  Pmax: float
+    The pressure upper bound. Default is `1e8` [Pa].
+
+  Pmin: float
+    The pressure lower bound. Default is `1.0` [Pa].
+
+  linsolver: Callable[[ndarray, ndarray], ndarray]
+    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+    a vector `b` of shape `(Nc+1,)` and finds a vector `x` of shape
+    `(Nc+1,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
+
+  Returns
+  -------
+  Saturation pressure calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    "Saturation pressure calculation using Newton's method (B-form):\n"
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+  )
+  Nc = eos.Nc
+  J = np.empty(shape=(Nc + 1, Nc + 1))
+  gi = np.empty(shape=(Nc + 1,))
+  I = np.eye(Nc)
+  k = 0
+  Pk = P0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
+  n = ni.sum()
+  xi = ni / n
+  lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi,
+                                                                   n)
+  lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+  gi[:Nc] = lnkvik + lnphixi - lnphiyi
+  gi[-1] = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
+  gnorm = np.linalg.norm(gi)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+    k, kvik, Pk, gnorm,
+  )
+  while (gnorm > tol) and (k < maxiter):
+    J[:Nc,:Nc] = I + ni * dlnphixidnj
+    J[-1,:Nc] = xi * (gi[:-1] - xi.dot(gi[:-1]))
+    J[:Nc,-1] = Pk * (dlnphixidP - dlnphiyidP)
+    J[-1,-1] = xi.dot(J[:Nc,-1])
+    dlnkvilnP = linsolver(J, -gi)
+    k += 1
+    lnkvik += dlnkvilnP[:-1]
+    Pkp1 = Pk * np.exp(dlnkvilnP[-1])
+    if Pkp1 > Pmax:
+      Pk = .5 * (Pk + Pmax)
+    elif Pkp1 < Pmin:
+      Pk = .5 * (Pmin + Pk)
+    else:
+      Pk = Pkp1
+    kvik = np.exp(lnkvik)
+    ni = kvik * yi
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T,
+                                                                     xi, n)
+    lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+    gi[:Nc] = lnkvik + lnphixi - lnphiyi
+    gi[-1] = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
+    gnorm = np.linalg.norm(gi)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+      k, kvik, Pk, gnorm,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation pressure for T = %s K, yi = %s:\n\t'
+      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      T, yi, Pk, xi, gnorm, k,
+    )
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation using Newton's method (B-form) "
+      "terminates unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+      eos.name, P0, T, yi, Pmin, Pmax,
+    )
+    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
+
+
+def _PsatPT_newtC(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 20,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 8,
+  Pmax: ScalarType = 1e8,
+  Pmin: ScalarType = 1.,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> SatResult:
+  """This function calculates saturation pressure by solving a system of
+  nonlinear equations using Newton's method. The system incorporates
+  the condition of equal fugacity for all components in both phases, as
+  well as the requirement that the tangent-plane distance is zero at
+  the saturation curve. The TPD-equation is solved in the inner
+  while-loop.
+
+  The formulation of the system of nonlinear equations is based on the
+  paper of L.X. Nghiem and Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+  Parameters
+  ----------
+  P0: float
+    Initial guess of the saturation pressure [Pa]. It should be inside
+    the two-phase region.
+
+  T: float
+    Temperature of a mixture [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation pressure.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a vector of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to pressure.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition and
+      phase mole number [mol] this method should return a tuple of:
+
+      - a vector of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a matrix of shape `(Nc, Nc)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to their mole numbers.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  tol: float
+    Terminate the solver successfully if the norm of a vector of
+    nonlinear equations is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of solver iterations. Default is `20`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol`. Default is `1e-6`.
+
+  maxiter_tpd: int
+    The maximum number of TPD-equation solver iterations.
+    Default is `8`.
+
+  Pmax: float
+    The pressure upper bound. Default is `1e8` [Pa].
+
+  Pmin: float
+    The pressure lower bound. Default is `1.0` [Pa].
+
+  linsolver: Callable[[ndarray, ndarray], ndarray]
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
+
+  Returns
+  -------
+  Saturation pressure calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    "Saturation pressure calculation using Newton's method (C-form):\n"
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+  )
+  solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
+  I = np.eye(eos.Nc)
+  k = 0
+  Pk = P0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
+  n = ni.sum()
+  xi = ni / n
+  lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)
+  lnphiyi, Zy = eos.getPT_lnphii_Z(Pk, T, yi)
+  gi = lnkvik + lnphixi - lnphiyi
+  gnorm = np.linalg.norm(gi)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+    k, kvik, Pk, gnorm,
+  )
+  while (gnorm > tol) and (k < maxiter):
+    J = I + ni * dlnphixidnj
+    dlnkvi = linsolver(J, -gi)
+    k += 1
+    lnkvik += dlnkvi
+    kvik = np.exp(lnkvik)
+    ni = kvik * yi
+    n = ni.sum()
+    xi = ni / n
+    Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
+    _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)
+    gi = lnkvik + lnphixi - lnphiyi
+    gnorm = np.linalg.norm(gi)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+      k, kvik, Pk, gnorm,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation pressure for T = %s K, yi = %s:\n\t'
+      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      T, yi, Pk, xi, gnorm, k,
+    )
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation using Newton's method (C-form) "
+      "terminates unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+      eos.name, P0, T, yi, Pmin, Pmax,
+    )
+    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)

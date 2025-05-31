@@ -127,6 +127,9 @@ class flash2pPT(object):
     - `name: str`
       The EOS name (for proper logging).
 
+    - `Nc: int`
+      The number of components in the system.
+
   flashmethod: str
     Type of flash calculations solver. Should be one of:
 
@@ -449,7 +452,7 @@ def _flash2pPT_qnss(
   equation of state.
 
   Performs the Quasi-Newton Successive Substitution (QNSS) method to
-  find an equilibrium state by solving a system of non-linear equations.
+  find an equilibrium state by solving a system of nonlinear equations.
   For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
 
   Parameters
@@ -602,10 +605,10 @@ def _flash2pPT_newt(
   forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
-  """Performs minimization of the Gibbs energy function using the
-  Newton's method and a PT-based equation of state. A switch to the
-  successive substitution iteration is implemented if the Newton's
-  method does not decrease the norm of the gradient.
+  """Performs minimization of the Gibbs energy function using Newton's
+  method and a PT-based equation of state. A switch to the successive
+  substitution iteration is implemented if Newton's method does not
+  decrease the norm of the gradient.
 
   Parameters
   ----------
@@ -646,10 +649,12 @@ def _flash2pPT_newt(
     - `name: str`
       The EOS name (for proper logging).
 
+    - `Nc: int`
+      The number of components in the system.
+
   tol: float
-    Terminate the Newton's method successfully if the norm of the
-    gradient of Gibbs energy function is less than `tol`.
-    Default is `1e-6`.
+    Terminate Newton's method successfully if the norm of the gradient
+    of Gibbs energy function is less than `tol`. Default is `1e-6`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
@@ -784,12 +789,11 @@ def _flash2pPT_ssnewt(
   forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
-  """Performs minimization of the Gibbs energy function using the
-  Newton's method and a PT-based equation of state. A switch to the
-  successive substitution iteration is implemented if the Newton's
-  method does not decrease the norm of the gradient. Successive
-  substitution iterations precede the Newton's method to improve
-  initial guesses of k-values.
+  """Performs minimization of the Gibbs energy function using Newton's
+  method and a PT-based equation of state. A switch to the successive
+  substitution iteration is implemented if Newton's method does not
+  decrease the norm of the gradient. Successive substitution iterations
+  precede Newton's method to improve initial guesses of k-values.
 
   Parameters
   ----------
@@ -839,6 +843,9 @@ def _flash2pPT_ssnewt(
     - `name: str`
       The EOS name (for proper logging).
 
+    - `Nc: int`
+      The number of components in the system.
+
   tol: float
     Terminate successfully if the norm of the equilibrium equations
     vector is less than `tol`. Default is `1e-5`.
@@ -847,8 +854,8 @@ def _flash2pPT_ssnewt(
     The maximum number of solver iterations. Default is `30`.
 
   tol_ss: float
-    Switch to the Newton's method if the norm of the vector of
-    equilibrium equations is less than `tol_ss`. Default is `1e-2`.
+    Switch to Newton's method if the norm of the vector of equilibrium
+    equations is less than `tol_ss`. Default is `1e-2`.
 
   maxiter_ss: int
     The maximum number of the successive substitution iterations.
@@ -1028,12 +1035,12 @@ def _flash2pPT_qnssnewt(
   forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
-  """Performs minimization of the Gibbs energy function using the
-  Newton's method and a PT-based equation of state. A switch to the
-  successive substitution iteration is implemented if the Newton's
-  method does not decrease the norm of the gradient. Quasi-Newton
-  Successive Substitution (QNSS) iterations precede the Newton's method
-  to improve initial guesses of k-values.
+  """Performs minimization of the Gibbs energy function using Newton's
+  method and a PT-based equation of state. A switch to the successive
+  substitution iteration is implemented if Newton's method does not
+  decrease the norm of the gradient. Quasi-Newton Successive Substitution
+  (QNSS) iterations precede Newton's method to improve initial guesses
+  of k-values.
 
   For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
 
@@ -1085,6 +1092,9 @@ def _flash2pPT_qnssnewt(
     - `name: str`
       The EOS name (for proper logging).
 
+    - `Nc: int`
+      The number of components in the system.
+
   tol: float
     Terminate successfully if the norm of the equilibrium equations
     vector is less than `tol`. Default is `1e-5`.
@@ -1093,8 +1103,8 @@ def _flash2pPT_qnssnewt(
     The maximum number of solver iterations. Default is `30`.
 
   tol_qnss: float
-    Switch to the Newton's method if the norm of the vector of
-    equilibrium equations is less than `tol_qnss`. Default is `1e-2`.
+    Switch to Newton's method if the norm of the vector of equilibrium
+    equations is less than `tol_qnss`. Default is `1e-2`.
 
   maxiter_qnss: int
     The maximum number of quasi-newton successive substitution
