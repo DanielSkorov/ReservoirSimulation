@@ -28,7 +28,7 @@ from boundary import (
 
 class critpoint(unittest.TestCase):
 
-  def test_1(self):
+  def test_01(self):
     yi = np.array([0.014, 0.943, 0.027, 0.0074, 0.0049, 0.001, 0.0027])
     Pci = np.array([33.5, 45.4, 48.2, 41.9, 37.5, 33.3, 32.46]) * 101325.
     Tci = np.array([126.2, 190.6, 305.4, 369.8, 425.2, 469.6, 507.5])
@@ -44,8 +44,7 @@ class critpoint(unittest.TestCase):
       0.110, 0.0, 0.0, 0.0, 0.0, 0.0,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    maxiter = 7
-    Pc, Tc = getVT_PcTc(yi, pr, maxiter=maxiter)
+    Pc, Tc = getVT_PcTc(yi, pr, maxiter=5)
     dPc = np.abs(Pc / 1e6 - 5.861138)
     dTc = np.abs(Tc - 202.6193)
     self.assertTrue((dPc < 1e-3) & (dTc < 1e-3))

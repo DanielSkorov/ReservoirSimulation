@@ -598,6 +598,7 @@ def _stabPT_newt(
           'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
         )
       else:
+        # TODO: implement TR-step
         ni *= np.exp(-gi / sqrtni)
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
@@ -816,6 +817,7 @@ def _stabPT_ssnewt(
               k, ni/yi, gnorm,
             )
           else:
+            # TODO: implement TR-step
             ni *= np.exp(-gi / sqrtni)
             sqrtni = np.sqrt(ni)
             alphaik = 2. * sqrtni
@@ -1051,6 +1053,7 @@ def _stabPT_qnssnewt(
               k, ni/yi, gnorm,
             )
           else:
+            # TODO: implement TR-step
             ni *= np.exp(-gi / sqrtni)
             sqrtni = np.sqrt(ni)
             alphaik = 2. * sqrtni

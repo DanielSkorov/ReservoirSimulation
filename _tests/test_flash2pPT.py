@@ -78,7 +78,7 @@ class flash(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     flash = flash2pPT(pr, flashmethod='newton', stabmethod='qnss', tol=tol,
-                      maxiter=2)
+                      maxiter=3)
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
     pass

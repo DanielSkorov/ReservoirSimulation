@@ -696,6 +696,10 @@ def _flash2pPT_newt(
     kvik = kvi0.flatten()
     lnkvik = np.log(kvik)
     Fv = solve2p_FGH(kvik, yi)
+    if np.isclose(Fv, 0.):
+      Fv = 1e-8
+    elif np.isclose(Fv, 1.):
+      Fv = 0.99999999
     yli = yi / ((kvik - 1.) * Fv + 1.)
     yvi = yli * kvik
     lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
@@ -730,6 +734,7 @@ def _flash2pPT_newt(
           k, kvik, gnorm, Fv,
         )
       else:
+        # TODO: implement TR-step
         lnkvik -= gi
         kvik = np.exp(lnkvik)
         Fv = solve2p_FGH(kvik, yi)
@@ -976,6 +981,7 @@ def _flash2pPT_ssnewt(
               k, kvik, gnorm, Fv,
             )
           else:
+            # TODO: implement TR-step
             lnkvik -= gi
             kvik = np.exp(lnkvik)
             Fv = solve2p_FGH(kvik, yi)
@@ -1240,6 +1246,7 @@ def _flash2pPT_qnssnewt(
               k, kvik, gnorm, Fv,
             )
           else:
+            # TODO: implement TR-step
             lnkvik -= gi
             kvik = np.exp(lnkvik)
             Fv = solve2p_FGH(kvik, yi)

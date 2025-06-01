@@ -71,7 +71,7 @@ $$ G \left( \hat{M} \right) = \min_{\hat{K}} G \left( \hat{K} \right), $$
 
 В данном определении необходимо отметить два момента. Первый: *равновесное состояние* характеризуется минимумом энергии Гиббса всей многофазной системы. Более подробно это рассматривалось [ранее](../1-TD/TD-14-PhaseEquilibrium.md). Второй: для того чтобы доказать, что некоторое состояние $\hat{M}$ многофазной системы из $N_p$ фаз является *равновесным*, мы можем рассмотреть множество других состояний $\hat{K}$, каждое из которых будет характеризоваться своим числом фаз $K_p$, и если в состоянии $\hat{M}$ с количеством фаз $N_p$ энергия Гиббса меньше всего, то оно и будет равновесным.
 
-Представленное в предыдущем определении условие идентификации равновесного состояния, по сути, аналогично условию нахождения [глобального минимума функции](https://en.wikipedia.org/wiki/Maximum_and_minimum). [Известно](https://en.wikipedia.org/wiki/First_derivative_test), что необходимым условием для соответствия некоторого точки (состояния) глобальному минимуму функции (энергии Гиббса) является равенство нулю производной в этой точке (этом состоянии). Такое состояние, в котором энергия Гиббса всей многофазной многокомпонентной системы характеризуется равенством нулю частной производной по количеству вещества $i$-го компонента в $j$-ой фазе при фиксированных давлении и температуре будет характеризоваться равенством химических потенциалов соответствующих компонентов в фазах.
+Представленное в предыдущем определении условие идентификации равновесного состояния, по сути, аналогично условию нахождения [глобального минимума функции](https://en.wikipedia.org/wiki/Maximum_and_minimum). [Известно](https://en.wikipedia.org/wiki/First_derivative_test), что необходимым условием для соответствия некоторой точки (состояния) глобальному минимуму функции (энергии Гиббса) является равенство нулю производной этой функции по независимым переменным в этой точке (этом состоянии). Такое состояние, в котором энергия Гиббса всей многофазной многокомпонентной системы характеризуется равенством нулю частной производной по количеству вещества $i$-го компонента в $j$-ой фазе при фиксированных давлении и температуре, будет характеризоваться равенством химических потенциалов соответствующих компонентов в фазах.
 
 ```{admonition} Теорема
 :class: danger
@@ -783,7 +783,7 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$  {comment}`#
 &emsp;&emsp;$c := c + 1$ {comment}`# Обновление счетчика итераций`  
 &emsp;**end while**  
 &emsp;$TPD := - \ln \sum_{i=1}^{N_c} Y_i$ {comment}`# Расчет значения функции TPD`  
-&emsp;**if** $TPD < -\epsilon_2$ **and** $c < N_{iter}$ **then** {comment}`# Проверка условия стабильности`  
+&emsp;**if** $\lVert \mathbf{g} \rVert_2 < \epsilon_1$ **and** $TPD < -\epsilon_2$ **then** {comment}`# Проверка условия стабильности`  
 &emsp;&emsp;$is\_stable := \mathrm{False}$  
 &emsp;&emsp;**exit for** {comment}`# Выход из цикла перебора начальных приближений`  
 &emsp;**else**  
@@ -813,11 +813,20 @@ $$ \left( - \ln \sum_{i=1}^{N_c} Y_i < 0 \right) \land \left( \max_i k_i - \min_
 
 $$ k_i^{go} = \frac{{P_c}_i}{P} \cdot \exp \left( 5.3727 \left(1 + \omega_i \right) \left(1 - \frac{{T_c}_i}{T} \right) \right), \; i = 1 \, \ldots \, N_c. $$
 
-То есть в качестве начальных приближений $k_i$ в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] применялся набор из следующих векторов:
+То есть в качестве начальных приближений $k_i, \, i = 1 \, \ldots \, N_c,$ в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] применялся набор из следующих векторов:
 
 $$ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; i = 1 \, \ldots \, N_c. $$
 
-Использование этих двух начальных приближений зачастую бывает достаточным для проверки стабильности фазового равновесия, если заранее известно, что в системе могут быть только жидкая и газовая углероводородные фазы. Впоследствии в работе \[[Li and Firoozabadi, 2012](https://doi.org/10.2118/129844-PA)\] было предложено дополнить данный набор следующими начальными приближениями:
+Автором отмечается, что если рассматривать системы, состоящие из углеводородных компонентов, то при использовании одного из данных векторов в качестве начального приближения алгоритм сходится к тривиальному решению, а при использовании другого – к искомому решению системы нелинейных уравнений. Следовательно, для многих углеводородных смесей необходим только один из данных векторов: если заданный компонентный состав рассматриваемой системы больше походит на жидкость, то в качестве начального приближения подходит вектор $k_i^{go}, \, i = 1 \, \ldots \, N_c,$ иначе: $1 \, / \, k_i^{go}, \, i = 1 \, \ldots \, N_c$. Однако для систем, находящихся вблизи критической точки, необходимо использование обоих начальных приближений, поскольку значения плотностей фаз становятся близкими друг к другу, и заранее неизвестно, к какому фазовому состоянию (жидкому или газообразному) ближе исходный компонентный состав рассматриваемой системы.
+
+````{margin}
+```{admonition} Дополнительно
+:class: note
+Вблизи [критической точки](SEC-7-Criticality.md) компонентные составы фаз становятся похожими друг на друга, а отношения мольных долей компонентов в фазах стремятся к единице. Это обуславливает возведение элементов векторов начальных приближений в степень $\left( 1 \, / \, 3 \right)$, позволяющее снизить различие между максимальным и минимальным значениями элементов вектора.
+```
+````
+
+Для систем вблизи критической точки и систем, включающих неуглеводородные компоненты, в работе \[[Li and Firoozabadi, 2012](https://doi.org/10.2118/129844-PA)\] было предложено дополнить данный набор следующими начальными приближениями:
 
 $$ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}}, \; \sqrt[3]{k_i^{go}}, \; \frac{1}{\sqrt[3]{k_i^{go}}}, \; k_i^{pure} \right\}, \; i = 1 \, \ldots \, N_c, $$
 
@@ -907,12 +916,13 @@ for i, ki in enumerate(K):
     c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     print(f'For the initial guess #{i}:\n'
-          f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+          f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -970,12 +980,13 @@ for i, ki in enumerate(K):
     c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     out1 += (f'For the initial guess #{i}:\n'
-             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\ttolerance of equations: {gnorm}\n'
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1054,12 +1065,13 @@ for i, ki in enumerate(K):
     c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     print(f'For the initial guess #{i}:\n'
-          f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+          f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1100,12 +1112,13 @@ for i, ki in enumerate(K):
     c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     out2 += (f'For the initial guess #{i}:\n'
-             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\ttolerance of equations: {gnorm}\n'
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1204,12 +1217,13 @@ for i, ki in enumerate(K):
     c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     print(f'For the initial guess #{i}:\n'
-          f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+          f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1267,12 +1281,13 @@ for i, ki in enumerate(K):
     c, ki, gi = carry
     ni = ki * yi
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     out3 += (f'For the initial guess #{i}:\n'
-             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\ttolerance of equations: {gnorm}\n'
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1466,7 +1481,7 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$
 &emsp;&emsp;$c := c + 1$  
 &emsp;**end while**  
 &emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$  
-&emsp;**if** $TPD < -\epsilon_2$ **and** $c < N_{iter}$ **then**  
+&emsp;**if** $\lVert \mathbf{g} \rVert_2 < \epsilon_1$ **and** $TPD < -\epsilon_2$ **then**  
 &emsp;&emsp;$is\_stable := \mathrm{False}$  
 &emsp;&emsp;**exit for**  
 &emsp;**else**  
@@ -1484,9 +1499,9 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$
 
 $$ \lVert \mathbf{g} \rVert_2 > \epsilon_{ssi}, $$
 
-где $\lVert \mathbf{g} \rVert_2$ – длина вектора невязки, а $\epsilon_{ssi} = 10^{-2}$.
+где $\lVert \mathbf{g} \rVert_2$ – длина вектора невязки, а $\epsilon_{ssi} = 10^{-2}$. Несколько отличное значение параметра $\epsilon_{ssi} = 10^{-1}$ было получено авторами работы \[[Pan et al, 2019](https://doi.org/10.1021/acs.iecr.8b05229)\] при сравнении среднего времени работы алгоритма проверки стабильности на исследуемой выборке термодинамических систем.
 
-Стоит также отметить, что для повышения стабильности (*robustness*) метода Ньютона, особенно в тех случаях, когда начальное приближение неидеально, может быть реализовано переключение итерации на метод последовательных подстановок. В качестве критерия переключения можно рассматривать увеличение длины вектора градиента оптимизируемой функции (длины вектора невязки решаемой системы нелинейных уравнений).
+Стоит также отметить, что для повышения стабильности (*robustness*) метода Ньютона, особенно в тех случаях, когда начальное приближение неидеально, может быть реализовано переключение итерации на метод последовательных подстановок \[[Nichita, 2016](https://doi.org/10.1016/j.fluid.2016.01.015)\] или на метод оптимизации с доверительной областью \[[Petitfrere and Nichita, 2014](https://doi.org/10.1016/j.fluid.2013.08.039); [Pan et al, 2019](https://doi.org/10.1021/acs.iecr.8b05229)\]. В качестве критерия переключения можно рассматривать увеличение длины вектора градиента оптимизируемой функции (длины вектора невязки решаемой системы нелинейных уравнений) или увеличение значения минимизируемой функции.
 
 (pvt-sec-stability-pt-newton-examples)=
 #### Примеры
@@ -1590,12 +1605,13 @@ for i, ki in enumerate(K):
     c, alphai, gi, H = carry
     ni = alphai * alphai * 0.25
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     print(f'For the initial guess #{i}:\n'
-          f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+          f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ni/yi}\n'
           f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1663,12 +1679,13 @@ for i, ki in enumerate(K):
     c, alphai, gi, H = carry
     ni = alphai * alphai * 0.25
     TPD = -np.log(ni.sum())
+    gnorm = np.linalg.norm(gi)
     out4 += (f'For the initial guess #{i}:\n'
-             f'\ttolerance of equations: {np.linalg.norm(gi)}\n'
+             f'\ttolerance of equations: {gnorm}\n'
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ni/yi}\n'
              f'\tTPD: {TPD}\n')
-    if (TPD < -eps2) & (c < Niter):
+    if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
 else:
@@ -1689,6 +1706,8 @@ $$ \hat{\mathbf{H}} = \mathbf{H} + \mathbf{E}, $$
 являлась положительно определенной матрицей. Примеры алгоритмов модифицированного разложения Шолески рассмотрены в работах \[[Schnabel and Eskow, 1990](https://doi.org/10.1137/0911064)\] и \[[Schnabel and Eskow, 1999](https://doi.org/10.1137/S105262349833266X)\].
 
 Другим подходом к решению данной проблемы является использование аппроксимации гессиана на основе результатов предыдущих итераций, которая гарантирует положительную определенность. Такой подход лежит в основе квази-ньютоновских методов оптимизации, к которым относится, например, метод [BFGS](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm). Применение данного метода к определению стабильности фазового состояния системы было рассмотрено в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\]. Впоследствии применение метода BFGS для решения данной задачи получило свое развитие в работах \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908); [Nichita and Petitfrere, 2015](https://doi.org/10.1016/j.fluid.2015.07.035)\].
+
+Кроме того, коррекция гессиана для обеспечения его положительной определенности реализуется при использовании методов оптимизации с доверительной областью \[[Petitfrere and Nichita, 2014](https://doi.org/10.1016/j.fluid.2013.08.039)\].
 
 (pvt-sec-stability-vt)=
 ## VT-термодинамика

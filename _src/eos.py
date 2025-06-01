@@ -980,9 +980,10 @@ class pr78(object):
       Regulates an output of this function. Available options are:
 
       - 0: Wilson's and inverse Wilson's equations;
-      - 1: previous + the first and last pure components;
+      - 1: previous + the pure component model;
       - 2: previous + cube roots of Wilson's and inverse Wilson's
-           equations.
+           equations;
+      - 3: previous + the ideal model (fugacity coefficient).
 
       Default is `0`.
 
@@ -1015,8 +1016,17 @@ class pr78(object):
         (1. - eps) / yi[idx],
         eps / ((self.Nc - 1) * yi),
       )
-      u3i = np.cbrt(kvi)
-      return kvi, 1. / kvi, upi, 1. / upi, u3i, 1. / u3i
+      cbrtkvi = np.cbrt(kvi)
+      return kvi, 1. / kvi, upi, 1. / upi, cbrtkvi, 1. / cbrtkvi
+    elif level == 3:
+      upi = np.where(
+        np.arange(self.Nc) == idx,
+        (1. - eps) / yi[idx],
+        eps / ((self.Nc - 1) * yi),
+      )
+      cbrtkvi = np.cbrt(kvi)
+      uii = np.exp(self.getPT_lnphii(P, T, yi))
+      return kvi, 1. / kvi, upi, 1. / upi, cbrtkvi, 1. / cbrtkvi, uii
     else:
       raise ValueError(f'Unsupported level number: {level}.')
 

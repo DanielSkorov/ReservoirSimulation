@@ -53,6 +53,8 @@ class EOSPTType(Protocol):
     T: ScalarType,
     yi: VectorType,
     level: int,
+    idx: int,
+    eps: ScalarType,
   ) -> tuple[VectorType]: ...
 
   def getPT_lnphii_Z_dP(
