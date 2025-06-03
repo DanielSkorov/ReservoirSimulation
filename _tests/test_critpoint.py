@@ -17,6 +17,7 @@ logger.addHandler(handler)
 import unittest
 
 import numpy as np
+np.set_printoptions(linewidth=np.inf)
 
 from eos import (
   pr78,
