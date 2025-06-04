@@ -935,31 +935,45 @@ $$ g_{ji} = \ln \varphi_{ji} + \ln n_{ji} - \ln n_j - \left( \ln \varphi_{N_pi} 
 
 $$ \begin{alignat}{1}
 H_{jikl}
-&= && \frac{\partial g_{ji}}{\partial n_{kl}} \\
-&= && \frac{\partial \ln \varphi_{ji}}{\partial n_{kl}} + \frac{\partial \ln n_{ji}}{\partial n_{kl}} - \frac{\partial \ln n_j}{\partial n_{kl}} - \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{kl}} + \frac{\partial \ln n_{N_pi}}{\partial n_{kl}} - \frac{\partial \ln n_{N_p}}{\partial n_{kl}} \right) , \\
-& && j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+&= && \, \frac{\partial g_{ji}}{\partial n_{kl}} \\
+&= && \, \frac{\partial \ln \varphi_{ji}}{\partial n_{kl}} + \frac{\partial \ln n_{ji}}{\partial n_{kl}} - \frac{\partial \ln n_j}{\partial n_{kl}} - \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{kl}} + \frac{\partial \ln n_{N_pi}}{\partial n_{kl}} - \frac{\partial \ln n_{N_p}}{\partial n_{kl}} \right) , \\
+& && \, j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
 \end{alignat} $$
 
 Рассмотрим и преобразуем некоторые слагаемые. Частная производная логарифма коэффициента летучести $i$-го компонента в $j$-й фазе, где $i = 1 \, \ldots \, N_c$ и $j = 1 \, \ldots \, N_p - 1$, по количесту вещества $l$-го компонента в $k$-й фазе, где $l = 1 \, \ldots \, N_c$ и $k = 1 \, \ldots \, N_p - 1$, будет зависеть от компонентного состава этой же фазы. Следовательно,
 
-$$ \frac{\partial \ln \varphi_{ji}}{\partial n_{kl}} = \begin{cases} 0, \; & j \neq k, \, j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots N_c, \, l = 1 \, \ldots \, N_c, \\ \frac{\partial \ln \varphi_{ji}}{\partial n_{kl}}, \; & j = k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c. \end{cases} $$
+$$ \begin{align}
+\frac{\partial \ln \varphi_{ji}}{\partial n_{kl}}
+&= \begin{cases} 0, \; & j \neq k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots N_c, \, l = 1 \, \ldots \, N_c, \\ \frac{\partial \ln \varphi_{ji}}{\partial n_{kl}}, \; & j = k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c. \end{cases} \\
+&= \delta_{jk} \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}}, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots N_c, \, l = 1 \, \ldots \, N_c.
+\end{align} $$
+
+В выражении выше символом $\delta_{jk}, \, j = 1 \, \ldots \, N_p - 1, \, k = 1 \, \ldots \, N_p - 1,$ обозначается элемент [единичной матрицы](https://en.wikipedia.org/wiki/Identity_matrix) ([дельты Кронекера](https://en.wikipedia.org/wiki/Kronecker_delta)).
 
 Аналитические выражения логарифмов коэффициента летучести компонента фазы по давлению, температуре и количеству вещества компонентов, находящихся в этой же фазе, с использованием уравнений состояния были рассмотрены [ранее](../2-EOS/EOS-Appendix-A-PD.md).
 
 Рассмотрим частную производную логарифма коливечества вещества $i$-го компонента в $j$-й фазе по количеству вещества $l$-го компонента в $k$-й фазе:
 
-$$ \frac{\partial \ln n_{ji}}{\partial n_{kl}} = \begin{cases} 0, \; & j \neq k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c, \\ \frac{1}{n_{ji}} \frac{\partial n_{ji}}{\partial n_{kl}}, \; & j = k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c. \end{cases} $$
-
-В свою очередь, частная производная количества вещества $i$-го компонента по количеству вещества $l$-го компонента в одной и той же нереференсной фазе представляет собой [единичную матрицу](https://en.wikipedia.org/wiki/Identity_matrix) ([дельту Кронекера](https://en.wikipedia.org/wiki/Kronecker_delta)).
+$$ \begin{align}
+\frac{\partial \ln n_{ji}}{\partial n_{kl}}
+&= \begin{cases} 0, \; & j \neq k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c, \\ \frac{1}{n_{ji}} \frac{\partial n_{ji}}{\partial n_{kl}}, \; & j = k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c. \end{cases} \\
+&= \delta_{jk} \frac{1}{n_{ji}} \frac{\partial n_{ji}}{\partial n_{jl}}, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c, \\
+&= \delta_{jk} \frac{1}{n_{ji}} \delta_{il} , \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
 
 Рассмотрим частную производную логарифма количества вещества $j$-й фазы по количеству вещества $l$-го компонента в $k$-й фазе:
 
-$$ \frac{\partial \ln n_j}{\partial n_{kl}} = \begin{cases} 0, \; & j \neq k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c, \\ \frac{1}{n_j} \frac{\partial n_j}{\partial n_{kl}}, \; & j = k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c. \end{cases} $$
+$$ \begin{align}
+\frac{\partial \ln n_j}{\partial n_{kl}}
+&= \begin{cases} 0, \; & j \neq k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c, \\ \frac{1}{n_j} \frac{\partial n_j}{\partial n_{kl}}, \; & j = k, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots \, N_c. \end{cases} \\
+&= \delta_{jk} \frac{1}{n_j}, \; j = 1 \, \ldots \, N_p - 1, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots N_c.
+\end{align} $$
 
-Преобразуем выражение для частной производной логарифма количества вещества $j$-й фазы по количеству вещества $k$-го компонента в этой же фазе ($k=j$):
+При получении данного выражения было использовано следующее преобразование частной производной логарифма количества вещества $j$-й фазы по количеству вещества $k$-го компонента в этой же фазе ($k=j$):
 
 $$ \begin{align}
-\frac{\partial \ln n_j}{\partial n_{jl}} = & \frac{1}{n_j} \frac{\partial n_{j}}{\partial n_{jl}} = \frac{1}{n_j} \frac{\partial}{\partial n_{jl}} \left( \sum_{i=1}^{N_c} n_{ji} \right) = \frac{1}{n_j} \sum_{i=1}^{N_c} \frac{\partial n_{ji}}{\partial n_{jl}} = \frac{1}{n_j} \sum_{i=1}^{N_c} \delta_{il} = \frac{1}{n_j}, \\ & j = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c. \end{align} $$
+\frac{\partial \ln n_j}{\partial n_{jl}} = & \, \frac{1}{n_j} \frac{\partial n_{j}}{\partial n_{jl}} = \frac{1}{n_j} \frac{\partial}{\partial n_{jl}} \left( \sum_{i=1}^{N_c} n_{ji} \right) = \frac{1}{n_j} \sum_{i=1}^{N_c} \frac{\partial n_{ji}}{\partial n_{jl}} = \frac{1}{n_j} \sum_{i=1}^{N_c} \delta_{il} = \frac{1}{n_j}, \\ & j = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
 
 Получим аналитическое выражение частной производной логарифма коэффициента летучести $i$-го компонента в $N_p$-й фазе по количеству вещества $l$-го компонента в $k$-й фазе:
 
@@ -983,8 +997,39 @@ $$ \begin{align}
 &= -\frac{1}{n_{N_pi}} \delta_{il}, \; k = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots N_c, \; l = 1 \, \ldots N_c.
 \end{align} $$
 
-Наконец, получим аналитическое выражение для частной производной логарифма количества вещества $N_p$-й фазы по количеству вещества $l$-го компонента в $k$-й фазе:
+Получим аналитическое выражение для частной производной логарифма количества вещества $N_p$-й фазы по количеству вещества $l$-го компонента в $k$-й фазе:
 
-$$ \frac{\partial \ln n_{N_p}}{\partial n_{kl}} = \frac{1}{n_{N_p}} \frac{\partial n_{N_p}}{\partial n_{kl}} = \frac{1}{n_{N_p}} \left( n - \sum_{} \right) $$
+$$ \begin{align}
+\frac{\partial \ln n_{N_p}}{\partial n_{kl}}
+&= \frac{1}{n_{N_p}} \frac{\partial n_{N_p}}{\partial n_{kl}} \\
+&= \frac{1}{n_{N_p}} \frac{\partial}{\partial n_{kl}} \left( n - \sum_{j=1}^{N_p-1} n_j \right) \\
+&= - \frac{1}{n_{N_p}} \frac{\partial}{\partial n_{kl}} \left( \sum_{j=1}^{N_p-1} \sum_{i=1}^{N_c} n_{ji} \right) \\
+&= - \frac{1}{n_{N_p}} \sum_{j=1}^{N_p-1} \sum_{i=1}^{N_c} \frac{\partial n_{ji}}{\partial n_{kl}} \\
+&= - \frac{1}{n_{N_p}}, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots N_c.
+\end{align} $$
+
+С учетом изложенного выше получим аналитическое выражение для элемента матрицы гессиана:
+
+$$ \begin{align}
+H_{jikl} = & \, \delta_{kj} \left( \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{1}{n_j} \left( \frac{\delta_{il}}{y_{ji}} - 1 \right) \right) + \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}} + \frac{1}{n_{N_p}} \left( \frac{\delta_{il}}{y_{N_pi}} - 1 \right) \right) \\
+& j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
+
+Для двухфазной системы, состоящей из газовой $V$ и референсной жидкой $L$ фаз, элемент матрицы гессиана:
+
+$$ \begin{align}
+H_{il}
+&= \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} + \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}} + \delta_{il} \left( \frac{1}{n_{Vi}} + \frac{1}{n_{Li}} \right) - \left( \frac{1}{n_V} + \frac{1}{n_L} \right) \\
+&= \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} + \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}} + \delta_{il} \frac{n_i}{n_{Vi} n_{Li}} - \frac{n}{n_V n_L} \\
+&= \Phi_{il} + U_{il}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
+
+где
+
+$$ \begin{align}
+& \Phi_{il} = \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} + \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \\
+& U_{il} = \delta_{il} \frac{n_i}{n_{Vi} n_{Li}} - \frac{n}{n_V n_L} = \frac{1}{n_V n_L} \left( \delta_{il} \frac{n_i}{y_{Vi} y_{Li}} - n \right), \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
+
 
 
