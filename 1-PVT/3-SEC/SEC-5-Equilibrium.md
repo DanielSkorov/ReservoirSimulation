@@ -1011,8 +1011,9 @@ $$ \begin{align}
 С учетом изложенного выше получим аналитическое выражение для элемента матрицы гессиана:
 
 $$ \begin{align}
-H_{jikl} = & \, \delta_{kj} \left( \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{1}{n_j} \left( \frac{\delta_{il}}{y_{ji}} - 1 \right) \right) + \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}} + \frac{1}{n_{N_p}} \left( \frac{\delta_{il}}{y_{N_pi}} - 1 \right) \right) \\
-& j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+H_{jikl}
+&= \delta_{kj} \left( \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{1}{n_j} \left( \frac{\delta_{il}}{y_{ji}} - 1 \right) \right) + \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}} + \frac{1}{n_{N_p}} \left( \frac{\delta_{il}}{y_{N_pi}} - 1 \right) \right) \\
+&= \delta_{kj} \frac{\partial \ln f_{ji}}{\partial n_{jl}} + \frac{\partial \ln f_{N_pi}}{\partial n_{N_pl}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
 \end{align} $$
 
 Для двухфазной системы, состоящей из газовой $V$ и референсной жидкой $L$ фаз, элемент матрицы гессиана:
@@ -1031,5 +1032,23 @@ $$ \begin{align}
 & U_{il} = \delta_{il} \frac{n_i}{n_{Vi} n_{Li}} - \frac{n}{n_V n_L} = \frac{1}{n_V n_L} \left( \delta_{il} \frac{n_i}{y_{Vi} y_{Li}} - n \right), \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
 \end{align} $$
 
+При использовании метода минимизации функции энергии Гиббса относительно основных переменных – вектора количеств вещества компонентов в нереференсных фазах – вектор обновления основных переменных определяется при решении следующей системы линейных уравнений:
+
+$$ \mathbf{H} \Delta \mathbf{n} = - \mathbf{g}, $$
+
+где $\mathbf{H} \in {\rm I\!R}^{\left(N_c \cdot \left(N_p - 1\right) \right) \times \left(N_c \cdot \left(N_p - 1\right) \right)}$ представляет собой матрицу гессиана, $\Delta \mathbf{n} \in {\rm I\!R}^{N_c \cdot \left(N_p - 1\right)}$ – вектор обновления основных переменных (количеств вещества компонентов в нереференсных фазах), $\mathbf{g} \in {\rm I\!R}^{N_c \cdot \left(N_p - 1\right)}$ – вектор значений решаемой системы нелинейных уравнений, определяющих положение стационарных точек функции энергии Гиббса (ее градиент).
+
+Помимо вектора количеств вещества компонентов в нереференсных фазах в качестве основных переменных может выступить вектор логарифмов констант фазового равновесия компонентов в нереференсных фазах. В этом случае на каждой итерации метода Ньютона для нахождения вектора обновления основных переменных необходимо решать следующую систему линейных уравнений:
+
+$$ \mathbf{J} \Delta \ln \mathbf{k} = - \mathbf{g}, $$
+
+где $\mathbf{J} \in {\rm I\!R}^{\left(N_c \cdot \left(N_p - 1\right) \right) \times \left(N_c \cdot \left(N_p - 1\right) \right)}$ представляет собой якобиан – матрицу частных производных, элемент которой определяется следующим выражением:
+
+$$ \begin{align}
+J_{jikl} = & \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_p-1} \sum_{s=1}^{N_c} \frac{\partial g_{ji}}{\partial n_{rs}} \frac{\partial n_{rs}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_p-1} \sum_{s=1}^{N_c} H_{jirs} U_{rskl}, \\
+& j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
+
+При преобразовании данного выражения использовалось [правило нахождения производной сложной функции от нескольких переменных](https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs).
 
 
