@@ -1012,9 +1012,18 @@ $$ \begin{align}
 
 $$ \begin{align}
 H_{jikl}
-&= \delta_{kj} \left( \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{1}{n_j} \left( \frac{\delta_{il}}{y_{ji}} - 1 \right) \right) + \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}} + \frac{1}{n_{N_p}} \left( \frac{\delta_{il}}{y_{N_pi}} - 1 \right) \right) \\
-&= \delta_{kj} \frac{\partial \ln f_{ji}}{\partial n_{jl}} + \frac{\partial \ln f_{N_pi}}{\partial n_{N_pl}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+&= \delta_{jk} \left( \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{1}{n_j} \left( \frac{\delta_{il}}{y_{ji}} - 1 \right) \right) + \left( \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}} + \frac{1}{n_{N_p}} \left( \frac{\delta_{il}}{y_{N_pi}} - 1 \right) \right) \\
+&= \delta_{jk} \frac{\partial \ln f_{ji}}{\partial n_{jl}} + \frac{\partial \ln f_{N_pi}}{\partial n_{N_pl}} \\
+&= \delta_{jk} \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}} + \delta_{jk} \left( \frac{\delta_{il}}{n_{ji}} - \frac{1}{n_j} \right) + \frac{\delta_{il}}{n_{N_pi}} - \frac{1}{n_{N_p}} \\
+&= \Phi_{jikl} + U_{jikl}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c,
 \end{align} $$
+
+где:
+
+$$ \begin{alignat}{1}
+& \Phi_{jikl} = && \, \delta_{jk} \frac{\partial \ln \varphi_{ji}}{\partial n_{jl}} + \frac{\partial \ln \varphi_{N_pi}}{\partial n_{N_pl}}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c, \\
+& U_{jikl} = && \, \delta_{jk} \left( \frac{\delta_{il}}{n_{ji}} - \frac{1}{n_j} \right) + \frac{\delta_{il}}{n_{N_pi}} - \frac{1}{n_{N_p}}, \\ &&& j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+\end{alignat} $$
 
 Для двухфазной системы, состоящей из газовой $V$ и референсной жидкой $L$ фаз, элемент матрицы гессиана:
 
@@ -1025,7 +1034,7 @@ H_{il}
 &= \Phi_{il} + U_{il}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c.
 \end{align} $$
 
-где
+где:
 
 $$ \begin{align}
 & \Phi_{il} = \frac{\partial \ln \varphi_{Vi}}{\partial n_{Vl}} + \frac{\partial \ln \varphi_{Li}}{\partial n_{Ll}}, \; i = 1 \, \ldots \, N_c, \; l = 1 \, \ldots \, N_c, \\
@@ -1042,13 +1051,42 @@ $$ \mathbf{H} \Delta \mathbf{n} = - \mathbf{g}, $$
 
 $$ \mathbf{J} \Delta \ln \mathbf{k} = - \mathbf{g}, $$
 
-где $\mathbf{J} \in {\rm I\!R}^{\left(N_c \cdot \left(N_p - 1\right) \right) \times \left(N_c \cdot \left(N_p - 1\right) \right)}$ представляет собой якобиан – матрицу частных производных, элемент которой определяется следующим выражением:
+где $\Delta \ln \mathbf{k} \in {\rm I\!R}^{N_c \cdot \left(N_p - 1\right)}$ – вектор обновления основных переменных (логарифмов констант фазового равновесия компонентов в нереференсных фазах), $\mathbf{J} \in {\rm I\!R}^{\left(N_c \cdot \left(N_p - 1\right) \right) \times \left(N_c \cdot \left(N_p - 1\right) \right)}$ представляет собой якобиан – матрицу частных производных, элемент которой определяется следующим выражением:
 
 $$ \begin{align}
-J_{jikl} = & \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_p-1} \sum_{s=1}^{N_c} \frac{\partial g_{ji}}{\partial n_{rs}} \frac{\partial n_{rs}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_p-1} \sum_{s=1}^{N_c} H_{jirs} U_{rskl}, \\
+J_{jikl} = & \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_p-1} \sum_{s=1}^{N_c} \frac{\partial g_{ji}}{\partial n_{rs}} \frac{\partial n_{rs}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_p-1} \sum_{s=1}^{N_c} H_{jirs} U_{rskl}^{-1}, \\
 & j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
 \end{align} $$
 
 При преобразовании данного выражения использовалось [правило нахождения производной сложной функции от нескольких переменных](https://en.wikipedia.org/wiki/Chain_rule#General_rule:_Vector-valued_functions_with_multiple_inputs).
 
+Покажем, что частная производная логарифма константы фазового равновесия $i$-го компонента в $j$-й фазе, $i = 1 \, \ldots \, N_c, \, j = 1 \, \ldots \, N_p - 1$, по количеству вещества $l$-го компонента в $k$-й фазе, $l = 1 \, \ldots \, N_c, \, k = 1 \, \ldots \, N_p - 1$, соответствует элементу матрицы $U_{jikl}$, представляющей собой слагаемое в полученном ранее выражении для элемента гессиана.
 
+$$ \begin{align}
+\frac{\partial \ln K_{ji}}{\partial n_{kl}}
+&= \frac{\partial}{\partial n_{kl}} \left( \ln \frac{y_{ji}}{y_{N_pi}} \right) \\
+&= \frac{\partial}{\partial n_{kl}} \left( \ln \frac{n_{ji} n_{N_p}}{n_j n_{N_pi}} \right) \\
+&= \frac{\partial}{\partial n_{kl}} \left( \ln n_{ji} - \ln n_j - \ln n_{N_pi} + \ln n_{N_p} \right) \\
+&= \frac{\partial \ln n_{ji}}{\partial n_{kl}} - \frac{\partial \ln n_j}{\partial n_{kl}} - \frac{\partial \ln n_{N_pi}}{\partial n_{kl}} + \frac{\partial \ln n_{N_p}}{\partial n_{kl}} \\
+&= \delta_{jk} \frac{1}{n_{ji}} \delta_{il}  - \delta_{jk} \frac{1}{n_j} + \frac{1}{n_{N_pi}} \delta_{il} - \frac{1}{n_{N_p}} \\
+&= \delta_{jk} \left( \frac{\delta_{il}}{n_{ji}} - \frac{1}{n_j} \right) + \frac{\delta_{il}}{n_{N_pi}} - \frac{1}{n_{N_p}} \\
+&= U_{jikl}, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_p - 1, \; l = 1 \, \ldots \, N_c.
+\end{align} $$
+
+Следовательно, частная производная количества вещества $i$-го компонента в $j$-й фазе, $i = 1 \, \ldots \, N_c, \, j = 1 \, \ldots \, N_p - 1$, по логарифму константы фазового равновесия $l$-го компонента в $k$-й фазе, $l = 1 \, \ldots \, N_c, \, k = 1 \, \ldots \, N_p - 1$, соответствует элементу обратной матрицы $U_{jikl}^{-1}$.
+
+Важно отметить, что матрица гессиана $H \in {\rm I\!R}^{\left(N_c \cdot \left(N_p - 1\right) \right) \times \left(N_c \cdot \left(N_p - 1\right) \right)}$ представляет собой симметричную матрицу, в отличие от матрицы якобиана $\mathbf{J} \in {\rm I\!R}^{\left(N_c \cdot \left(N_p - 1\right) \right) \times \left(N_c \cdot \left(N_p - 1\right) \right)}$. Согласно \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85002-4)\], данное свойство матрицы гессиана можно учитывать для более быстрого решения системы линейных уравнений, используя подходящие алгоритмы, например, [разложение Шолески](https://en.wikipedia.org/wiki/Cholesky_decomposition) или, если матрица гессиана не является положительно определенной матрицей, модифицированное разложение Шолески, алгоритмы которого представлены в работах \[[Schnabel and Eskow, 1990](https://doi.org/10.1137/0911064)\] и \[[Schnabel and Eskow, 1999](https://doi.org/10.1137/S105262349833266X)\]. После нахождения вектора обновления количеств вещества компонентов в нереференсных фазах $\Delta \mathbf{n} \in {\rm I\!R}^{N_c \cdot \left(N_p - 1\right)}$ вектор обновления логарифмов констант фазового равновесия компонентов в нереференсных фазах $\Delta \ln \mathbf{k} \in {\rm I\!R}^{N_c \cdot \left(N_p - 1\right)}$ может быть определен с использованием следующего выражения:
+
+$$ \Delta \ln \mathbf{k} = - \mathbf{J}^{-1} \mathbf{g} = - \left( \mathbf{H} \mathbf{U}^{-1} \right)^{-1} \mathbf{g} = - \mathbf{U} \mathbf{H}^{-1} \mathbf{g} = \mathbf{U} \left( -\mathbf{H}^{-1} \mathbf{g} \right) = \mathbf{U} \Delta \mathbf{n}. $$
+
+В процессе преобразования использовались некоторые [свойства обратных матриц](https://en.wikipedia.org/wiki/Invertible_matrix#Other_properties).
+
+Таким образом, после получения аналитических выражений для элементов матриц гессиана и якобиана рассмотрим алгоритм определения равновесного состояния системы с использованием метода локальной минимизации функции энергии Гиббса.
+
+```{admonition} Алгоритм. Метод локальной минимизации функции энергии Гиббса для определения равновесного состояния
+:class: algorithm
+
+**Дано:** Вектор компонентного состава исследуемой системы $\mathbf{z} \in {\rm I\!R}^{N_c}$; термобарические условия $P$ и $T$; количество вещества в системе $n=1 \, моль$; необходимые свойства компонентов для нахождения коэффициентов летучести компонентов с использованием уравнения состояния; количество фаз в системе $N_p$; набор (тензор) начальных приближений констант фазового равновесия $\mathbf{K}_0 \in {\rm I\!R}^{N \times \left( N_p - 1 \right) \times N_c}$; максимальное число итераций $N_{iter}$; точность $\epsilon$.
+
+**Определить:** Компонентные составы фаз $\mathbf{Y} \in {\rm I\!R}^{ \left( N_p - 1 \right) \times N_c}$ и мольные доли фаз $\mathbf{F} \in {\rm I\!R}^{N_p-1}$ в системе, соответствующие равновесному состоянию.
+```
