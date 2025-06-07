@@ -632,7 +632,7 @@ $k := 1$ {comment}`# Счетчик итерации`
 Рассмотрим реализацию данного алгоритма. Процедура поиска оптимальной длины шага выполняется исходя из условия минимизации оптимизируемой функции в заданном направлении методом Ньютона в соответствии с \[[Okuno et al, 2010](https://doi.org/10.2118/117752-PA)\]. Применение процедуры *line search* методом обратного хода с учетом условий Голдштейна реализовано [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py).
 
 ```{code-cell} python
-def solveNp(Kji, yi, fj0, tol=1e-6, Niter=30, tol_ls=1e-5, Niter_ls=10):
+def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
     fjk = fj0
@@ -643,7 +643,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, Niter=30, tol_ls=1e-5, Niter_ls=10):
         return fjk
     print(f'Iteration #0:\n\t{fjk = }\n\t{gnorm = }')
     k: int = 1
-    while (gnorm > tol) & (k < Niter):
+    while (gnorm > tol) & (k < maxiter):
         Pji = np.sqrt(yi) / ti * Aji
         Hjl = Pji.dot(Pji.T)
         dfj = -np.linalg.inv(Hjl).dot(gj)
@@ -661,7 +661,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, Niter=30, tol_ls=1e-5, Niter_ls=10):
             dFdlmbd = dfj.dot(gj)
             n: int = 1
             print(f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }')
-            while (np.abs(dFdlmbd) > tol_ls) & (n < Niter_ls):
+            while (np.abs(dFdlmbd) > tol_ls) & (n < maxiter_ls):
                 Pji = np.sqrt(yi) / ti * Aji
                 Hjl = Pji.dot(Pji.T)
                 d2Flmbd2 = dfj.dot(Hjl).dot(dfj)
@@ -768,7 +768,7 @@ yi = np.array(
 ) # Global component composition
 fj0 = np.array([0.3333, 0.3333]) # Initial estimate
 
-def solveNp_out(Kji, yi, fj0, tol=np.float64(1e-6), Niter=30, tol_ls=np.float64(1e-5), Niter_ls=10):
+def solveNp_out(Kji, yi, fj0, tol=np.float64(1e-6), maxiter=30, tol_ls=np.float64(1e-5), maxiter_ls=10):
     out = ''
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
@@ -780,7 +780,7 @@ def solveNp_out(Kji, yi, fj0, tol=np.float64(1e-6), Niter=30, tol_ls=np.float64(
         return fjk
     out += f'Iteration #0:\n\t{fjk = }\n\t{gnorm = }\n'
     k: int = 1
-    while (gnorm > tol) & (k < Niter):
+    while (gnorm > tol) & (k < maxiter):
         Pji = np.sqrt(yi) / ti * Aji
         Hjl = Pji.dot(Pji.T)
         dfj = -np.linalg.inv(Hjl).dot(gj)
@@ -798,7 +798,7 @@ def solveNp_out(Kji, yi, fj0, tol=np.float64(1e-6), Niter=30, tol_ls=np.float64(
             dFdlmbd = dfj.dot(gj)
             n: int = 1
             out += f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }\n'
-            while (np.abs(dFdlmbd) > tol_ls) & (n < Niter_ls):
+            while (np.abs(dFdlmbd) > tol_ls) & (n < maxiter_ls):
                 Pji = np.sqrt(yi) / ti * Aji
                 Hjl = Pji.dot(Pji.T)
                 d2Flmbd2 = dfj.dot(Hjl).dot(dfj)

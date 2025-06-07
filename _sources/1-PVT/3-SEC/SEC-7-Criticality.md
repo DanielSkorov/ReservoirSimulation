@@ -149,7 +149,7 @@ def cardano(b, c, d):
         x2 = (-r - D) * .5
         return x0, x1, x2
 
-def Psat(T, a, b, tol=1e-5, Niter=50):
+def Psat(T, a, b, tol=1e-5, maxiter=50):
     vmax, vmin, _ = cardano(-2. * a / (R * T), 4. * a * b / (R * T), -2. * a * b**2 / (R * T))
     # print(f'{vmin = }, {vmax = }')
     Pmin = eos(vmin, T, a, b)
@@ -167,7 +167,7 @@ def Psat(T, a, b, tol=1e-5, Niter=50):
     g = lnphiv - lnphil
     k = 0
     # print(f'Iteration #{k}:\n{Pk = }\n{g = }\n')
-    while (np.abs(g) > tol) & (k < Niter):
+    while (np.abs(g) > tol) & (k < maxiter):
         Pkp1 = Pk * np.exp(-g)
         if Pkp1 > Pmax:
             Pk = (Pk + Pmax) / 2.
