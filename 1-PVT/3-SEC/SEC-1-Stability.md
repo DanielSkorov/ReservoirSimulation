@@ -858,7 +858,7 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 Также зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$:
 
 ``` python
-Niter = 50 # Number of iterations
+maxiter = 50 # Maximum number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 ```
@@ -873,9 +873,9 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений:
 
 ``` python
-def condit_ss(carry, tol, Niter):
+def condit_ss(carry, tol, maxiter):
     k, ki, gi = carry
-    return (k < Niter) & (np.linalg.norm(gi) > tol)
+    return (k < maxiter) & (np.linalg.norm(gi) > tol)
 ```
 
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации:
@@ -900,7 +900,7 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 ``` python
 from functools import partial
 
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
@@ -944,16 +944,16 @@ P = np.float64(2e6) # Pressure [Pa]
 T = np.float64(40. + 273.15) # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 
-Niter = 50 # Number of iterations
+maxiter = 50 # Maximum number of iterations
 eps1 = 1e-6 # Tolerance
 eps2 = 1e-4
 
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
-def condit_ss(carry, tol, Niter):
+def condit_ss(carry, tol, maxiter):
     k, ki, gi = carry
-    return (k < Niter) & (np.linalg.norm(gi) > tol)
+    return (k < maxiter) & (np.linalg.norm(gi) > tol)
 
 def update_ss(carry, hi, yi, plnphi):
     k, ki_k, gi_k = carry
@@ -966,7 +966,7 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 from functools import partial
 
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out1 = ''
@@ -1049,7 +1049,7 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 Проинициализируем функции `condit` и `update`:
 
 ``` python
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
@@ -1098,7 +1098,7 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out2 = ''
@@ -1193,7 +1193,7 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 Зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$. Для данного примера увеличим максимальное число итераций:
 
 ``` python
-Niter = 200 # Number of iterations
+maxiter = 200 # Maximum number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 ```
@@ -1201,7 +1201,7 @@ eps2 = np.float64(1e-4)
 Проинициализируем функции `condit` и `update`:
 
 ``` python
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 ```
 
@@ -1263,11 +1263,11 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
-Niter = 200 # Number of iterations
+maxiter = 200 # Maximum number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 
-pcondit = partial(condit_ss, tol=eps1, Niter=Niter)
+pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
 
 out3 = ''
@@ -1550,7 +1550,7 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 Зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$:
 
 ``` python
-Niter = 20 # Number of iterations
+maxiter = 20 # Maximum number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 ```
@@ -1558,9 +1558,9 @@ eps2 = np.float64(1e-4)
 Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:
 
 ``` python
-def condit_newt(carry, tol, Niter):
+def condit_newt(carry, tol, maxiter):
     k, alphai, gi, H = carry
-    return (k < Niter) & (np.linalg.norm(gi) > tol)
+    return (k < maxiter) & (np.linalg.norm(gi) > tol)
 ```
 
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Вектор изменения основных переменных будет определяться путем решения системы линейных уравнений с использованием [`numpy.linalg.solve`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html).
@@ -1583,7 +1583,7 @@ def update_newt(carry, hi, yi, plnphi):
 Проинициализируем функции `condit` и `update`. Для расчета коэффициентов летучестей и их частных производных по количеству вещества компонентов будем использовать метод `getPT_lnphii_Z_dnj` инициализированного класса с уравнением состояния, принимающий в качестве аргументов давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий кортеж с логарифмами коэффициентов летучести компонентов в виде одномерного массива такой же размерности, коэффициентом сверхсжимаемости заданного компонентного состава, а также с матрицей размерностью `(Nc, Nc)`, состоящей из значений частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества:
 
 ``` python
-pcondit = partial(condit_newt, tol=eps1, Niter=Niter)
+pcondit = partial(condit_newt, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_newt, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
 ```
 
@@ -1638,13 +1638,13 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
-Niter = 20 # Number of iterations
+maxiter = 20 # Maximum number of iterations
 eps1 = np.float64(1e-6) # Tolerance
 eps2 = np.float64(1e-4)
 
-def condit_newt(carry, tol, Niter):
+def condit_newt(carry, tol, maxiter):
     k, alphai, gi, H = carry
-    return (k < Niter) & (np.linalg.norm(gi) > tol)
+    return (k < maxiter) & (np.linalg.norm(gi) > tol)
 
 def update_newt(carry, hi, plnphi):
     k, alphai_k, gi_k, H_k = carry
@@ -1659,7 +1659,7 @@ def update_newt(carry, hi, plnphi):
     H_kp1 = np.diagflat(0.5 * gi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     return k + 1, alphai_kp1, gi_kp1, H_kp1
 
-pcondit = partial(condit_newt, tol=eps1, Niter=Niter)
+pcondit = partial(condit_newt, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
 
 out4 = ''
