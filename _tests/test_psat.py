@@ -27,7 +27,8 @@ from boundary import (
   PsatPT,
 )
 
-class stabPT(unittest.TestCase):
+
+class psat(unittest.TestCase):
 
   def test_01(self):
     P0 = np.float64(15e6)

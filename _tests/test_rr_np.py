@@ -19,7 +19,9 @@ import unittest
 import numpy as np
 np.set_printoptions(linewidth=np.inf)
 
-from rr import solveNp
+from rr import (
+  solveNp,
+)
 
 
 class rr_solveNp(unittest.TestCase):
@@ -32,7 +34,7 @@ class rr_solveNp(unittest.TestCase):
     nfwindow = np.all(ti > 0.)
     return solved & nfwindow
 
-  def test_1(self):
+  def test_01(self):
     yi = np.array(
       [0.204322076984, 0.070970999150, 0.267194323384, 0.296291964579, 0.067046080882, 0.062489248292, 0.031685306730]
     )
@@ -47,7 +49,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_2(self):
+  def test_02(self):
     yi = np.array([0.3, 0.4, 0.3])
     kvji = np.array([
       [2.64675, 1.16642, 1.25099E-03],
@@ -60,7 +62,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_3(self):
+  def test_03(self):
     yi = np.array(
       [0.132266176697, 0.205357472415, 0.170087543100, 0.186151796211, 0.111333894738, 0.034955417168, 0.159847699672]
     )
@@ -75,7 +77,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_4(self):
+  def test_04(self):
     yi = np.array(
       [0.896646630194, 0.046757914522, 0.000021572890, 0.000026632729, 0.016499094171, 0.025646758089, 0.014401397406]
     )
@@ -90,7 +92,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_5(self):
+  def test_05(self):
     yi = np.array([0.08860, 0.81514, 0.09626])
     kvji = np.array([
       [0.112359551, 13.72549020, 3.389830508],
@@ -103,7 +105,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_6(self):
+  def test_06(self):
     yi = np.array(
       [0.836206, 0.0115731, 0.0290914, 0.0324648, 0.0524046, 0.0258683, 0.0123914]
     )
@@ -118,7 +120,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_7(self):
+  def test_07(self):
     yi = np.array(
       [0.96, 0.011756, 0.004076, 0.00334, 0.001324, 0.004816, 0.006324, 0.003292, 0.002112, 0.001104, 0.001856]
     )
@@ -133,7 +135,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_8(self):
+  def test_08(self):
     yi = np.array(
       [0.854161, 0.000701, 0.023798, 0.005884, 0.004336, 0.000526, 0.004803, 0.002307, 0.003139, 0.004847, 0.026886, 0.023928, 0.018579, 0.014146, 0.008586, 0.003373]
     )
@@ -148,7 +150,7 @@ class rr_solveNp(unittest.TestCase):
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
     pass
 
-  def test_9(self):
+  def test_09(self):
     yi = np.array([0.5, 0.2227, 0.1402, 0.1016, 0.0355])
     kvji = np.array([
       [23.75308598, 0.410182283, 0.009451899, 5.20178E-05, 5.04359E-09],

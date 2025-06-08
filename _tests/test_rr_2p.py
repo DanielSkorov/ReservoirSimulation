@@ -19,7 +19,9 @@ import unittest
 import numpy as np
 np.set_printoptions(linewidth=np.inf)
 
-from rr import solve2p_FGH
+from rr import (
+  solve2p_FGH,
+)
 
 
 class rr_fgh(unittest.TestCase):
@@ -41,7 +43,7 @@ class rr_fgh(unittest.TestCase):
     nfwindow = 1. / (1. - kvi.max()) < F < 1. / (1. - kvi.min())
     return solved & nfwindow
 
-  def test_1(self):
+  def test_01(self):
     yi = np.array([0.770, 0.200, 0.010, 0.010, 0.005, 0.005])
     kvi = np.array([1.00003, 1.00002, 1.00001, 0.99999, 0.99998, 0.99997])
     tol = np.float64(1e-10)
@@ -50,7 +52,7 @@ class rr_fgh(unittest.TestCase):
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
-  def test_2(self):
+  def test_02(self):
     yi = np.array([0.44, 0.55, 3.88E-03, 2.99E-03, 2.36E-03, 1.95E-03])
     kvi = np.array([161.59, 6.90, 0.15, 1.28E-03, 5.86E-06, 2.32E-08])
     tol = np.float64(1e-10)
@@ -59,7 +61,7 @@ class rr_fgh(unittest.TestCase):
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
-  def test_3(self):
+  def test_03(self):
     eps = 1e-9
     kvi = 1. + np.array([2.*eps, 1.5*eps, eps, -eps, -1.5*eps, -2.*eps])
     yi = np.full_like(kvi, 1. / 6.)
@@ -69,7 +71,7 @@ class rr_fgh(unittest.TestCase):
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
-  def test_4(self):
+  def test_04(self):
     yi = np.array([
       0.8097,
       0.0566,
@@ -92,7 +94,7 @@ class rr_fgh(unittest.TestCase):
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
     pass
 
-  def test_5(self):
+  def test_05(self):
     yi = np.array([
       0.1789202106,
       0.0041006011,

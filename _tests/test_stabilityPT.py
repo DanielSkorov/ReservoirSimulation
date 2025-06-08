@@ -28,7 +28,7 @@ from stability import (
 )
 
 
-class stabPT(unittest.TestCase):
+class stab(unittest.TestCase):
 
   def test_01(self):
     P = np.float64(2e6)
@@ -477,7 +477,6 @@ class stabPT(unittest.TestCase):
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
-
 
 
 if __name__ == '__main__':
