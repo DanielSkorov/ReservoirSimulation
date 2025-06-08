@@ -29,7 +29,7 @@ kernelspec:
 ````
 
 $$ \begin{alignat}{1}
-\mathrm{min} & \;\;\;\;\;\;\; && G \left(\mathbf{n} \right) = \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) \\
+\min_{\hat{K}} & \;\;\;\;\;\;\; && G \left( \hat{K} \right) = \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) \\
 \mathrm{subject\,to} &&& 0 \leq n_{ji} \leq n_i, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c \\
 &&& \sum_{j=1}^{N_p} n_{ji} = n_i, \; i = 1 \, \ldots \, N_c
 \end{alignat} $$
@@ -1226,8 +1226,8 @@ for i, kvi in enumerate(stabres.kvji):
     F2 = 1. - F1
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i, Z2, dlnphi2idn2j = pr.getPT_lnphii_Z_dnj(yi=y2i, n=F2)
-    lnphi1i, Z1, dlnphi1idn1j = pr.getPT_lnphii_Z_dnj(yi=y1i, n=F1)
+    lnphi2i, Z2, dlnphi2idn2j = pr.getPT_lnphii_Z_dnj(P, T, y2i, F2)
+    lnphi1i, Z1, dlnphi1idn1j = pr.getPT_lnphii_Z_dnj(P, T, y1i, F1)
     gi = lnkvi + lnphi1i - lnphi2i
     U = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1 * F2)
     H = dlnphi1idn1j + dlnphi2idn2j + U

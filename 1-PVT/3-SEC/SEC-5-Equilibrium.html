@@ -427,7 +427,7 @@ document.write(`
 </aside>
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{alignat}{1}
-\mathrm{min} &amp; \;\;\;\;\;\;\; &amp;&amp; G \left(\mathbf{n} \right) = \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) \\
+\min_{\hat{K}} &amp; \;\;\;\;\;\;\; &amp;&amp; G \left( \hat{K} \right) = \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) \\
 \mathrm{subject\,to} &amp;&amp;&amp; 0 \leq n_{ji} \leq n_i, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c \\
 &amp;&amp;&amp; \sum_{j=1}^{N_p} n_{ji} = n_i, \; i = 1 \, \ldots \, N_c
 \end{alignat} \end{split}\]</div>
@@ -555,7 +555,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>False<br>Tangent-plane distance:<br>-0.016542616791698467<br>Calculation completed successfully:<br>True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>False<br>Tangent-plane distance:<br>-0.01654261679169803<br>Calculation completed successfully:<br>True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -630,7 +630,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 2.3732337156613415e-07<br>	number of iterations: 10<br>	phase compositions:<br>		[0.81827115 0.18172885]<br>		[0.91760691 0.08239309]<br>	phase mole fractions: 0.1772464755777289, 0.8227535244222711
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 2.3732337332560163e-07<br>	number of iterations: 10<br>	phase compositions:<br>		[0.81827115 0.18172885]<br>		[0.91760691 0.08239309]<br>	phase mole fractions: 0.17724647557772918, 0.8227535244222708
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -645,7 +645,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>True<br>Tangent-plane distance:<br>1.2805345673537178e-10<br>Calculation completed successfully:<br>True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>True<br>Tangent-plane distance:<br>1.2805256855695197e-10<br>Calculation completed successfully:<br>True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -698,7 +698,7 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/5e299cb016eb41916d17e7c805bfc83f7fbb8c0720700c54b6ffd38443033314.png" src="../../_images/5e299cb016eb41916d17e7c805bfc83f7fbb8c0720700c54b6ffd38443033314.png" />
+<img alt="../../_images/0278945ba2d2baed01e61745eade4e5a642a162b1519c271050694b63af64766.png" src="../../_images/0278945ba2d2baed01e61745eade4e5a642a162b1519c271050694b63af64766.png" />
 <br>
 <br>
 <p class="sd-card-text">Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">ранее</span></a>. Стоит также отметить, что две точки, показанные на графике, соответствующие двухфазному равновесному состоянию, называются <em><strong>бинодальными точками</strong></em>.</p>
@@ -966,7 +966,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>False<br>Tangent-plane distance:<br>-0.0013880767263048945<br>Calculation completed successfully:<br>True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>False<br>Tangent-plane distance:<br>-0.0013880767263051163<br>Calculation completed successfully:<br>True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1009,7 +1009,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 9.755618696998016e-07<br>	number of iterations: 99<br>	phase compositions:<br>		[0.5845987  0.09334222 0.11409629 0.06614514 0.14181765]<br>		[0.7264065  0.08921768 0.09005437 0.04323161 0.05108984]<br>	phase mole fractions: 0.06844829258042251, 0.9315517074195775
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 9.755618707350404e-07<br>	number of iterations: 99<br>	phase compositions:<br>		[0.5845987  0.09334222 0.11409629 0.06614514 0.14181765]<br>		[0.7264065  0.08921768 0.09005437 0.04323161 0.05108984]<br>	phase mole fractions: 0.06844829258042517, 0.9315517074195748
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1025,7 +1025,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>True<br>Tangent-plane distance:<br>-1.6299185868047033e-08<br>Calculation completed successfully:<br>True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>True<br>Tangent-plane distance:<br>-1.6299184979868626e-08<br>Calculation completed successfully:<br>True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1264,7 +1264,7 @@ J_{jikl} = &amp; \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>False<br>Tangent-plane distance:<br>-0.0013880767263048945<br>Calculation completed successfully:<br>True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>False<br>Tangent-plane distance:<br>-0.0013880767263051163<br>Calculation completed successfully:<br>True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1319,8 +1319,8 @@ J_{jikl} = &amp; \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_
     <span class="n">F2</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">F1</span>
     <span class="n">y2i</span> <span class="o">=</span> <span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">F1</span> <span class="o">*</span> <span class="p">(</span><span class="n">kvi</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span>
     <span class="n">y1i</span> <span class="o">=</span> <span class="n">y2i</span> <span class="o">*</span> <span class="n">kvi</span>
-    <span class="n">lnphi2i</span><span class="p">,</span> <span class="n">Z2</span><span class="p">,</span> <span class="n">dlnphi2idn2j</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">y2i</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">F2</span><span class="p">)</span>
-    <span class="n">lnphi1i</span><span class="p">,</span> <span class="n">Z1</span><span class="p">,</span> <span class="n">dlnphi1idn1j</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">y1i</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">F1</span><span class="p">)</span>
+    <span class="n">lnphi2i</span><span class="p">,</span> <span class="n">Z2</span><span class="p">,</span> <span class="n">dlnphi2idn2j</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y2i</span><span class="p">,</span> <span class="n">F2</span><span class="p">)</span>
+    <span class="n">lnphi1i</span><span class="p">,</span> <span class="n">Z1</span><span class="p">,</span> <span class="n">dlnphi1idn1j</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">y1i</span><span class="p">,</span> <span class="n">F1</span><span class="p">)</span>
     <span class="n">gi</span> <span class="o">=</span> <span class="n">lnkvi</span> <span class="o">+</span> <span class="n">lnphi1i</span> <span class="o">-</span> <span class="n">lnphi2i</span>
     <span class="n">U</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="p">(</span><span class="n">y1i</span> <span class="o">*</span> <span class="n">y2i</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">F1</span> <span class="o">*</span> <span class="n">F2</span><span class="p">)</span>
     <span class="n">H</span> <span class="o">=</span> <span class="n">dlnphi1idn1j</span> <span class="o">+</span> <span class="n">dlnphi2idn2j</span> <span class="o">+</span> <span class="n">U</span>
@@ -1342,7 +1342,7 @@ J_{jikl} = &amp; \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 4.270021735670441e-07<br>	number of iterations: 5<br>	phase compositions:<br>		[0.58460017 0.09334225 0.11409613 0.06614494 0.14181651]<br>		[0.72640669 0.08921767 0.09005433 0.04323157 0.05108973]<br>	phase mole fractions: 0.06845024728987059, 0.9315497527101294
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 4.272848965000363e-07<br>	number of iterations: 5<br>	phase compositions:<br>		[0.58460017 0.09334225 0.11409613 0.06614494 0.14181651]<br>		[0.72640669 0.08921767 0.09005433 0.04323157 0.05108973]<br>	phase mole fractions: 0.06845024652243718, 0.9315497534775629
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1358,7 +1358,7 @@ J_{jikl} = &amp; \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>True<br>Tangent-plane distance:<br>1.2098569663800533e-08<br>Calculation completed successfully:<br>True
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>The one-phase state is stable:<br>True<br>Tangent-plane distance:<br>1.2089001539613994e-08<br>Calculation completed successfully:<br>True
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>

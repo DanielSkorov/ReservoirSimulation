@@ -433,7 +433,7 @@ document.write(`
 <p class="admonition-title">Определение</p>
 <p>Пусть имеется некоторая <span class="math notranslate nohighlight">\(j\)</span>-ая фаза, многофазной системы, состоящая из <span class="math notranslate nohighlight">\(N_c\)</span> компонентов, при этом количество вещества компонентов в фазе <span class="math notranslate nohighlight">\(j\)</span> определяется следующим <a class="reference internal" href="../../0-Math/0-LAB/LAB-1-Vectors.html"><span class="std std-doc">вектором</span></a>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \mathbf{n}_j = \begin{bmatrix} n_{1j} \\ n_{2j} \\ \vdots \\ n_{N_cj} \end{bmatrix}, \; j = 1 \, \ldots \, N_p. \end{split}\]</div>
+\[\begin{split} \mathbf{n}_j = \begin{bmatrix} n_{j1} \\ n_{j2} \\ \vdots \\ n_{jN_c} \end{bmatrix}, \; j = 1 \, \ldots \, N_p. \end{split}\]</div>
 <p>Если количество вещества компонентов в системе в целом определяется вектором</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \mathbf{n} = \begin{bmatrix} n_1 \\ n_2 \\ \vdots \\ n_{N_c} \end{bmatrix}, \end{split}\]</div>
@@ -441,7 +441,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[ 0 &lt; n_{ji} &lt; n_i, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. \]</div>
 </div>
-<p>Иными словами, фаза является <em>допустимой</em>, если количество вещества каждого компонента, в нее входящего, меньше количества вещества этого же компонента в системе в целом. Все дальнейшие выкладки будут касаться допустимых фаз, в которых представлены все компоненты, не взаимодействующие друг с другом с образованием новых компонентов, то есть не вступающие в реакции. Кроме того, необходимо отметить, что здесь и далее нижний индекс будет характеризовать некоторый компонент, а верхний – некоторую фазу. Для допустимых фаз справедливо следущее соотношение:</p>
+<p>Иными словами, фаза является <em>допустимой</em>, если количество вещества каждого компонента, в нее входящего, меньше количества вещества этого же компонента в системе в целом. Все дальнейшие выкладки будут касаться допустимых фаз, в которых представлены все компоненты, не взаимодействующие друг с другом с образованием новых компонентов, то есть не вступающие в реакции. Для допустимых фаз справедливо следущее соотношение:</p>
 <div class="math notranslate nohighlight">
 \[ \sum_{j=1}^{N_p} n_{ji} = n_i, \; i = 1 \, \ldots \, N_c, \]</div>
 <p>где <span class="math notranslate nohighlight">\(N_p\)</span> – количество фаз в системе, а <span class="math notranslate nohighlight">\(N_c\)</span> – число компонентов. При известных и заданных давлении и температуре рассматриваемой системы, а также количествах вещества компонентов в ней <a class="reference internal" href="../1-TD/TD-10-MixtureGibbsEnergy.html"><span class="std std-doc">энергия Гиббса</span></a> некоторой фазы определяется количеством вещества каждого компонента в фазе, то есть:</p>
@@ -1132,7 +1132,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 1.5607517290274743e-07<br>	number of iterations: 8<br>	k-values: [0.89240884 2.13512243]<br>	TPD: -0.016542616791698467<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 1.5607517358997374e-07<br>	number of iterations: 8<br>	k-values: [0.89240884 2.13512243]<br>	TPD: -0.01654261679169803<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1243,7 +1243,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 9.693061931780329e-07<br>	number of iterations: 186<br>	k-values: [1.00000264 0.99999854 0.99999547 0.99999243 0.99998243]<br>	TPD: 7.00328683933794e-13<br>For the initial guess #1:<br>	tolerance of equations: 9.116302258586621e-07<br>	number of iterations: 72<br>	k-values: [0.79433225 1.03491285 1.25365307 1.51437834 2.73407127]<br>	TPD: -0.0013880767263048945<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 9.693061940332048e-07<br>	number of iterations: 186<br>	k-values: [1.00000264 0.99999854 0.99999547 0.99999243 0.99998243]<br>	TPD: 7.001066393288688e-13<br>For the initial guess #1:<br>	tolerance of equations: 9.116302252707581e-07<br>	number of iterations: 72<br>	k-values: [0.79433225 1.03491285 1.25365307 1.51437834 2.73407127]<br>	TPD: -0.0013880767263051163<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1534,7 +1534,7 @@ H_{ij}
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 5.5417348668616155e-08<br>	number of iterations: 10<br>	k-values: [1.00000053 0.99999975 0.99999916 0.99999856 0.99999652]<br>	TPD: -1.615439879917523e-08<br>For the initial guess #1:<br>	tolerance of equations: 1.772725631382942e-10<br>	number of iterations: 14<br>	k-values: [0.79433382 1.03491309 1.25365184 1.51437505 2.73405577]<br>	TPD: -0.0013880767813190765<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 5.5417348647642805e-08<br>	number of iterations: 10<br>	k-values: [1.00000053 0.99999975 0.99999916 0.99999856 0.99999652]<br>	TPD: -1.615439879917523e-08<br>For the initial guess #1:<br>	tolerance of equations: 1.7727191726099974e-10<br>	number of iterations: 14<br>	k-values: [0.79433382 1.03491309 1.25365184 1.51437505 2.73405577]<br>	TPD: -0.0013880767813186329<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
