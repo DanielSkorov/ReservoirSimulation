@@ -394,31 +394,40 @@ class PsatPT(object):
 
     Default is `'ss'`.
 
-  improve_P0: bool
-    Flag indicating whether or not to improve the initial guess of the
-    saturation pressure. The improvement method depends on the flag
-    `stabgrid`. Default is `False`.
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    Default is `True`.
 
-  stabgrid: bool
-    Flag indicating which method should be used to improve the initial
-    guess of the saturation pressure. This flag affects the program
-    flow only if the `improve_P0` was set `True`. If the `stabgrid` was
-    set `True` then `Npoint` of stability tests will be performed to
-    find the pressure, closest to the given and located inside the
-    two-phase region. If the `stabgrid` was set `False` then all
-    possible roots of the TPD-equation for fixed real and trial
-    compositions would be found by splitting the interval from `Pmin` to
-    `Pmax` into `(Npoint - 1)` segments. The closest solution of the
-    TPD-equation to the given value would be used as an initial guess for
-    the saturation pressure calculation. Default is `False`.
+  step: float
+    To specify the confidence interval for the saturation pressure
+    calculation, the preliminary search is performed. This parameter
+    regulates the step of this search in fraction units. For example,
+    if it is necessary to find the upper bound of the confidence
+    interval, then the next value of pressure will be calculated from
+    the previous one using the formula: `Pnext = Pprev * (1. + step)`.
+    Default is `0.1`.
+
+  lowerlimit: float
+    During the preliminary search, the pressure can not drop below
+    the lower limit. Otherwise, the `ValueError` will be rised.
+    Default is `1.` [Pa].
+
+  upperlimit: float
+    During the preliminary search, the pressure can not exceed the
+    upper limit. Otherwise, the `ValueError` will be rised.
+    Default is `1e8` [Pa].
 
   stabkwargs: dict
-    Dictionary that used to regulate the stability test procedure.
-    Default is an empty dictionary.
+    The stability test procedure is used to locate the confidence
+    interval of the saturation pressure. This dictionary is used to
+    specify arguments for the stability test procedure. Default is an
+    empty dictionary.
 
   kwargs: dict
     Other arguments for a Psat-solver. It may contain such arguments
-    as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others.
+    as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others depending
+    on the selected solver.
 
   Methods
   -------
@@ -433,14 +442,18 @@ class PsatPT(object):
     self,
     eos: EOSPTType,
     method: str = 'ss',
-    improve_P0: bool = False,
-    stabgrid: bool = False,
+    upper: bool = True,
+    step: ScalarType = 0.1,
+    lowerlimit: ScalarType = 1.,
+    upperlimit: ScalarType = 1e8,
     stabkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.improve_P0 = improve_P0
-    self.stabgrid = stabgrid
+    self.upper = upper
+    self.step = step
+    self.lowerlimit = lowerlimit
+    self.upperlimit = upperlimit
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     if method == 'ss':
       self.psatsolver = partial(_PsatPT_ss, eos=eos, **kwargs)
@@ -475,10 +488,7 @@ class PsatPT(object):
     self,
     T: ScalarType,
     yi: VectorType,
-    P0: ScalarType = 1e5,
-    Pmax: ScalarType = 1e8,
-    Pmin: ScalarType = 1.,
-    Npoint: int = 10,
+    P0: ScalarType,
   ) -> SatResult:
     """Performs the saturation pressure calculation for given temperature
     and composition.
@@ -492,127 +502,161 @@ class PsatPT(object):
       Mole fractions of `Nc` components.
 
     P0: float
-      Initial guess of the saturation pressure [Pa]. It should be inside
-      the two-phase region unless the `improve_P0` was activated.
-      Default is `1e5` [Pa].
-
-    Pmax: float
-      Upper bound for the TPD-solver [Pa]. It also used to contruct
-      the grid for the algorithm of the initial guess improvement. If it
-      was completed successfully then the value of the upper bound will
-      be also changed. Default is `1e8` [Pa].
-
-    Pmin: float
-      Lower bound for the TPD-solver [Pa]. It also used to contruct
-      the grid for the algorithm of the initial guess improvement. If it
-      was completed successfully then the value of the lower bound will
-      be also changed. Default is `1.0` [Pa].
-
-    Npoint: int
-      The number of points for grid construction routines. It affects
-      the program flow only if the option of the saturation pressure
-      initial guess improvement was activated by `improve_P0`. Default
-      is `10`.
+      Initial guess of the saturation pressure [Pa].
 
     Returns
     -------
     Saturation pressure calculation results as an instance of the
-    `SatResult`. Important attributes are: `P` the saturation pressure
-    in [Pa], `T` the saturation temperature in [K], `yji` the component
-    mole fractions in each phase, `Zj` the compressibility factors of
-    each phase, `success` a boolean flag indicating if the calculation
-    completed successfully.
+    `SatResult`. Important attributes are:
+
+    - `P` the saturation pressure in [Pa],
+    - `T` the saturation temperature in [K],
+    - `yji` the component mole fractions in each phase,
+    - `Zj` the compressibility factors of each phase,
+    - `success` a boolean flag indicating if the calculation completed
+      successfully.
+
+    Raises
+    ------
+    ValueError
+      The `ValueError` exception may be raised if the one-phase or
+      two-phase region was not found using a preliminary search.
     """
-    if self.improve_P0:
-      if self.stabgrid:
-        logger.debug(
-          'Improvement of the saturation pressure initial guess by finding\n'
-          '\tthe closest pressure to the given in the two-phase region...'
-        )
-        PP = np.linspace(Pmin, Pmax, Npoint, endpoint=True)
-        stabs = []
-        where = []
-        for P in PP:
-          stab = self.stabsolver.run(P, T, yi)
-          stabs.append(stab)
-          where.append(not stab.stable)
-        if np.any(where):
-          idx = np.where(where, np.abs(PP - P0), np.inf).argmin()
-          P0 = PP[idx]
-          stab = stabs[idx]
-          if idx > 0:
-            Pmin = PP[idx-1]
-          if idx < Npoint - 1:
-            Pmax = PP[idx+1]
-          logger.debug(
-            'Improved initial guess:\n\tP0 = %s, Pmin = %s, Pmax = %s',
-            P0, Pmin, Pmax,
-          )
-        else:
-          logger.warning(
-            'The stability test gridding procedure was unsuccessful.\n'
-            '\tTry to increase the number of points.'
-          )
-          stab = self.stabsolver.run(P0, T, yi)
-      else:
-        logger.debug(
-          'Improvement of the saturation pressure initial guess by\n'
-          '\tfinding the roots of the TPD-equation for fixed real\n'
-          '\tand trial compositions...'
-        )
-        stab = self.stabsolver.run(P0, T, yi)
-        if stab.stable:
-          raise ValueError(
-            'The initial guess is outside of the two-phase region.\n'
-            'Try to change the value of P0 or stability test parameters\n'
-            'using the `stabkwargs` argument. Also this problem can be\n'
-            'solved by activating the `improve_P0` and `stabgrid` flags.'
-          )
-        P0s = []
-        Pmins = []
-        Pmaxs = []
-        PP = np.linspace(Pmin, Pmax, Npoint, endpoint=True)
-        for kvi in stab.kvji:
-          lnkvi = np.log(kvi)
-          yti = kvi * yi
-          ftpd = np.vectorize(
-            lambda P: yti.dot(lnkvi + self.eos.getPT_lnphii(P, T, yti)
-                              - self.eos.getPT_lnphii(P, T, yi))
-          )
-          tpds = ftpd(PP)
-          for i in range(Npoint-1):
-            if tpds[i] * tpds[i+1] < 0.:
-              P0t, *_, suc = _solveTPDeqPT(.5*(PP[i]+PP[i+1]), T, yi, yti,
-                                           self.eos, Pmax=PP[i+1], Pmin=PP[i])
-              if suc:
-                P0s.append(P0t)
-                Pmins.append(PP[i])
-                Pmaxs.append(PP[i+1])
-        if P0s:
-          idx = np.abs(np.asarray(P0s) - P0).argmin()
-          P0 = P0s[idx]
-          Pmin = Pmins[idx]
-          Pmax = Pmaxs[idx]
-          logger.debug(
-            'Improved initial guess:\n\tP0 = %s, Pmin = %s, Pmax = %s',
-            P0, Pmin, Pmax,
-          )
-          stab = self.stabsolver.run(P0, T, yi)
-        else:
-          logger.warning(
-            'The TPD-equation gridding procedure completed unsuccessfully. '
-            'Try to increase the number of points or use another initial '
-            'guess improvement method.'
-          )
-    else:
-      stab = self.stabsolver.run(P0, T, yi)
-    if stab.stable:
-      raise ValueError(
-        'The initial guess of the P0 is outside of the two-phase region.\n'
-        'Try to change the value of P0 or stability test parameters\n'
-        'using the `stabkwargs` argument. Also this problem can be solved\n'
-        'by activating the `improve_P0` and `stabgrid` flags.'
+    stab = self.stabsolver.run(P0, T, yi)
+    logger.debug(
+      'For the initial guess P0 = %s Pa, the one-phase state is stable: %s',
+      P0, stab.stable,
+    )
+    if stab.stable and self.upper:
+      logger.debug(
+        'Finding the two-phase region for the upper-bound curve by the '
+        'preliminary search.'
       )
+      Pmax = P0
+      c = 1. - self.step
+      Pmin = c * P0
+      stabmin = self.stabsolver.run(Pmin, T, yi)
+      logger.debug(
+        'Pmin = %s Pa, the one-phase state is stable: %s',
+        Pmin, stabmin.stable,
+      )
+      if stabmin.stable:
+        Pmax = Pmin
+      while stabmin.stable and Pmin > self.lowerlimit:
+        Pmin *= c
+        stabmin = self.stabsolver.run(Pmin, T, yi)
+        logger.debug(
+          'Pmin = %s Pa, the one-phase state is stable: %s',
+          Pmin, stabmin.stable,
+        )
+        if stabmin.stable:
+          Pmax = Pmin
+      if Pmin < self.lowerlimit:
+        raise ValueError(
+          'The two-phase region was not identified. It could be because of \n'
+          'its narrowness or absence. Try to change the value of P0 or \n'
+          'stability test parameters using the `stabkwargs` argument of \n'
+          'this class. It also might be helpful to reduce the value of the \n'
+          'argument `step`.'
+        )
+      else:
+        P0 = Pmin
+        stab = stabmin
+    elif not stab.stable and self.upper:
+      logger.debug(
+        'Finding the one-phase region for the upper-bound curve by the '
+        'preliminary search.'
+      )
+      Pmin = P0
+      c = 1. + self.step
+      Pmax = c * P0
+      stabmax = self.stabsolver.run(Pmax, T, yi)
+      logger.debug(
+        'Pmax = %s Pa, the one-phase state is stable: %s',
+        Pmax, stabmax.stable,
+      )
+      if not stabmax.stable:
+        Pmin = Pmax
+      while not stabmax.stable and Pmax < self.upperlimit:
+        Pmax *= c
+        stabmax = self.stabsolver.run(Pmax, T, yi)
+        logger.debug(
+          'Pmax = %s Pa, the one-phase state is stable: %s',
+          Pmax, stabmax.stable,
+        )
+        if not stabmax.stable:
+          Pmin = Pmax
+          stab = stabmax
+      if Pmax > self.upperlimit:
+        raise ValueError(
+          'The one-phase region was not identified. Try to change the \n'
+          'value of P0 and `upperlimit` parameter of this class.'
+        )
+      else:
+        P0 = Pmin
+    elif stab.stable and not self.upper:
+      logger.debug(
+        'Finding the two-phase region for the lower-bound curve by the '
+        'preliminary search.'
+      )
+      Pmin = P0
+      c = 1. + self.step
+      Pmax = c * P0
+      stabmax = self.stabsolver.run(Pmax, T, yi)
+      logger.debug(
+        'Pmax = %s Pa, the one-phase state is stable: %s',
+        Pmax, stabmax.stable,
+      )
+      while stabmax.stable and Pmax < self.upperlimit:
+        Pmax *= c
+        stabmax = self.stabsolver.run(Pmax, T, yi)
+        logger.debug(
+          'Pmax = %s Pa, the one-phase state is stable: %s',
+          Pmax, stabmax.stable,
+        )
+        if stabmax.stable:
+          Pmin = Pmax
+      if Pmax > self.upperlimit:
+        raise ValueError(
+          'The two-phase region was not identified. It could be because of \n'
+          'its narrowness or absence. Try to change the value of P0 or \n'
+          'stability test parameters using the `stabkwargs` argument of \n'
+          'this class. It also might be helpful to reduce the value of the \n'
+          'argument `step`.'
+        )
+      else:
+        P0 = Pmax
+        stab = stabmax
+    else:
+      logger.debug(
+        'Finding the one-phase region for the lower-bound curve by the '
+        'preliminary search.'
+      )
+      Pmax = P0
+      c = 1. - self.step
+      Pmin = c * P0
+      stabmin = self.stabsolver.run(Pmin, T, yi)
+      logger.debug(
+        'Pmin = %s Pa, the one-phase state is stable: %s',
+        Pmin, stabmin.stable,
+      )
+      while not stabmin.stable and Pmin > self.lowerlimit:
+        Pmin *= c
+        stabmin = self.stabsolver.run(Pmin, T, yi)
+        logger.debug(
+          'Pmin = %s Pa, the one-phase state is stable: %s',
+          Pmin, stabmin.stable,
+        )
+        if not stabmin.stable:
+          Pmax = Pmin
+          stab = stabmin
+      if Pmin < self.lowerlimit:
+        raise ValueError(
+          'The one-phase region was not identified. Try to change the \n'
+          'value of P0 and `lowerlimit` parameter of this class.'
+        )
+      else:
+        P0 = Pmax
     return self.psatsolver(P0, T, yi, stab, Pmin=Pmin, Pmax=Pmax)
 
 
@@ -811,7 +855,8 @@ def _PsatPT_ss(
   """
   logger.debug(
     'Saturation pressure calculation using the SS-method:\n'
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+    P0, T, yi, Pmin, Pmax,
   )
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
@@ -972,7 +1017,8 @@ def _PsatPT_qnss(
   """
   logger.debug(
     'Saturation pressure calculation using the QNSS-method:\n'
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+    P0, T, yi, Pmin, Pmax,
   )
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
@@ -1155,7 +1201,8 @@ def _PsatPT_newtA(
   """
   logger.debug(
     "Saturation pressure calculation using Newton's method (A-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+    P0, T, yi, Pmin, Pmax,
   )
   Nc = eos.Nc
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -1347,7 +1394,8 @@ def _PsatPT_newtB(
   """
   logger.debug(
     "Saturation pressure calculation using Newton's method (B-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+    P0, T, yi, Pmin, Pmax,
   )
   Nc = eos.Nc
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -1546,7 +1594,8 @@ def _PsatPT_newtC(
   """
   logger.debug(
     "Saturation pressure calculation using Newton's method (C-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s', P0, T, yi,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+    P0, T, yi, Pmin, Pmax,
   )
   solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
