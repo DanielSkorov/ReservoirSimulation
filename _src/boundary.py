@@ -310,7 +310,7 @@ class SatResult(dict):
 class PsatPT(object):
   """Saturation pressure calculation.
 
-  Performs saturation pressure calculation for PT-based equations of
+  Performs saturation pressure calculation using PT-based equations of
   state.
 
   Parameters
@@ -329,7 +329,7 @@ class PsatPT(object):
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor.
 
@@ -337,10 +337,10 @@ class PsatPT(object):
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
@@ -352,28 +352,20 @@ class PsatPT(object):
       For a given pressure [Pa], temperature [K], phase composition and
       phase mole number [mol] this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
       - a matrix of shape `(Nc, Nc)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to their mole numbers,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to pressure.
-
-    If the `improve_P0` is set to `True` and the `stabgrid` is set to
-    `False` then it also must have:
-
-    - `getPT_lnphii(P, T, yi) -> ndarray`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method must return logarithms of the fugacity coefficients
-      of components.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      A vector of components molecular weights [kg/mol] of shape
+      An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -490,8 +482,9 @@ class PsatPT(object):
     yi: VectorType,
     P0: ScalarType,
   ) -> SatResult:
-    """Performs the saturation pressure calculation for given temperature
-    and composition.
+    """Performs the saturation pressure calculation for a given
+    temperature and composition. To improve an initial guess, the
+    preliminary search is performed.
 
     Parameters
     ----------
@@ -660,7 +653,7 @@ class PsatPT(object):
     return self.psatsolver(P0, T, yi, stab, Pmin=Pmin, Pmax=Pmax)
 
 
-def _solveTPDeqPT(
+def _solveTPDeqPT_forP(
   P0: ScalarType,
   T: ScalarType,
   yi: VectorType,
@@ -670,11 +663,13 @@ def _solveTPDeqPT(
   maxiter: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
-) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType, bool]:
-  """Solves the TPD-equation for the PT-based equations of state.
-  The TPD-equation is the equation of equality to zero of the
-  tangent-plane distance, which determines the phase appearance or
-  disappearance. Newton's method is used to solve the TPD-equation.
+) -> tuple[ScalarType, VectorType, VectorType,
+           ScalarType, ScalarType, ScalarType]:
+  """Solves the TPD-equation using the PT-based equations of state for
+  pressure at a constant temperature. The TPD-equation is the equation
+  of equality to zero of the tangent-plane distance, which determines
+  the phase appearance or disappearance. Newton's method is used to
+  solve the TPD-equation.
 
   Parameters
   ----------
@@ -698,10 +693,10 @@ def _solveTPDeqPT(
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
@@ -729,7 +724,7 @@ def _solveTPDeqPT(
   - an array of the natural logarithms of components in the trial phase,
   - the same for the initial composition of the mixture,
   - compressibility factors for both mixtures,
-  - a flag indicating if the equation was solved successfully.
+  - value of the tangent-plane distance.
   """
   k = 0
   Pk = P0
@@ -754,11 +749,7 @@ def _solveTPDeqPT(
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
     TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
-  logger.debug(
-    'Solution of the TPD-equation:\n\tP = %s\n\tTPD = %s\n\tNiter = %s',
-    Pk, TPD, k,
-  )
-  return Pk, lnphixi, lnphiyi, Zx, Zy, k < maxiter
+  return Pk, lnphixi, lnphiyi, Zx, Zy, TPD
 
 
 def _PsatPT_ss(
@@ -801,17 +792,17 @@ def _PsatPT_ss(
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      A vector of components molecular weights [kg/mol] of shape
+      An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -858,7 +849,7 @@ def _PsatPT_ss(
     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
     P0, T, yi, Pmin, Pmax,
   )
-  solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
+  solverTPDeq = partial(_solveTPDeqPT_forP, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   k = 0
   Pk = P0
@@ -871,23 +862,24 @@ def _PsatPT_ss(
   Zy = stab0.Z
   gi = lnkvik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  TPD = ni.dot(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s',
-    k, kvik, gnorm, Pk,
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tP = %s Pa',
+    k, kvik, gnorm, TPD, Pk,
   )
-  while (gnorm > tol) and (k < maxiter):
+  while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
     dlnkvi = -gi
     k += 1
     lnkvik += dlnkvi
     kvik = np.exp(lnkvik)
     ni = kvik * yi
     xi = ni / ni.sum()
-    Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s',
-      k, kvik, gnorm, Pk,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tP = %s Pa',
+      k, kvik, gnorm, TPD, Pk,
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
@@ -963,17 +955,17 @@ def _PsatPT_qnss(
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      A vector of components molecular weights [kg/mol] of shape
+      An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -1020,7 +1012,7 @@ def _PsatPT_qnss(
     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
     P0, T, yi, Pmin, Pmax,
   )
-  solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
+  solverTPDeq = partial(_solveTPDeqPT_forP, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   k = 0
   Pk = P0
@@ -1033,12 +1025,13 @@ def _PsatPT_qnss(
   Zy = stab0.Z
   gi = np.log(kvik) + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  TPD = ni.dot(gi)
   lmbd = 1.
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s\n\tP = %s',
-    k, kvik, gnorm, lmbd, Pk,
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tP = %s Pa',
+    k, kvik, gnorm, TPD, Pk,
   )
-  while (gnorm > tol) and (k < maxiter):
+  while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
     dlnkvi = -lmbd * gi
     max_dlnkvi = np.abs(dlnkvi).max()
     if max_dlnkvi > 6.:
@@ -1051,15 +1044,15 @@ def _PsatPT_qnss(
     kvik = np.exp(lnkvik)
     ni = kvik * yi
     xi = ni / ni.sum()
-    Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s\n\tPk = %s',
-      k, kvik, gnorm, lmbd, Pk,
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tPk = %s',
+      k, kvik, gnorm, TPD, Pk,
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
@@ -1135,10 +1128,10 @@ def _PsatPT_newtA(
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
@@ -1147,20 +1140,20 @@ def _PsatPT_newtA(
       For a given pressure [Pa], temperature [K], phase composition and
       phase mole number [mol] this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
       - a matrix of shape `(Nc, Nc)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to their mole numbers,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to pressure.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      A vector of components molecular weights [kg/mol] of shape
+      An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -1170,7 +1163,7 @@ def _PsatPT_newtA(
       The number of components in the system.
 
   tol: float
-    Terminate the solver successfully if the norm of a vector of
+    Terminate the solver successfully if the norm of an array of
     nonlinear equations is less than `tol`. Default is `1e-5`.
 
   maxiter: int
@@ -1184,7 +1177,7 @@ def _PsatPT_newtA(
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
-    a vector `b` of shape `(Nc+1,)` and finds a vector `x` of shape
+    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
     `(Nc+1,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
@@ -1328,10 +1321,10 @@ def _PsatPT_newtB(
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
@@ -1340,20 +1333,20 @@ def _PsatPT_newtB(
       For a given pressure [Pa], temperature [K], phase composition and
       phase mole number [mol] this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
       - a matrix of shape `(Nc, Nc)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to their mole numbers,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
         respect to pressure.
 
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      A vector of components molecular weights [kg/mol] of shape
+      An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -1363,7 +1356,7 @@ def _PsatPT_newtB(
       The number of components in the system.
 
   tol: float
-    Terminate the solver successfully if the norm of a vector of
+    Terminate the solver successfully if the norm of an array of
     nonlinear equations is less than `tol`. Default is `1e-5`.
 
   maxiter: int
@@ -1377,7 +1370,7 @@ def _PsatPT_newtB(
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
-    a vector `b` of shape `(Nc+1,)` and finds a vector `x` of shape
+    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
     `(Nc+1,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
@@ -1524,10 +1517,10 @@ def _PsatPT_newtC(
       For a given pressure [Pa], temperature [K] and phase composition,
       this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
-      - a vector of shape `(Nc,)` of partial derivatives of
+      - an array of shape `(Nc,)` of partial derivatives of
         logarithms of the fugacity coefficients of components
         with respect to pressure.
 
@@ -1535,7 +1528,7 @@ def _PsatPT_newtC(
       For a given pressure [Pa], temperature [K], phase composition and
       phase mole number [mol] this method should return a tuple of:
 
-      - a vector of shape `(Nc,)` of logarithms of the fugacity
+      - an array of shape `(Nc,)` of logarithms of the fugacity
         coefficients of components,
       - the phase compressibility factor,
       - a matrix of shape `(Nc, Nc)` of partial derivatives of
@@ -1545,7 +1538,7 @@ def _PsatPT_newtC(
     Also, this instance must have attributes:
 
     - `mwi: ndarray`
-      A vector of components molecular weights [kg/mol] of shape
+      An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -1555,7 +1548,7 @@ def _PsatPT_newtC(
       The number of components in the system.
 
   tol: float
-    Terminate the solver successfully if the norm of a vector of
+    Terminate the solver successfully if the norm of an array of
     nonlinear equations is less than `tol`. Default is `1e-5`.
 
   maxiter: int
@@ -1577,7 +1570,7 @@ def _PsatPT_newtC(
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
-    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
@@ -1597,7 +1590,7 @@ def _PsatPT_newtC(
     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
     P0, T, yi, Pmin, Pmax,
   )
-  solverTPDeq = partial(_solveTPDeqPT, eos=eos, tol=tol_tpd,
+  solverTPDeq = partial(_solveTPDeqPT_forP, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
   I = np.eye(eos.Nc)
   k = 0
@@ -1611,11 +1604,12 @@ def _PsatPT_newtC(
   lnphiyi, Zy = eos.getPT_lnphii_Z(Pk, T, yi)
   gi = lnkvik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  TPD = ni.dot(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
-    k, kvik, Pk, gnorm,
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s\n\tTPD = %s',
+    k, kvik, Pk, gnorm, TPD,
   )
-  while (gnorm > tol) and (k < maxiter):
+  while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
     J = I + ni * dlnphixidnj
     dlnkvi = linsolver(J, -gi)
     k += 1
@@ -1624,13 +1618,13 @@ def _PsatPT_newtC(
     ni = kvik * yi
     n = ni.sum()
     xi = ni / n
-    Pk, lnphixi, lnphiyi, Zx, Zy, _ = solverTPDeq(Pk, T, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
-      k, kvik, Pk, gnorm,
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s\n\tTPD = %s',
+      k, kvik, Pk, gnorm, TPD
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
@@ -1657,5 +1651,625 @@ def _PsatPT_newtC(
       eos.name, P0, T, yi, Pmin, Pmax,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
+
+
+class TsatPT(object):
+  """Saturation temperature calculation.
+
+  Performs saturation temperature calculation using PT-based equations
+  of state.
+
+  Parameters
+  ----------
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+      `P: float` is pressure [Pa], `T: float` is temperature [K],
+      and `yi: ndarray`, shape `(Nc,)` is an array of components
+      mole fractions, `Nc` is the number of components. This method
+      is used to generate initial guesses of k-values.
+
+    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor.
+
+    - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to temperature.
+
+    If the solution method would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then it also must have:
+
+    - `getPT_lnphii_Z_dnj_dT(P, T, yi, n) -> tuple[ndarray, float,
+                                                   ndarray, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition and
+      phase mole number [mol] this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a matrix of shape `(Nc, Nc)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to their mole numbers,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to temperature.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  method: str
+    Type of the solver. Should be one of:
+
+    - `'ss'` (Successive Substitution method),
+    - `'qnss'` (Currently raises `NotImplementedError`),
+    - `'bfgs'` (Currently raises `NotImplementedError`),
+    - `'newton'` (Currently raises `NotImplementedError`),
+    - `'ss-newton'` (Currently raises `NotImplementedError`),
+    - `'qnss-newton'` (Currently raises `NotImplementedError`).
+
+    Default is `'ss'`.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    Default is `True`.
+
+  step: float
+    To specify the confidence interval for the saturation temperature
+    calculation, the preliminary search is performed. This parameter
+    regulates the step of this search in fraction units. For example,
+    if it is necessary to find the upper bound of the confidence
+    interval, then the next value of temperature will be calculated from
+    the previous one using the formula: `Tnext = Tprev * (1. + step)`.
+    Default is `0.1`.
+
+  lowerlimit: float
+    During the preliminary search, the temperature can not drop below
+    the lower limit. Otherwise, the `ValueError` will be rised.
+    Default is `173.15` [K].
+
+  upperlimit: float
+    During the preliminary search, the temperature can not exceed the
+    upper limit. Otherwise, the `ValueError` will be rised.
+    Default is `973.15` [K].
+
+  stabkwargs: dict
+    The stability test procedure is used to locate the confidence
+    interval of the saturation temperature. This dictionary is used to
+    specify arguments for the stability test procedure. Default is an
+    empty dictionary.
+
+  kwargs: dict
+    Other arguments for a Tsat-solver. It may contain such arguments
+    as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others depending
+    on the selected solver.
+
+  Methods
+  -------
+  run(P, yi, T0) -> SatResult
+    This method performs the saturation temperature calculation for
+    given pressure `P: float` in [Pa], composition `yi: ndarray` of `Nc`
+    components and the initial guess `T0: float` in [K]. This method
+    returns saturation temperature calculation results as an instance of
+    `SatResult`.
+  """
+  def __init__(
+    self,
+    eos: EOSPTType,
+    method: str = 'ss',
+    upper: bool = True,
+    step: ScalarType = 0.1,
+    lowerlimit: ScalarType = 173.15,
+    upperlimit: ScalarType = 973.15,
+    stabkwargs: dict = {},
+    **kwargs,
+  ) -> None:
+    self.eos = eos
+    self.upper = upper
+    self.step = step
+    self.lowerlimit = lowerlimit
+    self.upperlimit = upperlimit
+    self.stabsolver = stabilityPT(eos, **stabkwargs)
+    if method == 'ss':
+      self.tsatsolver = partial(_TsatPT_ss, eos=eos, **kwargs)
+    elif method == 'qnss':
+      # self.tsatsolver = partial(_PsatPT_qnss, eos=eos, **kwargs)
+      raise NotImplementedError(
+        'The QNSS method for the saturation temperature calculation is '
+        'not implemented yet.'
+      )
+    elif method == 'bfgs':
+      raise NotImplementedError(
+        'The BFGS-method for the saturation temperature calculation is not '
+        'implemented yet.'
+      )
+    elif method == 'newton':
+      # self.tsatsolver = partial(_PsatPT_newtA, eos=eos, **kwargs)
+      raise NotImplementedError(
+        "Newton's method for the saturation temperature calculation is not "
+        "implemented yet."
+      )
+    elif method == 'newton-b':
+      # self.tsatsolver = partial(_PsatPT_newtB, eos=eos, **kwargs)
+      raise NotImplementedError(
+        "Newton's method (B-form) for the saturation temperature calculation "
+        "is not implemented yet."
+      )
+    elif method == 'newton-c':
+      # self.tsatsolver = partial(_PsatPT_newtC, eos=eos, **kwargs)
+      raise NotImplementedError(
+        "Newton's method (C-form) for the saturation temperature calculation "
+        "is not implemented yet."
+      )
+    elif method == 'ss-newton':
+      raise NotImplementedError(
+        'The SS-Newton method for the saturation temperature calculation is '
+        'not implemented yet.'
+      )
+    elif method == 'qnss-newton':
+      raise NotImplementedError(
+        'The QNSS-Newton method for the saturation temperature calculation '
+        'is not implemented yet.'
+      )
+    else:
+      raise ValueError(f'The unknown method: {method}.')
+    pass
+
+  def run(
+    self,
+    P: ScalarType,
+    yi: VectorType,
+    T0: ScalarType,
+  ) -> SatResult:
+    """Performs the saturation temperature calculation for a given
+    pressure and composition. To improve an initial guess, the
+    preliminary search is performed.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    T0: float
+      Initial guess of the saturation temperature [Pa].
+
+    Returns
+    -------
+    Saturation temperature calculation results as an instance of the
+    `SatResult`. Important attributes are:
+
+    - `P` the saturation pressure in [Pa],
+    - `T` the saturation temperature in [K],
+    - `yji` the component mole fractions in each phase,
+    - `Zj` the compressibility factors of each phase,
+    - `success` a boolean flag indicating if the calculation completed
+      successfully.
+
+    Raises
+    ------
+    ValueError
+      The `ValueError` exception may be raised if the one-phase or
+      two-phase region was not found using a preliminary search.
+    """
+    stab = self.stabsolver.run(P, T0, yi)
+    logger.debug(
+      'For the initial guess T0 = %s K, the one-phase state is stable: %s',
+      T0, stab.stable,
+    )
+    if stab.stable and self.upper:
+      logger.debug(
+        'Finding the two-phase region for the upper-bound curve by the '
+        'preliminary search.'
+      )
+      Tmax = T0
+      c = 1. - self.step
+      Tmin = c * T0
+      stabmin = self.stabsolver.run(P, Tmin, yi)
+      logger.debug(
+        'Tmin = %s K, the one-phase state is stable: %s',
+        Tmin, stabmin.stable,
+      )
+      if stabmin.stable:
+        Tmax = Tmin
+      while stabmin.stable and Tmin > self.lowerlimit:
+        Tmin *= c
+        stabmin = self.stabsolver.run(P, Tmin, yi)
+        logger.debug(
+          'Tmin = %s K, the one-phase state is stable: %s',
+          Tmin, stabmin.stable,
+        )
+        if stabmin.stable:
+          Tmax = Tmin
+      if Tmin < self.lowerlimit:
+        raise ValueError(
+          'The two-phase region was not identified. It could be because of \n'
+          'its narrowness or absence. Try to change the value of T0 or \n'
+          'stability test parameters using the `stabkwargs` argument of \n'
+          'this class. It also might be helpful to reduce the value of the \n'
+          'argument `step`.'
+        )
+      else:
+        T0 = Tmin
+        stab = stabmin
+    elif not stab.stable and self.upper:
+      logger.debug(
+        'Finding the one-phase region for the upper-bound curve by the '
+        'preliminary search.'
+      )
+      Tmin = T0
+      c = 1. + self.step
+      Tmax = c * T0
+      stabmax = self.stabsolver.run(P, Tmax, yi)
+      logger.debug(
+        'Tmax = %s K, the one-phase state is stable: %s',
+        Tmax, stabmax.stable,
+      )
+      if not stabmax.stable:
+        Tmin = Tmax
+      while not stabmax.stable and Tmax < self.upperlimit:
+        Tmax *= c
+        stabmax = self.stabsolver.run(P, Tmax, yi)
+        logger.debug(
+          'Tmax = %s K, the one-phase state is stable: %s',
+          Tmax, stabmax.stable,
+        )
+        if not stabmax.stable:
+          Tmin = Tmax
+          stab = stabmax
+      if Tmax > self.upperlimit:
+        raise ValueError(
+          'The one-phase region was not identified. Try to change the \n'
+          'value of T0 and `upperlimit` parameter of this class.'
+        )
+      else:
+        T0 = Tmin
+    elif stab.stable and not self.upper:
+      logger.debug(
+        'Finding the two-phase region for the lower-bound curve by the '
+        'preliminary search.'
+      )
+      Tmin = T0
+      c = 1. + self.step
+      Tmax = c * T0
+      stabmax = self.stabsolver.run(P, Tmax, yi)
+      logger.debug(
+        'Tmax = %s K, the one-phase state is stable: %s',
+        Tmax, stabmax.stable,
+      )
+      while stabmax.stable and Tmax < self.upperlimit:
+        Tmax *= c
+        stabmax = self.stabsolver.run(P, Tmax, yi)
+        logger.debug(
+          'Tmax = %s K, the one-phase state is stable: %s',
+          Tmax, stabmax.stable,
+        )
+        if stabmax.stable:
+          Tmin = Tmax
+      if Tmax > self.upperlimit:
+        raise ValueError(
+          'The two-phase region was not identified. It could be because of \n'
+          'its narrowness or absence. Try to change the value of T0 or \n'
+          'stability test parameters using the `stabkwargs` argument of \n'
+          'this class. It also might be helpful to reduce the value of the \n'
+          'argument `step`.'
+        )
+      else:
+        T0 = Tmax
+        stab = stabmax
+    else:
+      logger.debug(
+        'Finding the one-phase region for the lower-bound curve by the '
+        'preliminary search.'
+      )
+      Tmax = T0
+      c = 1. - self.step
+      Tmin = c * T0
+      stabmin = self.stabsolver.run(P, Tmin, yi)
+      logger.debug(
+        'Tmin = %s K, the one-phase state is stable: %s',
+        Tmin, stabmin.stable,
+      )
+      while not stabmin.stable and Tmin > self.lowerlimit:
+        Tmin *= c
+        stabmin = self.stabsolver.run(P, Tmin, yi)
+        logger.debug(
+          'Tmin = %s K, the one-phase state is stable: %s',
+          Tmin, stabmin.stable,
+        )
+        if not stabmin.stable:
+          Tmax = Tmin
+          stab = stabmin
+      if Tmin < self.lowerlimit:
+        raise ValueError(
+          'The one-phase region was not identified. Try to change the \n'
+          'value of T0 and `lowerlimit` parameter of this class.'
+        )
+      else:
+        T0 = Tmax
+    return self.tsatsolver(P, T0, yi, stab, Tmin=Tmin, Tmax=Tmax)
+
+
+def _solveTPDeqPT_forT(
+  P: ScalarType,
+  T0: ScalarType,
+  yi: VectorType,
+  yti: VectorType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-6,
+  maxiter: int = 8,
+  Tmax: ScalarType = 973.15,
+  Tmin: ScalarType = 173.15,
+) -> tuple[ScalarType, VectorType, VectorType,
+           ScalarType, ScalarType, ScalarType]:
+  """Solves the TPD-equation using the PT-based equations of state for
+  temperature at a constant pressure. The TPD-equation is the equation
+  of equality to zero of the tangent-plane distance, which determines
+  the phase appearance or disappearance. Newton's method is used to
+  solve the TPD-equation.
+
+  Parameters
+  ----------
+  T0: float
+    Initial guess of the saturation temperature [K].
+
+  P: float
+    Pressure of a mixture [Pa].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  yti: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components in the trial phase.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to temperature.
+
+  maxiter: int
+    The maximum number of iterations. Default is `8`.
+
+  tol: float
+    Terminate successfully if the absolute value of the equation is less
+    than `tol`. Default is `1e-6`.
+
+  Tmax: float
+    The upper bound of the saturation temperature [K]. If the saturation
+    temperature at any iteration is greater than `Tmax`, then the
+    bisection update would be used. Default is `973.15` [K].
+
+  Tmin: float
+    The lower bound of the saturation temperature [K]. If the saturation
+    temperature at any iteration is less than `Tmin`, then the bisection
+    update would be used. Default is `173.15` [K].
+
+  Returns
+  -------
+  A tuple of:
+  - the saturation temperature,
+  - an array of the natural logarithms of components in the trial phase,
+  - the same for the initial composition of the mixture,
+  - compressibility factors for both mixtures.
+  - value of the tangent-plane distance.
+  """
+  k = 0
+  Tk = T0
+  lnkvi = np.log(yti / yi)
+  lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
+  lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
+  TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
+  # print(f'Iter #{k}:\n\t{Tk = } K, {TPD = }')
+  while (np.abs(TPD) > tol) and (k < maxiter):
+    dTPDdT = yti.dot(dlnphixidT - dlnphiyidT)
+    dT = - TPD / dTPDdT
+    Tkp1 = Tk + dT
+    if Tkp1 > Tmax:
+      Tk = .5 * (Tk + Tmax)
+    elif Tkp1 < Tmin:
+      Tk = .5 * (Tmin + Tk)
+    else:
+      Tk = Tkp1
+    k += 1
+    lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
+    lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
+    TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
+    # print(f'Iter #{k}:\n\t{Tk = } K, {TPD = }')
+  return Tk, lnphixi, lnphiyi, Zx, Zy, TPD
+
+
+def _TsatPT_ss(
+  P: ScalarType,
+  T0: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 8,
+  Tmax: ScalarType = 973.15,
+  Tmin: ScalarType = 173.15,
+) -> SatResult:
+  """Successive substitution (SS) method for the saturation temperature
+  calculation using a PT-based equation of state.
+
+  Parameters
+  ----------
+  P: float
+    Pressure of a mixture [Pa].
+
+  T: float
+    Initial guess of the saturation temperature [K]. It should be
+    inside the two-phase region.
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation temperature.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to temperature.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol`. Default is `1e-6`.
+    The TPD-equation is the equation of equality to zero of the
+    tangent-plane distance, which determines the second phase
+    appearance or disappearance.
+
+  maxiter_tpd: int
+    The maximum number of TPD-equation solver iterations.
+    Default is `8`.
+
+  Tmax: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
+
+  Tmin: float
+    The lower bound for the TPD-equation solver.
+    Default is `173.15` [K].
+
+  Returns
+  -------
+  Saturation temperature calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    'Saturation temperature calculation using the SS-method:\n'
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
+    P, T0, yi, Tmin, Tmax,
+  )
+  solverTPDeq = partial(_solveTPDeqPT_forT, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, Tmax=Tmax, Tmin=Tmin)
+  k = 0
+  Tk = T0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
+  lnphixi = stab0.lnphiyti
+  lnphiyi = stab0.lnphiyi
+  Zx = stab0.Zt
+  Zy = stab0.Z
+  gi = lnkvik + lnphixi - lnphiyi
+  gnorm = np.linalg.norm(gi)
+  TPD = ni.dot(gi)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
+    k, kvik, gnorm, TPD, Tk,
+  )
+  while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
+    dlnkvi = -gi
+    k += 1
+    lnkvik += dlnkvi
+    kvik = np.exp(lnkvik)
+    ni = kvik * yi
+    xi = ni / ni.sum()
+    Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
+    gi = lnkvik + lnphixi - lnphiyi
+    gnorm = np.linalg.norm(gi)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
+      k, kvik, gnorm, TPD, Tk,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Tk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation temperature for P = %s Pa, yi = %s:\n\t'
+      'Ts = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      P, yi, Tk, xi, gnorm, k,
+    )
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation using the SS-method terminates "
+      "unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
+      eos.name, P, T0, yi, Tmin, Tmax,
+    )
+    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
