@@ -389,7 +389,8 @@ class PsatPT(object):
   upper: bool
     A boolean flag that indicates whether the desired value is located
     at the upper saturation bound or the lower saturation bound.
-    Default is `True`.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
 
   step: float
     To specify the confidence interval for the saturation pressure
@@ -448,9 +449,9 @@ class PsatPT(object):
     self.upperlimit = upperlimit
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     if method == 'ss':
-      self.psatsolver = partial(_PsatPT_ss, eos=eos, **kwargs)
+      self.psatsolver = partial(_PsatPT_ss, eos=eos, upper=upper, **kwargs)
     elif method == 'qnss':
-      self.psatsolver = partial(_PsatPT_qnss, eos=eos, **kwargs)
+      self.psatsolver = partial(_PsatPT_qnss, eos=eos, upper=upper, **kwargs)
     elif method == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for the saturation pressure calculation is not '
@@ -461,7 +462,7 @@ class PsatPT(object):
     elif method == 'newton-b':
       self.psatsolver = partial(_PsatPT_newtB, eos=eos, **kwargs)
     elif method == 'newton-c':
-      self.psatsolver = partial(_PsatPT_newtC, eos=eos, **kwargs)
+      self.psatsolver = partial(_PsatPT_newtC, eos=eos, upper=upper, **kwargs)
     elif method == 'ss-newton':
       raise NotImplementedError(
         'The SS-Newton method for the saturation pressure calculation is '
@@ -661,15 +662,16 @@ def _solveTPDeqPT_forP(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Pmax0: ScalarType = 1e8,
+  Pmin0: ScalarType = 1.,
+  increasing: bool = True,
 ) -> tuple[ScalarType, VectorType, VectorType,
            ScalarType, ScalarType, ScalarType]:
   """Solves the TPD-equation using the PT-based equations of state for
   pressure at a constant temperature. The TPD-equation is the equation
   of equality to zero of the tangent-plane distance, which determines
-  the phase appearance or disappearance. Newton's method is used to
-  solve the TPD-equation.
+  the phase appearance or disappearance. A combination of the bisection
+  method with Newton's method is used to solve the TPD-equation.
 
   Parameters
   ----------
@@ -707,15 +709,22 @@ def _solveTPDeqPT_forP(
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
-  Pmax: float
-    The upper bound of the saturation pressure [Pa]. If the saturation
-    pressure at any iteration is greater than `Pmax`, then the bisection
-    update would be used. Default is `1e8` [Pa].
+  Pmax0: float
+    The initial upper bound of the saturation pressure [Pa]. If the
+    saturation pressure at any iteration is greater than the current
+    upper bound, then the bisection update would be used. Default is
+    `1e8` [Pa].
 
-  Pmin: float
-    The lower bound of the saturation pressure [Pa]. If the saturation
-    pressure at any iteration is less than `Pmin`, then the bisection
-    update would be used. Default is `1.0` [Pa].
+  Pmin0: float
+    The initial lower bound of the saturation pressure [Pa]. If the
+    saturation pressure at any iteration is less than the current
+    lower bound, then the bisection update would be used. Default is
+    `1.0` [Pa].
+
+  increasing: bool
+    A flag that indicates if the TPD-equation vs pressure is the
+    increasing function. This parameter is used to control the
+    bisection method update. Default is `True`.
 
   Returns
   -------
@@ -728,28 +737,43 @@ def _solveTPDeqPT_forP(
   """
   k = 0
   Pk = P0
+  Pmink = Pmin0
+  Pmaxk = Pmax0
   lnkvi = np.log(yti / yi)
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-  lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
-  TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
-  while (np.abs(TPD) > tol) and (k < maxiter):
-    dTPDdP = yti.dot(dlnphixidP - dlnphiyidP)
-    # dTPDdlnP = Pk * dTPDdP
-    # dlnP = - TPD / dTPDdlnP
-    # Pkp1 = Pk * np.exp(dlnP)
-    dP = - TPD / dTPDdP
-    Pkp1 = Pk + dP
-    if Pkp1 > Pmax:
-      Pk = .5 * (Pk + Pmax)
-    elif Pkp1 < Pmin:
-      Pk = .5 * (Pmin + Pk)
-    else:
-      Pk = Pkp1
+  lnphiti, Zt, dlnphitidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
+  TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
+  if np.abs(TPD) < tol:
+    return Pk, lnphiti, lnphiyi, Zt, Zy, TPD
+  if TPD < 0. and increasing or TPD > 0. and not increasing:
+    Pmink = Pk
+  else:
+    Pmaxk = Pk
+  dTPDdP = yti.dot(dlnphitidP - dlnphiyidP)
+  dP = - TPD / dTPDdP
+  Pkp1 = Pk + dP
+  if Pkp1 > Pmaxk or Pkp1 < Pmink:
+    Pkp1 = .5 * (Pmink + Pmaxk)
+    dP = Pkp1 - Pk
+  while k < maxiter:
+    Pk = Pkp1
     k += 1
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-    lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
-    TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
-  return Pk, lnphixi, lnphiyi, Zx, Zy, TPD
+    lnphiti, Zt, dlnphitidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
+    TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
+    if np.abs(TPD) < tol:
+      break
+    if TPD < 0. and increasing or TPD > 0. and not increasing:
+      Pmink = Pk
+    else:
+      Pmaxk = Pk
+    dTPDdP = yti.dot(dlnphitidP - dlnphiyidP)
+    dP = - TPD / dTPDdP
+    Pkp1 = Pk + dP
+    if Pkp1 > Pmaxk or Pkp1 < Pmink:
+      Pkp1 = .5 * (Pmink + Pmaxk)
+      dP = Pkp1 - Pk
+  return Pk, lnphiti, lnphiyi, Zt, Zy, TPD
 
 
 def _PsatPT_ss(
@@ -764,6 +788,7 @@ def _PsatPT_ss(
   maxiter_tpd: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
+  upper: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation pressure
   calculation using a PT-based equation of state.
@@ -833,6 +858,12 @@ def _PsatPT_ss(
   Pmin: float
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
 
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -850,7 +881,8 @@ def _PsatPT_ss(
     P0, T, yi, Pmin, Pmax,
   )
   solverTPDeq = partial(_solveTPDeqPT_forP, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
+                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+                        increasing=upper)
   k = 0
   Pk = P0
   ni = stab0.yti
@@ -868,9 +900,8 @@ def _PsatPT_ss(
     k, kvik, gnorm, TPD, Pk,
   )
   while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
-    dlnkvi = -gi
+    lnkvik -= gi
     k += 1
-    lnkvik += dlnkvi
     kvik = np.exp(lnkvik)
     ni = kvik * yi
     xi = ni / ni.sum()
@@ -922,6 +953,7 @@ def _PsatPT_qnss(
   maxiter_tpd: int = 8,
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
+  upper: bool = True,
 ) -> SatResult:
   """QNSS-method for the saturation pressure calculation using a PT-based
   equation of state.
@@ -996,6 +1028,12 @@ def _PsatPT_qnss(
   Pmin: float
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
 
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -1013,7 +1051,8 @@ def _PsatPT_qnss(
     P0, T, yi, Pmin, Pmax,
   )
   solverTPDeq = partial(_solveTPDeqPT_forP, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
+                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+                        increasing=upper)
   k = 0
   Pk = P0
   ni = stab0.yti
@@ -1482,6 +1521,7 @@ def _PsatPT_newtC(
   Pmax: ScalarType = 1e8,
   Pmin: ScalarType = 1.,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+  upper: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
   nonlinear equations using Newton's method. The system incorporates
@@ -1574,6 +1614,12 @@ def _PsatPT_newtC(
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -1591,7 +1637,8 @@ def _PsatPT_newtC(
     P0, T, yi, Pmin, Pmax,
   )
   solverTPDeq = partial(_solveTPDeqPT_forP, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmax=Pmax, Pmin=Pmin)
+                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+                        increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
   Pk = P0
@@ -1737,7 +1784,8 @@ class TsatPT(object):
   upper: bool
     A boolean flag that indicates whether the desired value is located
     at the upper saturation bound or the lower saturation bound.
-    Default is `True`.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
 
   step: float
     To specify the confidence interval for the saturation temperature
@@ -1796,7 +1844,7 @@ class TsatPT(object):
     self.upperlimit = upperlimit
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     if method == 'ss':
-      self.tsatsolver = partial(_TsatPT_ss, eos=eos, **kwargs)
+      self.tsatsolver = partial(_TsatPT_ss, eos=eos, upper=upper, **kwargs)
     elif method == 'qnss':
       # self.tsatsolver = partial(_PsatPT_qnss, eos=eos, **kwargs)
       raise NotImplementedError(
@@ -2025,15 +2073,16 @@ def _solveTPDeqPT_forT(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 8,
-  Tmax: ScalarType = 973.15,
-  Tmin: ScalarType = 173.15,
+  Tmax0: ScalarType = 973.15,
+  Tmin0: ScalarType = 173.15,
+  increasing: bool = True,
 ) -> tuple[ScalarType, VectorType, VectorType,
            ScalarType, ScalarType, ScalarType]:
   """Solves the TPD-equation using the PT-based equations of state for
   temperature at a constant pressure. The TPD-equation is the equation
   of equality to zero of the tangent-plane distance, which determines
-  the phase appearance or disappearance. Newton's method is used to
-  solve the TPD-equation.
+  the phase appearance or disappearance. A combination of the bisection
+  method with Newton's method is used to solve the TPD-equation.
 
   Parameters
   ----------
@@ -2071,15 +2120,22 @@ def _solveTPDeqPT_forT(
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
-  Tmax: float
-    The upper bound of the saturation temperature [K]. If the saturation
-    temperature at any iteration is greater than `Tmax`, then the
-    bisection update would be used. Default is `973.15` [K].
+  Tmax0: float
+    The initial upper bound of the saturation temperature [K]. If the
+    saturation temperature at any iteration is greater than the current
+    upper bound, then the bisection update would be used. Default is
+    `973.15` [K].
 
-  Tmin: float
-    The lower bound of the saturation temperature [K]. If the saturation
-    temperature at any iteration is less than `Tmin`, then the bisection
-    update would be used. Default is `173.15` [K].
+  Tmin0: float
+    The initial lower bound of the saturation temperature [K]. If the
+    saturation temperature at any iteration is less than the current
+    lower bound, then the bisection update would be used. Default is
+    `173.15` [K].
+
+  increasing: bool
+    A flag that indicates if the TPD-equation vs temperature is the
+    increasing function. This parameter is used to control the
+    bisection method update. Default is `True`.
 
   Returns
   -------
@@ -2091,28 +2147,44 @@ def _solveTPDeqPT_forT(
   - value of the tangent-plane distance.
   """
   k = 0
+  Tmink = Tmin0
+  Tmaxk = Tmax0
   Tk = T0
   lnkvi = np.log(yti / yi)
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-  lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
-  TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}:\n\t{Tk = } K, {TPD = }')
-  while (np.abs(TPD) > tol) and (k < maxiter):
-    dTPDdT = yti.dot(dlnphixidT - dlnphiyidT)
-    dT = - TPD / dTPDdT
-    Tkp1 = Tk + dT
-    if Tkp1 > Tmax:
-      Tk = .5 * (Tk + Tmax)
-    elif Tkp1 < Tmin:
-      Tk = .5 * (Tmin + Tk)
-    else:
-      Tk = Tkp1
+  lnphiti, Zt, dlnphitidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
+  TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
+  if np.abs(TPD) < tol:
+    return Tk, lnphiti, lnphiyi, Zt, Zy, TPD
+  if TPD < 0. and increasing or TPD > 0. and not increasing:
+    Tmink = Tk
+  else:
+    Tmaxk = Tk
+  dTPDdT = yti.dot(dlnphitidT - dlnphiyidT)
+  dT = -TPD / dTPDdT
+  Tkp1 = Tk + dT
+  if Tkp1 > Tmaxk or Tkp1 < Tmink:
+    Tkp1 = .5 * (Tmink + Tmaxk)
+    dT = Tkp1 - Tk
+  while k < maxiter:
+    Tk = Tkp1
     k += 1
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-    lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
-    TPD = yti.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}:\n\t{Tk = } K, {TPD = }')
-  return Tk, lnphixi, lnphiyi, Zx, Zy, TPD
+    lnphiti, Zt, dlnphitidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
+    TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
+    if np.abs(TPD) < tol:
+      break
+    if TPD < 0. and increasing or TPD > 0. and not increasing:
+      Tmink = Tk
+    else:
+      Tmaxk = Tk
+    dTPDdT = yti.dot(dlnphitidT - dlnphiyidT)
+    dT = -TPD / dTPDdT
+    Tkp1 = Tk + dT
+    if Tkp1 > Tmaxk or Tkp1 < Tmink:
+      Tkp1 = .5 * (Tmink + Tmaxk)
+      dT = Tkp1 - Tk
+  return Tk, lnphiti, lnphiyi, Zt, Zy, TPD
 
 
 def _TsatPT_ss(
@@ -2127,6 +2199,7 @@ def _TsatPT_ss(
   maxiter_tpd: int = 8,
   Tmax: ScalarType = 973.15,
   Tmin: ScalarType = 173.15,
+  upper: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation temperature
   calculation using a PT-based equation of state.
@@ -2198,6 +2271,12 @@ def _TsatPT_ss(
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
 
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
+
   Returns
   -------
   Saturation temperature calculation results as an instance of the
@@ -2215,7 +2294,8 @@ def _TsatPT_ss(
     P, T0, yi, Tmin, Tmax,
   )
   solverTPDeq = partial(_solveTPDeqPT_forT, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tmax=Tmax, Tmin=Tmin)
+                        maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
+                        increasing=upper)
   k = 0
   Tk = T0
   ni = stab0.yti
@@ -2233,9 +2313,8 @@ def _TsatPT_ss(
     k, kvik, gnorm, TPD, Tk,
   )
   while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
-    dlnkvi = -gi
+    lnkvik -= gi
     k += 1
-    lnkvik += dlnkvi
     kvik = np.exp(lnkvik)
     ni = kvik * yi
     xi = ni / ni.sum()
