@@ -1028,9 +1028,11 @@ class pr78(object):
     """
     RT = R * T
     PRT = P / RT
-    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtT = np.sqrt(T)
+    multi = 1. + self.kappai * (1. - sqrtT * self._Tci)
     sqrtalphai = self.sqrtai * multi
-    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    Si_ = self.D.dot(yi * sqrtalphai)
+    Si = sqrtalphai * Si_
     alpham = yi.dot(Si)
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT

@@ -737,42 +737,30 @@ def _solveTPDeqPT_forP(
   """
   k = 0
   Pk = P0
-  Pmink = Pmin0
-  Pmaxk = Pmax0
+  Pmin = Pmin0
+  Pmax = Pmax0
   lnkvi = np.log(yti / yi)
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphiti, Zt, dlnphitidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
   TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
-  if np.abs(TPD) < tol:
-    return Pk, lnphiti, lnphiyi, Zt, Zy, TPD
-  if TPD < 0. and increasing or TPD > 0. and not increasing:
-    Pmink = Pk
-  else:
-    Pmaxk = Pk
-  dTPDdP = yti.dot(dlnphitidP - dlnphiyidP)
-  dP = - TPD / dTPDdP
-  Pkp1 = Pk + dP
-  if Pkp1 > Pmaxk or Pkp1 < Pmink:
-    Pkp1 = .5 * (Pmink + Pmaxk)
-    dP = Pkp1 - Pk
-  while k < maxiter:
+  while k < maxiter and np.abs(TPD) > tol:
+    if TPD < 0. and increasing or TPD > 0. and not increasing:
+      Pmin = Pk
+    else:
+      Pmax = Pk
+    dTPDdP = yti.dot(dlnphitidP - dlnphiyidP)
+    dP = - TPD / dTPDdP
+    Pkp1 = Pk + dP
+    if Pkp1 > Pmax or Pkp1 < Pmin:
+      Pkp1 = .5 * (Pmin + Pmax)
+      dP = Pkp1 - Pk
+    if np.abs(dP) < 1e-8:
+      break
     Pk = Pkp1
     k += 1
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphiti, Zt, dlnphitidP = eos.getPT_lnphii_Z_dP(Pk, T, yti)
     TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
-    if np.abs(TPD) < tol:
-      break
-    if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Pmink = Pk
-    else:
-      Pmaxk = Pk
-    dTPDdP = yti.dot(dlnphitidP - dlnphiyidP)
-    dP = - TPD / dTPDdP
-    Pkp1 = Pk + dP
-    if Pkp1 > Pmaxk or Pkp1 < Pmink:
-      Pkp1 = .5 * (Pmink + Pmaxk)
-      dP = Pkp1 - Pk
   return Pk, lnphiti, lnphiyi, Zt, Zy, TPD
 
 
@@ -1255,7 +1243,7 @@ def _PsatPT_newtA(
   gi[-1] = n - 1.
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
     k, kvik, Pk, gnorm,
   )
   while (gnorm > tol) and (k < maxiter):
@@ -1283,7 +1271,7 @@ def _PsatPT_newtA(
     gi[-1] = n - 1.
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
       k, kvik, Pk, gnorm,
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
@@ -1447,7 +1435,7 @@ def _PsatPT_newtB(
   gi[-1] = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
     k, kvik, Pk, gnorm,
   )
   while (gnorm > tol) and (k < maxiter):
@@ -1476,7 +1464,7 @@ def _PsatPT_newtB(
     gi[-1] = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s',
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
       k, kvik, Pk, gnorm,
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
@@ -1653,7 +1641,7 @@ def _PsatPT_newtC(
   gnorm = np.linalg.norm(gi)
   TPD = ni.dot(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s\n\tTPD = %s',
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
     k, kvik, Pk, gnorm, TPD,
   )
   while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
@@ -1670,7 +1658,7 @@ def _PsatPT_newtC(
     gi = lnkvik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s\n\tgnorm = %s\n\tTPD = %s',
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
       k, kvik, Pk, gnorm, TPD
     )
   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Pk)):
@@ -1846,30 +1834,26 @@ class TsatPT(object):
     if method == 'ss':
       self.tsatsolver = partial(_TsatPT_ss, eos=eos, upper=upper, **kwargs)
     elif method == 'qnss':
-      # self.tsatsolver = partial(_PsatPT_qnss, eos=eos, **kwargs)
-      raise NotImplementedError(
-        'The QNSS method for the saturation temperature calculation is '
-        'not implemented yet.'
-      )
+      self.tsatsolver = partial(_TsatPT_qnss, eos=eos, upper=upper, **kwargs)
     elif method == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for the saturation temperature calculation is not '
         'implemented yet.'
       )
     elif method == 'newton':
-      # self.tsatsolver = partial(_PsatPT_newtA, eos=eos, **kwargs)
+      # self.tsatsolver = partial(_TsatPT_newtA, eos=eos, **kwargs)
       raise NotImplementedError(
         "Newton's method for the saturation temperature calculation is not "
         "implemented yet."
       )
     elif method == 'newton-b':
-      # self.tsatsolver = partial(_PsatPT_newtB, eos=eos, **kwargs)
+      # self.tsatsolver = partial(_TsatPT_newtB, eos=eos, **kwargs)
       raise NotImplementedError(
         "Newton's method (B-form) for the saturation temperature calculation "
         "is not implemented yet."
       )
     elif method == 'newton-c':
-      # self.tsatsolver = partial(_PsatPT_newtC, eos=eos, **kwargs)
+      # self.tsatsolver = partial(_TsatPT_newtC, eos=eos, **kwargs)
       raise NotImplementedError(
         "Newton's method (C-form) for the saturation temperature calculation "
         "is not implemented yet."
@@ -2147,43 +2131,31 @@ def _solveTPDeqPT_forT(
   - value of the tangent-plane distance.
   """
   k = 0
-  Tmink = Tmin0
-  Tmaxk = Tmax0
+  Tmin = Tmin0
+  Tmax = Tmax0
   Tk = T0
   lnkvi = np.log(yti / yi)
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
   lnphiti, Zt, dlnphitidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
   TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
-  if np.abs(TPD) < tol:
-    return Tk, lnphiti, lnphiyi, Zt, Zy, TPD
-  if TPD < 0. and increasing or TPD > 0. and not increasing:
-    Tmink = Tk
-  else:
-    Tmaxk = Tk
-  dTPDdT = yti.dot(dlnphitidT - dlnphiyidT)
-  dT = -TPD / dTPDdT
-  Tkp1 = Tk + dT
-  if Tkp1 > Tmaxk or Tkp1 < Tmink:
-    Tkp1 = .5 * (Tmink + Tmaxk)
-    dT = Tkp1 - Tk
-  while k < maxiter:
+  while k < maxiter and np.abs(TPD) > tol:
+    if TPD < 0. and increasing or TPD > 0. and not increasing:
+      Tmin = Tk
+    else:
+      Tmax = Tk
+    dTPDdT = yti.dot(dlnphitidT - dlnphiyidT)
+    dT = - TPD / dTPDdT
+    Tkp1 = Tk + dT
+    if Tkp1 > Tmax or Tkp1 < Tmin:
+      Tkp1 = .5 * (Tmin + Tmax)
+      dT = Tkp1 - Tk
+    if np.abs(dT) < 1e-8:
+      break
     Tk = Tkp1
     k += 1
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
     lnphiti, Zt, dlnphitidT = eos.getPT_lnphii_Z_dT(P, Tk, yti)
     TPD = yti.dot(lnkvi + lnphiti - lnphiyi)
-    if np.abs(TPD) < tol:
-      break
-    if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Tmink = Tk
-    else:
-      Tmaxk = Tk
-    dTPDdT = yti.dot(dlnphitidT - dlnphiyidT)
-    dT = -TPD / dTPDdT
-    Tkp1 = Tk + dT
-    if Tkp1 > Tmaxk or Tkp1 < Tmink:
-      Tkp1 = .5 * (Tmink + Tmaxk)
-      dT = Tkp1 - Tk
   return Tk, lnphiti, lnphiyi, Zt, Zy, TPD
 
 
@@ -2209,7 +2181,7 @@ def _TsatPT_ss(
   P: float
     Pressure of a mixture [Pa].
 
-  T: float
+  T0: float
     Initial guess of the saturation temperature [K]. It should be
     inside the two-phase region.
 
@@ -2352,3 +2324,382 @@ def _TsatPT_ss(
     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
+
+
+def _TsatPT_qnss(
+  P: ScalarType,
+  T0: ScalarType,
+  yi: VectorType,
+  stab0: StabResult,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 8,
+  Tmax: ScalarType = 973.15,
+  Tmin: ScalarType = 173.15,
+  upper: bool = True,
+) -> SatResult:
+  """Quasi-Newton Successive Substitution (QNSS) method for the
+  saturation temperature calculation using a PT-based equation
+  of state.
+
+  Performs the Quasi-Newton Successive Substitution (QNSS) method to
+  find an equilibrium state by solving a system of nonlinear equations.
+  For the details of the QNSS-method see: 10.1016/0378-3812(84)80013-8
+  and 10.1016/0378-3812(85)90059-7.
+
+  Parameters
+  ----------
+  P: float
+    Pressure of a mixture [Pa].
+
+  T0: float
+    Initial guess of the saturation temperature [K]. It should be
+    inside the two-phase region.
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  stab0: StabResult
+    An instance of the `StabResult` with results of the stability test
+    for the initial guess of saturation temperature.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to temperature.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol`. Default is `1e-6`.
+    The TPD-equation is the equation of equality to zero of the
+    tangent-plane distance, which determines the second phase
+    appearance or disappearance.
+
+  maxiter_tpd: int
+    The maximum number of TPD-equation solver iterations.
+    Default is `8`.
+
+  Tmax: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
+
+  Tmin: float
+    The lower bound for the TPD-equation solver.
+    Default is `173.15` [K].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation bound or the lower saturation bound.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries. Default is `True`.
+
+  Returns
+  -------
+  Saturation temperature calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the saturation pressure in [Pa],
+  - `T` the saturation temperature in [K],
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    'Saturation temperature calculation using the QNSS-method:\n'
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
+    P, T0, yi, Tmin, Tmax,
+  )
+  solverTPDeq = partial(_solveTPDeqPT_forT, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
+                        increasing=upper)
+  k = 0
+  Tk = T0
+  ni = stab0.yti
+  kvik = ni / yi
+  lnkvik = np.log(kvik)
+  lnphixi = stab0.lnphiyti
+  lnphiyi = stab0.lnphiyi
+  Zx = stab0.Zt
+  Zy = stab0.Z
+  gi = lnkvik + lnphixi - lnphiyi
+  gnorm = np.linalg.norm(gi)
+  TPD = ni.dot(gi)
+  lmbd = 1.
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
+    k, kvik, gnorm, TPD, Tk,
+  )
+  while ((gnorm > tol) or (np.abs(TPD) > tol_tpd)) and (k < maxiter):
+    dlnkvi = -lmbd * gi
+    max_dlnkvi = np.abs(dlnkvi).max()
+    if max_dlnkvi > 6.:
+      relax = 6. / max_dlnkvi
+      lmbd *= relax
+      dlnkvi *= relax
+    k += 1
+    tkm1 = dlnkvi.dot(gi)
+    lnkvik += dlnkvi
+    kvik = np.exp(lnkvik)
+    ni = kvik * yi
+    xi = ni / ni.sum()
+    Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
+    gi = lnkvik + lnphixi - lnphiyi
+    gnorm = np.linalg.norm(gi)
+    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    if lmbd > 30.:
+      lmbd = 30.
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
+      k, kvik, gnorm, TPD, Tk,
+    )
+  if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Tk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'Saturation temperature for P = %s Pa, yi = %s:\n\t'
+      'Ts = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+      P, yi, Tk, xi, gnorm, k,
+    )
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+  else:
+    logger.warning(
+      "Saturation pressure calculation using the QNSS-method terminates "
+      "unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
+      eos.name, P, T0, yi, Tmin, Tmax,
+    )
+    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
+
+
+# def _TsatPT_newtA(
+#   P: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   stab0: StabResult,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 20,
+#   Tmax: ScalarType = 1e8,
+#   Tmin: ScalarType = 1.,
+#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+# ) -> SatResult:
+#   """This function calculates saturation temperature by solving a system
+#   of nonlinear equations using Newton's method. The system incorporates
+#   the condition of equal fugacity for all components in both phases, as
+#   well as the requirement that the sum of mole numbers of components in
+#   the trial phase equals unity.
+
+#   The formulation of the system of nonlinear equations is based on the
+#   paper of M.L. Michelsen: 10.1016/0378-3812(80)80001-X.
+
+#   Parameters
+#   ----------
+#   P: float
+#     Pressure of a mixture [Pa].
+
+#   T0: float
+#     Initial guess of the saturation temperature [K]. It should be
+#     inside the two-phase region.
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components.
+
+#   stab0: StabResult
+#     An instance of the `StabResult` with results of the stability test
+#     for the initial guess of saturation temperature.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to temperature.
+
+#     - `getPT_lnphii_Z_dnj_dT(P, T, yi, n) -> tuple[ndarray, float,
+#                                                    ndarray, ndarray]`
+#       For a given pressure [Pa], temperature [K], phase composition and
+#       phase mole number [mol] this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - a matrix of shape `(Nc, Nc)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components with
+#         respect to their mole numbers,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components with
+#         respect to temperature.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`.
+
+#     - `name: str`
+#       The EOS name (for proper logging).
+
+#     - `Nc: int`
+#       The number of components in the system.
+
+#   tol: float
+#     Terminate the solver successfully if the norm of an array of
+#     nonlinear equations is less than `tol`. Default is `1e-5`.
+
+#   maxiter: int
+#     The maximum number of solver iterations. Default is `20`.
+
+#   Tmax: float
+#     The upper bound for the TPD-equation solver.
+#     Default is `973.15` [K].
+
+#   Tmin: float
+#     The lower bound for the TPD-equation solver.
+#     Default is `173.15` [K].
+
+#   linsolver: Callable[[ndarray, ndarray], ndarray]
+#     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+#     an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
+#     `(Nc+1,)`, which is the solution of the system of linear equations
+#     `Ax = b`. Default is `numpy.linalg.solve`.
+
+#   Returns
+#   -------
+#   Saturation temperature calculation results as an instance of the
+#   `SatResult`. Important attributes are:
+#   - `P` the saturation pressure in [Pa],
+#   - `T` the saturation temperature in [K],
+#   - `yji` the component mole fractions in each phase,
+#   - `Zj` the compressibility factors of each phase,
+#   - `success` a boolean flag indicating if the calculation
+#     completed successfully.
+#   """
+#   logger.debug(
+#     "Saturation temperature calculation using Newton's method (A-form):\n"
+#     '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
+#     P, T0, yi, Tmin, Tmax,
+#   )
+#   Nc = eos.Nc
+#   J = np.empty(shape=(Nc + 1, Nc + 1))
+#   J[-1,-1] = 0.
+#   gi = np.empty(shape=(Nc + 1,))
+#   I = np.eye(Nc)
+#   k = 0
+#   Tk = T0
+#   ni = stab0.yti
+#   kvik = ni / yi
+#   lnkvik = np.log(kvik)
+#   n = ni.sum()
+#   xi = ni / n
+#   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk, xi,
+#                                                                    n)
+#   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
+#   gi[:Nc] = lnkvik + lnphixi - lnphiyi
+#   gi[-1] = n - 1.
+#   gnorm = np.linalg.norm(gi)
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s',
+#     k, kvik, Tk, gnorm,
+#   )
+#   while (gnorm > tol) and (k < maxiter):
+#     J[:Nc,:Nc] = I + ni * dlnphixidnj
+#     J[-1,:Nc] = ni
+#     J[:Nc,-1] = dlnphixidT - dlnphiyidT
+#     dlnkviT = linsolver(J, -gi)
+#     k += 1
+#     lnkvik += dlnkviT[:-1]
+#     Tkp1 = Tk + dlnkviT[-1]
+#     if Tkp1 > Tmax:
+#       Tk = .5 * (Tk + Tmax)
+#     elif Tkp1 < Tmin:
+#       Tk = .5 * (Tmin + Tk)
+#     else:
+#       Tk = Tkp1
+#     kvik = np.exp(lnkvik)
+#     ni = kvik * yi
+#     n = ni.sum()
+#     xi = ni / n
+#     lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk,
+#                                                                      xi, n)
+#     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
+#     gi[:Nc] = lnkvik + lnphixi - lnphiyi
+#     gi[-1] = n - 1.
+#     gnorm = np.linalg.norm(gi)
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s',
+#       k, kvik, Tk, gnorm,
+#     )
+#   if (gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Tk)):
+#     rhoy = yi.dot(eos.mwi) / Zy
+#     rhox = xi.dot(eos.mwi) / Zx
+#     if rhoy < rhox:
+#       yji = np.vstack([yi, xi])
+#       Zj = np.array([Zy, Zx])
+#       lnphiji = np.vstack([lnphiyi, lnphixi])
+#     else:
+#       yji = np.vstack([xi, yi])
+#       Zj = np.array([Zx, Zy])
+#       lnphiji = np.vstack([lnphixi, lnphiyi])
+#     logger.info(
+#       'Saturation temperature for P = %s Pa, yi = %s:\n\t'
+#       'Ts = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+#       P, yi, Tk, xi, gnorm, k,
+#     )
+#     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+#   else:
+#     logger.warning(
+#       "Saturation temperature calculation using Newton's method (A-form) "
+#       "terminates unsuccessfully. EOS: %s. Parameters:"
+#       "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
+#       eos.name, P, T0, yi, Tmin, Tmax,
+#     )
+#     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+#                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+#                      success=False)
