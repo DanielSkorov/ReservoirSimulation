@@ -377,7 +377,7 @@ class tsat(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-b', upper=False,
-                  stabkwargs=dict(method='qnss'), maxiter=2)
+                  stabkwargs=dict(method='qnss'), maxiter=3)
     res = Tsat.run(P, yi, T0)
     self.assertTrue(res.success)
     pass

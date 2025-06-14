@@ -717,7 +717,7 @@ class pr78(object):
       components,
     - the compressibility factor of the mixture,
     - an array with shape `(Nc,)` of partial derivatives of logarithms
-      of the fugacity coefficients with respect to pressure .
+      of the fugacity coefficients with respect to pressure.
     """
     RT = R * T
     PRT = P / RT
@@ -733,8 +733,8 @@ class pr78(object):
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])[:,None]
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
@@ -799,8 +799,8 @@ class pr78(object):
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])[:,None]
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
@@ -951,8 +951,8 @@ class pr78(object):
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])[:,None]
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
@@ -965,7 +965,7 @@ class pr78(object):
     dbmdnj = (self.bi - bm) / n
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj + ddmdB * dBdnj
+    ddmdnj = ddmdA[:,None] * dAdnj + ddmdB[:,None] * dBdnj
     dqdnj = np.power(Z, np.array([2, 1, 0])).dot(ddmdnj)
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
@@ -1042,8 +1042,8 @@ class pr78(object):
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])[:,None]
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
@@ -1056,7 +1056,7 @@ class pr78(object):
     dbmdnj = (self.bi - bm) / n
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj + ddmdB * dBdnj
+    ddmdnj = ddmdA[:,None] * dAdnj + ddmdB[:,None] * dBdnj
     dqdnj = np.power(Z, np.array([2, 1, 0])).dot(ddmdnj)
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj

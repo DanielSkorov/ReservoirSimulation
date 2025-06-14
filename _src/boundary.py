@@ -3265,8 +3265,7 @@ def _TsatPT_newtC(
         logarithms of the fugacity coefficients of components
         with respect to temperature.
 
-    - `getPT_lnphii_Z_dnj_dT(P, T, yi, n) -> tuple[ndarray, float,
-                                                   ndarray, ndarray]`
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
       For a given pressure [Pa], temperature [K], phase composition and
       phase mole number [mol] this method should return a tuple of:
 
@@ -3275,10 +3274,7 @@ def _TsatPT_newtC(
       - the phase compressibility factor,
       - a matrix of shape `(Nc, Nc)` of partial derivatives of
         logarithms of the fugacity coefficients of components with
-        respect to their mole numbers,
-      - an array of shape `(Nc,)` of partial derivatives of
-        logarithms of the fugacity coefficients of components with
-        respect to temperature.
+        respect to their mole numbers.
 
     Also, this instance must have attributes:
 
