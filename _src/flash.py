@@ -391,7 +391,7 @@ def _flash2pPT_ss(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
       k, kvik, gnorm, Fv,
     )
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
       k += 1
       lnkvik -= gi
       kvik = np.exp(lnkvik)
@@ -406,8 +406,8 @@ def _flash2pPT_ss(
         'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
         k, kvik, gnorm, Fv,
       )
-    if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
-        & ((0. < Fv < 1.) | negativeflash)):
+    if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
+        and (0. < Fv < 1. or negativeflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -534,7 +534,7 @@ def _flash2pPT_qnss(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s\n\tlmbd = %s',
       k, kvik, gnorm, Fv, lmbd,
     )
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
       dlnkvi = -lmbd * gi
       max_dlnkvi = np.abs(dlnkvi).max()
       if max_dlnkvi > 6.:
@@ -561,8 +561,8 @@ def _flash2pPT_qnss(
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
-        & ((0. < Fv < 1.) | negativeflash)):
+    if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
+        and (0. < Fv < 1. or negativeflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -710,7 +710,7 @@ def _flash2pPT_newt(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
       k, kvik, gnorm, Fv,
     )
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
       ui = yi / (yli * yvi) - 1.
       FvFl = 1. / (Fv * (1. - Fv))
       np.fill_diagonal(U, ui)
@@ -727,7 +727,7 @@ def _flash2pPT_newt(
       lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
       gi = lnkvik + lnphivi - lnphili
       gnormkp1 = np.linalg.norm(gi)
-      if (gnormkp1 < gnorm) | (forcenewton):
+      if gnormkp1 < gnorm or forcenewton:
         gnorm = gnormkp1
         logger.debug(
           'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
@@ -748,8 +748,8 @@ def _flash2pPT_newt(
           'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
           k, kvik, gnorm, Fv,
         )
-    if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
-        & ((0. < Fv < 1.) | negativeflash)):
+    if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
+        and (0. < Fv < 1. or negativeflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -913,7 +913,7 @@ def _flash2pPT_ssnewt(
       'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
       k, kvik, gnorm, Fv,
     )
-    while (gnorm > tol_ss) & (k < maxiter_ss):
+    while gnorm > tol_ss and k < maxiter_ss:
       k += 1
       lnkvik -= gi
       kvik = np.exp(lnkvik)
@@ -928,9 +928,9 @@ def _flash2pPT_ssnewt(
         'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
         k, kvik, gnorm, Fv,
       )
-    if (np.isfinite(kvik).all()) & (np.isfinite(Fv)):
+    if np.isfinite(kvik).all() and np.isfinite(Fv):
       if gnorm < tol:
-        if (0. < Fv < 1.) | (negativeflash):
+        if 0. < Fv < 1. or negativeflash:
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -957,7 +957,7 @@ def _flash2pPT_ssnewt(
           'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
           k, kvik, gnorm, Fv,
         )
-        while (gnorm > tol) & (k < maxiter):
+        while gnorm > tol and k < maxiter:
           ui = yi / (yli * yvi) - 1.
           FvFl = 1. / (Fv * (1. - Fv))
           np.fill_diagonal(U, ui)
@@ -974,7 +974,7 @@ def _flash2pPT_ssnewt(
           lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
           gi = lnkvik + lnphivi - lnphili
           gnormkp1 = np.linalg.norm(gi)
-          if (gnormkp1 < gnorm) | (forcenewton):
+          if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
@@ -995,8 +995,8 @@ def _flash2pPT_ssnewt(
               'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
               k, kvik, gnorm, Fv,
             )
-        if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
-            & ((0. < Fv < 1.) | negativeflash)):
+        if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
+            and (0. < Fv < 1. or negativeflash)):
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1165,7 +1165,7 @@ def _flash2pPT_qnssnewt(
       'kvi = %s\n\tgnorm = %s\n\tFv = %s\n\tlmbd = %s',
       k, kvik, gnorm, Fv, lmbd,
     )
-    while (gnorm > tol_qnss) & (k < maxiter_qnss):
+    while gnorm > tol_qnss and k < maxiter_qnss:
       dlnkvi = -lmbd * gi
       max_dlnkvi = np.abs(dlnkvi).max()
       if max_dlnkvi > 6.:
@@ -1193,9 +1193,9 @@ def _flash2pPT_qnssnewt(
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if (np.isfinite(kvik).all()) & (np.isfinite(Fv)):
+    if np.isfinite(kvik).all() and np.isfinite(Fv):
       if gnorm < tol:
-        if (0. < Fv < 1.) | (negativeflash):
+        if 0. < Fv < 1. or negativeflash:
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1222,7 +1222,7 @@ def _flash2pPT_qnssnewt(
           'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
           k, kvik, gnorm, Fv,
         )
-        while (gnorm > tol) & (k < maxiter):
+        while gnorm > tol and k < maxiter:
           ui = yi / (yli * yvi) - 1.
           FvFl = 1. / (Fv * (1. - Fv))
           np.fill_diagonal(U, ui)
@@ -1239,7 +1239,7 @@ def _flash2pPT_qnssnewt(
           lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
           gi = lnkvik + lnphivi - lnphili
           gnormkp1 = np.linalg.norm(gi)
-          if (gnormkp1 < gnorm) | (forcenewton):
+          if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
@@ -1260,8 +1260,8 @@ def _flash2pPT_qnssnewt(
               'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tFv = %s',
               k, kvik, gnorm, Fv,
             )
-        if ((gnorm < tol) & (np.isfinite(kvik).all()) & (np.isfinite(Fv))
-            & ((0. < Fv < 1.) | negativeflash)):
+        if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
+            and (0. < Fv < 1. or negativeflash)):
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)

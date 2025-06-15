@@ -107,7 +107,7 @@ def solve2p_FGH(
   D, dDda = pD(ak)
   hk = D / dDda
   logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', 0, ak, D)
-  while (np.abs(D) > tol) & (k < maxiter):
+  while np.abs(D) > tol and k < maxiter:
     akp1 = ak - hk
     if akp1 < 0.:
       if D > 0.:
@@ -184,7 +184,7 @@ def solve2p_GH(
     eq *= -ak
   hk = eq / deqda
   logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', 0, ak, eq)
-  while (eq > tol) & (k < maxiter):
+  while eq > tol and k < maxiter:
     k +=1
     ak -= hk
     eq, deqda = peq(ak)
@@ -268,7 +268,7 @@ def solveNp(
     'Iteration #0:\n\tFj = %s\n\tgnorm = %s', fjk, gnorm,
   )
   k: int = 1
-  while (gnorm > tol) & (k < maxiter):
+  while gnorm > tol and k < maxiter:
     Pji = Bji / ti
     Hjl = Pji.dot(Pji.T)
     dfj = -linsolver(Hjl, gj)

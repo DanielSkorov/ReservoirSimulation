@@ -48,7 +48,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='ss', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=38)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -70,7 +70,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='ss', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=33)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -92,7 +92,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='ss', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=4)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -114,7 +114,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='ss', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=4)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -136,7 +136,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='qnss', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=7)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -158,7 +158,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='qnss', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=6)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -180,7 +180,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='qnss', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -202,7 +202,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='qnss', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -224,7 +224,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -246,7 +246,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=2)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -268,7 +268,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=2)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -290,7 +290,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=2)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -312,7 +312,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-b', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=4)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -334,7 +334,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-b', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -356,7 +356,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-b', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -378,7 +378,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-b', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -400,7 +400,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-c', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=3)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -422,7 +422,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-c', upper=True,
                   stabkwargs=dict(method='qnss'), maxiter=2)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -444,7 +444,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-c', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=2)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 
@@ -466,7 +466,7 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Tsat = TsatPT(pr, method='newton-c', upper=False,
                   stabkwargs=dict(method='qnss'), maxiter=2)
-    res = Tsat.run(P, yi, T0)
+    res = Tsat.run(P, T0, yi)
     self.assertTrue(res.success)
     pass
 

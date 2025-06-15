@@ -291,7 +291,7 @@ def _stabPT_ss(
     logger.debug(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
     )
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
       k += 1
       kvik *= np.exp(-gi)
       ni = kvik * yi
@@ -301,7 +301,7 @@ def _stabPT_ss(
       logger.debug(
         'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
       )
-    if (gnorm < tol) & (np.isfinite(kvik).all()):
+    if gnorm < tol and np.isfinite(kvik).all():
       TPD = -np.log(ni.sum())
       if TPD < eps:
         logger.info(
@@ -414,7 +414,7 @@ def _stabPT_qnss(
       k, kvik, gnorm, 1.,
     )
     lmbd = 1.
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
       dlnkvi = -lmbd * gi
       max_dlnkvi = np.abs(dlnkvi).max()
       if max_dlnkvi > 6.:
@@ -437,7 +437,7 @@ def _stabPT_qnss(
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if (gnorm < tol) & (np.isfinite(kvik).all()):
+    if gnorm < tol and np.isfinite(kvik).all():
       TPD = -np.log(ni.sum())
       if TPD < eps:
         logger.info(
@@ -580,7 +580,7 @@ def _stabPT_newt(
       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s',
       k, ni/yi, gnorm,
     )
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
       H = np.diagflat(.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
       dalphai = linsolver(H, -gi)
       k += 1
@@ -592,7 +592,7 @@ def _stabPT_newt(
       lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
       gi = sqrtni * (np.log(ni) + lnphixi - hi)
       gnormkp1 = np.linalg.norm(gi)
-      if (gnormkp1 < gnorm) | (forcenewton):
+      if gnormkp1 < gnorm or forcenewton:
         gnorm = gnormkp1
         logger.debug(
           'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
@@ -610,7 +610,7 @@ def _stabPT_newt(
         logger.debug(
           'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
         )
-    if (gnorm < tol) & (np.isfinite(kvik).all()):
+    if gnorm < tol and np.isfinite(kvik).all():
       TPD = -np.log(ni.sum())
       if TPD < eps:
         logger.info(
@@ -760,7 +760,7 @@ def _stabPT_ssnewt(
     logger.debug(
       'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
     )
-    while (gnorm > tol_ss) & (k < maxiter_ss):
+    while gnorm > tol_ss and k < maxiter_ss:
       k += 1
       kvik *= np.exp(-gi)
       ni = kvik * yi
@@ -797,7 +797,7 @@ def _stabPT_ssnewt(
           'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
           k, ni/yi, gnorm,
         )
-        while (gnorm > tol) & (k < maxiter):
+        while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
           dalphai = linsolver(H, -gi)
@@ -810,7 +810,7 @@ def _stabPT_ssnewt(
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
           gnormkp1 = np.linalg.norm(gi)
-          if (gnormkp1 < gnorm) | (forcenewton):
+          if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
@@ -830,7 +830,7 @@ def _stabPT_ssnewt(
               'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
-        if (gnorm < tol) & (np.isfinite(alphaik).all()):
+        if gnorm < tol and np.isfinite(alphaik).all():
           TPD = -np.log(ni.sum())
           if TPD < eps:
             logger.info(
@@ -983,7 +983,7 @@ def _stabPT_qnssnewt(
     logger.debug(
       'Iteration (QNSS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
     )
-    while (gnorm > tol_qnss) & (k < maxiter_qnss):
+    while gnorm > tol_qnss and k < maxiter_qnss:
       dlnkvi = -lmbd * gi
       max_dlnkvi = np.abs(dlnkvi).max()
       if max_dlnkvi > 6.:
@@ -1033,7 +1033,7 @@ def _stabPT_qnssnewt(
           'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
           k, ni/yi, gnorm,
         )
-        while (gnorm > tol) & (k < maxiter):
+        while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
           dalphai = linsolver(H, -gi)
@@ -1046,7 +1046,7 @@ def _stabPT_qnssnewt(
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
           gi = sqrtni * (np.log(ni) + lnphixi - hi)
           gnormkp1 = np.linalg.norm(gi)
-          if (gnormkp1 < gnorm) | (forcenewton):
+          if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
             logger.debug(
               'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
@@ -1066,7 +1066,7 @@ def _stabPT_qnssnewt(
               'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
-        if (gnorm < tol) & (np.isfinite(alphaik).all()):
+        if gnorm < tol and np.isfinite(alphaik).all():
           TPD = -np.log(ni.sum())
           if TPD < eps:
             logger.info(

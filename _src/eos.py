@@ -731,17 +731,17 @@ class pr78(object):
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
     ddmdA = np.array([0., 1., -B])
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = (1. / (Z - B * 0.414213562373095)
-             - 1. / (Z + B * 2.414213562373095))
-    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
-             - 2.414213562373095 / (Z + B * 2.414213562373095))
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
@@ -749,8 +749,7 @@ class pr78(object):
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dgphiidP = gphii * ((B * dAdP - A * dBdP) / (A * B))
-    dlnphiidP = (-dgZdP + self.bi * dZdP / bm + fZ * dgphiidP + gphii * dfZdP
+    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
                  - self.vsi_bi / RT)
     return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidP
 
@@ -796,18 +795,19 @@ class pr78(object):
     B = bm * PRT
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
-    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
+    gphii = A / B * (2. / alpham * Si - self.bi / bm)
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
+    lnphii = (0.3535533905932738 * fZ * gphii - gZ + (Z - 1.) / bm * self.bi
+              - PRT * self.vsi_bi)
     ddmdA = np.array([0., 1., -B])
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = (1. / (Z - B * 0.414213562373095)
-             - 1. / (Z + B * 2.414213562373095))
-    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
-             - 2.414213562373095 / (Z + B * 2.414213562373095))
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * self.D.dot(yi * dsqrtalphaidT)
@@ -819,11 +819,9 @@ class pr78(object):
     dZdT = -dqdT / dqdZ
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
-    dgphiidT = (gphii * (dAdT / A - dBdT / B)
-                + 0.7071067811865476 / (RT * bm)
-                  * (dSidT - (dalphamdT / alpham) * Si))
-    dlnphiidT = (-dgZdT + dZdT / bm * self.bi + dfZdT * gphii + fZ * dgphiidT
-                 + PRT / T * self.vsi_bi)
+    dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
+    dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
+                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
     return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidT
 
   def getPT_lnphii_Z_dnj(
@@ -872,17 +870,17 @@ class pr78(object):
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
     ddmdA = np.array([0., 1., -B])[:,None]
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = (1. / (Z - B * 0.414213562373095)
-             - 1. / (Z + B * 2.414213562373095))
-    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
-             - 2.414213562373095 / (Z + B * 2.414213562373095))
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
@@ -949,17 +947,17 @@ class pr78(object):
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
     ddmdA = np.array([0., 1., -B])
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = (1. / (Z - B * 0.414213562373095)
-             - 1. / (Z + B * 2.414213562373095))
-    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
-             - 2.414213562373095 / (Z + B * 2.414213562373095))
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
@@ -984,8 +982,7 @@ class pr78(object):
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dgphiidP = gphii * ((B * dAdP - A * dBdP) / (A * B))
-    dlnphiidP = (-dgZdP + self.bi * dZdP / bm + fZ * dgphiidP + gphii * dfZdP
+    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
                  - self.vsi_bi / RT)
     return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidnj, dlnphiidP
 
@@ -1039,18 +1036,19 @@ class pr78(object):
     B = bm * PRT
     Z = self.solve_eos(A, B)
     gZ = np.log(Z - B)
-    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
+    gphii = A / B * (2. / alpham * Si - self.bi / bm)
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
+    lnphii = (0.3535533905932738 * fZ * gphii - gZ + (Z - 1.) / bm * self.bi
+              - PRT * self.vsi_bi)
     ddmdA = np.array([0., 1., -B])
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
-    dfZdZ = (1. / (Z - B * 0.414213562373095)
-             - 1. / (Z + B * 2.414213562373095))
-    dfZdB = (- 0.414213562373095 / (Z - B * 0.414213562373095)
-             - 2.414213562373095 / (Z + B * 2.414213562373095))
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
@@ -1062,11 +1060,11 @@ class pr78(object):
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
     dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
-                  + (self.bi / (bm * bm))[:,None] * dbmdnj)
-                 * (0.3535533905932738 * A / B)
+                  + (self.bi / (bm * bm))[:,None] * dbmdnj) * (A / B)
                  + gphii[:,None] * (dAdnj / A - dBdnj / B))
     dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
-                  + (fZ * dgphiidnj + gphii[:,None] * dfZdnj)
+                  + (0.3535533905932738 * fZ * dgphiidnj
+                     + (0.3535533905932738 * gphii)[:,None] * dfZdnj)
                   - dgZdnj)
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
@@ -1079,12 +1077,203 @@ class pr78(object):
     dZdT = -dqdT / dqdZ
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
-    dgphiidT = (gphii * (dAdT / A - dBdT / B)
-                + 0.7071067811865476 / (RT * bm)
-                  * (dSidT - (dalphamdT / alpham) * Si))
-    dlnphiidT = (-dgZdT + dZdT / bm * self.bi + dfZdT * gphii + fZ * dgphiidT
-                 + PRT / T * self.vsi_bi)
+    dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
+    dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
+                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
     return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidnj, dlnphiidT
+
+  def getPT_lnphii_Z_dP_d2P(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> tuple[VectorType, ScalarType, VectorType, VectorType]:
+    """Computes fugacity coefficients of components and their first
+    and second partial derivatives with respect to pressure.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple that contains:
+    - an array of logarithms of the fugacity coefficients of `Nc`
+      components,
+    - the compressibility factor of the mixture,
+    - an array with shape `(Nc,)` of partial derivatives of logarithms
+      of the fugacity coefficients with respect to pressure.
+    - an array with shape `(Nc,)` of second partial derivatives of
+      logarithms of the fugacity coefficients with respect to pressure.
+    """
+    RT = R * T
+    PRT = P / RT
+    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve_eos(A, B)
+    gZ = np.log(Z - B)
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
+    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
+    dgZdZ = 1. / (Z - B)
+    dgZdB = -dgZdZ
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    dAdP = alpham / (RT * RT)
+    dBdP = bm / RT
+    ddmdP = ddmdA * dAdP + ddmdB * dBdP
+    m = np.array([2, 1, 0])
+    Zpowm = np.power(Z, m)
+    dqdP = Zpowm.dot(ddmdP)
+    dZdP = -dqdP / dqdZ
+    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
+    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
+    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
+                 - self.vsi_bi / RT)
+    d2dmdB2 = np.array([0., -6., 2. + 6. * B])
+    d2dmdAdB = np.array([0., 0., -1.])
+    d2dmdP2 = dBdP * dBdP * d2dmdB2 + 2. * dAdP * dBdP * d2dmdAdB
+    d2qdZ2 = 6. * Z + 2. * (B - 1.)
+    d2qdP2 = Zpowm.dot(d2dmdP2)
+    d2qdZdP = 2. * ddmdP[0] * Z + ddmdP[1]
+    d2ZdP2 = - (d2qdP2 + 2. * dZdP * d2qdZdP + dZdP * dZdP * d2qdZ2) / dqdZ
+    d2gZdZ2 = -dgZdZ * dgZdZ
+    d2gZdB2 = d2gZdZ2
+    d2gZdZdB = -d2gZdB2
+    d2gZdP2 = (d2gZdZ2 * dZdP * dZdP + dgZdZ * d2ZdP2 + d2gZdB2 * dBdP * dBdP
+               + 2. * d2gZdZdB * dZdP * dBdP)
+    d2fZdZ2 = -1. / (ZmB * ZmB) + 1. / (ZpB * ZpB)
+    d2fZdB2 = -0.17157287525381 / (ZmB * ZmB) + 5.82842712474619 / (ZpB * ZpB)
+    d2fZdZdB = 0.414213562373095 / (ZmB * ZmB) + 2.414213562373095 / (ZpB*ZpB)
+    d2fZdP2 = (d2fZdZ2 * dZdP * dZdP + dfZdZ * d2ZdP2 + d2fZdB2 * dBdP * dBdP
+               + 2. * d2fZdZdB * dZdP * dBdP)
+    d2lnphiidP2 = -d2gZdP2 + d2ZdP2 / bm * self.bi + d2fZdP2 * gphii
+    return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidP, d2lnphiidP2
+
+  def getPT_lnphii_Z_dT_d2T(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+  ) -> tuple[VectorType, ScalarType, VectorType, VectorType]:
+    """Computes fugacity coefficients of components and their first
+    and second partial derivatives with respect to temperature.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple that contains:
+    - an array of logarithms of the fugacity coefficients of `Nc`
+      components,
+    - the compressibility factor of the mixture,
+    - an array with shape `(Nc,)` of first partial derivatives of
+      logarithms of the fugacity coefficients with respect to
+      temperature,
+    - an array with shape `(Nc,)` of second partial derivatives of
+      logarithms of the fugacity coefficients with respect to
+      temperature.
+    """
+    RT = R * T
+    PRT = P / RT
+    sqrtT = np.sqrt(T)
+    multi = 1. + self.kappai * (1. - sqrtT * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si_ = self.D.dot(yi * sqrtalphai)
+    Si = sqrtalphai * Si_
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve_eos(A, B)
+    gZ = np.log(Z - B)
+    gphii = A / B * (2. / alpham * Si - self.bi / bm)
+    ZmB = Z - B * 0.414213562373095
+    ZpB = Z + B * 2.414213562373095
+    fZ = np.log(ZmB / ZpB)
+    lnphii = (-gZ + (Z - 1.) / bm * self.bi + 0.3535533905932738 * fZ * gphii
+              - PRT * self.vsi_bi)
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
+    dgZdZ = 1. / (Z - B)
+    dgZdB = -dgZdZ
+    dfZdZ = 1. / ZmB - 1. / ZpB
+    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
+    dsqrtalphaidT = self.sqrtai * dmultidT
+    dSidT_ = self.D.dot(yi * dsqrtalphaidT)
+    dSidT = dsqrtalphaidT * Si_ + sqrtalphai * dSidT_
+    dalphamdT = yi.dot(dSidT)
+    dAdT = PRT / RT * dalphamdT - 2. * A / T
+    dBdT = -bm * PRT / T
+    ddmdT = ddmdA * dAdT + ddmdB * dBdT
+    m = np.array([2, 1, 0])
+    Zpowm = np.power(Z, m)
+    dqdT = Zpowm.dot(ddmdT)
+    dZdT = -dqdT / dqdZ
+    dgZdT = dgZdZ * dZdT + dgZdB * dBdT
+    dfZdT = dfZdZ * dZdT + dfZdB * dBdT
+    dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
+    dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
+                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
+    d2dmdB2 = np.array([0., -6., 2. + 6. * B])
+    d2dmdAdB = np.array([0., 0., -1.])
+    d2sqrtalphaidT2 = dsqrtalphaidT * (-.5 / T)
+    d2SidT2 = (d2sqrtalphaidT2 * Si_ + 2. * dsqrtalphaidT * dSidT_
+               + sqrtalphai * self.D.dot(yi * d2sqrtalphaidT2))
+    d2alphamdT2 = yi.dot(d2SidT2)
+    d2AdT2 = PRT / RT * (d2alphamdT2 - dalphamdT / T) - 3. * dAdT / T
+    d2BdT2 = 2. * bm * PRT / (T * T)
+    d2dmdT2 = (ddmdA * d2AdT2 + d2dmdB2 * dBdT * dBdT + ddmdB * d2BdT2
+               + 2. * d2dmdAdB * dAdT * dBdT)
+    d2qdT2 = Zpowm.dot(d2dmdT2)
+    d2qdZdT = 2. * ddmdT[0] * Z + ddmdT[1]
+    d2qdZ2 = 6. * Z + 2. * (B - 1.)
+    d2ZdT2 = - (d2qdT2 + 2. * dZdT * d2qdZdT + dZdT * dZdT * d2qdZ2) / dqdZ
+    d2gZdZ2 = -dgZdZ * dgZdZ
+    d2gZdB2 = d2gZdZ2
+    d2gZdZdB = -d2gZdB2
+    d2gZdT2 = (d2gZdZ2 * dZdT * dZdT + dgZdZ * d2ZdT2 + d2gZdB2 * dBdT * dBdT
+               + dgZdB * d2BdT2 + 2. * d2gZdZdB * dZdT * dBdT)
+    d2fZdZ2 = -1. / (ZmB * ZmB) + 1. / (ZpB * ZpB)
+    d2fZdB2 = -0.17157287525381 / (ZmB * ZmB) + 5.82842712474619 / (ZpB * ZpB)
+    d2fZdZdB = 0.414213562373095 / (ZmB * ZmB) + 2.414213562373095 / (ZpB*ZpB)
+    d2fZdT2 = (d2fZdZ2 * dZdT * dZdT + dfZdZ * d2ZdT2 + d2fZdB2 * dBdT * dBdT
+               + dfZdB * d2BdT2 + 2. * d2fZdZdB * dZdT * dBdT)
+    d2gphiidT2 = ((2. * d2SidT2 - d2alphamdT2 / bm * self.bi) / (RT * bm)
+                  - 2. / T * dgphiidT)
+    d2lnphiidT2 = (0.3535533905932738 * (fZ * d2gphiidT2 + gphii * d2fZdT2
+                                         + 2. * dfZdT * dgphiidT)
+                   + d2ZdT2 / bm * self.bi - d2gZdT2
+                   - 2. * PRT / (T * T) * self.vsi_bi)
+    return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidT, d2lnphiidT2
 
   def getPT_lnfi_Z_dnj(
     self,
