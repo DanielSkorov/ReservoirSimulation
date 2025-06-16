@@ -49,3 +49,11 @@ $$ \bar{D} \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln
 (pvt-esc-saturation-bound)=
 ## Построение границы двухфазной области
 
+
+(pvt-esc-saturation-internals)=
+## Промежуточные линии (линии постоянной мольной доли фазы)
+
+
+(pvt-esc-saturation-retrograde)=
+## Границы ретроградных областей
+
