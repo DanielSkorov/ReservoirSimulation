@@ -3420,845 +3420,1276 @@ def _TsatPT_newtC(
                      success=False)
 
 
-class PmaxPT(PsatPT):
-  """Cricondenbar calculation.
-
-  Performs the cricondenbar point calculation using PT-based equations
-  of state.
-
-  Parameters
-  ----------
-  eos: EOSPTType
-    An initialized instance of a PT-based equation of state. Must have
-    the following methods:
-
-    - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
-      `P: float` is pressure [Pa], `T: float` is temperature [K],
-      and `yi: ndarray`, shape `(Nc,)` is an array of components
-      mole fractions, `Nc` is the number of components. This method
-      is used to generate initial guesses of k-values.
-
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor.
-
-    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor,
-      - an array of shape `(Nc,)` of partial derivatives of
-        logarithms of the fugacity coefficients of components
-        with respect to pressure.
-
-    - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
-                                                ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of logarithms of the fugacity coefficients of `Nc`
-        components,
-      - the compressibility factor of the mixture,
-      - an array with shape `(Nc,)` of first partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature,
-      - an array with shape `(Nc,)` of second partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature.
-
-    If the solution method would be `'newton'` then it also must have:
-
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K], phase composition and
-      phase mole number [mol] this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor,
-      - a matrix of shape `(Nc, Nc)` of partial derivatives of
-        logarithms of the fugacity coefficients of components with
-        respect to their mole numbers.
-
-    Also, this instance must have attributes:
-
-    - `mwi: ndarray`
-      An array of components molecular weights [kg/mol] of shape
-      `(Nc,)`.
-
-    - `name: str`
-      The EOS name (for proper logging).
-
-    - `Nc: int`
-      The number of components in the system.
-
-  method: str
-    Type of the solver. Should be one of:
-
-    - `'ss'` (Successive Substitution method),
-    - `'qnss'` (Quasi-Newton Successive Substitution method),
-    - `'bfgs'` (Currently raises `NotImplementedError`),
-    - `'newton'` (Newton's method).
-
-    Default is `'ss'`.
-
-  step: float
-    To specify the confidence interval for pressure of the cricondenbar
-    point calculation, the preliminary search is performed. This
-    parameter regulates the step of this search in fraction units.
-    During the preliminary search the next value of pressure will be
-    calculated from the previous one using the formula:
-    `Pnext = Pprev * (1. + step)`. Default is `0.1`.
-
-  lowerlimit: float
-    During the preliminary search, the pressure can not drop below
-    the lower limit. Otherwise, the `ValueError` will be rised.
-    Default is `1.` [Pa].
-
-  upperlimit: float
-    During the preliminary search, the pressure can not exceed the
-    upper limit. Otherwise, the `ValueError` will be rised.
-    Default is `1e8` [Pa].
-
-  stabkwargs: dict
-    The stability test procedure is used to locate the confidence
-    interval for pressure of the cricondenbar point. This dictionary is
-    used to specify arguments for the stability test procedure. Default
-    is an empty dictionary.
-
-  kwargs: dict
-    Other arguments for a cricondebar-solver. It may contain such
-    arguments as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others
-    depending on the selected solver.
-
-  Methods
-  -------
-  run(P, T, yi) -> SatResult
-    This method performs the criconfenbar point calculation for given
-    temperature `T: float` in [K], composition `yi: ndarray` of `Nc`
-    components and the initial guess `P0: float` in [Pa]. This method
-    returns saturation pressure calculation results as an instance of
-    `SatResult`.
-  """
-  def __init__(
-    self,
-    eos: EOSPTType,
-    method: str = 'ss',
-    step: ScalarType = 0.1,
-    lowerlimit: ScalarType = 1.,
-    upperlimit: ScalarType = 1e8,
-    stabkwargs: dict = {},
-    **kwargs,
-  ) -> None:
-    self.eos = eos
-    self.upper = True
-    self.step = step
-    self.lowerlimit = lowerlimit
-    self.upperlimit = upperlimit
-    self.stabsolver = stabilityPT(eos, **stabkwargs)
-    if method == 'ss':
-      self.solver = partial(_PmaxPT_ss, eos=eos, **kwargs)
-    elif method == 'qnss':
-      self.solver = partial(_PmaxPT_qnss, eos=eos, **kwargs)
-    elif method == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the cricondenbar point calculation is not '
-        'implemented yet.'
-      )
-    elif method == 'newton':
-      self.solver = partial(_PmaxPT_newtC, eos=eos, **kwargs)
-    else:
-      raise ValueError(f'The unknown method: {method}.')
-    pass
-
-
-def _solve_dTPDdTeqPT_forT(
-  P: ScalarType,
-  T0: ScalarType,
-  yi: VectorType,
-  xi: VectorType,
-  eos: EOSPTType,
-  tol: ScalarType = 1e-6,
-  maxiter: int = 8,
-) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
-  """Solves the cricondenbar equation using the PT-based equations of
-  state for temperature at a constant pressure. The cricondenbar equation
-  is the equation of equality to zero of the partial derivative of the
-  tangent-plane distance with respect to temperature. Newton's method is
-  used to solve the cricondenbar equation.
-
-  Parameters
-  ----------
-  P: float
-    Pressure of a mixture [Pa].
-
-  T0: float
-    Initial guess for temperature [K].
-
-  yi: ndarray, shape (Nc,)
-    Mole fractions of `Nc` components in the mixture.
-
-  yti: ndarray, shape (Nc,)
-    Mole fractions of `Nc` components in the trial phase.
-
-  eos: EOSPTType
-    An initialized instance of a PT-based equation of state. Must have
-    the following methods:
-
-    - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
-                                                ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of logarithms of the fugacity coefficients of `Nc`
-        components,
-      - the compressibility factor of the mixture,
-      - an array with shape `(Nc,)` of first partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature,
-      - an array with shape `(Nc,)` of second partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature.
-
-  maxiter: int
-    The maximum number of iterations. Default is `8`.
-
-  tol: float
-    Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
-
-  Returns
-  -------
-  A tuple of:
-  - the root (temperature) of the cricondenbar equation,
-  - an array of the natural logarithms of fugacity coefficients of
-    components in the trial phase,
-  - the same for the initial composition of the mixture,
-  - compressibility factors for both mixtures.
-  - value of the cricondenbar equation.
-  """
-  k = 0
-  Tk = T0
-  lnphiyi, Zy, dlnphiyidT, d2lnphiyidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, yi)
-  lnphixi, Zx, dlnphixidT, d2lnphixidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, xi)
-  eq = xi.dot(dlnphixidT - dlnphiyidT)
-  # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }')
-  while np.abs(eq) > tol and k < maxiter:
-    deqdT = xi.dot(d2lnphixidT2 - d2lnphiyidT2)
-    k += 1
-    Tk -= eq / deqdT
-    lnphiyi, Zy, dlnphiyidT, d2lnphiyidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk,
-                                                                      yi)
-    lnphixi, Zx, dlnphixidT, d2lnphixidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk,
-                                                                      xi)
-    eq = xi.dot(dlnphixidT - dlnphiyidT)
-    # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }, {deqdT = }')
-  return Tk, lnphixi, lnphiyi, Zx, Zy, eq
-
-
-def _PmaxPT_ss(
-  P0: ScalarType,
-  T0: ScalarType,
-  yi: VectorType,
-  kvi0: VectorType,
-  eos: EOSPTType,
-  tol: ScalarType = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: ScalarType = 1e-6,
-  maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
-) -> SatResult:
-  """Successive substitution (SS) method for the cricondenbar
-  calculation using a PT-based equation of state. To find the
-  cricondenbar, the algorithm solves a system of non-linear equations:
-
-  - `Nc` equations of equilibrium of components in the mixture and in
-    the trial phase,
-  - the TPD-equation that represents the condition where the
-    tangent-plane distance equals zero (this equation is linearized with
-    pressure),
-  - the cricondenbar equation which is the equation of equality to zero
-    of the partial derivative of the tangent-plane distance function
-    with respect to temperature (this equation is linearized with
-    temperature).
-
-  For the details of the algorithm see the paper of L.X. Nghiem and
-  Y.k. Li: 10.1016/0378-3812(85)90059-7.
-
-  Parameters
-  ----------
-  P0: float
-    Initial guess of the cricondenbar pressure [Pa].
-
-  T0: float
-    Initial guess of the cricondenbat temperature [K].
-
-  yi: ndarray, shape (Nc,)
-    Mole fractions of `Nc` components.
-
-  kvi0: ndarray, shape (Nc,)
-    Initial guess of k-values of `Nc` components.
-
-  eos: EOSPTType
-    An initialized instance of a PT-based equation of state. Must have
-    the following methods:
-
-    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor,
-      - an array of shape `(Nc,)` of partial derivatives of
-        logarithms of the fugacity coefficients of components
-        with respect to pressure.
-
-    - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
-                                                ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of logarithms of the fugacity coefficients of `Nc`
-        components,
-      - the compressibility factor of the mixture,
-      - an array with shape `(Nc,)` of first partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature,
-      - an array with shape `(Nc,)` of second partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature.
-
-    Also, this instance must have attributes:
-
-    - `mwi: ndarray`
-      An array of components molecular weights [kg/mol] of shape
-      `(Nc,)`.
-
-    - `name: str`
-      The EOS name (for proper logging).
-
-  tol: float
-    Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
-
-  maxiter: int
-    The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
-
-  tol_tpd: float
-    Terminate the TPD-equation and the cricondenbar equation solvers
-    successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
-
-  maxiter_tpd: int
-    The maximum number of iterations for the TPD-equation and
-    cricondenbar equation solvers. Default is `8`.
-
-  Pmax: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  Pmin: float
-    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
-
-  Returns
-  -------
-  The cricondenbar point calculation results as an instance of the
-  `SatResult`. Important attributes are:
-  - `P` the pressure in [Pa] of the cricondenbar point,
-  - `T` the temperature in [K] of the cricondenbar point,
-  - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
-  """
-  logger.debug(
-    'The cricondenbar calculation using the SS-method:\n'
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T0, yi, Pmin, Pmax,
-  )
-  solverTPDeq = partial(_solve_TPDeqPT_forP, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
-                        increasing=True)
-  solverCBAReq = partial(_solve_dTPDdTeqPT_forT, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd)
-  k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
-  xi = ni / ni.sum()
-  Pk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
-  Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
-  gnorm = np.linalg.norm(gi)
-  logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
-    k, kvik, gnorm, Pk, Tk,
-  )
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
-                         or np.abs(dTPDdT) > tol_tpd):
-    lnkvik -= gi
-    k += 1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    xi = ni / ni.sum()
-    Pk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
-    Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
-    gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
-      k, kvik, gnorm, Pk, Tk,
-    )
-  if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
-      and np.isfinite(Tk)):
-    rhoy = yi.dot(eos.mwi) / Zy
-    rhox = xi.dot(eos.mwi) / Zx
-    if rhoy < rhox:
-      yji = np.vstack([yi, xi])
-      Zj = np.array([Zy, Zx])
-      lnphiji = np.vstack([lnphiyi, lnphixi])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'The cricondenbar for yi = %s:\n\t'
-      'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
-      yi, Pk, Tk, xi, gnorm, k,
-    )
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
-  else:
-    logger.warning(
-      "The cricondenbar calculation using the SS-method terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T0, yi, Pmin, Pmax,
-    )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
-
-
-def _PmaxPT_qnss(
-  P0: ScalarType,
-  T0: ScalarType,
-  yi: VectorType,
-  kvi0: VectorType,
-  eos: EOSPTType,
-  tol: ScalarType = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: ScalarType = 1e-6,
-  maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
-) -> SatResult:
-  """Quasi-Newton Successive Substitution (SS) method for the
-  cricondenbar calculation using a PT-based equation of state. To find
-  the cricondenbar, the algorithm solves a system of non-linear
-  equations:
-
-  - `Nc` equations of equilibrium of components in the mixture and in
-    the trial phase,
-  - the TPD-equation that represents the condition where the
-    tangent-plane distance equals zero (this equation is linearized with
-    pressure),
-  - the cricondenbar equation which is the equation of equality to zero
-    of the partial derivative of the tangent-plane distance function
-    with respect to temperature (this equation is linearized with
-    temperature).
-
-  For the details of the algorithm see the paper of L.X. Nghiem and
-  Y.k. Li: 10.1016/0378-3812(85)90059-7.
-
-  For the details of the QNSS-method see: 10.1016/0378-3812(84)80013-8.
-
-  Parameters
-  ----------
-  P0: float
-    Initial guess of the cricondenbar pressure [Pa].
-
-  T0: float
-    Initial guess of the cricondenbat temperature [K].
-
-  yi: ndarray, shape (Nc,)
-    Mole fractions of `Nc` components.
-
-  kvi0: ndarray, shape (Nc,)
-    Initial guess of k-values of `Nc` components.
-
-  eos: EOSPTType
-    An initialized instance of a PT-based equation of state. Must have
-    the following methods:
-
-    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor,
-      - an array of shape `(Nc,)` of partial derivatives of
-        logarithms of the fugacity coefficients of components
-        with respect to pressure.
-
-    - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
-                                                ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of logarithms of the fugacity coefficients of `Nc`
-        components,
-      - the compressibility factor of the mixture,
-      - an array with shape `(Nc,)` of first partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature,
-      - an array with shape `(Nc,)` of second partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature.
-
-    Also, this instance must have attributes:
-
-    - `mwi: ndarray`
-      An array of components molecular weights [kg/mol] of shape
-      `(Nc,)`.
-
-    - `name: str`
-      The EOS name (for proper logging).
-
-  tol: float
-    Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
-
-  maxiter: int
-    The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
-
-  tol_tpd: float
-    Terminate the TPD-equation and the cricondenbar equation solvers
-    successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
-
-  maxiter_tpd: int
-    The maximum number of iterations for the TPD-equation and
-    cricondenbar equation solvers. Default is `8`.
-
-  Pmax: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  Pmin: float
-    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
-
-  Returns
-  -------
-  The cricondenbar point calculation results as an instance of the
-  `SatResult`. Important attributes are:
-  - `P` the pressure in [Pa] of the cricondenbar point,
-  - `T` the temperature in [K] of the cricondenbar point,
-  - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
-  """
-  logger.debug(
-    'The cricondenbar calculation using the QNSS-method:\n'
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T0, yi, Pmin, Pmax,
-  )
-  solverTPDeq = partial(_solve_TPDeqPT_forP, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
-                        increasing=True)
-  solverCBAReq = partial(_solve_dTPDdTeqPT_forT, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd)
-  k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
-  xi = ni / ni.sum()
-  Pk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
-  Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
-  gnorm = np.linalg.norm(gi)
-  lmbd = 1.
-  logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
-    k, kvik, gnorm, Pk, Tk,
-  )
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
-                         or np.abs(dTPDdT) > tol_tpd):
-    dlnkvi = -lmbd * gi
-    max_dlnkvi = np.abs(dlnkvi).max()
-    if max_dlnkvi > 6.:
-      relax = 6. / max_dlnkvi
-      lmbd *= relax
-      dlnkvi *= relax
-    k += 1
-    tkm1 = dlnkvi.dot(gi)
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    xi = ni / ni.sum()
-    Pk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
-    Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
-    gnorm = np.linalg.norm(gi)
-    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
-    if lmbd > 30.:
-      lmbd = 30.
-    logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
-      k, kvik, gnorm, Pk, Tk,
-    )
-  if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
-      and np.isfinite(Tk)):
-    rhoy = yi.dot(eos.mwi) / Zy
-    rhox = xi.dot(eos.mwi) / Zx
-    if rhoy < rhox:
-      yji = np.vstack([yi, xi])
-      Zj = np.array([Zy, Zx])
-      lnphiji = np.vstack([lnphiyi, lnphixi])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'The cricondenbar for yi = %s:\n\t'
-      'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
-      yi, Pk, Tk, xi, gnorm, k,
-    )
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
-  else:
-    logger.warning(
-      "The cricondenbar calculation using the QNSS-method terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T0, yi, Pmin, Pmax,
-    )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
-
-
-def _PmaxPT_newtC(
-  P0: ScalarType,
-  T0: ScalarType,
-  yi: VectorType,
-  kvi0: VectorType,
-  eos: EOSPTType,
-  tol: ScalarType = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: ScalarType = 1e-6,
-  maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
-  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
-) -> SatResult:
-  """This function calculates the cricondenbar point by solving a system
-  of nonlinear equations using Newton's method. The system incorporates
-  the condition of equal fugacity for all components in both phases, as
-  well as the requirements that the tangent-plane distance and its
-  partial derivative with respect to temperature are zero. The
-  TPD- and cricondenbar equations are solved in the inner while-loop.
-  The TPD-equation that represents the condition where the
-  tangent-plane distance equals zero (this equation is linearized with
-  pressure). The cricondenbar equation is the equation of equality to
-  zero of the partial derivative of the tangent-plane distance function
-  with respect to temperature (this equation is linearized with
-  temperature).
-
-  For the details of the algorithm see the paper of L.X. Nghiem and
-  Y.k. Li: 10.1016/0378-3812(85)90059-7.
-
-  Parameters
-  ----------
-  P0: float
-    Initial guess of the cricondenbar pressure [Pa].
-
-  T0: float
-    Initial guess of the cricondenbat temperature [K].
-
-  yi: ndarray, shape (Nc,)
-    Mole fractions of `Nc` components.
-
-  kvi0: ndarray, shape (Nc,)
-    Initial guess of k-values of `Nc` components.
-
-  eos: EOSPTType
-    An initialized instance of a PT-based equation of state. Must have
-    the following methods:
-
-    - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor,
-      - an array of shape `(Nc,)` of partial derivatives of
-        logarithms of the fugacity coefficients of components
-        with respect to pressure.
-
-    - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
-                                                ndarray]`
-      For a given pressure [Pa], temperature [K] and phase composition,
-      this method should return a tuple of:
-
-      - an array of logarithms of the fugacity coefficients of `Nc`
-        components,
-      - the compressibility factor of the mixture,
-      - an array with shape `(Nc,)` of first partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature,
-      - an array with shape `(Nc,)` of second partial derivatives of
-        logarithms of the fugacity coefficients with respect to
-        temperature.
-
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K], phase composition and
-      phase mole number [mol] this method should return a tuple of:
-
-      - an array of shape `(Nc,)` of logarithms of the fugacity
-        coefficients of components,
-      - the phase compressibility factor,
-      - a matrix of shape `(Nc, Nc)` of partial derivatives of
-        logarithms of the fugacity coefficients of components with
-        respect to their mole numbers.
-
-    Also, this instance must have attributes:
-
-    - `mwi: ndarray`
-      An array of components molecular weights [kg/mol] of shape
-      `(Nc,)`,
-
-    - `name: str`
-      The EOS name (for proper logging),
-
-    - `Nc: int`
-      The number of components in the system.
-
-  tol: float
-    Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
-
-  maxiter: int
-    The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
-
-  tol_tpd: float
-    Terminate the TPD-equation and the cricondenbar equation solvers
-    successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
-
-  maxiter_tpd: int
-    The maximum number of iterations for the TPD-equation and
-    cricondenbar equation solvers. Default is `8`.
-
-  Pmax: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  Pmin: float
-    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
-
-  linsolver: Callable[[ndarray, ndarray], ndarray]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
-    `Ax = b`. Default is `numpy.linalg.solve`.
-
-  Returns
-  -------
-  The cricondenbar point calculation results as an instance of the
-  `SatResult`. Important attributes are:
-  - `P` the pressure in [Pa] of the cricondenbar point,
-  - `T` the temperature in [K] of the cricondenbar point,
-  - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
-  """
-  logger.debug(
-    "The cricondenbar calculation using Newton's method (C-form):\n"
-    "\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-    P0, T0, yi, Pmin, Pmax,
-  )
-  solverTPDeq = partial(_solve_TPDeqPT_forP, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
-                        increasing=True)
-  solverCBAReq = partial(_solve_dTPDdTeqPT_forT, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd)
-  I = np.eye(eos.Nc)
-  k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
-  n = ni.sum()
-  xi = ni / n
-  Pk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
-  Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)
-  gi = lnkvik + lnphixi - lnphiyi
-  gnorm = np.linalg.norm(gi)
-  logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
-    k, kvik, gnorm, Pk, Tk,
-  )
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
-                         or np.abs(dTPDdT) > tol_tpd):
-    J = I + ni * dlnphixidnj
-    try:
-      dlnkvi = linsolver(J, -gi)
-    except:
-      dlnkvi = -gi
-    k += 1
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    n = ni.sum()
-    xi = ni / n
-    Pk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
-    Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)
-    gi = lnkvik + lnphixi - lnphiyi
-    gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
-      k, kvik, gnorm, Pk, Tk,
-    )
-  if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
-      and np.isfinite(Tk)):
-    rhoy = yi.dot(eos.mwi) / Zy
-    rhox = xi.dot(eos.mwi) / Zx
-    if rhoy < rhox:
-      yji = np.vstack([yi, xi])
-      Zj = np.array([Zy, Zx])
-      lnphiji = np.vstack([lnphiyi, lnphixi])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'The cricondenbar for yi = %s:\n\t'
-      'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
-      yi, Pk, Tk, xi, gnorm, k,
-    )
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
-  else:
-    logger.warning(
-      "The cricondenbar calculation using the Newton's method (C-form) "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T0, yi, Pmin, Pmax,
-    )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
-
+# class PmaxPT(PsatPT):
+#   """Cricondenbar calculation.
+
+#   Performs the cricondenbar point calculation using PT-based equations
+#   of state.
+
+#   Parameters
+#   ----------
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+#       `P: float` is pressure [Pa], `T: float` is temperature [K],
+#       and `yi: ndarray`, shape `(Nc,)` is an array of components
+#       mole fractions, `Nc` is the number of components. This method
+#       is used to generate initial guesses of k-values.
+
+#     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor.
+
+#     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to pressure.
+
+#     - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature.
+
+#     If the solution method would be `'newton'` then it also must have:
+
+#     - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K], phase composition and
+#       phase mole number [mol] this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - a matrix of shape `(Nc, Nc)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components with
+#         respect to their mole numbers.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`.
+
+#     - `name: str`
+#       The EOS name (for proper logging).
+
+#     - `Nc: int`
+#       The number of components in the system.
+
+#   method: str
+#     Type of the solver. Should be one of:
+
+#     - `'ss'` (Successive Substitution method),
+#     - `'qnss'` (Quasi-Newton Successive Substitution method),
+#     - `'bfgs'` (Currently raises `NotImplementedError`),
+#     - `'newton'` (Newton's method).
+
+#     Default is `'ss'`.
+
+#   step: float
+#     To specify the confidence interval for pressure of the cricondenbar
+#     point calculation, the preliminary search is performed. This
+#     parameter regulates the step of this search in fraction units.
+#     During the preliminary search, the next value of pressure will be
+#     calculated from the previous one using the formula:
+#     `Pnext = Pprev * (1. + step)`. Default is `0.1`.
+
+#   lowerlimit: float
+#     During the preliminary search, the pressure can not drop below
+#     the lower limit. Otherwise, the `ValueError` will be rised.
+#     Default is `1.` [Pa].
+
+#   upperlimit: float
+#     During the preliminary search, the pressure can not exceed the
+#     upper limit. Otherwise, the `ValueError` will be rised.
+#     Default is `1e8` [Pa].
+
+#   stabkwargs: dict
+#     The stability test procedure is used to locate the confidence
+#     interval for pressure of the cricondenbar point. This dictionary is
+#     used to specify arguments for the stability test procedure. Default
+#     is an empty dictionary.
+
+#   kwargs: dict
+#     Other arguments for a cricondebar-solver. It may contain such
+#     arguments as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others
+#     depending on the selected solver.
+
+#   Methods
+#   -------
+#   run(P, T, yi) -> SatResult
+#     This method performs the cricondenbar point calculation of the
+#     composition `yi: ndarray` with shape `(Nc,)` for given initial
+#     guesses of pressure `P: float` in [Pa] and temperature `T: float`
+#     in [K]. This method returns cricondenbar point calculation results
+#     as an instance of `SatResult`.
+#   """
+#   def __init__(
+#     self,
+#     eos: EOSPTType,
+#     method: str = 'ss',
+#     step: ScalarType = 0.1,
+#     lowerlimit: ScalarType = 1.,
+#     upperlimit: ScalarType = 1e8,
+#     stabkwargs: dict = {},
+#     **kwargs,
+#   ) -> None:
+#     self.eos = eos
+#     self.upper = True
+#     self.step = step
+#     self.lowerlimit = lowerlimit
+#     self.upperlimit = upperlimit
+#     self.stabsolver = stabilityPT(eos, **stabkwargs)
+#     if method == 'ss':
+#       self.solver = partial(_PmaxPT_ss, eos=eos, **kwargs)
+#     elif method == 'qnss':
+#       self.solver = partial(_PmaxPT_qnss, eos=eos, **kwargs)
+#     elif method == 'bfgs':
+#       raise NotImplementedError(
+#         'The BFGS-method for the cricondenbar point calculation is not '
+#         'implemented yet.'
+#       )
+#     elif method == 'newton':
+#       self.solver = partial(_PmaxPT_newtC, eos=eos, **kwargs)
+#     else:
+#       raise ValueError(f'The unknown method: {method}.')
+#     pass
+
+
+# def _solve_dTPDdTeqPT_forT(
+#   P: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   xi: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-6,
+#   maxiter: int = 8,
+# ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+#   """Solves the cricondenbar equation using the PT-based equations of
+#   state for temperature at a constant pressure. The cricondenbar equation
+#   is the equation of equality to zero of the partial derivative of the
+#   tangent-plane distance with respect to temperature. Newton's method is
+#   used to solve the cricondenbar equation.
+
+#   Parameters
+#   ----------
+#   P: float
+#     Pressure of a mixture [Pa].
+
+#   T0: float
+#     Initial guess for temperature [K].
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components in the mixture.
+
+#   yti: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components in the trial phase.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature.
+
+#   maxiter: int
+#     The maximum number of iterations. Default is `8`.
+
+#   tol: float
+#     Terminate successfully if the absolute value of the equation is less
+#     than `tol`. Default is `1e-6`.
+
+#   Returns
+#   -------
+#   A tuple of:
+#   - the root (temperature) of the cricondenbar equation,
+#   - an array of the natural logarithms of fugacity coefficients of
+#     components in the trial phase,
+#   - the same for the initial composition of the mixture,
+#   - compressibility factors for both mixtures.
+#   - value of the cricondenbar equation.
+#   """
+#   k = 0
+#   Tk = T0
+#   lnphiyi, Zy, dlnphiyidT, d2lnphiyidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, yi)
+#   lnphixi, Zx, dlnphixidT, d2lnphixidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, xi)
+#   eq = xi.dot(dlnphixidT - dlnphiyidT)
+#   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }')
+#   while np.abs(eq) > tol and k < maxiter:
+#     deqdT = xi.dot(d2lnphixidT2 - d2lnphiyidT2)
+#     k += 1
+#     Tk -= eq / deqdT
+#     lnphiyi, Zy, dlnphiyidT, d2lnphiyidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk,
+#                                                                       yi)
+#     lnphixi, Zx, dlnphixidT, d2lnphixidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk,
+#                                                                       xi)
+#     eq = xi.dot(dlnphixidT - dlnphiyidT)
+#     # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }')
+#   return Tk, lnphixi, lnphiyi, Zx, Zy, eq
+
+
+# def _PmaxPT_ss(
+#   P0: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   kvi0: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 50,
+#   tol_tpd: ScalarType = 1e-6,
+#   maxiter_tpd: int = 8,
+#   Pmax: ScalarType = 1e8,
+#   Pmin: ScalarType = 1.,
+# ) -> SatResult:
+#   """Successive substitution (SS) method for the cricondenbar
+#   calculation using a PT-based equation of state. To find the
+#   cricondenbar, the algorithm solves a system of non-linear equations:
+
+#   - `Nc` equations of equilibrium of components in the mixture and in
+#     the trial phase,
+#   - the TPD-equation that represents the condition where the
+#     tangent-plane distance equals zero (this equation is linearized with
+#     pressure),
+#   - the cricondenbar equation which is the equation of equality to zero
+#     of the partial derivative of the tangent-plane distance function
+#     with respect to temperature (this equation is linearized with
+#     temperature).
+
+#   For the details of the algorithm see the paper of L.X. Nghiem and
+#   Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+#   Parameters
+#   ----------
+#   P0: float
+#     Initial guess of the cricondenbar pressure [Pa].
+
+#   T0: float
+#     Initial guess of the cricondenbar temperature [K].
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components.
+
+#   kvi0: ndarray, shape (Nc,)
+#     Initial guess of k-values of `Nc` components.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to pressure.
+
+#     - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`.
+
+#     - `name: str`
+#       The EOS name (for proper logging).
+
+#   tol: float
+#     Terminate equilibrium equation solver successfully if the norm of
+#     the equation vector is less than `tol`. Default is `1e-5`.
+
+#   maxiter: int
+#     The maximum number of equilibrium equation solver iterations.
+#     Default is `50`.
+
+#   tol_tpd: float
+#     Terminate the TPD-equation and the cricondenbar equation solvers
+#     successfully if the absolute value of the equation is less than
+#     `tol_tpd`. Default is `1e-6`.
+
+#   maxiter_tpd: int
+#     The maximum number of iterations for the TPD-equation and
+#     cricondenbar equation solvers. Default is `8`.
+
+#   Pmax: float
+#     The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+
+#   Pmin: float
+#     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+#   Returns
+#   -------
+#   The cricondenbar point calculation results as an instance of the
+#   `SatResult`. Important attributes are:
+#   - `P` the pressure in [Pa] of the cricondenbar point,
+#   - `T` the temperature in [K] of the cricondenbar point,
+#   - `yji` the component mole fractions in each phase,
+#   - `Zj` the compressibility factors of each phase,
+#   - `success` a boolean flag indicating if the calculation
+#     completed successfully.
+#   """
+#   logger.debug(
+#     'The cricondenbar calculation using the SS-method:\n'
+#     '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+#     P0, T0, yi, Pmin, Pmax,
+#   )
+#   solverTPDeq = partial(_solve_TPDeqPT_forP, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+#                         increasing=True)
+#   solverCBAReq = partial(_solve_dTPDdTeqPT_forT, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd)
+#   k = 0
+#   kvik = kvi0
+#   lnkvik = np.log(kvik)
+#   ni = kvik * yi
+#   xi = ni / ni.sum()
+#   Pk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
+#   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
+#   gi = lnkvik + lnphixi - lnphiyi
+#   gnorm = np.linalg.norm(gi)
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#     k, kvik, gnorm, Pk, Tk,
+#   )
+#   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
+#                          or np.abs(dTPDdT) > tol_tpd):
+#     lnkvik -= gi
+#     k += 1
+#     kvik = np.exp(lnkvik)
+#     ni = kvik * yi
+#     xi = ni / ni.sum()
+#     Pk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
+#     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
+#     gi = lnkvik + lnphixi - lnphiyi
+#     gnorm = np.linalg.norm(gi)
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#       k, kvik, gnorm, Pk, Tk,
+#     )
+#   if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
+#       and np.isfinite(Tk)):
+#     rhoy = yi.dot(eos.mwi) / Zy
+#     rhox = xi.dot(eos.mwi) / Zx
+#     if rhoy < rhox:
+#       yji = np.vstack([yi, xi])
+#       Zj = np.array([Zy, Zx])
+#       lnphiji = np.vstack([lnphiyi, lnphixi])
+#     else:
+#       yji = np.vstack([xi, yi])
+#       Zj = np.array([Zx, Zy])
+#       lnphiji = np.vstack([lnphixi, lnphiyi])
+#     logger.info(
+#       'The cricondenbar for yi = %s:\n\t'
+#       'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+#       yi, Pk, Tk, xi, gnorm, k,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
+#                      success=True)
+#   else:
+#     logger.warning(
+#       "The cricondenbar calculation using the SS-method terminates "
+#       "unsuccessfully. EOS: %s. Parameters:"
+#       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+#       eos.name, P0, T0, yi, Pmin, Pmax,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+#                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+#                      success=False)
+
+
+# def _PmaxPT_qnss(
+#   P0: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   kvi0: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 50,
+#   tol_tpd: ScalarType = 1e-6,
+#   maxiter_tpd: int = 8,
+#   Pmax: ScalarType = 1e8,
+#   Pmin: ScalarType = 1.,
+# ) -> SatResult:
+#   """Quasi-Newton Successive Substitution (SS) method for the
+#   cricondenbar calculation using a PT-based equation of state. To find
+#   the cricondenbar, the algorithm solves a system of non-linear
+#   equations:
+
+#   - `Nc` equations of equilibrium of components in the mixture and in
+#     the trial phase,
+#   - the TPD-equation that represents the condition where the
+#     tangent-plane distance equals zero (this equation is linearized with
+#     pressure),
+#   - the cricondenbar equation which is the equation of equality to zero
+#     of the partial derivative of the tangent-plane distance function
+#     with respect to temperature (this equation is linearized with
+#     temperature).
+
+#   For the details of the algorithm see the paper of L.X. Nghiem and
+#   Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+#   For the details of the QNSS-method see: 10.1016/0378-3812(84)80013-8.
+
+#   Parameters
+#   ----------
+#   P0: float
+#     Initial guess of the cricondenbar pressure [Pa].
+
+#   T0: float
+#     Initial guess of the cricondenbar temperature [K].
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components.
+
+#   kvi0: ndarray, shape (Nc,)
+#     Initial guess of k-values of `Nc` components.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to pressure.
+
+#     - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`.
+
+#     - `name: str`
+#       The EOS name (for proper logging).
+
+#   tol: float
+#     Terminate equilibrium equation solver successfully if the norm of
+#     the equation vector is less than `tol`. Default is `1e-5`.
+
+#   maxiter: int
+#     The maximum number of equilibrium equation solver iterations.
+#     Default is `50`.
+
+#   tol_tpd: float
+#     Terminate the TPD-equation and the cricondenbar equation solvers
+#     successfully if the absolute value of the equation is less than
+#     `tol_tpd`. Default is `1e-6`.
+
+#   maxiter_tpd: int
+#     The maximum number of iterations for the TPD-equation and
+#     cricondenbar equation solvers. Default is `8`.
+
+#   Pmax: float
+#     The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+
+#   Pmin: float
+#     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+#   Returns
+#   -------
+#   The cricondenbar point calculation results as an instance of the
+#   `SatResult`. Important attributes are:
+#   - `P` the pressure in [Pa] of the cricondenbar point,
+#   - `T` the temperature in [K] of the cricondenbar point,
+#   - `yji` the component mole fractions in each phase,
+#   - `Zj` the compressibility factors of each phase,
+#   - `success` a boolean flag indicating if the calculation
+#     completed successfully.
+#   """
+#   logger.debug(
+#     'The cricondenbar calculation using the QNSS-method:\n'
+#     '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
+#     P0, T0, yi, Pmin, Pmax,
+#   )
+#   solverTPDeq = partial(_solve_TPDeqPT_forP, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+#                         increasing=True)
+#   solverCBAReq = partial(_solve_dTPDdTeqPT_forT, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd)
+#   k = 0
+#   kvik = kvi0
+#   lnkvik = np.log(kvik)
+#   ni = kvik * yi
+#   xi = ni / ni.sum()
+#   Pk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
+#   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
+#   gi = lnkvik + lnphixi - lnphiyi
+#   gnorm = np.linalg.norm(gi)
+#   lmbd = 1.
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#     k, kvik, gnorm, Pk, Tk,
+#   )
+#   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
+#                          or np.abs(dTPDdT) > tol_tpd):
+#     dlnkvi = -lmbd * gi
+#     max_dlnkvi = np.abs(dlnkvi).max()
+#     if max_dlnkvi > 6.:
+#       relax = 6. / max_dlnkvi
+#       lmbd *= relax
+#       dlnkvi *= relax
+#     k += 1
+#     tkm1 = dlnkvi.dot(gi)
+#     lnkvik += dlnkvi
+#     kvik = np.exp(lnkvik)
+#     ni = kvik * yi
+#     xi = ni / ni.sum()
+#     Pk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
+#     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
+#     gi = lnkvik + lnphixi - lnphiyi
+#     gnorm = np.linalg.norm(gi)
+#     lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+#     if lmbd > 30.:
+#       lmbd = 30.
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#       k, kvik, gnorm, Pk, Tk,
+#     )
+#   if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
+#       and np.isfinite(Tk)):
+#     rhoy = yi.dot(eos.mwi) / Zy
+#     rhox = xi.dot(eos.mwi) / Zx
+#     if rhoy < rhox:
+#       yji = np.vstack([yi, xi])
+#       Zj = np.array([Zy, Zx])
+#       lnphiji = np.vstack([lnphiyi, lnphixi])
+#     else:
+#       yji = np.vstack([xi, yi])
+#       Zj = np.array([Zx, Zy])
+#       lnphiji = np.vstack([lnphixi, lnphiyi])
+#     logger.info(
+#       'The cricondenbar for yi = %s:\n\t'
+#       'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+#       yi, Pk, Tk, xi, gnorm, k,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
+#                      success=True)
+#   else:
+#     logger.warning(
+#       "The cricondenbar calculation using the QNSS-method terminates "
+#       "unsuccessfully. EOS: %s. Parameters:"
+#       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+#       eos.name, P0, T0, yi, Pmin, Pmax,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+#                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+#                      success=False)
+
+
+# def _PmaxPT_newtC(
+#   P0: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   kvi0: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 50,
+#   tol_tpd: ScalarType = 1e-6,
+#   maxiter_tpd: int = 8,
+#   Pmax: ScalarType = 1e8,
+#   Pmin: ScalarType = 1.,
+#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+# ) -> SatResult:
+#   """This function calculates the cricondenbar point by solving a system
+#   of nonlinear equations using Newton's method. The system incorporates
+#   the condition of equal fugacity for all components in both phases, as
+#   well as the requirements that the tangent-plane distance and its
+#   partial derivative with respect to temperature are zero. The
+#   TPD- and cricondenbar equations are solved in the inner while-loop.
+#   The TPD-equation that represents the condition where the
+#   tangent-plane distance equals zero (this equation is linearized with
+#   pressure). The cricondenbar equation is the equation of equality to
+#   zero of the partial derivative of the tangent-plane distance function
+#   with respect to temperature (this equation is linearized with
+#   temperature).
+
+#   For the details of the algorithm see the paper of L.X. Nghiem and
+#   Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+#   Parameters
+#   ----------
+#   P0: float
+#     Initial guess of the cricondenbar pressure [Pa].
+
+#   T0: float
+#     Initial guess of the cricondenbar temperature [K].
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components.
+
+#   kvi0: ndarray, shape (Nc,)
+#     Initial guess of k-values of `Nc` components.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dP(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to pressure.
+
+#     - `getPT_lnphii_Z_dT_d2T(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         temperature.
+
+#     - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K], phase composition and
+#       phase mole number [mol] this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - a matrix of shape `(Nc, Nc)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components with
+#         respect to their mole numbers.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`,
+
+#     - `name: str`
+#       The EOS name (for proper logging),
+
+#     - `Nc: int`
+#       The number of components in the system.
+
+#   tol: float
+#     Terminate equilibrium equation solver successfully if the norm of
+#     the equation vector is less than `tol`. Default is `1e-5`.
+
+#   maxiter: int
+#     The maximum number of equilibrium equation solver iterations.
+#     Default is `50`.
+
+#   tol_tpd: float
+#     Terminate the TPD-equation and the cricondenbar equation solvers
+#     successfully if the absolute value of the equation is less than
+#     `tol_tpd`. Default is `1e-6`.
+
+#   maxiter_tpd: int
+#     The maximum number of iterations for the TPD-equation and
+#     cricondenbar equation solvers. Default is `8`.
+
+#   Pmax: float
+#     The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
+
+#   Pmin: float
+#     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+#   linsolver: Callable[[ndarray, ndarray], ndarray]
+#     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+#     an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
+#     `(Nc+1,)`, which is the solution of the system of linear equations
+#     `Ax = b`. Default is `numpy.linalg.solve`.
+
+#   Returns
+#   -------
+#   The cricondenbar point calculation results as an instance of the
+#   `SatResult`. Important attributes are:
+#   - `P` the pressure in [Pa] of the cricondenbar point,
+#   - `T` the temperature in [K] of the cricondenbar point,
+#   - `yji` the component mole fractions in each phase,
+#   - `Zj` the compressibility factors of each phase,
+#   - `success` a boolean flag indicating if the calculation
+#     completed successfully.
+#   """
+#   logger.debug(
+#     "The cricondenbar calculation using Newton's method (C-form):\n"
+#     "\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+#     P0, T0, yi, Pmin, Pmax,
+#   )
+#   solverTPDeq = partial(_solve_TPDeqPT_forP, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+#                         increasing=True)
+#   solverCBAReq = partial(_solve_dTPDdTeqPT_forT, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd)
+#   I = np.eye(eos.Nc)
+#   k = 0
+#   kvik = kvi0
+#   lnkvik = np.log(kvik)
+#   ni = kvik * yi
+#   n = ni.sum()
+#   xi = ni / n
+#   Pk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
+#   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
+#   _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)
+#   gi = lnkvik + lnphixi - lnphiyi
+#   gnorm = np.linalg.norm(gi)
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#     k, kvik, gnorm, Pk, Tk,
+#   )
+#   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
+#                          or np.abs(dTPDdT) > tol_tpd):
+#     J = I + ni * dlnphixidnj
+#     try:
+#       dlnkvi = linsolver(J, -gi)
+#     except:
+#       dlnkvi = -gi
+#     k += 1
+#     lnkvik += dlnkvi
+#     kvik = np.exp(lnkvik)
+#     ni = kvik * yi
+#     n = ni.sum()
+#     xi = ni / n
+#     Pk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
+#     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
+#     _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)
+#     gi = lnkvik + lnphixi - lnphiyi
+#     gnorm = np.linalg.norm(gi)
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#       k, kvik, gnorm, Pk, Tk,
+#     )
+#   if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
+#       and np.isfinite(Tk)):
+#     rhoy = yi.dot(eos.mwi) / Zy
+#     rhox = xi.dot(eos.mwi) / Zx
+#     if rhoy < rhox:
+#       yji = np.vstack([yi, xi])
+#       Zj = np.array([Zy, Zx])
+#       lnphiji = np.vstack([lnphiyi, lnphixi])
+#     else:
+#       yji = np.vstack([xi, yi])
+#       Zj = np.array([Zx, Zy])
+#       lnphiji = np.vstack([lnphixi, lnphiyi])
+#     logger.info(
+#       'The cricondenbar for yi = %s:\n\t'
+#       'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+#       yi, Pk, Tk, xi, gnorm, k,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
+#                      success=True)
+#   else:
+#     logger.warning(
+#       "The cricondenbar calculation using the Newton's method (C-form) "
+#       "terminates unsuccessfully. EOS: %s. Parameters:"
+#       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
+#       eos.name, P0, T0, yi, Pmin, Pmax,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+#                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+#                      success=False)
+
+
+# class TmaxPT(TsatPT):
+#   """Cricondentherm calculation.
+
+#   Performs the cricondentherm point calculation using PT-based equations
+#   of state.
+
+#   Parameters
+#   ----------
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+#       `P: float` is pressure [Pa], `T: float` is temperature [K],
+#       and `yi: ndarray`, shape `(Nc,)` is an array of components
+#       mole fractions, `Nc` is the number of components. This method
+#       is used to generate initial guesses of k-values.
+
+#     - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor.
+
+#     - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to temperature.
+
+#     - `getPT_lnphii_Z_dP_d2P(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         pressure,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         pressure.
+
+#     If the solution method would be `'newton'` then it also must have:
+
+#     - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K], phase composition and
+#       phase mole number [mol] this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - a matrix of shape `(Nc, Nc)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components with
+#         respect to their mole numbers.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`.
+
+#     - `name: str`
+#       The EOS name (for proper logging).
+
+#     - `Nc: int`
+#       The number of components in the system.
+
+#   method: str
+#     Type of the solver. Should be one of:
+
+#     - `'ss'` (Successive Substitution method),
+#     - `'qnss'` (Quasi-Newton Successive Substitution method),
+#     - `'bfgs'` (Currently raises `NotImplementedError`),
+#     - `'newton'` (Newton's method).
+
+#     Default is `'ss'`.
+
+#   step: float
+#     To specify the confidence interval for temperature of the
+#     cricondentherm point calculation, the preliminary search is
+#     performed. This parameter regulates the step of this search in
+#     fraction units. During the preliminary search, the next value of
+#     temperature will be calculated from the previous one using the
+#     formula: `Tnext = Tprev * (1. + step)`. Default is `0.1`.
+
+#   lowerlimit: float
+#     During the preliminary search, the temperature can not drop below
+#     the lower limit. Otherwise, the `ValueError` will be rised.
+#     Default is `173.15` [Pa].
+
+#   upperlimit: float
+#     During the preliminary search, the temperature can not exceed the
+#     upper limit. Otherwise, the `ValueError` will be rised.
+#     Default is `973.15` [Pa].
+
+#   stabkwargs: dict
+#     The stability test procedure is used to locate the confidence
+#     interval for temperature of the cricondentherm point. This
+#     dictionary is used to specify arguments for the stability test
+#     procedure. Default is an empty dictionary.
+
+#   kwargs: dict
+#     Other arguments for a cricondentherm-solver. It may contain such
+#     arguments as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others
+#     depending on the selected solver.
+
+#   Methods
+#   -------
+#   run(P, T, yi) -> SatResult
+#     This method performs the cricondentherm point calculation of the
+#     composition `yi: ndarray` with shape `(Nc,)` for given initial
+#     guesses of pressure `P: float` in [Pa] and temperature `T: float`
+#     in [K]. This method returns cricondentherm point calculation results
+#     as an instance of `SatResult`.
+#   """
+#   def __init__(
+#     self,
+#     eos: EOSPTType,
+#     method: str = 'ss',
+#     step: ScalarType = 0.1,
+#     lowerlimit: ScalarType = 173.15,
+#     upperlimit: ScalarType = 973.15,
+#     stabkwargs: dict = {},
+#     **kwargs,
+#   ) -> None:
+#     self.eos = eos
+#     self.upper = True
+#     self.step = step
+#     self.lowerlimit = lowerlimit
+#     self.upperlimit = upperlimit
+#     self.stabsolver = stabilityPT(eos, **stabkwargs)
+#     if method == 'ss':
+#       self.solver = partial(_TmaxPT_ss, eos=eos, **kwargs)
+#     elif method == 'qnss':
+#       self.solver = partial(_TmaxPT_qnss, eos=eos, **kwargs)
+#     elif method == 'bfgs':
+#       raise NotImplementedError(
+#         'The BFGS-method for the cricondentherm point calculation is not '
+#         'implemented yet.'
+#       )
+#     elif method == 'newton':
+#       self.solver = partial(_TmaxPT_newtC, eos=eos, **kwargs)
+#     else:
+#       raise ValueError(f'The unknown method: {method}.')
+#     pass
+
+
+# def _solve_dTPDdPeqPT_forP(
+#   P0: ScalarType,
+#   T: ScalarType,
+#   yi: VectorType,
+#   xi: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-6,
+#   maxiter: int = 8,
+# ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+#   """Solves the cricondentherm equation using the PT-based equations of
+#   state for pressure at a constant temperature. The cricondentherm
+#   equation is the equation of equality to zero of the partial derivative
+#   of the tangent-plane distance with respect to pressure. Newton's
+#   method is used to solve the cricondentherm equation.
+
+#   Parameters
+#   ----------
+#   P0: float
+#     Initial guess for pressure [Pa].
+
+#   T: float
+#     Temperature of a mixture [K].
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components in the mixture.
+
+#   yti: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components in the trial phase.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dP_d2P(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         pressure,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         pressure.
+
+#   maxiter: int
+#     The maximum number of iterations. Default is `8`.
+
+#   tol: float
+#     Terminate successfully if the absolute value of the equation is less
+#     than `tol`. Default is `1e-6`.
+
+#   Returns
+#   -------
+#   A tuple of:
+#   - the root (pressure) of the cricondentherm equation,
+#   - an array of the natural logarithms of fugacity coefficients of
+#     components in the trial phase,
+#   - the same for the initial composition of the mixture,
+#   - compressibility factors for both mixtures.
+#   - value of the cricondentherm equation.
+#   """
+#   k = 0
+#   Pk = P0
+#   lnphiyi, Zy, dlnphiyidP, d2lnphiyidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T, yi)
+#   lnphixi, Zx, dlnphixidP, d2lnphixidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T, xi)
+#   eq = xi.dot(dlnphixidP - dlnphiyidP)
+#   deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
+#   dP = -eq / deqdP
+#   print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {dP = } Pa')
+#   while np.abs(dP) / Pk > tol and k < maxiter:
+#     k += 1
+#     Pk += dP
+#     lnphiyi, Zy, dlnphiyidP, d2lnphiyidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T,
+#                                                                       yi)
+#     lnphixi, Zx, dlnphixidP, d2lnphixidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T,
+#                                                                       xi)
+#     eq = xi.dot(dlnphixidP - dlnphiyidP)
+#     deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
+#     dP = -eq / deqdP
+#     print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {dP = } Pa')
+#   return Pk, lnphixi, lnphiyi, Zx, Zy, eq
+
+
+# def _TmaxPT_ss(
+#   P0: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   kvi0: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 50,
+#   tol_tpd: ScalarType = 1e-6,
+#   maxiter_tpd: int = 8,
+#   Tmax: ScalarType = 973.15,
+#   Tmin: ScalarType = 173.15,
+# ) -> SatResult:
+#   """Successive substitution (SS) method for the cricondentherm
+#   calculation using a PT-based equation of state. To find the
+#   cricondentherm, the algorithm solves a system of non-linear equations:
+
+#   - `Nc` equations of equilibrium of components in the mixture and in
+#     the trial phase,
+#   - the TPD-equation that represents the condition where the
+#     tangent-plane distance equals zero (this equation is linearized with
+#     temperature),
+#   - the cricondentherm equation which is the equation of equality to
+#     zero of the partial derivative of the tangent-plane distance
+#     function with respect to pressure (this equation is linearized with
+#     pressure).
+
+#   For the details of the algorithm see the paper of L.X. Nghiem and
+#   Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+#   Parameters
+#   ----------
+#   P0: float
+#     Initial guess of the cricondentherm pressure [Pa].
+
+#   T0: float
+#     Initial guess of the cricondentherm temperature [K].
+
+#   yi: ndarray, shape (Nc,)
+#     Mole fractions of `Nc` components.
+
+#   kvi0: ndarray, shape (Nc,)
+#     Initial guess of k-values of `Nc` components.
+
+#   eos: EOSPTType
+#     An initialized instance of a PT-based equation of state. Must have
+#     the following methods:
+
+#     - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of shape `(Nc,)` of logarithms of the fugacity
+#         coefficients of components,
+#       - the phase compressibility factor,
+#       - an array of shape `(Nc,)` of partial derivatives of
+#         logarithms of the fugacity coefficients of components
+#         with respect to temperature.
+
+#     - `getPT_lnphii_Z_dP_d2P(P, T, yi) -> tuple[ndarray, float, ndarray,
+#                                                 ndarray]`
+#       For a given pressure [Pa], temperature [K] and phase composition,
+#       this method should return a tuple of:
+
+#       - an array of logarithms of the fugacity coefficients of `Nc`
+#         components,
+#       - the compressibility factor of the mixture,
+#       - an array with shape `(Nc,)` of first partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         pressure,
+#       - an array with shape `(Nc,)` of second partial derivatives of
+#         logarithms of the fugacity coefficients with respect to
+#         pressure.
+
+#     Also, this instance must have attributes:
+
+#     - `mwi: ndarray`
+#       An array of components molecular weights [kg/mol] of shape
+#       `(Nc,)`.
+
+#     - `name: str`
+#       The EOS name (for proper logging).
+
+#   tol: float
+#     Terminate equilibrium equation solver successfully if the norm of
+#     the equation vector is less than `tol`. Default is `1e-5`.
+
+#   maxiter: int
+#     The maximum number of equilibrium equation solver iterations.
+#     Default is `50`.
+
+#   tol_tpd: float
+#     Terminate the TPD-equation and the cricondentherm equation solvers
+#     successfully if the absolute value of the equation is less than
+#     `tol_tpd`. Default is `1e-6`.
+
+#   maxiter_tpd: int
+#     The maximum number of iterations for the TPD-equation and
+#     cricondentherm equation solvers. Default is `8`.
+
+#   Tmax: float
+#     The upper bound for the TPD-equation solver.
+#     Default is `973.15` [Pa].
+
+#   Tmin: float
+#     The lower bound for the TPD-equation solver.
+#     Default is `173.15` [Pa].
+
+#   Returns
+#   -------
+#   The cricondentherm point calculation results as an instance of the
+#   `SatResult`. Important attributes are:
+#   - `P` the pressure in [Pa] of the cricondentherm point,
+#   - `T` the temperature in [K] of the cricondentherm point,
+#   - `yji` the component mole fractions in each phase,
+#   - `Zj` the compressibility factors of each phase,
+#   - `success` a boolean flag indicating if the calculation
+#     completed successfully.
+#   """
+#   logger.debug(
+#     'The cricondentherm calculation using the SS-method:\n'
+#     '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
+#     P0, T0, yi, Tmin, Tmax,
+#   )
+#   solverTPDeq = partial(_solve_TPDeqPT_forT, eos=eos, tol=tol_tpd,
+#                         maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
+#                         increasing=True)
+#   solverCTHERMeq = partial(_solve_dTPDdPeqPT_forP, eos=eos, tol=tol_tpd,
+#                            maxiter=maxiter_tpd)
+#   k = 0
+#   kvik = kvi0
+#   lnkvik = np.log(kvik)
+#   ni = kvik * yi
+#   xi = ni / ni.sum()
+#   Tk, _, _, _, _, TPD = solverTPDeq(P0, T0, yi, xi)
+#   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
+#   gi = lnkvik + lnphixi - lnphiyi
+#   gnorm = np.linalg.norm(gi)
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#     k, kvik, gnorm, Pk, Tk,
+#   )
+#   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
+#                          or np.abs(dTPDdP) > tol_tpd):
+#     lnkvik -= gi
+#     k += 1
+#     kvik = np.exp(lnkvik)
+#     ni = kvik * yi
+#     xi = ni / ni.sum()
+#     Tk, _, _, _, _, TPD = solverTPDeq(Pk, Tk, yi, xi)
+#     Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
+#     gi = lnkvik + lnphixi - lnphiyi
+#     gnorm = np.linalg.norm(gi)
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tP = %s Pa\n\tT = %s K',
+#       k, kvik, gnorm, Pk, Tk,
+#     )
+#   if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk)
+#       and np.isfinite(Tk)):
+#     rhoy = yi.dot(eos.mwi) / Zy
+#     rhox = xi.dot(eos.mwi) / Zx
+#     if rhoy < rhox:
+#       yji = np.vstack([yi, xi])
+#       Zj = np.array([Zy, Zx])
+#       lnphiji = np.vstack([lnphiyi, lnphixi])
+#     else:
+#       yji = np.vstack([xi, yi])
+#       Zj = np.array([Zx, Zy])
+#       lnphiji = np.vstack([lnphixi, lnphiyi])
+#     logger.info(
+#       'The cricondentherm for yi = %s:\n\t'
+#       'P = %s Pa\n\tT = %s K\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
+#       yi, Pk, Tk, xi, gnorm, k,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
+#                      success=True)
+#   else:
+#     logger.warning(
+#       "The cricondentherm calculation using the SS-method terminates "
+#       "unsuccessfully. EOS: %s. Parameters:"
+#       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
+#       eos.name, P0, T0, yi, Tmin, Tmax,
+#     )
+#     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+#                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+#                      success=False)
