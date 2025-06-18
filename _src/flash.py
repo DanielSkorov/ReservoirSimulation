@@ -158,32 +158,9 @@ class flash2pPT(object):
 
     Default is `'ss'`.
 
-  runstab: bool
-    If `True` then the algorithm will perform the stability test, for
-    which initial guesses of k-values will be calculated by the method
-    of an eos instance and taken from previous flash calculations if
-    the flag `useprev` was set `True`. Initial guesses of k-values for
-    flash calculations will be taken from the stability test results.
-    Default is `True`.
-
-  level: int
-    Regulates a set of initial k-values obtained by the method
-    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
-
   stabkwargs: dict
     Dictionary that used to regulate the stability test procedure.
     Default is an empty dictionary.
-
-  useprev: bool
-    Allows to preseve previous calculation results (if the solution was
-    found) and to use them as the first initial guess for the next run.
-    Default is `False`.
-
-  negativeflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`. The value of
-    this flag can be changed to `False` if the one-phase state will
-    be unstable.
 
   kwargs: dict
     Other arguments for a phase split solver. It may contain such
@@ -203,20 +180,12 @@ class flash2pPT(object):
     eos: EOSPTType,
     flashmethod: str = 'ss',
     stabmethod: str = 'ss',
-    runstab: bool = True,
-    level: int = 0,
     stabkwargs: dict = {},
-    useprev: bool = False,
-    negativeflash: bool = True,
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.runstab = runstab
-    self.level = level
-    self.useprev = useprev
     self.preserved = False
     self.prevkvji: None | MatrixType = None
-    self.negativeflash = negativeflash
     if flashmethod == 'ss':
       self.flashsolver = partial(_flash2pPT_ss, eos=eos, **kwargs)
     elif flashmethod == 'qnss':
@@ -251,7 +220,16 @@ class flash2pPT(object):
     self._1pstab_Fj = np.array([1., 0.])
     pass
 
-  def run(self, P: ScalarType, T: ScalarType, yi: VectorType) -> FlashResult:
+  def run(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    level: int = 0,
+    negativeflash: bool = True,
+    runstab: bool = True,
+    useprev: bool = False,
+  ) -> FlashResult:
     """Performs flash calculations for given pressure, temperature and
     composition.
 
@@ -266,35 +244,56 @@ class flash2pPT(object):
     yi: ndarray, shape (Nc,)
       Mole fractions of `Nc` components.
 
+    level: int
+      Regulates a set of initial k-values obtained by the method
+      `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
+
+    negativeflash: bool
+      A flag indicating if unphysical phase mole fractions can be
+      considered as a correct solution. Default is `True`. The value of
+      this flag can be changed to `False` if the one-phase state will
+      be unstable.
+
+    runstab: bool
+      If `True` then the algorithm will perform the stability test, for
+      which initial guesses of k-values will be calculated by the method
+      of an eos instance and taken from previous flash calculations if
+      the flag `useprev` was set `True`. Initial guesses of k-values for
+      flash calculations will be taken from the stability test results.
+      Default is `True`.
+
+    useprev: bool
+      Allows to preseve previous calculation results (if the solution was
+      found) and to use them as the first initial guess for the next run.
+      Default is `False`.
+
     Returns
     -------
     Flash calculation results as an instance of `FlashResult` object.
     Important attributes are:
-
     - `yji` the component mole fractions in each phase,
     - `Fj` the phase mole fractions,
     - `Zj` the compressibility factors of each phase,
     - `success` a boolean flag indicating if the calculation completed
       successfully.
     """
-    kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
-    if self.useprev and self.preserved:
+    kvji0 = self.eos.getPT_kvguess(P, T, yi, level)
+    if useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
-    if self.runstab:
+    if runstab:
       stab = self.stabsolver(P, T, yi, kvji0)
       if stab.stable:
         return FlashResult(yji=np.vstack([yi, self._1pstab_yi]),
                            Fj=self._1pstab_Fj, Zj=np.array([stab.Z, 0.]),
                            gnorm=-1, success=True)
       else:
-        self.negativeflash = False
-      if self.useprev and self.preserved:
+        negativeflash = False
+      if useprev and self.preserved:
         kvji0 = *self.prevkvji, *stab.kvji
       else:
         kvji0 = stab.kvji
-    flash = self.flashsolver(P, T, yi, kvji0,
-                             negativeflash=self.negativeflash)
-    if flash.success and self.useprev:
+    flash = self.flashsolver(P, T, yi, kvji0, negativeflash=negativeflash)
+    if flash.success and useprev:
       self.prevkvji = flash.kvji
       self.preserved = True
     return flash

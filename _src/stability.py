@@ -123,15 +123,6 @@ class stabilityPT(object):
 
     Default is `'ss'`.
 
-  level: int
-    Regulates a set of initial k-values obtained by the method
-    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
-
-  useprev: bool
-    Allows to preseve previous calculation results (if the solution is
-    non-trivial) and to use them as the first initial guess in next run.
-    Default is `False`.
-
   kwargs: dict
     Other arguments for a stability test solver. It may contain such
     arguments as `tol`, `maxiter` and others appropriate for the selected
@@ -149,13 +140,9 @@ class stabilityPT(object):
     self,
     eos: EOSPTType,
     method: str = 'ss',
-    level: int = 0,
-    useprev: bool = False,
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.level = level
-    self.useprev = useprev
     self.prevkvji: None | tuple[VectorType] = None
     self.preserved = False
     if method == 'ss':
@@ -176,7 +163,14 @@ class stabilityPT(object):
       raise ValueError(f'The unknown method: {method}.')
     pass
 
-  def run(self, P: ScalarType, T: ScalarType, yi: VectorType) -> StabResult:
+  def run(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    level: int = 0,
+    useprev: bool = False,
+  ) -> StabResult:
     """Performs the stability test for a given pressure, temperature
     and composition.
 
@@ -191,22 +185,30 @@ class stabilityPT(object):
     yi: ndarray, shape (Nc,)
       Mole fractions of `Nc` components.
 
+    level: int
+      Regulates a set of initial k-values obtained by the method
+      `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
+
+    useprev: bool
+      Allows to preseve previous calculation results (if the solution
+      is non-trivial) and to use them as the first initial guess in next
+      run. Default is `False`.
+
     Returns
     -------
     Stability test results as an instance of `StabResult`. Important
     attributes are:
-
     - `stab` a boolean flag indicating if a one-phase state is stable,
     - `TPD` the tangent-plane distance at a local minimum of the Gibbs
       energy function,
     - `success` a boolean flag indicating if the calculation completed
       successfully.
     """
-    kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
-    if self.useprev and self.preserved:
+    kvji0 = self.eos.getPT_kvguess(P, T, yi, level)
+    if useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
     stab = self.stabsolver(P, T, yi, kvji0)
-    if stab.success and self.useprev:
+    if stab.success and useprev:
       self.prevkvji = stab.kvji
       self.preserved = True
     return stab
