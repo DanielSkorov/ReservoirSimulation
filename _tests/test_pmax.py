@@ -112,7 +112,7 @@ class pmax(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Pmax = PmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss'),
-                  maxiter=29)
+                  maxiter=25)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.success)
     pass
