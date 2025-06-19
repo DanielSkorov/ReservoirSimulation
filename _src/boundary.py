@@ -4481,7 +4481,7 @@ def _PmaxPT_newtC(
                      success=False)
 
 
-class TmaxPT(TsatPT):
+class TmaxPT(object):
   """Cricondentherm calculation.
 
   Performs the cricondentherm point calculation using PT-based equations
@@ -4874,8 +4874,8 @@ def _TmaxPT_solve_dTPDdPeq_P(
     The maximum number of iterations. Default is `8`.
 
   tol: float
-    Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    Terminate successfully if the absolute value of the relative
+    pressure change is less than `tol`. Default is `1e-6`.
 
   Returns
   -------
@@ -5092,6 +5092,212 @@ def _TmaxPT_ss(
   else:
     logger.warning(
       "The cricondentherm calculation using the SS-method terminates "
+      "unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
+      eos.name, P0, T0, yi, Tmin, Tmax,
+    )
+    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
+
+
+def _TmaxPT_qnss(
+  P0: ScalarType,
+  T0: ScalarType,
+  yi: VectorType,
+  kvi0: VectorType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 8,
+  Tmax: ScalarType = 973.15,
+  Tmin: ScalarType = 173.15,
+) -> SatResult:
+  """Quasi-Newton Successive substitution (QNSS) method for the
+  cricondentherm calculation using a PT-based equation of state. To find
+  the cricondentherm, the algorithm solves a system of non-linear
+  equations:
+
+  - `Nc` equations of equilibrium of components in the mixture and in
+    the trial phase,
+  - the TPD-equation that represents the condition where the
+    tangent-plane distance equals zero (this equation is linearized with
+    temperature),
+  - the cricondentherm equation which is the equation of equality to
+    zero of the partial derivative of the tangent-plane distance
+    function with respect to pressure (this equation is linearized with
+    pressure).
+
+  For the details of the algorithm see the paper of L.X. Nghiem and
+  Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+  For the details of the QNSS see: 10.1016/0378-3812(84)80013-8.
+
+  Parameters
+  ----------
+  P0: float
+    Initial guess of the cricondentherm pressure [Pa].
+
+  T0: float
+    Initial guess of the cricondentherm temperature [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  kvi0: ndarray, shape (Nc,)
+    Initial guess of k-values of `Nc` components.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to temperature.
+
+    - `getPT_lnphii_Z_dP_d2P(P, T, yi) -> tuple[ndarray, float, ndarray,
+                                                ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of logarithms of the fugacity coefficients of `Nc`
+        components,
+      - the compressibility factor of the mixture,
+      - an array with shape `(Nc,)` of first partial derivatives of
+        logarithms of the fugacity coefficients with respect to
+        pressure,
+      - an array with shape `(Nc,)` of second partial derivatives of
+        logarithms of the fugacity coefficients with respect to
+        pressure.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation and the cricondentherm equation solvers
+    successfully if the absolute value of the equation is less than
+    `tol_tpd`. Default is `1e-6`.
+
+  maxiter_tpd: int
+    The maximum number of iterations for the TPD-equation and
+    cricondentherm equation solvers. Default is `8`.
+
+  Tmax: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `973.15` [K].
+
+  Tmin: float
+    The lower bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `173.15` [K].
+
+  Returns
+  -------
+  The cricondentherm point calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the pressure in [Pa] of the cricondentherm point,
+  - `T` the temperature in [K] of the cricondentherm point,
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    'The cricondentherm calculation using the QNSS-method:\n'
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
+    P0, T0, yi, Tmin, Tmax,
+  )
+  solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd)
+  solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
+                           maxiter=maxiter_tpd)
+  k = 0
+  kvik = kvi0
+  lnkvik = np.log(kvik)
+  ni = kvik * yi
+  xi = ni / ni.sum()
+  Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
+                                              maxiter, Tmax, Tmin, True)
+  Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
+  gi = lnkvik + lnphixi - lnphiyi
+  gnorm = np.linalg.norm(gi)
+  lmbd = 1.
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
+    k, kvik, Pk, Tk, gnorm, TPD, dTPDdP,
+  )
+  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
+                         or np.abs(dTPDdP) > tol_tpd):
+    dlnkvi = -lmbd * gi
+    max_dlnkvi = np.abs(dlnkvi).max()
+    if max_dlnkvi > 6.:
+      relax = 6. / max_dlnkvi
+      lmbd *= relax
+      dlnkvi *= relax
+    k += 1
+    tkm1 = dlnkvi.dot(gi)
+    lnkvik += dlnkvi
+    kvik = np.exp(lnkvik)
+    ni = kvik * yi
+    xi = ni / ni.sum()
+    Tk = solverTPDeq(Pk, Tk, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
+    gi = lnkvik + lnphixi - lnphiyi
+    gnorm = np.linalg.norm(gi)
+    TPD = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
+    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    if lmbd > 30.:
+      lmbd = 30.
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
+      k, kvik, Pk, Tk, gnorm, TPD, dTPDdP,
+    )
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd
+      and np.isfinite(kvik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'The cricondentherm for yi = %s:\n\t'
+      'P = %s Pa\n\tT = %s K\n\tyti = %s\n\t'
+      'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s\n\tNiter = %s',
+      yi, Pk, Tk, xi, gnorm, TPD, dTPDdP, k,
+    )
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
+                     success=True)
+  else:
+    logger.warning(
+      "The cricondentherm calculation using the QNSS-method terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P0, T0, yi, Tmin, Tmax,
