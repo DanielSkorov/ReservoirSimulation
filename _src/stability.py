@@ -285,31 +285,31 @@ def _stabPT_ss(
   for j, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kvik = kvi0.flatten()
-    ni = kvik * yi
+    kik = kvi0.flatten()
+    ni = kik * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
+      'Iteration #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
     )
     while gnorm > tol and k < maxiter:
       k += 1
-      kvik *= np.exp(-gi)
-      ni = kvik * yi
+      kik *= np.exp(-gi)
+      ni = kik * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
+        'Iteration #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
       )
-    if gnorm < tol and np.isfinite(kvik).all():
+    if gnorm < tol and np.isfinite(kik).all():
       TPD = -np.log(ni.sum())
       if TPD < eps:
         logger.info(
           'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-          'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-          P, T, yi, kvik, TPD, gnorm, k,
+          'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+          P, T, yi, kik, TPD, gnorm, k,
         )
         n = ni.sum()
         xi = ni / n
@@ -322,8 +322,8 @@ def _stabPT_ss(
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'
-      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, kvik, TPD, gnorm, k,
+      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      P, T, yi, kik, TPD, gnorm, k,
     )
     n = ni.sum()
     xi = ni / n
@@ -406,46 +406,46 @@ def _stabPT_qnss(
   for j, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kvik = kvi0.flatten()
-    ni = kvik * yi
+    kik = kvi0.flatten()
+    ni = kik * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
-      k, kvik, gnorm, 1.,
+      'Iteration #%s:\n\tki = %s\n\tgnorm = %s\n\tlmbd = %s',
+      k, kik, gnorm, 1.,
     )
     lmbd = 1.
     while gnorm > tol and k < maxiter:
-      dlnkvi = -lmbd * gi
-      max_dlnkvi = np.abs(dlnkvi).max()
-      if max_dlnkvi > 6.:
-        relax = 6. / max_dlnkvi
+      dlnki = -lmbd * gi
+      max_dlnki = np.abs(dlnki).max()
+      if max_dlnki > 6.:
+        relax = 6. / max_dlnki
         lmbd *= relax
-        dlnkvi *= relax
+        dlnki *= relax
       k += 1
-      tkm1 = dlnkvi.dot(gi)
-      kvik *= np.exp(dlnkvi)
-      ni = kvik * yi
+      tkm1 = dlnki.dot(gi)
+      kik *= np.exp(dlnki)
+      ni = kik * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       logger.debug(
-        'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
-        k, kvik, gnorm, lmbd,
+        'Iteration #%s:\n\tki = %s\n\tgnorm = %s\n\tlmbd = %s',
+        k, kik, gnorm, lmbd,
       )
       if gnorm < tol:
         break
-      lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if gnorm < tol and np.isfinite(kvik).all():
+    if gnorm < tol and np.isfinite(kik).all():
       TPD = -np.log(ni.sum())
       if TPD < eps:
         logger.info(
           'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-          'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-          P, T, yi, kvik, TPD, gnorm, k,
+          'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+          P, T, yi, kik, TPD, gnorm, k,
         )
         n = ni.sum()
         xi = ni / n
@@ -458,8 +458,8 @@ def _stabPT_qnss(
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'
-      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, kvik, TPD, gnorm, k,
+      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      P, T, yi, kik, TPD, gnorm, k,
     )
     n = ni.sum()
     xi = ni / n
@@ -569,8 +569,8 @@ def _stabPT_newt(
   for j, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kvik = kvi0.flatten()
-    ni = kvik * yi
+    kik = kvi0.flatten()
+    ni = kik * yi
     sqrtni = np.sqrt(ni)
     alphaik = 2. * sqrtni
     n = ni.sum()
@@ -579,8 +579,8 @@ def _stabPT_newt(
     gi = sqrtni * (np.log(ni) + lnphixi - hi)
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s',
-      k, ni/yi, gnorm,
+      'Iteration #%s:\n\tki = %s\n\tgnorm = %s',
+      k, kik, gnorm,
     )
     while gnorm > tol and k < maxiter:
       H = np.diagflat(.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
@@ -597,7 +597,7 @@ def _stabPT_newt(
       if gnormkp1 < gnorm or forcenewton:
         gnorm = gnormkp1
         logger.debug(
-          'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
+          'Iteration #%s:\n\tki = %s\n\tgnorm = %s', k, ni/yi, gnorm,
         )
       else:
         # TODO: implement TR-step
@@ -610,14 +610,14 @@ def _stabPT_newt(
         gi = sqrtni * (np.log(ni) + lnphixi - hi)
         gnorm = np.linalg.norm(gi)
         logger.debug(
-          'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, ni/yi, gnorm,
+          'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s', k, ni/yi, gnorm,
         )
-    if gnorm < tol and np.isfinite(kvik).all():
+    if gnorm < tol and np.isfinite(kik).all():
       TPD = -np.log(ni.sum())
       if TPD < eps:
         logger.info(
           'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-          'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+          'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
           P, T, yi, ni/yi, TPD, gnorm, k,
         )
         n = ni.sum()
@@ -631,7 +631,7 @@ def _stabPT_newt(
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'
-      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
       P, T, yi, ni/yi, TPD, gnorm, k,
     )
     n = ni.sum()
@@ -754,32 +754,32 @@ def _stabPT_ssnewt(
   for j, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kvik = kvi0.flatten()
-    ni = kvik * yi
+    kik = kvi0.flatten()
+    ni = kik * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
+      'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
     )
     while gnorm > tol_ss and k < maxiter_ss:
       k += 1
-      kvik *= np.exp(-gi)
-      ni = kvik * yi
+      kik *= np.exp(-gi)
+      ni = kik * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       logger.debug(
-        'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
+        'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
       )
-    if np.isfinite(kvik).all():
+    if np.isfinite(kik).all():
       if gnorm < tol:
         TPD = -np.log(ni.sum())
         if TPD < eps:
           logger.info(
             'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-            'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-            P, T, yi, kvik, TPD, gnorm, k,
+            'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+            P, T, yi, kik, TPD, gnorm, k,
           )
           n = ni.sum()
           xi = ni / n
@@ -796,8 +796,8 @@ def _stabPT_ssnewt(
         gi = sqrtni * (np.log(ni) + lnphixi - hi)
         gnorm = np.linalg.norm(gi)
         logger.debug(
-          'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
-          k, ni/yi, gnorm,
+          'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
+          k, kik, gnorm,
         )
         while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gi + 1.)
@@ -815,7 +815,7 @@ def _stabPT_ssnewt(
           if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
             logger.debug(
-              'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
           else:
@@ -829,7 +829,7 @@ def _stabPT_ssnewt(
             gi = sqrtni * (np.log(ni) + lnphixi - hi)
             gnorm = np.linalg.norm(gi)
             logger.debug(
-              'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
         if gnorm < tol and np.isfinite(alphaik).all():
@@ -837,7 +837,7 @@ def _stabPT_ssnewt(
           if TPD < eps:
             logger.info(
               'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-              'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+              'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
               P, T, yi, ni/yi, TPD, gnorm, k,
             )
             n = ni.sum()
@@ -851,7 +851,7 @@ def _stabPT_ssnewt(
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'
-      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
       P, T, yi, ni/yi, TPD, gnorm, k,
     )
     n = ni.sum()
@@ -976,46 +976,46 @@ def _stabPT_qnssnewt(
   for j, kvi0 in enumerate(kvji0):
     logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kvik = kvi0.flatten()
-    ni = kvik * yi
+    kik = kvi0.flatten()
+    ni = kik * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
     gi = np.log(ni) + lnphixi - hi
     gnorm = np.linalg.norm(gi)
     lmbd = 1.
     logger.debug(
-      'Iteration (QNSS) #%s:\n\tkvi = %s\n\tgnorm = %s', k, kvik, gnorm,
+      'Iteration (QNSS) #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
     )
     while gnorm > tol_qnss and k < maxiter_qnss:
-      dlnkvi = -lmbd * gi
-      max_dlnkvi = np.abs(dlnkvi).max()
-      if max_dlnkvi > 6.:
-        relax = 6. / max_dlnkvi
+      dlnki = -lmbd * gi
+      max_dlnki = np.abs(dlnki).max()
+      if max_dlnki > 6.:
+        relax = 6. / max_dlnki
         lmbd *= relax
-        dlnkvi *= relax
+        dlnki *= relax
       k += 1
-      tkm1 = dlnkvi.dot(gi)
-      kvik *= np.exp(dlnkvi)
-      ni = kvik * yi
+      tkm1 = dlnki.dot(gi)
+      kik *= np.exp(dlnki)
+      ni = kik * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
       gi = np.log(ni) + lnphixi - hi
       gnorm = np.linalg.norm(gi)
       logger.debug(
-        'Iteration (QNSS) #%s:\n\tkvi = %s\n\tgnorm = %s\n\tlmbd = %s',
-        k, kvik, gnorm, lmbd,
+        'Iteration (QNSS) #%s:\n\tki = %s\n\tgnorm = %s\n\tlmbd = %s',
+        k, kik, gnorm, lmbd,
       )
       if gnorm < tol_qnss:
         break
-      lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if np.isfinite(kvik).all():
+    if np.isfinite(kik).all():
       if gnorm < tol:
         TPD = -np.log(ni.sum())
         if TPD < eps:
           logger.info(
             'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-            'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-            P, T, yi, kvik, TPD, gnorm, k,
+            'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+            P, T, yi, kik, TPD, gnorm, k,
           )
           n = ni.sum()
           xi = ni / n
@@ -1032,8 +1032,8 @@ def _stabPT_qnssnewt(
         gi = sqrtni * (np.log(ni) + lnphixi - hi)
         gnorm = np.linalg.norm(gi)
         logger.debug(
-          'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
-          k, ni/yi, gnorm,
+          'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
+          k, kik, gnorm,
         )
         while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gi + 1.)
@@ -1051,7 +1051,7 @@ def _stabPT_qnssnewt(
           if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
             logger.debug(
-              'Iteration (Newton) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
           else:
@@ -1065,7 +1065,7 @@ def _stabPT_qnssnewt(
             gi = sqrtni * (np.log(ni) + lnphixi - hi)
             gnorm = np.linalg.norm(gi)
             logger.debug(
-              'Iteration (SS) #%s:\n\tkvi = %s\n\tgnorm = %s',
+              'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s',
               k, ni/yi, gnorm,
             )
         if gnorm < tol and np.isfinite(alphaik).all():
@@ -1073,7 +1073,7 @@ def _stabPT_qnssnewt(
           if TPD < eps:
             logger.info(
               'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-              'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+              'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
               P, T, yi, ni/yi, TPD, gnorm, k,
             )
             n = ni.sum()
@@ -1087,7 +1087,7 @@ def _stabPT_qnssnewt(
     logger.info(
       'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
       'The last kv-loop iteration results:\n\t'
-      'kvi = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
+      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
       P, T, yi, ni/yi, TPD, gnorm, k,
     )
     n = ni.sum()

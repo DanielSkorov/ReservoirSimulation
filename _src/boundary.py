@@ -871,32 +871,33 @@ def _PsatPT_ss(
                         maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
                         increasing=upper)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
-  xi = ni / ni.sum()
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
+  n = ni.sum()
+  xi = ni / n
   Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P0, T, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
-  TPD = ni.dot(gi)
+  TPD = xi.dot(gi - np.log(n))
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-    k, kvik, Pk, gnorm, TPD,
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
+    k, kik, Pk, gnorm, TPD,
   )
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
-    lnkvik -= gi
+    lnkik -= gi
     k += 1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    kik = np.exp(lnkik)
+    ni = kik * yi
     xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-      k, kvik, Pk, gnorm, TPD,
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
+      k, kik, Pk, gnorm, TPD,
     )
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kvik).all()
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -916,7 +917,7 @@ def _PsatPT_ss(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using the SS-method terminates "
+      "The SS-method for saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
@@ -1038,43 +1039,44 @@ def _PsatPT_qnss(
                         maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
                         increasing=upper)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
-  xi = ni / ni.sum()
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
+  n = ni.sum()
+  xi = ni / n
   Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P0, T, yi, xi)
-  gi = np.log(kvik) + lnphixi - lnphiyi
+  gi = np.log(kik) + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
-  TPD = ni.dot(gi)
+  TPD = xi.dot(gi - np.log(n))
   lmbd = 1.
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-    k, kvik, Pk, gnorm, TPD,
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
+    k, kik, Pk, gnorm, TPD,
   )
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
-    dlnkvi = -lmbd * gi
-    max_dlnkvi = np.abs(dlnkvi).max()
-    if max_dlnkvi > 6.:
-      relax = 6. / max_dlnkvi
+    dlnki = -lmbd * gi
+    max_dlnki = np.abs(dlnki).max()
+    if max_dlnki > 6.:
+      relax = 6. / max_dlnki
       lmbd *= relax
-      dlnkvi *= relax
+      dlnki *= relax
     k += 1
-    tkm1 = dlnkvi.dot(gi)
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    tkm1 = dlnki.dot(gi)
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
     xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tPk = %s\n\tgnorm = %s\n\tTPD = %s',
-      k, kvik, Pk, gnorm, TPD,
+      'Iteration #%s:\n\tki = %s\n\tPk = %s\n\tgnorm = %s\n\tTPD = %s',
+      k, kik, Pk, gnorm, TPD,
     )
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kvik).all()
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -1094,7 +1096,7 @@ def _PsatPT_qnss(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using the QNSS-method terminates "
+      "The QNSS-method for saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
@@ -1362,9 +1364,9 @@ def _PsatPT_newtA(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(P0, T, yi, xi, eos,
@@ -1372,45 +1374,45 @@ def _PsatPT_newtA(
                                                        Pmax, Pmin, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi,
                                                                    n)
-  gi[:Nc] = lnkvik + lnphixi - lnphiyi
+  gi[:Nc] = lnkik + lnphixi - lnphiyi
   gi[-1] = n - 1.
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
-    k, kvik, Pk, gnorm,
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
+    k, kik, Pk, gnorm,
   )
   while gnorm > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = ni
     J[:Nc,-1] = Pk * (dlnphixidP - dlnphiyidP)
     try:
-      dlnkvilnP = linsolver(J, -gi)
+      dlnkilnP = linsolver(J, -gi)
     except:
-      dlnkvilnP = -gi
+      dlnkilnP = -gi
     k += 1
-    lnkvik += dlnkvilnP[:-1]
-    Pkp1 = Pk * np.exp(dlnkvilnP[-1])
+    lnkik += dlnkilnP[:-1]
+    Pkp1 = Pk * np.exp(dlnkilnP[-1])
     if Pkp1 > Pmax:
       Pk = .5 * (Pk + Pmax)
     elif Pkp1 < Pmin:
       Pk = .5 * (Pmin + Pk)
     else:
       Pk = Pkp1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T,
                                                                      xi, n)
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-    gi[:Nc] = lnkvik + lnphixi - lnphiyi
+    gi[:Nc] = lnkik + lnphixi - lnphiyi
     gi[-1] = n - 1.
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
-      k, kvik, Pk, gnorm,
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
+      k, kik, Pk, gnorm,
     )
-  if gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk):
+  if gnorm < tol and np.isfinite(kik).all() and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -1429,7 +1431,7 @@ def _PsatPT_newtA(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using Newton's method (A-form) "
+      "Newton's method (A-form) for saturation pressure calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
@@ -1581,9 +1583,9 @@ def _PsatPT_newtB(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(P0, T, yi, xi, eos,
@@ -1591,13 +1593,13 @@ def _PsatPT_newtB(
                                                        Pmax, Pmin, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi,
                                                                    n)
-  hi = np.log(xi / yi) + lnphixi - lnphiyi
-  gi[:Nc] = lnkvik + lnphixi - lnphiyi
+  gi[:Nc] = lnkik + lnphixi - lnphiyi
+  hi = gi[:Nc] - np.log(n)
   gi[-1] = xi.dot(hi)
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
-    k, kvik, Pk, gnorm,
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
+    k, kik, Pk, gnorm,
   )
   while gnorm > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
@@ -1605,34 +1607,34 @@ def _PsatPT_newtB(
     J[:Nc,-1] = Pk * (dlnphixidP - dlnphiyidP)
     J[-1,-1] = xi.dot(J[:Nc,-1])
     try:
-      dlnkvilnP = linsolver(J, -gi)
+      dlnkilnP = linsolver(J, -gi)
     except:
-      dlnkvilnP = -gi
+      dlnkilnP = -gi
     k += 1
-    lnkvik += dlnkvilnP[:-1]
-    Pkp1 = Pk * np.exp(dlnkvilnP[-1])
+    lnkik += dlnkilnP[:-1]
+    Pkp1 = Pk * np.exp(dlnkilnP[-1])
     if Pkp1 > Pmax:
       Pk = .5 * (Pk + Pmax)
     elif Pkp1 < Pmin:
       Pk = .5 * (Pmin + Pk)
     else:
       Pk = Pkp1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T,
                                                                      xi, n)
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-    hi = np.log(xi / yi) + lnphixi - lnphiyi
-    gi[:Nc] = lnkvik + lnphixi - lnphiyi
+    gi[:Nc] = lnkik + lnphixi - lnphiyi
+    hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
-      k, kvik, Pk, gnorm,
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
+      k, kik, Pk, gnorm,
     )
-  if gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Pk):
+  if gnorm < tol and np.isfinite(kik).all() and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -1651,7 +1653,7 @@ def _PsatPT_newtB(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using Newton's method (B-form) "
+      "Newton's method (B-form) for saturation pressure calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
@@ -1793,41 +1795,40 @@ def _PsatPT_newtC(
                         increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P0, T, yi, xi)
-  _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   TPD = ni.dot(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-    k, kvik, Pk, gnorm, TPD,
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
+    k, kik, Pk, gnorm, TPD,
   )
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+    dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
-      dlnkvi = linsolver(J, -gi)
+      dlnki = linsolver(J, -gi)
     except:
-      dlnkvi = -gi
+      dlnki = -gi
     k += 1
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
-    _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-      k, kvik, Pk, gnorm, TPD,
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
+      k, kik, Pk, gnorm, TPD,
     )
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kvik).all()
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -1847,7 +1848,7 @@ def _PsatPT_newtC(
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using Newton's method (C-form) "
+      "Newton's method (C-form) for saturation pressure calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T, yi, Pmin, Pmax,
@@ -2423,31 +2424,31 @@ def _TsatPT_ss(
                         maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
                         increasing=upper)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   xi = ni / ni.sum()
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
-    k, kvik, Tk, gnorm, TPD,
+    'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
+    k, kik, Tk, gnorm, TPD,
   )
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
-    lnkvik -= gi
+    lnkik -= gi
     k += 1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    kik = np.exp(lnkik)
+    ni = kik * yi
     xi = ni / ni.sum()
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
-      k, kvik, Tk, gnorm, TPD,
+      'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
+      k, kik, Tk, gnorm, TPD,
     )
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kvik).all()
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -2467,7 +2468,7 @@ def _TsatPT_ss(
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using the SS-method terminates "
+      "The SS-method for saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P, T0, yi, Tmin, Tmax,
@@ -2592,43 +2593,43 @@ def _TsatPT_qnss(
                         maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
                         increasing=upper)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   xi = ni / ni.sum()
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   TPD = ni.dot(gi)
   lmbd = 1.
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
-    k, kvik, gnorm, TPD, Tk,
+    'Iteration #%s:\n\tki = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
+    k, kik, gnorm, TPD, Tk,
   )
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
-    dlnkvi = -lmbd * gi
-    max_dlnkvi = np.abs(dlnkvi).max()
-    if max_dlnkvi > 6.:
-      relax = 6. / max_dlnkvi
+    dlnki = -lmbd * gi
+    max_dlnki = np.abs(dlnki).max()
+    if max_dlnki > 6.:
+      relax = 6. / max_dlnki
       lmbd *= relax
-      dlnkvi *= relax
+      dlnki *= relax
     k += 1
-    tkm1 = dlnkvi.dot(gi)
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    tkm1 = dlnki.dot(gi)
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
     xi = ni / ni.sum()
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
-      k, kvik, gnorm, TPD, Tk,
+      'Iteration #%s:\n\tki = %s\n\tgnorm = %s\n\tTPD = %s\n\tT = %s K',
+      k, kik, gnorm, TPD, Tk,
     )
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kvik).all()
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -2648,7 +2649,7 @@ def _TsatPT_qnss(
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation pressure calculation using the QNSS-method terminates "
+      "The QNSS-method saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P, T0, yi, Tmin, Tmax,
@@ -2918,9 +2919,9 @@ def _TsatPT_newtA(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Tk, lnphiyi, Zy, dlnphiyidT = _TsatPT_newt_improveT0(P, T0, yi, xi, eos,
@@ -2928,45 +2929,45 @@ def _TsatPT_newtA(
                                                        Tmax, Tmin, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk, xi,
                                                                    n)
-  gi[:Nc] = lnkvik + lnphixi - lnphiyi
+  gi[:Nc] = lnkik + lnphixi - lnphiyi
   gi[-1] = n - 1.
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s',
-    k, kvik, Tk, gnorm,
+    'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s',
+    k, kik, Tk, gnorm,
   )
   while gnorm > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = ni
     J[:Nc,-1] = Tk * (dlnphixidT - dlnphiyidT)
     try:
-      dlnkvilnT = linsolver(J, -gi)
+      dlnkilnT = linsolver(J, -gi)
     except:
-      dlnkvilnT = -gi
+      dlnkilnT = -gi
     k += 1
-    lnkvik += dlnkvilnT[:-1]
-    Tkp1 = Tk * np.exp(dlnkvilnT[-1])
+    lnkik += dlnkilnT[:-1]
+    Tkp1 = Tk * np.exp(dlnkilnT[-1])
     if Tkp1 > Tmax:
       Tk = .5 * (Tk + Tmax)
     elif Tkp1 < Tmin:
       Tk = .5 * (Tmin + Tk)
     else:
       Tk = Tkp1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk,
                                                                      xi, n)
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-    gi[:Nc] = lnkvik + lnphixi - lnphiyi
+    gi[:Nc] = lnkik + lnphixi - lnphiyi
     gi[-1] = n - 1.
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s',
-      k, kvik, Tk, gnorm,
+      'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s',
+      k, kik, Tk, gnorm,
     )
-  if gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Tk):
+  if gnorm < tol and np.isfinite(kik).all() and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -2985,7 +2986,7 @@ def _TsatPT_newtA(
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation temperature calculation using Newton's method (A-form) "
+      "Newton's method (A-form) for saturation temperature calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P, T0, yi, Tmin, Tmax,
@@ -3139,9 +3140,9 @@ def _TsatPT_newtB(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Tk, lnphiyi, Zy, dlnphiyidT = _TsatPT_newt_improveT0(P, T0, yi, xi, eos,
@@ -3149,13 +3150,13 @@ def _TsatPT_newtB(
                                                        Tmax, Tmin, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk, xi,
                                                                    n)
-  hi = np.log(xi / yi) + lnphixi - lnphiyi
-  gi[:Nc] = lnkvik + lnphixi - lnphiyi
+  gi[:Nc] = lnkik + lnphixi - lnphiyi
+  hi = gi[:Nc] - np.log(n)
   gi[-1] = xi.dot(hi)
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s',
-    k, kvik, Tk, gnorm,
+    'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s',
+    k, kik, Tk, gnorm,
   )
   while gnorm > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
@@ -3163,34 +3164,34 @@ def _TsatPT_newtB(
     J[:Nc,-1] = Tk * (dlnphixidT - dlnphiyidT)
     J[-1,-1] = xi.dot(J[:Nc,-1])
     try:
-      dlnkvilnT = linsolver(J, -gi)
+      dlnkilnT = linsolver(J, -gi)
     except:
-      dlnkvilnT = -gi
+      dlnkilnT = -gi
     k += 1
-    lnkvik += dlnkvilnT[:-1]
-    Tkp1 = Tk * np.exp(dlnkvilnT[-1])
+    lnkik += dlnkilnT[:-1]
+    Tkp1 = Tk * np.exp(dlnkilnT[-1])
     if Tkp1 > Tmax:
       Tk = .5 * (Tk + Tmax)
     elif Tkp1 < Tmin:
       Tk = .5 * (Tmin + Tk)
     else:
       Tk = Tkp1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk,
                                                                      xi, n)
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-    hi = np.log(xi / yi) + lnphixi - lnphiyi
-    gi[:Nc] = lnkvik + lnphixi - lnphiyi
+    gi[:Nc] = lnkik + lnphixi - lnphiyi
+    hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s',
-      k, kvik, Tk, gnorm,
+      'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s',
+      k, kik, Tk, gnorm,
     )
-  if gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Tk):
+  if gnorm < tol and np.isfinite(kik).all() and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -3209,7 +3210,7 @@ def _TsatPT_newtB(
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation temperature calculation using Newton's method (B-form) "
+      "Newton's method (B-form) for saturation temperature calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P, T0, yi, Tmin, Tmax,
@@ -3321,9 +3322,9 @@ def _TsatPT_newtC(
     Default is `173.15` [K].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
   upper: bool
@@ -3353,41 +3354,39 @@ def _TsatPT_newtC(
                         increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
-  _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, Tk, xi, n)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
-    k, kvik, Tk, gnorm, TPD,
+    'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
+    k, kik, Tk, gnorm, TPD,
   )
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+    dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
-      dlnkvi = linsolver(J, -gi)
+      dlnki = linsolver(J, -gi)
     except:
-      dlnkvi = -gi
+      dlnki = -gi
     k += 1
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
-    _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, Tk, xi, n)
-    lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
-      k, kvik, Tk, gnorm, TPD,
+      'Iteration #%s:\n\tki = %s\n\tT = %s K\n\tgnorm = %s\n\tTPD = %s',
+      k, kik, Tk, gnorm, TPD,
     )
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kvik).all()
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -3407,7 +3406,7 @@ def _TsatPT_newtC(
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
-      "Saturation temperature calculation using Newton's method (C-form) "
+      "Newton's method (C-form) for saturation temperature calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P, T0, yi, Tmin, Tmax,
@@ -3990,39 +3989,40 @@ def _PmaxPT_ss(
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
                          maxiter=maxiter_tpd)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   xi = ni / ni.sum()
   Pk, _, _, _, _, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
                                               maxiter_tpd, Pmax, Pmin, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
     'gnorm = %s\n\tTPD = %s\n\tdTPDdT = %s',
-    k, kvik, Pk, Tk, gnorm, TPD, dTPDdT,
+    k, kik, Pk, Tk, gnorm, TPD, dTPDdT,
   )
   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
                          or np.abs(dTPDdT) > tol_tpd):
-    lnkvik -= gi
+    lnkik -= gi
     k += 1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    xi = ni / ni.sum()
+    kik = np.exp(lnkik)
+    ni = kik * yi
+    n = ni.sum()
+    xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    TPD = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
+    TPD = xi.dot(gi - np.log(n))
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
       'gnorm = %s\n\tTPD = %s\n\tdTPDdT = %s',
-      k, kvik, Pk, Tk, gnorm, TPD, dTPDdT,
+      k, kik, Pk, Tk, gnorm, TPD, dTPDdT,
     )
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdT) < tol_tpd
-      and np.isfinite(kvik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+      and np.isfinite(kik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -4043,7 +4043,7 @@ def _PmaxPT_ss(
                      success=True)
   else:
     logger.warning(
-      "The cricondenbar calculation using the SS-method terminates "
+      "The SS-method for cricondenbar calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T0, yi, Pmin, Pmax,
@@ -4185,50 +4185,51 @@ def _PmaxPT_qnss(
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   xi = ni / ni.sum()
   Pk, _, _, _, _, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
                                               maxiter_tpd, Pmax, Pmin, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   lmbd = 1.
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
     'gnorm = %s\n\tTPD = %s\n\tdTPDdT = %s',
-    k, kvik, Pk, Tk, gnorm, TPD, dTPDdT,
+    k, kik, Pk, Tk, gnorm, TPD, dTPDdT,
   )
   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
                          or np.abs(dTPDdT) > tol_tpd):
-    dlnkvi = -lmbd * gi
-    max_dlnkvi = np.abs(dlnkvi).max()
-    if max_dlnkvi > 6.:
-      relax = 6. / max_dlnkvi
+    dlnki = -lmbd * gi
+    max_dlnki = np.abs(dlnki).max()
+    if max_dlnki > 6.:
+      relax = 6. / max_dlnki
       lmbd *= relax
-      dlnkvi *= relax
+      dlnki *= relax
     k += 1
-    tkm1 = dlnkvi.dot(gi)
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    xi = ni / ni.sum()
+    tkm1 = dlnki.dot(gi)
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
+    n = ni.sum()
+    xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    TPD = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
-    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    TPD = xi.dot(gi - np.log(n))
+    lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
       'gnorm = %s\n\tTPD = %s\n\tdTPDdT = %s',
-      k, kvik, Pk, Tk, gnorm, TPD, dTPDdT,
+      k, kik, Pk, Tk, gnorm, TPD, dTPDdT,
     )
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdT) < tol_tpd
-      and np.isfinite(kvik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+      and np.isfinite(kik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -4249,7 +4250,7 @@ def _PmaxPT_qnss(
                      success=True)
   else:
     logger.warning(
-      "The cricondenbar calculation using the QNSS-method terminates "
+      "The QNSS-method for cricondenbar calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T0, yi, Pmin, Pmax,
@@ -4382,9 +4383,9 @@ def _PmaxPT_newtC(
     only at the zeroth iteration. Default is `1.0` [Pa].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
   Returns
@@ -4409,48 +4410,47 @@ def _PmaxPT_newtC(
                         maxiter=maxiter_tpd)
   I = np.eye(eos.Nc)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   n = ni.sum()
   xi = ni / n
   Pk, _, _, _, _, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
                                               maxiter_tpd, Pmax, Pmin, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
     'gnorm = %s\n\tTPD = %s\n\tdTPDdT = %s',
-    k, kvik, Pk, Tk, gnorm, TPD, dTPDdT,
+    k, kik, Pk, Tk, gnorm, TPD, dTPDdT,
   )
   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
                          or np.abs(dTPDdT) > tol_tpd):
+    dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
-      dlnkvi = linsolver(J, -gi)
+      dlnki = linsolver(J, -gi)
     except:
-      dlnkvi = -gi
+      dlnki = -gi
     k += 1
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    _, _, dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)
-    gi = lnkvik + lnphixi - lnphiyi
-    TPD = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
+    gi = lnkik + lnphixi - lnphiyi
+    TPD = xi.dot(gi - np.log(n))
     gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
       'gnorm = %s\n\tTPD = %s\n\tdTPDdT = %s',
-      k, kvik, Pk, Tk, gnorm, TPD, dTPDdT,
+      k, kik, Pk, Tk, gnorm, TPD, dTPDdT,
     )
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdT) < tol_tpd
-      and np.isfinite(kvik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+      and np.isfinite(kik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -4471,7 +4471,7 @@ def _PmaxPT_newtC(
                      success=True)
   else:
     logger.warning(
-      "The cricondenbar calculation using the Newton's method (C-form) "
+      "Newton's method (C-form) for cricondenbar calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
       eos.name, P0, T0, yi, Pmin, Pmax,
@@ -5001,9 +5001,11 @@ def _TmaxPT_ss(
     Default is `50`.
 
   tol_tpd: float
-    Terminate the TPD-equation and the cricondentherm equation solvers
-    successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol_tpd`. Terminate the
+    cricondentherm equation solver successfully if the absolute value
+    of the relative pressure change is less than `tol_tpd`. Default
+    is `1e-6`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
@@ -5038,39 +5040,40 @@ def _TmaxPT_ss(
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
                            maxiter=maxiter_tpd)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   xi = ni / ni.sum()
   Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
                                               maxiter, Tmax, Tmin, True)
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
     'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
-    k, kvik, Pk, Tk, gnorm, TPD, dTPDdP,
+    k, kik, Pk, Tk, gnorm, TPD, dTPDdP,
   )
   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
                          or np.abs(dTPDdP) > tol_tpd):
-    lnkvik -= gi
+    lnkik -= gi
     k += 1
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    xi = ni / ni.sum()
+    kik = np.exp(lnkik)
+    ni = kik * yi
+    n = ni.sum()
+    xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
     Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    TPD = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
+    TPD = xi.dot(gi - np.log(n))
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
       'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
-      k, kvik, Pk, Tk, gnorm, TPD, dTPDdP,
+      k, kik, Pk, Tk, gnorm, TPD, dTPDdP,
     )
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd
-      and np.isfinite(kvik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+      and np.isfinite(kik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -5091,7 +5094,7 @@ def _TmaxPT_ss(
                      success=True)
   else:
     logger.warning(
-      "The cricondentherm calculation using the SS-method terminates "
+      "The SS-method for cricondentherm calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P0, T0, yi, Tmin, Tmax,
@@ -5196,9 +5199,11 @@ def _TmaxPT_qnss(
     Default is `50`.
 
   tol_tpd: float
-    Terminate the TPD-equation and the cricondentherm equation solvers
-    successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol_tpd`. Terminate the
+    cricondentherm equation solver successfully if the absolute value
+    of the relative pressure change is less than `tol_tpd`. Default
+    is `1e-6`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
@@ -5233,50 +5238,51 @@ def _TmaxPT_qnss(
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
                            maxiter=maxiter_tpd)
   k = 0
-  kvik = kvi0
-  lnkvik = np.log(kvik)
-  ni = kvik * yi
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
   xi = ni / ni.sum()
   Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
                                               maxiter, Tmax, Tmin, True)
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
-  gi = lnkvik + lnphixi - lnphiyi
+  gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   lmbd = 1.
   logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
     'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
-    k, kvik, Pk, Tk, gnorm, TPD, dTPDdP,
+    k, kik, Pk, Tk, gnorm, TPD, dTPDdP,
   )
   while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
                          or np.abs(dTPDdP) > tol_tpd):
-    dlnkvi = -lmbd * gi
-    max_dlnkvi = np.abs(dlnkvi).max()
-    if max_dlnkvi > 6.:
-      relax = 6. / max_dlnkvi
+    dlnki = -lmbd * gi
+    max_dlnki = np.abs(dlnki).max()
+    if max_dlnki > 6.:
+      relax = 6. / max_dlnki
       lmbd *= relax
-      dlnkvi *= relax
+      dlnki *= relax
     k += 1
-    tkm1 = dlnkvi.dot(gi)
-    lnkvik += dlnkvi
-    kvik = np.exp(lnkvik)
-    ni = kvik * yi
-    xi = ni / ni.sum()
+    tkm1 = dlnki.dot(gi)
+    lnkik += dlnki
+    kik = np.exp(lnkik)
+    ni = kik * yi
+    n = ni.sum()
+    xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
     Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
-    gi = lnkvik + lnphixi - lnphiyi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    TPD = xi.dot(np.log(xi / yi) + lnphixi - lnphiyi)
-    lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+    TPD = xi.dot(gi - np.log(n))
+    lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
       'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
-      k, kvik, Pk, Tk, gnorm, TPD, dTPDdP,
+      k, kik, Pk, Tk, gnorm, TPD, dTPDdP,
     )
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd
-      and np.isfinite(kvik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+      and np.isfinite(kik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -5297,7 +5303,230 @@ def _TmaxPT_qnss(
                      success=True)
   else:
     logger.warning(
-      "The cricondentherm calculation using the QNSS-method terminates "
+      "The QNSS-method for cricondentherm calculation terminates "
+      "unsuccessfully. EOS: %s. Parameters:"
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
+      eos.name, P0, T0, yi, Tmin, Tmax,
+    )
+    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
+                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
+                     success=False)
+
+
+def _TmaxPT_newtC(
+  P0: ScalarType,
+  T0: ScalarType,
+  yi: VectorType,
+  kvi0: VectorType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  tol_tpd: ScalarType = 1e-6,
+  maxiter_tpd: int = 8,
+  Tmax: ScalarType = 973.15,
+  Tmin: ScalarType = 173.15,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> SatResult:
+  """This function calculates the cricondenthern point by solving a
+  system of nonlinear equations using Newton's method. The system
+  incorporates the condition of equal fugacity for all components in
+  both phases, as well as the requirements that the tangent-plane
+  distance and its partial derivative with respect to pressure are
+  zero. The TPD- and cricondentherm equations are solved in the inner
+  while-loop. The TPD-equation that represents the condition where the
+  tangent-plane distance equals zero (this equation is linearized with
+  temperature). The cricondentherm equation is the equation of equality
+  to zero of the partial derivative of the tangent-plane distance
+  function with respect to pressure (this equation is linearized with
+  pressure).
+
+  For the details of the algorithm see the paper of L.X. Nghiem and
+  Y.k. Li: 10.1016/0378-3812(85)90059-7.
+
+  Parameters
+  ----------
+  P0: float
+    Initial guess of the cricondentherm pressure [Pa].
+
+  T0: float
+    Initial guess of the cricondentherm temperature [K].
+
+  yi: ndarray, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  kvi0: ndarray, shape (Nc,)
+    Initial guess of k-values of `Nc` components.
+
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z_dT(P, T, yi) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - an array of shape `(Nc,)` of partial derivatives of
+        logarithms of the fugacity coefficients of components
+        with respect to temperature.
+
+    - `getPT_lnphii_Z_dP_d2P(P, T, yi) -> tuple[ndarray, float, ndarray,
+                                                ndarray]`
+      For a given pressure [Pa], temperature [K] and phase composition,
+      this method should return a tuple of:
+
+      - an array of logarithms of the fugacity coefficients of `Nc`
+        components,
+      - the compressibility factor of the mixture,
+      - an array with shape `(Nc,)` of first partial derivatives of
+        logarithms of the fugacity coefficients with respect to
+        pressure,
+      - an array with shape `(Nc,)` of second partial derivatives of
+        logarithms of the fugacity coefficients with respect to
+        pressure.
+
+    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
+      For a given pressure [Pa], temperature [K], phase composition and
+      phase mole number [mol] this method should return a tuple of:
+
+      - an array of shape `(Nc,)` of logarithms of the fugacity
+        coefficients of components,
+      - the phase compressibility factor,
+      - a matrix of shape `(Nc, Nc)` of partial derivatives of
+        logarithms of the fugacity coefficients of components with
+        respect to their mole numbers.
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging),
+
+    - `Nc: int`
+      The number of components in the system.
+
+  tol: float
+    Terminate equilibrium equation solver successfully if the norm of
+    the equation vector is less than `tol`. Default is `1e-5`.
+
+  maxiter: int
+    The maximum number of equilibrium equation solver iterations.
+    Default is `50`.
+
+  tol_tpd: float
+    Terminate the TPD-equation solver successfully if the absolute
+    value of the equation is less than `tol_tpd`. Terminate the
+    cricondentherm equation solver successfully if the absolute value
+    of the relative pressure change is less than `tol_tpd`. Default
+    is `1e-6`.
+
+  maxiter_tpd: int
+    The maximum number of iterations for the TPD-equation and
+    cricondentherm equation solvers. Default is `8`.
+
+  Tmax: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `973.15` [K].
+
+  Tmin: float
+    The lower bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `173.15` [K].
+
+  linsolver: Callable[[ndarray, ndarray], ndarray]
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
+
+  Returns
+  -------
+  The cricondentherm point calculation results as an instance of the
+  `SatResult`. Important attributes are:
+  - `P` the pressure in [Pa] of the cricondentherm point,
+  - `T` the temperature in [K] of the cricondentherm point,
+  - `yji` the component mole fractions in each phase,
+  - `Zj` the compressibility factors of each phase,
+  - `success` a boolean flag indicating if the calculation
+    completed successfully.
+  """
+  logger.debug(
+    "The cricondentherm calculation using Newton's method (C-form):\n"
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
+    P0, T0, yi, Tmin, Tmax,
+  )
+  solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd)
+  solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
+                           maxiter=maxiter_tpd)
+  I = np.eye(eos.Nc)
+  k = 0
+  kik = kvi0
+  lnkik = np.log(kik)
+  ni = kik * yi
+  n = ni.sum()
+  xi = ni / n
+  Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
+                                              maxiter, Tmax, Tmin, True)
+  Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
+  gi = lnkik + lnphixi - lnphiyi
+  gnorm = np.linalg.norm(gi)
+  logger.debug(
+    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+    'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
+    k, kik, Pk, Tk, gnorm, TPD, dTPDdP,
+  )
+  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd
+                         or np.abs(dTPDdP) > tol_tpd):
+    dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)[2]
+    J = I + ni * dlnphixidnj
+    try:
+      dlnki = linsolver(J, -gi)
+    except:
+      dlnki = -gi
+    lnkik += dlnki
+    k += 1
+    kik = np.exp(lnkik)
+    ni = kik * yi
+    n = ni.sum()
+    xi = ni / n
+    Tk = solverTPDeq(Pk, Tk, yi, xi)
+    Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
+    gi = lnkik + lnphixi - lnphiyi
+    gnorm = np.linalg.norm(gi)
+    TPD = xi.dot(gi - np.log(n))
+    logger.debug(
+      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tT = %s K\n\t'
+      'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s',
+      k, kik, Pk, Tk, gnorm, TPD, dTPDdP,
+    )
+  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd
+      and np.isfinite(kik).all() and np.isfinite(Pk) and np.isfinite(Tk)):
+    rhoy = yi.dot(eos.mwi) / Zy
+    rhox = xi.dot(eos.mwi) / Zx
+    if rhoy < rhox:
+      yji = np.vstack([yi, xi])
+      Zj = np.array([Zy, Zx])
+      lnphiji = np.vstack([lnphiyi, lnphixi])
+    else:
+      yji = np.vstack([xi, yi])
+      Zj = np.array([Zx, Zy])
+      lnphiji = np.vstack([lnphixi, lnphiyi])
+    logger.info(
+      'The cricondentherm for yi = %s:\n\t'
+      'P = %s Pa\n\tT = %s K\n\tyti = %s\n\t'
+      'gnorm = %s\n\tTPD = %s\n\tdTPDdP = %s\n\tNiter = %s',
+      yi, Pk, Tk, xi, gnorm, TPD, dTPDdP, k,
+    )
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
+                     success=True)
+  else:
+    logger.warning(
+      "Newton's method (C-form) for cricondentherm calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
       "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
       eos.name, P0, T0, yi, Tmin, Tmax,
