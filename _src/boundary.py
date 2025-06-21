@@ -128,7 +128,7 @@ def getVT_Tspinodal(
     eos.name, V, yi, T0, zeta0i, multdT0, tol, maxiter,
   )
   raise ValueError(
-    "The spinodal temperature solution procedure completed unsuccessfully. "
+    "The spinodal temperature solution procedure completed unsuccessfully.\n"
     "Try to increase the number of iterations or change the initial guess."
   )
 
@@ -262,7 +262,7 @@ def getVT_PcTc(
     eos.name, yi, v0, T0, kappa0, multdV0, krange, kstep, tol, maxiter,
   )
   raise ValueError(
-    "The critical point solution procedure completed unsuccessfully. "
+    "The critical point solution procedure completed unsuccessfully.\n"
     "Try to increase the number of iterations or change the initial guess."
   )
 
@@ -281,8 +281,8 @@ class SatResult(dict):
 
   yji: ndarray, shape (Np, Nc)
     Equilibrium composition of two phases for the saturation point.
-    Two-dimensional array of real elements of size `(2, Nc)`, where `Np`
-    is the number of phases and `Nc` is the number of components.
+    Two-dimensional array of real elements of size `(Np, Nc)`, where
+    `Np` is the number of phases and `Nc` is the number of components.
 
   Zj: ndarray, shape (Np,)
     Compressibility factors of each phase. Array of real elements of
@@ -544,7 +544,7 @@ class PsatPT(object):
       if Pmin < lowerlimit:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of P or\n'
+          'its narrowness or absence. Try to change the value of `P` or\n'
           'stability test parameters using the `stabkwargs` parameter of\n'
           'this class. It also might be helpful to reduce the value of the\n'
           'parameter `step`.'
@@ -609,7 +609,7 @@ class PsatPT(object):
       if Pmax > upperlimit:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of P or\n'
+          'its narrowness or absence. Try to change the value of `P` or\n'
           'stability test parameters using the `stabkwargs` parameter of\n'
           'this class. It also might be helpful to reduce the value of the\n'
           'parameter `step`.'
@@ -642,7 +642,7 @@ class PsatPT(object):
           stab = stabmin
       if Pmin < lowerlimit:
         raise ValueError(
-          'The one-phase region was not identified. Try to change the \n'
+          'The one-phase region was not identified. Try to change the\n'
           'initial guess `P` and/or `lowerlimit` parameter.'
         )
       else:
@@ -2095,7 +2095,7 @@ class TsatPT(object):
       if Tmin < lowerlimit:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of T or\n'
+          'its narrowness or absence. Try to change the value of `T` or\n'
           'stability test parameters using the `stabkwargs` parameter of\n'
           'this class. It also might be helpful to reduce the value of the\n'
           'parameter `step`.'
@@ -2160,7 +2160,7 @@ class TsatPT(object):
       if Tmax > upperlimit:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of T or\n'
+          'its narrowness or absence. Try to change the value of `T` or\n'
           'stability test parameters using the `stabkwargs` parameter of\n'
           'this class. It also might be helpful to reduce the value of the\n'
           'parameter `step`.'
@@ -3659,7 +3659,7 @@ class PmaxPT(object):
       if Pmin < lowerlimit:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of P or\n'
+          'its narrowness or absence. Try to change the value of `P` or\n'
           'stability test parameters using the `stabkwargs` parameter of\n'
           'this class. It also might be helpful to reduce the value of the\n'
           'parameter `step`.'
@@ -3694,7 +3694,7 @@ class PmaxPT(object):
           stab = stabmax
       if Pmax > upperlimit:
         raise ValueError(
-          'The one-phase region was not identified. Try to change the \n'
+          'The one-phase region was not identified. Try to change the\n'
           'initial guess `P` and/or `upperlimit` parameter.'
         )
       else:
@@ -4705,7 +4705,7 @@ class TmaxPT(object):
       if Tmin < lowerlimit:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of T or\n'
+          'its narrowness or absence. Try to change the value of `T` or\n'
           'stability test parameters using the `stabkwargs` parameter of\n'
           'this class. It also might be helpful to reduce the value of the\n'
           'parameter `step`.'
@@ -5534,3 +5534,155 @@ def _TmaxPT_newtC(
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
+
+
+class EnvelopeResult(object):
+  """Container for phase envelope calculation outputs with
+  pretty-printing.
+
+  Attributes
+  ----------
+  Pk: ndarray, shape (Ns,)
+    This array includes pressures [Pa] of the phase envelope that
+    consists of `Ns` states (points).
+
+  Tk: ndarray, shape (Ns,)
+    This array includes temperatures [K] of the phase envelope that
+    consists of `Ns` states (points).
+
+  ykji: ndarray, shape (Ns, Np, Nc)
+    The phase state boundary compises `Ns` states (points), each
+    representing the mole fractions of `Nc` components in `Np` phases
+    that are in equilibrium along the `Np`-phase envelope. These phase
+    compositions were calculated and stored in this three-dimensional
+    array.
+
+  Zkj: ndarray, shape (Ns, Np)
+    This two-dimensional array represents compressibility factors of
+    phases that are in equilibrium along the `Np`-phase envelope
+    consisting of `Ns` states (points).
+
+  Pc: float
+    Critical point pressure [Pa].
+
+  Tc: float
+    Critical point temperature [K].
+
+  Pcb: float
+    Cricondenbar point pressure [Pa].
+
+  Tcb: float
+    Cricondenbar point temperature [Pa].
+
+  Pct: float
+    Cricondentherm point pressure [Pa].
+
+  Tct: float
+    Cricondentherm point temperature [Pa].
+
+  success: bool
+    Whether or not the procedure exited successfully.
+  """
+  def __getattr__(self, name: str) -> object:
+    try:
+      return self[name]
+    except KeyError as e:
+      raise AttributeError(name) from e
+
+  def __repr__(self) -> str:
+    with np.printoptions(linewidth=np.inf):
+      s = (f"Critical point: {self.Pc} Pa, {self.Tc} K\n"
+           f"Cricondenbar: {self.Pcb} Pa, {self.Tcb} K\n"
+           f"Cricondentherm: {self.Pct} Pa, {self.Tct} K\n"
+           f"Calculation completed successfully:\n{self.success}")
+    return s
+
+
+def _env2pPT_P(
+  P0: ScalarType,
+  T: ScalarType,
+  yi: VectorType,
+  Fv: ScalarType,
+  kvi0: VectorType,
+  Pmin: ScalarType,
+  Pmax: ScalarType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 50,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+  logger.debug(
+    'Solving the system for the phase envelope with Fv = %s.\n\t'
+    'The specified variable is T = %s K. Pmin = %s Pa, Pmax = %s Pa.',
+    Fv, T, Pmin, Pmax,
+  )
+  Nc = eos.Nc
+  J = np.empty(shape=(Nc + 1, Nc + 1))
+  J[-1,-1] = 0.
+  g = np.empty(shape=(Nc + 1,))
+  I = np.eye(Nc)
+  Fl = 1. - Fv
+  k = 0
+  Pk = P0
+  kvi = kvi0
+  lnkvik = np.log(kvi)
+  di = 1. + Fv * (kvi - 1.)
+  yli = yi / di
+  yvi = kvi * yli
+  lnphivi, Zv, dlnphividyvj, dlnphividP = eos.getPT_lnphii_Z_dyj_dP(Pk,T,yvi)
+  lnphili, Zl, dlnphilidylj, dlnphilidP = eos.getPT_lnphii_Z_dyj_dP(Pk,T,yli)
+  g[:Nc] = lnkvik + lnphivi - lnphili
+  g[Nc] = np.sum(yvi - yli)
+  gnorm = np.linalg.norm(g)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
+    k, kvi, Pk, gnorm,
+  )
+  dylidlnkvi = -Fv * yvi / di
+  dyvidlnkvi = yvi + kvi * dylidlnkvi
+  while gnorm > tol and k < maxiter:
+    J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+    J[-1,:Nc] = yvi / di
+    J[:Nc,-1] = Pk * (dlnphividP - dlnphilidP)
+    try:
+      dlnkvilnP = linsolver(J, -g)
+    except:
+      dlnkvilnP = -g
+    k += 1
+    lnkvik += dlnkvilnP[:-1]
+    Pkp1 = Pk * np.exp(dlnkvilnP[-1])
+    if Pkp1 > Pmax:
+      Pkp1 = .5 * (Pk + Pmax)
+    elif Pkp1 < Pmin:
+      Pkp1 = .5 * (Pmin + Pk)
+    Pk = Pkp1
+    kvi = np.exp(lnkvik)
+    di = 1. + Fv * (kvi - 1.)
+    yli = yi / di
+    yvi = kvi * yli
+    lnphivi, Zv, dlnphividyvj, dlnphividP = eos.getPT_lnphii_Z_dyj_dP(Pk, T,
+                                                                      yvi)
+    lnphili, Zl, dlnphilidylj, dlnphilidP = eos.getPT_lnphii_Z_dyj_dP(Pk, T,
+                                                                      yli)
+    g[:Nc] = lnkvik + lnphivi - lnphili
+    g[Nc] = np.sum(yvi - yli)
+    gnorm = np.linalg.norm(g)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
+      k, kvi, Pk, gnorm,
+    )
+  if gnorm < tol and np.isfinite(kvi).all() and np.isfinite(Pk):
+    rhol = yli.dot(eos.mwi) / Zl
+    rhov = yvi.dot(eos.mwi) / Zv
+    if rhov < rhol:
+      yji = np.vstack([yvi, yli])
+      Zj = np.array([Zv, Zl])
+    else:
+      yji = np.vstack([yli, yvi])
+      Zj = np.array([Zl, Zv])
+    return Pk, kvi, yji, Zj, k
+  else:
+    raise ValueError(
+      'The solution was not found. Try to increase the `maxiter` parameter.'
+    )
+
