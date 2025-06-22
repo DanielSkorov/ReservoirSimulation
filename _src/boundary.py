@@ -379,7 +379,6 @@ class PsatPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
-    - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Newton's method),
     - `'ss-newton'` (Currently raises `NotImplementedError`),
     - `'qnss-newton'` (Currently raises `NotImplementedError`).
@@ -405,6 +404,15 @@ class PsatPT(object):
     [K] and composition `yi: ndarray` of `Nc`. This method returns
     saturation pressure calculation results as an instance of
     `SatResult`.
+
+  search(P, T, yi) -> tuple[float, ndarray, float, float]
+    This method performs the preliminary search to refine an initial
+    guess of the saturation pressure and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the saturation pressure [Pa],
+    - the initial guess for k-values as ndarray of shape `(Nc,)`,
+    - the lower bound of the saturation pressure [Pa],
+    - the upper bound of the saturation pressure [Pa].
   """
   def __init__(
     self,
@@ -419,11 +427,6 @@ class PsatPT(object):
       self.solver = partial(_PsatPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
       self.solver = partial(_PsatPT_qnss, eos=eos, **kwargs)
-    elif method == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the saturation pressure calculation is not '
-        'implemented yet.'
-      )
     elif method == 'newton':
       self.solver = partial(_PsatPT_newtA, eos=eos, **kwargs)
     elif method == 'newton-b':
@@ -451,8 +454,8 @@ class PsatPT(object):
     yi: VectorType,
     upper: bool = True,
     step: ScalarType = 0.1,
-    lowerlimit: ScalarType = 1.,
-    upperlimit: ScalarType = 1e8,
+    Pmin: ScalarType = 1.,
+    Pmax: ScalarType = 1e8,
   ) -> SatResult:
     """Performs the saturation pressure calculation for known
     temperature and composition. To improve an initial guess, the
@@ -484,12 +487,12 @@ class PsatPT(object):
       the previous one using the formula: `Pnext = Pprev * (1. + step)`.
       Default is `0.1`.
 
-    lowerlimit: float
+    Pmin: float
       During the preliminary search, the pressure can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `1.` [Pa].
 
-    upperlimit: float
+    Pmax: float
       During the preliminary search, the pressure can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `1e8` [Pa].
@@ -512,6 +515,73 @@ class PsatPT(object):
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
     """
+    P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper, step, Pmin, Pmax)
+    return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
+
+  def search(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    upper: bool = True,
+    step: ScalarType = 0.1,
+    Pmin: ScalarType = 1.,
+    Pmax: ScalarType = 1e8,
+  ) -> tuple[ScalarType, VectorType, ScalarType, ScalarType]:
+    """Performs a preliminary search to refine the initial guess of
+    the saturation pressure.
+
+    Parameters
+    ----------
+    P: float
+      The initial guess of the saturation pressure to be improved [Pa].
+
+    T: float
+      Temperature of a mixture [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    upper: bool
+      A boolean flag that indicates whether the desired value is located
+      at the upper saturation bound or the lower saturation bound.
+      The cricondentherm serves as the dividing point between upper and
+      lower phase boundaries. Default is `True`.
+
+    step: float
+      To specify the confidence interval for the saturation pressure
+      calculation, the preliminary search is performed. This parameter
+      regulates the step of this search in fraction units. For example,
+      if it is necessary to find the upper bound of the confidence
+      interval, then the next value of pressure will be calculated from
+      the previous one using the formula: `Pnext = Pprev * (1. + step)`.
+      Default is `0.1`.
+
+    Pmin: float
+      During the preliminary search, the pressure can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `1.` [Pa].
+
+    Pmax: float
+      During the preliminary search, the pressure can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `1e8` [Pa].
+
+    Returns
+    -------
+    A tuple of:
+
+    - the improved initial guess for the saturation pressure [Pa],
+    - the initial guess for k-values as ndarray of shape `(Nc,)`,
+    - the lower bound of the saturation pressure [Pa],
+    - the upper bound of the saturation pressure [Pa].
+
+    Raises
+    ------
+    ValueError
+      The `ValueError` exception may be raised if the one-phase or
+      two-phase region was not found using a preliminary search.
+    """
     stab = self.stabsolver.run(P, T, yi)
     logger.debug(
       'For the initial guess P = %s Pa, the one-phase state is stable: %s',
@@ -522,133 +592,131 @@ class PsatPT(object):
         'Finding the two-phase region for the upper-bound curve by the '
         'preliminary search.'
       )
-      Pmax = P
+      Pupp = P
       c = 1. - step
-      Pmin = c * P
-      stabmin = self.stabsolver.run(Pmin, T, yi)
+      Plow = c * P
+      stabmin = self.stabsolver.run(Plow, T, yi)
       logger.debug(
-        'Pmin = %s Pa, the one-phase state is stable: %s',
-        Pmin, stabmin.stable,
+        'Plow = %s Pa, the one-phase state is stable: %s',
+        Plow, stabmin.stable,
       )
       if stabmin.stable:
-        Pmax = Pmin
-      while stabmin.stable and Pmin > lowerlimit:
-        Pmin *= c
-        stabmin = self.stabsolver.run(Pmin, T, yi)
+        Pupp = Plow
+      while stabmin.stable and Plow > Pmin:
+        Plow *= c
+        stabmin = self.stabsolver.run(Plow, T, yi)
         logger.debug(
-          'Pmin = %s Pa, the one-phase state is stable: %s',
-          Pmin, stabmin.stable,
+          'Plow = %s Pa, the one-phase state is stable: %s',
+          Plow, stabmin.stable,
         )
         if stabmin.stable:
-          Pmax = Pmin
-      if Pmin < lowerlimit:
+          Pupp = Plow
+      if Plow < Pmin:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of `P` or\n'
-          'stability test parameters using the `stabkwargs` parameter of\n'
-          'this class. It also might be helpful to reduce the value of the\n'
-          'parameter `step`.'
+          'its narrowness or absence. Try to change the initial guess for\n'
+          'pressure or stability test parameters using the `stabkwargs`.\n'
+          'It also might be helpful to reduce the value of the `step`.'
         )
       else:
-        P = Pmin
+        P = Plow
         stab = stabmin
     elif not stab.stable and upper:
       logger.debug(
         'Finding the one-phase region for the upper-bound curve by the '
         'preliminary search.'
       )
-      Pmin = P
+      Plow = P
       c = 1. + step
-      Pmax = c * P
-      stabmax = self.stabsolver.run(Pmax, T, yi)
+      Pupp = c * P
+      stabmax = self.stabsolver.run(Pupp, T, yi)
       logger.debug(
-        'Pmax = %s Pa, the one-phase state is stable: %s',
-        Pmax, stabmax.stable,
+        'Pupp = %s Pa, the one-phase state is stable: %s',
+        Pupp, stabmax.stable,
       )
       if not stabmax.stable:
-        Pmin = Pmax
-      while not stabmax.stable and Pmax < upperlimit:
-        Pmax *= c
-        stabmax = self.stabsolver.run(Pmax, T, yi)
+        Plow = Pupp
+      while not stabmax.stable and Pupp < Pmax:
+        Pupp *= c
+        stabmax = self.stabsolver.run(Pupp, T, yi)
         logger.debug(
-          'Pmax = %s Pa, the one-phase state is stable: %s',
-          Pmax, stabmax.stable,
+          'Pupp = %s Pa, the one-phase state is stable: %s',
+          Pupp, stabmax.stable,
         )
         if not stabmax.stable:
-          Pmin = Pmax
+          Plow = Pupp
           stab = stabmax
-      if Pmax > upperlimit:
+      if Pupp > Pmax:
         raise ValueError(
           'The one-phase region was not identified. Try to change the\n'
-          'initial guess `P` and/or `upperlimit` parameter.'
+          'initial guess for pressure and/or `Pmax` parameter.'
         )
       else:
-        P = Pmin
+        P = Plow
     elif stab.stable and not upper:
       logger.debug(
         'Finding the two-phase region for the lower-bound curve by the '
         'preliminary search.'
       )
-      Pmin = P
+      Plow = P
       c = 1. + step
-      Pmax = c * P
-      stabmax = self.stabsolver.run(Pmax, T, yi)
+      Pupp = c * P
+      stabmax = self.stabsolver.run(Pupp, T, yi)
       logger.debug(
-        'Pmax = %s Pa, the one-phase state is stable: %s',
-        Pmax, stabmax.stable,
+        'Pupp = %s Pa, the one-phase state is stable: %s',
+        Pupp, stabmax.stable,
       )
-      while stabmax.stable and Pmax < upperlimit:
-        Pmax *= c
-        stabmax = self.stabsolver.run(Pmax, T, yi)
+      while stabmax.stable and Pupp < Pmax:
+        Pupp *= c
+        stabmax = self.stabsolver.run(Pupp, T, yi)
         logger.debug(
-          'Pmax = %s Pa, the one-phase state is stable: %s',
-          Pmax, stabmax.stable,
+          'Pupp = %s Pa, the one-phase state is stable: %s',
+          Pupp, stabmax.stable,
         )
         if stabmax.stable:
-          Pmin = Pmax
-      if Pmax > upperlimit:
+          Plow = Pupp
+      if Pupp > Pmax:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of `P` or\n'
-          'stability test parameters using the `stabkwargs` parameter of\n'
-          'this class. It also might be helpful to reduce the value of the\n'
-          'parameter `step`.'
+          'its narrowness or absence. Try to change the initial guess for\n'
+          'pressure or stability test parameters using the `stabkwargs`.\n'
+          'It also might be helpful to reduce the value of the `step`.'
         )
       else:
-        P = Pmax
+        P = Pupp
         stab = stabmax
     else:
       logger.debug(
         'Finding the one-phase region for the lower-bound curve by the '
         'preliminary search.'
       )
-      Pmax = P
+      Pupp = P
       c = 1. - step
-      Pmin = c * P
-      stabmin = self.stabsolver.run(Pmin, T, yi)
+      Plow = c * P
+      stabmin = self.stabsolver.run(Plow, T, yi)
       logger.debug(
-        'Pmin = %s Pa, the one-phase state is stable: %s',
-        Pmin, stabmin.stable,
+        'Plow = %s Pa, the one-phase state is stable: %s',
+        Plow, stabmin.stable,
       )
-      while not stabmin.stable and Pmin > lowerlimit:
-        Pmin *= c
-        stabmin = self.stabsolver.run(Pmin, T, yi)
+      while not stabmin.stable and Plow > Pmin:
+        Plow *= c
+        stabmin = self.stabsolver.run(Plow, T, yi)
         logger.debug(
-          'Pmin = %s Pa, the one-phase state is stable: %s',
-          Pmin, stabmin.stable,
+          'Plow = %s Pa, the one-phase state is stable: %s',
+          Plow, stabmin.stable,
         )
         if not stabmin.stable:
-          Pmax = Pmin
+          Pupp = Plow
           stab = stabmin
-      if Pmin < lowerlimit:
+      if Plow < Pmin:
         raise ValueError(
           'The one-phase region was not identified. Try to change the\n'
-          'initial guess `P` and/or `lowerlimit` parameter.'
+          'initial guess for pressure and/or `Pmin` parameter.'
         )
       else:
-        P = Pmax
-    return self.solver(P, T, yi, stab.kvji[0], Pmin=Pmin, Pmax=Pmax,
-                       upper=upper)
+        P = Pupp
+    return P, stab.kvji[0], Plow, Pupp
+
 
 
 def _PsatPT_solve_TPDeq_P(
@@ -659,8 +727,8 @@ def _PsatPT_solve_TPDeq_P(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 8,
-  Pmax0: ScalarType = 1e8,
-  Pmin0: ScalarType = 1.,
+  Plow0: ScalarType = 1.,
+  Pupp0: ScalarType = 1e8,
   increasing: bool = True,
 ) -> tuple[ScalarType, VectorType, VectorType,
            ScalarType, ScalarType, ScalarType]:
@@ -706,17 +774,17 @@ def _PsatPT_solve_TPDeq_P(
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
-  Pmax0: float
-    The initial upper bound of the saturation pressure [Pa]. If the
-    saturation pressure at any iteration is greater than the current
-    upper bound, then the bisection update would be used. Default is
-    `1e8` [Pa].
-
-  Pmin0: float
+  Plow0: float
     The initial lower bound of the saturation pressure [Pa]. If the
     saturation pressure at any iteration is less than the current
     lower bound, then the bisection update would be used. Default is
     `1.0` [Pa].
+
+  Pupp0: float
+    The initial upper bound of the saturation pressure [Pa]. If the
+    saturation pressure at any iteration is greater than the current
+    upper bound, then the bisection update would be used. Default is
+    `1e8` [Pa].
 
   increasing: bool
     A flag that indicates if the TPD-equation vs pressure is the
@@ -735,8 +803,8 @@ def _PsatPT_solve_TPDeq_P(
   """
   k = 0
   Pk = P0
-  Pmin = Pmin0
-  Pmax = Pmax0
+  Plow = Plow0
+  Pupp = Pupp0
   lnkvi = np.log(xi / yi)
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
@@ -744,14 +812,14 @@ def _PsatPT_solve_TPDeq_P(
   # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
   while k < maxiter and np.abs(TPD) > tol:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Pmin = Pk
+      Plow = Pk
     else:
-      Pmax = Pk
+      Pupp = Pk
     dTPDdP = xi.dot(dlnphixidP - dlnphiyidP)
     dP = - TPD / dTPDdP
     Pkp1 = Pk + dP
-    if Pkp1 > Pmax or Pkp1 < Pmin:
-      Pkp1 = .5 * (Pmin + Pmax)
+    if Pkp1 > Pupp or Pkp1 < Plow:
+      Pkp1 = .5 * (Plow + Pupp)
       dP = Pkp1 - Pk
     if np.abs(dP) < 1e-8:
       break
@@ -774,8 +842,8 @@ def _PsatPT_ss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
   upper: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation pressure
@@ -839,11 +907,11 @@ def _PsatPT_ss(
     The maximum number of TPD-equation solver iterations.
     Default is `8`.
 
-  Pmax: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+  Pupp: float
+    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -865,10 +933,10 @@ def _PsatPT_ss(
   logger.debug(
     'Saturation pressure calculation using the SS-method:\n'
     '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T, yi, Pmin, Pmax,
+    P0, T, yi, Plow, Pupp,
   )
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+                        maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
   k = 0
   kik = kvi0
@@ -919,8 +987,8 @@ def _PsatPT_ss(
     logger.warning(
       "The SS-method for saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -937,8 +1005,8 @@ def _PsatPT_qnss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
   upper: bool = True,
 ) -> SatResult:
   """QNSS-method for the saturation pressure calculation using a PT-based
@@ -1007,11 +1075,11 @@ def _PsatPT_qnss(
     The maximum number of TPD-equation solver iterations.
     Default is `8`.
 
-  Pmax: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
+
+  Pupp: float
+    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -1032,11 +1100,11 @@ def _PsatPT_qnss(
   """
   logger.debug(
     'Saturation pressure calculation using the QNSS-method:\n'
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T, yi, Pmin, Pmax,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
+    P0, T, yi, Plow, Pupp,
   )
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+                        maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
   k = 0
   kik = kvi0
@@ -1098,8 +1166,8 @@ def _PsatPT_qnss(
     logger.warning(
       "The QNSS-method for saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -1114,8 +1182,8 @@ def _PsatPT_newt_improveP0(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 8,
-  Pmax0: ScalarType = 1e8,
-  Pmin0: ScalarType = 1.,
+  Plow0: ScalarType = 1.,
+  Pupp0: ScalarType = 1e8,
   increasing: bool = True,
 ) -> tuple[ScalarType, VectorType, ScalarType, VectorType]:
   """Improves initial guess of the saturation pressure by solving
@@ -1163,17 +1231,17 @@ def _PsatPT_newt_improveP0(
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
-  Pmax0: float
-    The initial upper bound of the saturation pressure [Pa]. If the
-    saturation pressure at any iteration is greater than the current
-    upper bound, then the bisection update would be used. Default is
-    `1e8` [Pa].
-
-  Pmin0: float
+  Plow0: float
     The initial lower bound of the saturation pressure [Pa]. If the
     saturation pressure at any iteration is less than the current
     lower bound, then the bisection update would be used. Default is
     `1.0` [Pa].
+
+  Pupp0: float
+    The initial upper bound of the saturation pressure [Pa]. If the
+    saturation pressure at any iteration is greater than the current
+    upper bound, then the bisection update would be used. Default is
+    `1e8` [Pa].
 
   increasing: bool
     A flag that indicates if the TPD-equation vs pressure is the
@@ -1192,8 +1260,8 @@ def _PsatPT_newt_improveP0(
   """
   k = 0
   Pk = P0
-  Pmin = Pmin0
-  Pmax = Pmax0
+  Plow = Plow0
+  Pupp = Pupp0
   lnkvi = np.log(xi / yi)
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
@@ -1201,14 +1269,14 @@ def _PsatPT_newt_improveP0(
   # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
   while k < maxiter and np.abs(TPD) > tol:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Pmin = Pk
+      Plow = Pk
     else:
-      Pmax = Pk
+      Pupp = Pk
     dTPDdP = xi.dot(dlnphixidP - dlnphiyidP)
     dP = - TPD / dTPDdP
     Pkp1 = Pk + dP
-    if Pkp1 > Pmax or Pkp1 < Pmin:
-      Pkp1 = .5 * (Pmin + Pmax)
+    if Pkp1 > Pupp or Pkp1 < Plow:
+      Pkp1 = .5 * (Plow + Pupp)
       dP = Pkp1 - Pk
     if np.abs(dP) < 1e-8:
       break
@@ -1229,8 +1297,8 @@ def _PsatPT_newtA(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 20,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
@@ -1309,11 +1377,11 @@ def _PsatPT_newtA(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Pmax: float
-    The pressure upper bound. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The pressure lower bound. Default is `1.0` [Pa].
+
+  Pupp: float
+    The pressure upper bound. Default is `1e8` [Pa].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
@@ -1355,12 +1423,11 @@ def _PsatPT_newtA(
   """
   logger.debug(
     "Saturation pressure calculation using Newton's method (A-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T, yi, Pmin, Pmax,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
+    P0, T, yi, Plow, Pupp,
   )
   Nc = eos.Nc
-  J = np.empty(shape=(Nc + 1, Nc + 1))
-  J[-1,-1] = 0.
+  J = np.zeros(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
@@ -1371,7 +1438,7 @@ def _PsatPT_newtA(
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(P0, T, yi, xi, eos,
                                                        tol_tpd, maxiter_tpd,
-                                                       Pmax, Pmin, upper)
+                                                       Plow, Pupp, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi,
                                                                    n)
   gi[:Nc] = lnkik + lnphixi - lnphiyi
@@ -1392,10 +1459,10 @@ def _PsatPT_newtA(
     k += 1
     lnkik += dlnkilnP[:-1]
     Pkp1 = Pk * np.exp(dlnkilnP[-1])
-    if Pkp1 > Pmax:
-      Pk = .5 * (Pk + Pmax)
-    elif Pkp1 < Pmin:
-      Pk = .5 * (Pmin + Pk)
+    if Pkp1 > Pupp:
+      Pk = .5 * (Pk + Pupp)
+    elif Pkp1 < Plow:
+      Pk = .5 * (Plow + Pk)
     else:
       Pk = Pkp1
     kik = np.exp(lnkik)
@@ -1433,8 +1500,8 @@ def _PsatPT_newtA(
     logger.warning(
       "Newton's method (A-form) for saturation pressure calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -1449,8 +1516,8 @@ def _PsatPT_newtB(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 20,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
@@ -1529,11 +1596,11 @@ def _PsatPT_newtB(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Pmax: float
-    The pressure upper bound. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The pressure lower bound. Default is `1.0` [Pa].
+
+  Pupp: float
+    The pressure upper bound. Default is `1e8` [Pa].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
@@ -1575,8 +1642,8 @@ def _PsatPT_newtB(
   """
   logger.debug(
     "Saturation pressure calculation using Newton's method (B-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T, yi, Pmin, Pmax,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
+    P0, T, yi, Plow, Pupp,
   )
   Nc = eos.Nc
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -1590,7 +1657,7 @@ def _PsatPT_newtB(
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(P0, T, yi, xi, eos,
                                                        tol_tpd, maxiter_tpd,
-                                                       Pmax, Pmin, upper)
+                                                       Plow, Pupp, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(Pk, T, xi,
                                                                    n)
   gi[:Nc] = lnkik + lnphixi - lnphiyi
@@ -1613,10 +1680,10 @@ def _PsatPT_newtB(
     k += 1
     lnkik += dlnkilnP[:-1]
     Pkp1 = Pk * np.exp(dlnkilnP[-1])
-    if Pkp1 > Pmax:
-      Pk = .5 * (Pk + Pmax)
-    elif Pkp1 < Pmin:
-      Pk = .5 * (Pmin + Pk)
+    if Pkp1 > Pupp:
+      Pk = .5 * (Pk + Pupp)
+    elif Pkp1 < Plow:
+      Pk = .5 * (Plow + Pk)
     else:
       Pk = Pkp1
     kik = np.exp(lnkik)
@@ -1655,8 +1722,8 @@ def _PsatPT_newtB(
     logger.warning(
       "Newton's method (B-form) for saturation pressure calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -1673,8 +1740,8 @@ def _PsatPT_newtC(
   maxiter: int = 20,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
   upper: bool = True,
 ) -> SatResult:
@@ -1756,11 +1823,11 @@ def _PsatPT_newtC(
     The maximum number of TPD-equation solver iterations.
     Default is `8`.
 
-  Pmax: float
-    The pressure upper bound. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The pressure lower bound. Default is `1.0` [Pa].
+
+  Pupp: float
+    The pressure upper bound. Default is `1e8` [Pa].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
@@ -1787,11 +1854,11 @@ def _PsatPT_newtC(
   """
   logger.debug(
     "Saturation pressure calculation using Newton's method (C-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T, yi, Pmin, Pmax,
+    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
+    P0, T, yi, Plow, Pupp,
   )
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Pmin0=Pmin, Pmax0=Pmax,
+                        maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
@@ -1850,8 +1917,8 @@ def _PsatPT_newtC(
     logger.warning(
       "Newton's method (C-form) for saturation pressure calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp= %s Pa",
+      eos.name, P0, T, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -1930,7 +1997,6 @@ class TsatPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Currently raises `NotImplementedError`),
-    - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Currently raises `NotImplementedError`),
     - `'ss-newton'` (Currently raises `NotImplementedError`),
     - `'qnss-newton'` (Currently raises `NotImplementedError`).
@@ -1956,6 +2022,15 @@ class TsatPT(object):
     [K] and composition `yi: ndarray` of `Nc`. This method returns
     saturation temperature calculation results as an instance of
     `SatResult`.
+
+  search(P, T, yi) -> tuple[float, ndarray, float, float]
+    This method performs the preliminary search to refine an initial
+    guess of the saturation temperature and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the saturation temperature [K],
+    - the initial guess for k-values as ndarray of shape `(Nc,)`,
+    - the lower bound of the saturation temperature [K],
+    - the upper bound of the saturation temperature [K].
   """
   def __init__(
     self,
@@ -1970,11 +2045,6 @@ class TsatPT(object):
       self.solver = partial(_TsatPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
       self.solver = partial(_TsatPT_qnss, eos=eos, **kwargs)
-    elif method == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the saturation temperature calculation is not '
-        'implemented yet.'
-      )
     elif method == 'newton':
       self.solver = partial(_TsatPT_newtA, eos=eos, **kwargs)
     elif method == 'newton-b':
@@ -2002,8 +2072,8 @@ class TsatPT(object):
     yi: VectorType,
     upper: bool = True,
     step: ScalarType = 0.1,
-    lowerlimit: ScalarType = 173.15,
-    upperlimit: ScalarType = 973.15,
+    Tmin: ScalarType = 173.15,
+    Tmax: ScalarType = 973.15,
   ) -> SatResult:
     """Performs the saturation temperature calculation for known
     pressure and composition. To improve an initial guess, the
@@ -2012,10 +2082,10 @@ class TsatPT(object):
     Parameters
     ----------
     P: float
-      Pressure of a mixture [K].
+      Pressure of a mixture [Pa].
 
     T: float
-      Initial guess of the saturation temperature [Pa].
+      Initial guess of the saturation temperature [K].
 
     yi: ndarray, shape (Nc,)
       Mole fractions of `Nc` components.
@@ -2035,12 +2105,12 @@ class TsatPT(object):
       from the previous one using the formula:
       `Tnext = Tprev * (1. + step)`. Default is `0.1`.
 
-    lowerlimit: float
+    Tmin: float
       During the preliminary search, the temperature can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `173.15` [K].
 
-    upperlimit: float
+    Tmax: float
       During the preliminary search, the temperature can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `973.15` [K].
@@ -2063,6 +2133,74 @@ class TsatPT(object):
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
     """
+    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper, step, Tmin, Tmax)
+    return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
+
+  def search(
+    self,
+    P: ScalarType,
+    T: ScalarType,
+    yi: VectorType,
+    upper: bool = True,
+    step: ScalarType = 0.1,
+    Tmin: ScalarType = 173.15,
+    Tmax: ScalarType = 973.15,
+  ) -> tuple[ScalarType, VectorType, ScalarType, ScalarType]:
+    """Performs a preliminary search to refine the initial guess of
+    the saturation temperature.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of a mixture [Pa].
+
+    T: float
+      The initial guess of the saturation temperature to be improved
+      [K].
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    upper: bool
+      A boolean flag that indicates whether the desired value is located
+      at the upper saturation bound or the lower saturation bound.
+      The cricondenbar serves as the dividing point between upper and
+      lower phase boundaries. Default is `True`.
+
+    step: float
+      To specify the confidence interval for the saturation temperature
+      calculation, the preliminary search is performed. This parameter
+      regulates the step of this search in fraction units. For example,
+      if it is necessary to find the upper bound of the confidence
+      interval, then the next value of temperature will be calculated
+      from the previous one using the formula:
+      `Tnext = Tprev * (1. + step)`. Default is `0.1`.
+
+    Tmin: float
+      During the preliminary search, the temperature can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `173.15` [K].
+
+    Tmax: float
+      During the preliminary search, the temperature can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `973.15` [K].
+
+    Returns
+    -------
+    A tuple of:
+
+    - the improved initial guess for the saturation temperature [K],
+    - the initial guess for k-values as ndarray of shape `(Nc,)`,
+    - the lower bound of the saturation temperature [K],
+    - the upper bound of the saturation temperature [K].
+
+    Raises
+    ------
+    ValueError
+      The `ValueError` exception may be raised if the one-phase or
+      two-phase region was not found using a preliminary search.
+    """
     stab = self.stabsolver.run(P, T, yi)
     logger.debug(
       'For the initial guess T = %s K, the one-phase state is stable: %s',
@@ -2073,133 +2211,130 @@ class TsatPT(object):
         'Finding the two-phase region for the upper-bound curve by the '
         'preliminary search.'
       )
-      Tmax = T
+      Tupp = T
       c = 1. - step
-      Tmin = c * T
-      stabmin = self.stabsolver.run(P, Tmin, yi)
+      Tlow = c * T
+      stabmin = self.stabsolver.run(P, Tlow, yi)
       logger.debug(
-        'Tmin = %s K, the one-phase state is stable: %s',
-        Tmin, stabmin.stable,
+        'Tlow = %s K, the one-phase state is stable: %s',
+        Tlow, stabmin.stable,
       )
       if stabmin.stable:
-        Tmax = Tmin
-      while stabmin.stable and Tmin > lowerlimit:
-        Tmin *= c
-        stabmin = self.stabsolver.run(P, Tmin, yi)
+        Tupp = Tlow
+      while stabmin.stable and Tlow > Tmin:
+        Tlow *= c
+        stabmin = self.stabsolver.run(P, Tlow, yi)
         logger.debug(
-          'Tmin = %s K, the one-phase state is stable: %s',
-          Tmin, stabmin.stable,
+          'Tlow = %s K, the one-phase state is stable: %s',
+          Tlow, stabmin.stable,
         )
         if stabmin.stable:
-          Tmax = Tmin
-      if Tmin < lowerlimit:
+          Tupp = Tlow
+      if Tlow < Tmin:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of `T` or\n'
-          'stability test parameters using the `stabkwargs` parameter of\n'
-          'this class. It also might be helpful to reduce the value of the\n'
-          'parameter `step`.'
+          'its narrowness or absence. Try to change the initial guess for\n'
+          'temperature or stability test parameters using the `stabkwargs`.\n'
+          'It also might be helpful to reduce the value of the `step`.'
         )
       else:
-        T = Tmin
+        T = Tlow
         stab = stabmin
     elif not stab.stable and upper:
       logger.debug(
         'Finding the one-phase region for the upper-bound curve by the '
         'preliminary search.'
       )
-      Tmin = T
+      Tlow = T
       c = 1. + step
-      Tmax = c * T
-      stabmax = self.stabsolver.run(P, Tmax, yi)
+      Tupp = c * T
+      stabmax = self.stabsolver.run(P, Tupp, yi)
       logger.debug(
-        'Tmax = %s K, the one-phase state is stable: %s',
-        Tmax, stabmax.stable,
+        'Tupp = %s K, the one-phase state is stable: %s',
+        Tupp, stabmax.stable,
       )
       if not stabmax.stable:
-        Tmin = Tmax
-      while not stabmax.stable and Tmax < upperlimit:
-        Tmax *= c
-        stabmax = self.stabsolver.run(P, Tmax, yi)
+        Tlow = Tupp
+      while not stabmax.stable and Tupp < Tmax:
+        Tupp *= c
+        stabmax = self.stabsolver.run(P, Tupp, yi)
         logger.debug(
-          'Tmax = %s K, the one-phase state is stable: %s',
-          Tmax, stabmax.stable,
+          'Tupp = %s K, the one-phase state is stable: %s',
+          Tupp, stabmax.stable,
         )
         if not stabmax.stable:
-          Tmin = Tmax
+          Tlow = Tupp
           stab = stabmax
-      if Tmax > upperlimit:
+      if Tupp > Tmax:
         raise ValueError(
           'The one-phase region was not identified. Try to change the\n'
-          'initial guess `T` and/or `upperlimit` parameter.'
+          'initial guess for temperature and/or `Tmax` parameter.'
         )
       else:
-        T = Tmin
+        T = Tlow
     elif stab.stable and not upper:
       logger.debug(
         'Finding the two-phase region for the lower-bound curve by the '
         'preliminary search.'
       )
-      Tmin = T
+      Tlow = T
       c = 1. + step
-      Tmax = c * T
-      stabmax = self.stabsolver.run(P, Tmax, yi)
+      Tupp = c * T
+      stabmax = self.stabsolver.run(P, Tupp, yi)
       logger.debug(
-        'Tmax = %s K, the one-phase state is stable: %s',
-        Tmax, stabmax.stable,
+        'Tupp = %s K, the one-phase state is stable: %s',
+        Tupp, stabmax.stable,
       )
-      while stabmax.stable and Tmax < upperlimit:
-        Tmax *= c
-        stabmax = self.stabsolver.run(P, Tmax, yi)
+      while stabmax.stable and Tupp < Tmax:
+        Tupp *= c
+        stabmax = self.stabsolver.run(P, Tupp, yi)
         logger.debug(
-          'Tmax = %s K, the one-phase state is stable: %s',
-          Tmax, stabmax.stable,
+          'Tupp = %s K, the one-phase state is stable: %s',
+          Tupp, stabmax.stable,
         )
         if stabmax.stable:
-          Tmin = Tmax
-      if Tmax > upperlimit:
+          Tlow = Tupp
+      if Tupp > Tmax:
         raise ValueError(
           'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of `T` or\n'
-          'stability test parameters using the `stabkwargs` parameter of\n'
-          'this class. It also might be helpful to reduce the value of the\n'
-          'parameter `step`.'
+          'its narrowness or absence. Try to change the initial guess for\n'
+          'temperature or stability test parameters using the `stabkwargs`\n'
+          'It also might be helpful to reduce the value of the `step`.'
         )
       else:
-        T = Tmax
+        T = Tupp
         stab = stabmax
     else:
       logger.debug(
         'Finding the one-phase region for the lower-bound curve by the '
         'preliminary search.'
       )
-      Tmax = T
+      Tupp = T
       c = 1. - step
-      Tmin = c * T
-      stabmin = self.stabsolver.run(P, Tmin, yi)
+      Tlow = c * T
+      stabmin = self.stabsolver.run(P, Tlow, yi)
       logger.debug(
-        'Tmin = %s K, the one-phase state is stable: %s',
-        Tmin, stabmin.stable,
+        'Tlow = %s K, the one-phase state is stable: %s',
+        Tlow, stabmin.stable,
       )
-      while not stabmin.stable and Tmin > lowerlimit:
-        Tmin *= c
-        stabmin = self.stabsolver.run(P, Tmin, yi)
+      while not stabmin.stable and Tlow > Tmin:
+        Tlow *= c
+        stabmin = self.stabsolver.run(P, Tlow, yi)
         logger.debug(
-          'Tmin = %s K, the one-phase state is stable: %s',
-          Tmin, stabmin.stable,
+          'Tlow = %s K, the one-phase state is stable: %s',
+          Tlow, stabmin.stable,
         )
         if not stabmin.stable:
-          Tmax = Tmin
+          Tupp = Tlow
           stab = stabmin
-      if Tmin < lowerlimit:
+      if Tlow < Tmin:
         raise ValueError(
           'The one-phase region was not identified. Try to change the\n'
-          'initial guess `T` and/or `lowerlimit` parameter.'
+          'initial guess for temperature and/or `Tmin` parameter.'
         )
       else:
-        T = Tmax
-    return self.solver(P, T, yi, stab.kvji[0], Tmin=Tmin, Tmax=Tmax,
-                       upper=upper)
+        T = Tupp
+    return T, stab.kvji[0], Tlow, Tupp
 
 
 def _TsatPT_solve_TPDeq_T(
@@ -2210,8 +2345,8 @@ def _TsatPT_solve_TPDeq_T(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 8,
-  Tmax0: ScalarType = 973.15,
-  Tmin0: ScalarType = 173.15,
+  Tlow0: ScalarType = 173.15,
+  Tupp0: ScalarType = 973.15,
   increasing: bool = True,
 ) -> tuple[ScalarType, VectorType, VectorType,
            ScalarType, ScalarType, ScalarType]:
@@ -2257,17 +2392,17 @@ def _TsatPT_solve_TPDeq_T(
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
-  Tmax0: float
-    The initial upper bound of the saturation temperature [K]. If the
-    saturation temperature at any iteration is greater than the current
-    upper bound, then the bisection update would be used. Default is
-    `973.15` [K].
-
-  Tmin0: float
+  Tlow0: float
     The initial lower bound of the saturation temperature [K]. If the
     saturation temperature at any iteration is less than the current
     lower bound, then the bisection update would be used. Default is
     `173.15` [K].
+
+  Tupp0: float
+    The initial upper bound of the saturation temperature [K]. If the
+    saturation temperature at any iteration is greater than the current
+    upper bound, then the bisection update would be used. Default is
+    `973.15` [K].
 
   increasing: bool
     A flag that indicates if the TPD-equation vs temperature is the
@@ -2285,8 +2420,8 @@ def _TsatPT_solve_TPDeq_T(
   - value of the tangent-plane distance.
   """
   k = 0
-  Tmin = Tmin0
-  Tmax = Tmax0
+  Tlow = Tlow0
+  Tupp = Tupp0
   Tk = T0
   lnkvi = np.log(xi / yi)
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
@@ -2295,14 +2430,14 @@ def _TsatPT_solve_TPDeq_T(
   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
   while k < maxiter and np.abs(TPD) > tol:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Tmin = Tk
+      Tlow = Tk
     else:
-      Tmax = Tk
+      Tupp = Tk
     dTPDdT = xi.dot(dlnphixidT - dlnphiyidT)
     dT = - TPD / dTPDdT
     Tkp1 = Tk + dT
-    if Tkp1 > Tmax or Tkp1 < Tmin:
-      Tkp1 = .5 * (Tmin + Tmax)
+    if Tkp1 > Tupp or Tkp1 < Tlow:
+      Tkp1 = .5 * (Tlow + Tupp)
       dT = Tkp1 - Tk
     if np.abs(dT) < 1e-8:
       break
@@ -2325,8 +2460,8 @@ def _TsatPT_ss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Tmax: ScalarType = 973.15,
-  Tmin: ScalarType = 173.15,
+  Tlow: ScalarType = 173.15,
+  Tupp: ScalarType = 973.15,
   upper: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation temperature
@@ -2390,13 +2525,13 @@ def _TsatPT_ss(
     The maximum number of TPD-equation solver iterations.
     Default is `8`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -2417,11 +2552,11 @@ def _TsatPT_ss(
   """
   logger.debug(
     'Saturation temperature calculation using the SS-method:\n'
-    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P, T0, yi, Tmin, Tmax,
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P, T0, yi, Tlow, Tupp,
   )
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
+                        maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
   k = 0
   kik = kvi0
@@ -2470,8 +2605,8 @@ def _TsatPT_ss(
     logger.warning(
       "The SS-method for saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P, T0, yi, Tmin, Tmax,
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -2488,8 +2623,8 @@ def _TsatPT_qnss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Tmax: ScalarType = 973.15,
-  Tmin: ScalarType = 173.15,
+  Tlow: ScalarType = 173.15,
+  Tupp: ScalarType = 973.15,
   upper: bool = True,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (QNSS) method for the
@@ -2559,13 +2694,13 @@ def _TsatPT_qnss(
     The maximum number of TPD-equation solver iterations.
     Default is `8`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -2586,11 +2721,11 @@ def _TsatPT_qnss(
   """
   logger.debug(
     'Saturation temperature calculation using the QNSS-method:\n'
-    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P, T0, yi, Tmin, Tmax,
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P, T0, yi, Tlow, Tupp,
   )
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
+                        maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
   k = 0
   kik = kvi0
@@ -2651,8 +2786,8 @@ def _TsatPT_qnss(
     logger.warning(
       "The QNSS-method saturation pressure calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P, T0, yi, Tmin, Tmax,
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -2667,8 +2802,8 @@ def _TsatPT_newt_improveT0(
   eos: EOSPTType,
   tol: ScalarType = 1e-6,
   maxiter: int = 8,
-  Tmax0: ScalarType = 973.15,
-  Tmin0: ScalarType = 173.15,
+  Tlow0: ScalarType = 173.15,
+  Tupp0: ScalarType = 973.15,
   increasing: bool = True,
 ) -> tuple[ScalarType, VectorType, ScalarType, VectorType]:
   """Improves initial guess of the saturation temperature by solving
@@ -2716,17 +2851,17 @@ def _TsatPT_newt_improveT0(
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-6`.
 
-  Tmax0: float
-    The initial upper bound of the saturation temperature [K]. If the
-    saturation temperature at any iteration is greater than the current
-    upper bound, then the bisection update would be used. Default is
-    `973.15` [K].
-
-  Tmin0: float
+  Tlow0: float
     The initial lower bound of the saturation temperature [K]. If the
     saturation temperature at any iteration is less than the current
     lower bound, then the bisection update would be used. Default is
     `173.15` [K].
+
+  Tupp0: float
+    The initial upper bound of the saturation temperature [K]. If the
+    saturation temperature at any iteration is greater than the current
+    upper bound, then the bisection update would be used. Default is
+    `973.15` [K].
 
   increasing: bool
     A flag that indicates if the TPD-equation vs temperature is the
@@ -2744,8 +2879,8 @@ def _TsatPT_newt_improveT0(
     coefficients of components with respect to temperature.
   """
   k = 0
-  Tmin = Tmin0
-  Tmax = Tmax0
+  Tlow = Tlow0
+  Tupp = Tupp0
   Tk = T0
   lnkvi = np.log(xi / yi)
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
@@ -2754,14 +2889,14 @@ def _TsatPT_newt_improveT0(
   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
   while k < maxiter and np.abs(TPD) > tol:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Tmin = Tk
+      Tlow = Tk
     else:
-      Tmax = Tk
+      Tupp = Tk
     dTPDdT = xi.dot(dlnphixidT - dlnphiyidT)
     dT = - TPD / dTPDdT
     Tkp1 = Tk + dT
-    if Tkp1 > Tmax or Tkp1 < Tmin:
-      Tkp1 = .5 * (Tmin + Tmax)
+    if Tkp1 > Tupp or Tkp1 < Tlow:
+      Tkp1 = .5 * (Tlow + Tupp)
       dT = Tkp1 - Tk
     if np.abs(dT) < 1e-8:
       break
@@ -2782,8 +2917,8 @@ def _TsatPT_newtA(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 20,
-  Tmax: ScalarType = 1e8,
-  Tmin: ScalarType = 1.,
+  Tlow: ScalarType = 1.,
+  Tupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
@@ -2862,13 +2997,13 @@ def _TsatPT_newtA(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
@@ -2910,12 +3045,11 @@ def _TsatPT_newtA(
   """
   logger.debug(
     "Saturation temperature calculation using Newton's method (A-form):\n"
-    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P, T0, yi, Tmin, Tmax,
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P, T0, yi, Tlow, Tupp,
   )
   Nc = eos.Nc
-  J = np.empty(shape=(Nc + 1, Nc + 1))
-  J[-1,-1] = 0.
+  J = np.zeros(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
@@ -2926,7 +3060,7 @@ def _TsatPT_newtA(
   xi = ni / n
   Tk, lnphiyi, Zy, dlnphiyidT = _TsatPT_newt_improveT0(P, T0, yi, xi, eos,
                                                        tol_tpd, maxiter_tpd,
-                                                       Tmax, Tmin, upper)
+                                                       Tlow, Tupp, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk, xi,
                                                                    n)
   gi[:Nc] = lnkik + lnphixi - lnphiyi
@@ -2947,10 +3081,10 @@ def _TsatPT_newtA(
     k += 1
     lnkik += dlnkilnT[:-1]
     Tkp1 = Tk * np.exp(dlnkilnT[-1])
-    if Tkp1 > Tmax:
-      Tk = .5 * (Tk + Tmax)
-    elif Tkp1 < Tmin:
-      Tk = .5 * (Tmin + Tk)
+    if Tkp1 > Tupp:
+      Tk = .5 * (Tk + Tupp)
+    elif Tkp1 < Tlow:
+      Tk = .5 * (Tlow + Tk)
     else:
       Tk = Tkp1
     kik = np.exp(lnkik)
@@ -2988,8 +3122,8 @@ def _TsatPT_newtA(
     logger.warning(
       "Newton's method (A-form) for saturation temperature calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P, T0, yi, Tmin, Tmax,
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -3004,8 +3138,8 @@ def _TsatPT_newtB(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 20,
-  Tmax: ScalarType = 1e8,
-  Tmin: ScalarType = 1.,
+  Tlow: ScalarType = 1.,
+  Tupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
@@ -3084,13 +3218,13 @@ def _TsatPT_newtB(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
@@ -3132,8 +3266,8 @@ def _TsatPT_newtB(
   """
   logger.debug(
     "Saturation temperature calculation using Newton's method (B-form):\n"
-    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P, T0, yi, Tmin, Tmax,
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P, T0, yi, Tlow, Tupp,
   )
   Nc = eos.Nc
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -3147,7 +3281,7 @@ def _TsatPT_newtB(
   xi = ni / n
   Tk, lnphiyi, Zy, dlnphiyidT = _TsatPT_newt_improveT0(P, T0, yi, xi, eos,
                                                        tol_tpd, maxiter_tpd,
-                                                       Tmax, Tmin, upper)
+                                                       Tlow, Tupp, upper)
   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(P, Tk, xi,
                                                                    n)
   gi[:Nc] = lnkik + lnphixi - lnphiyi
@@ -3170,10 +3304,10 @@ def _TsatPT_newtB(
     k += 1
     lnkik += dlnkilnT[:-1]
     Tkp1 = Tk * np.exp(dlnkilnT[-1])
-    if Tkp1 > Tmax:
-      Tk = .5 * (Tk + Tmax)
-    elif Tkp1 < Tmin:
-      Tk = .5 * (Tmin + Tk)
+    if Tkp1 > Tupp:
+      Tk = .5 * (Tk + Tupp)
+    elif Tkp1 < Tlow:
+      Tk = .5 * (Tlow + Tk)
     else:
       Tk = Tkp1
     kik = np.exp(lnkik)
@@ -3212,8 +3346,8 @@ def _TsatPT_newtB(
     logger.warning(
       "Newton's method (B-form) for saturation temperature calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P, T0, yi, Tmin, Tmax,
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -3230,8 +3364,8 @@ def _TsatPT_newtC(
   maxiter: int = 20,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Tmax: ScalarType = 1e8,
-  Tmin: ScalarType = 1.,
+  Tlow: ScalarType = 1.,
+  Tupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
   upper: bool = True,
 ) -> SatResult:
@@ -3313,13 +3447,13 @@ def _TsatPT_newtC(
     The maximum number of TPD-equation solver iterations.
     Default is `8`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver.
+    Default is `973.15` [K].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
@@ -3346,11 +3480,11 @@ def _TsatPT_newtC(
   """
   logger.debug(
     "Saturation temperature calculation using Newton's method (C-form):\n"
-    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P, T0, yi, Tmin, Tmax,
+    '\tP = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P, T0, yi, Tlow, Tupp,
   )
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tmin0=Tmin, Tmax0=Tmax,
+                        maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
@@ -3408,15 +3542,15 @@ def _TsatPT_newtC(
     logger.warning(
       "Newton's method (C-form) for saturation temperature calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P, T0, yi, Tmin, Tmax,
+      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
 
 
-class PmaxPT(object):
+class PmaxPT(PsatPT):
   """Cricondenbar calculation.
 
   Performs the cricondenbar point calculation using PT-based equations
@@ -3498,7 +3632,6 @@ class PmaxPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
-    - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Newton's method).
 
     Default is `'ss'`.
@@ -3540,6 +3673,15 @@ class PmaxPT(object):
     guesses of pressure `P: float` in [Pa] and temperature `T: float`
     in [K]. This method returns cricondenbar point calculation results
     as an instance of `SatResult`.
+
+  search(P, T, yi) -> tuple[float, ndarray, float, float]
+    This method performs the preliminary search to refine an initial
+    guess of the cricondenbar pressure and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the cricondenbar pressure [Pa],
+    - the initial guess for k-values as ndarray of shape `(Nc,)`,
+    - the lower bound of the cricondenbar pressure [Pa],
+    - the upper bound of the cricondenbar pressure [Pa].
   """
   def __init__(
     self,
@@ -3554,11 +3696,6 @@ class PmaxPT(object):
       self.solver = partial(_PmaxPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
       self.solver = partial(_PmaxPT_qnss, eos=eos, **kwargs)
-    elif method == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the cricondenbar point calculation is not '
-        'implemented yet.'
-      )
     elif method == 'newton':
       self.solver = partial(_PmaxPT_newtC, eos=eos, **kwargs)
     else:
@@ -3571,8 +3708,8 @@ class PmaxPT(object):
     T: ScalarType,
     yi: VectorType,
     step: ScalarType = 0.1,
-    lowerlimit: ScalarType = 1.,
-    upperlimit: ScalarType = 1e8,
+    Pmin: ScalarType = 1.,
+    Pmax: ScalarType = 1e8,
   ) -> SatResult:
     """Performs the cricondenbar point calculation for a mixture. To
     improve the initial guess of pressure, the preliminary search is
@@ -3598,12 +3735,12 @@ class PmaxPT(object):
       the previous one using the formula: `Pnext = Pprev * (1. + step)`.
       Default is `0.1`.
 
-    lowerlimit: float
+    Pmin: float
       During the preliminary search, the pressure can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `1.` [Pa].
 
-    upperlimit: float
+    Pmax: float
       During the preliminary search, the pressure can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `1e8` [Pa].
@@ -3626,80 +3763,8 @@ class PmaxPT(object):
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
     """
-    stab = self.stabsolver.run(P, T, yi)
-    logger.debug(
-      'For the initial guess P = %s Pa, T = %s K, '
-      'the one-phase state is stable: %s',
-      P, T, stab.stable,
-    )
-    if stab.stable:
-      logger.debug(
-        'Finding the two-phase region for the upper-bound curve by the '
-        'preliminary search with fixed temperature.'
-      )
-      Pmax = P
-      c = 1. - step
-      Pmin = c * P
-      stabmin = self.stabsolver.run(Pmin, T, yi)
-      logger.debug(
-        'Pmin = %s Pa, the one-phase state is stable: %s',
-        Pmin, stabmin.stable,
-      )
-      if stabmin.stable:
-        Pmax = Pmin
-      while stabmin.stable and Pmin > lowerlimit:
-        Pmin *= c
-        stabmin = self.stabsolver.run(Pmin, T, yi)
-        logger.debug(
-          'Pmin = %s Pa, the one-phase state is stable: %s',
-          Pmin, stabmin.stable,
-        )
-        if stabmin.stable:
-          Pmax = Pmin
-      if Pmin < lowerlimit:
-        raise ValueError(
-          'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of `P` or\n'
-          'stability test parameters using the `stabkwargs` parameter of\n'
-          'this class. It also might be helpful to reduce the value of the\n'
-          'parameter `step`.'
-        )
-      else:
-        P = Pmin
-        stab = stabmin
-    else:
-      logger.debug(
-        'Finding the one-phase region for the upper-bound curve by the '
-        'preliminary search with fixed temperature.'
-      )
-      Pmin = P
-      c = 1. + step
-      Pmax = c * P
-      stabmax = self.stabsolver.run(Pmax, T, yi)
-      logger.debug(
-        'Pmax = %s Pa, the one-phase state is stable: %s',
-        Pmax, stabmax.stable,
-      )
-      if not stabmax.stable:
-        Pmin = Pmax
-      while not stabmax.stable and Pmax < upperlimit:
-        Pmax *= c
-        stabmax = self.stabsolver.run(Pmax, T, yi)
-        logger.debug(
-          'Pmax = %s Pa, the one-phase state is stable: %s',
-          Pmax, stabmax.stable,
-        )
-        if not stabmax.stable:
-          Pmin = Pmax
-          stab = stabmax
-      if Pmax > upperlimit:
-        raise ValueError(
-          'The one-phase region was not identified. Try to change the\n'
-          'initial guess `P` and/or `upperlimit` parameter.'
-        )
-      else:
-        P = Pmin
-    return self.solver(P, T, yi, stab.kvji[0], Pmin=Pmin, Pmax=Pmax)
+    P0, kvi0, Plow, Pupp = self.search(P, T, yi, True, step, Pmin, Pmax)
+    return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp)
 
 
 def _PmaxPT_solve_TPDeq_P(
@@ -3870,8 +3935,8 @@ def _PmaxPT_ss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondenbar
   calculation using a PT-based equation of state. To find the
@@ -3960,13 +4025,13 @@ def _PmaxPT_ss(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `8`.
 
-  Pmax: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1.0` [Pa].
+
+  Pupp: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `1e8` [Pa].
 
   Returns
   -------
@@ -3981,8 +4046,8 @@ def _PmaxPT_ss(
   """
   logger.debug(
     'The cricondenbar calculation using the SS-method:\n'
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T0, yi, Pmin, Pmax,
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
+    P0, T0, yi, Plow, Pupp,
   )
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
@@ -3994,7 +4059,7 @@ def _PmaxPT_ss(
   ni = kik * yi
   xi = ni / ni.sum()
   Pk, _, _, _, _, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
-                                              maxiter_tpd, Pmax, Pmin, True)
+                                              maxiter_tpd, Plow, Pupp, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
@@ -4045,8 +4110,8 @@ def _PmaxPT_ss(
     logger.warning(
       "The SS-method for cricondenbar calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T0, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T0, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -4063,8 +4128,8 @@ def _PmaxPT_qnss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (SS) method for the
   cricondenbar calculation using a PT-based equation of state. To find
@@ -4156,13 +4221,13 @@ def _PmaxPT_qnss(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `8`.
 
-  Pmax: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1.0` [Pa].
+
+  Pupp: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `1e8` [Pa].
 
   Returns
   -------
@@ -4177,8 +4242,8 @@ def _PmaxPT_qnss(
   """
   logger.debug(
     'The cricondenbar calculation using the QNSS-method:\n'
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T0, yi, Pmin, Pmax,
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
+    P0, T0, yi, Plow, Pupp,
   )
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
@@ -4190,7 +4255,7 @@ def _PmaxPT_qnss(
   ni = kik * yi
   xi = ni / ni.sum()
   Pk, _, _, _, _, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
-                                              maxiter_tpd, Pmax, Pmin, True)
+                                              maxiter_tpd, Plow, Pupp, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
@@ -4252,8 +4317,8 @@ def _PmaxPT_qnss(
     logger.warning(
       "The QNSS-method for cricondenbar calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T0, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T0, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -4270,8 +4335,8 @@ def _PmaxPT_newtC(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Pmax: ScalarType = 1e8,
-  Pmin: ScalarType = 1.,
+  Plow: ScalarType = 1.,
+  Pupp: ScalarType = 1e8,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> SatResult:
   """This function calculates the cricondenbar point by solving a system
@@ -4374,13 +4439,13 @@ def _PmaxPT_newtC(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `8`.
 
-  Pmax: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1e8` [Pa].
-
-  Pmin: float
+  Plow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1.0` [Pa].
+
+  Pupp: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `1e8` [Pa].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
@@ -4401,8 +4466,8 @@ def _PmaxPT_newtC(
   """
   logger.debug(
     "The cricondenbar calculation using Newton's method (C-form):\n"
-    "\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-    P0, T0, yi, Pmin, Pmax,
+    "\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+    P0, T0, yi, Plow, Pupp,
   )
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
@@ -4416,7 +4481,7 @@ def _PmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Pk, _, _, _, _, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
-                                              maxiter_tpd, Pmax, Pmin, True)
+                                              maxiter_tpd, Plow, Pupp, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
@@ -4473,15 +4538,15 @@ def _PmaxPT_newtC(
     logger.warning(
       "Newton's method (C-form) for cricondenbar calculation "
       "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa",
-      eos.name, P0, T0, yi, Pmin, Pmax,
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      eos.name, P0, T0, yi, Plow, Pupp,
     )
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
 
 
-class TmaxPT(object):
+class TmaxPT(TsatPT):
   """Cricondentherm calculation.
 
   Performs the cricondentherm point calculation using PT-based equations
@@ -4563,7 +4628,6 @@ class TmaxPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
-    - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Newton's method).
 
     Default is `'ss'`.
@@ -4587,6 +4651,16 @@ class TmaxPT(object):
     guesses of pressure `P: float` in [Pa] and temperature `T: float`
     in [K]. This method returns cricondentherm point calculation results
     as an instance of `SatResult`.
+
+  search(P, T, yi) -> tuple[float, ndarray, float, float]
+    This method performs the preliminary search to refine an initial
+    guess of the cricondentherm temperature and find lower and upper
+    bounds. It returns a tuple of:
+    - the improved initial guess for the cricondentherm temperature
+      [K],
+    - the initial guess for k-values as ndarray of shape `(Nc,)`,
+    - the lower bound of the cricondentherm temperature [K],
+    - the upper bound of the cricondentherm temperature [K].
   """
   def __init__(
     self,
@@ -4601,11 +4675,6 @@ class TmaxPT(object):
       self.solver = partial(_TmaxPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
       self.solver = partial(_TmaxPT_qnss, eos=eos, **kwargs)
-    elif method == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the cricondentherm point calculation is not '
-        'implemented yet.'
-      )
     elif method == 'newton':
       self.solver = partial(_TmaxPT_newtC, eos=eos, **kwargs)
     else:
@@ -4618,8 +4687,8 @@ class TmaxPT(object):
     T: ScalarType,
     yi: VectorType,
     step: ScalarType = 0.1,
-    lowerlimit: ScalarType = 173.15,
-    upperlimit: ScalarType = 973.15,
+    Tmin: ScalarType = 173.15,
+    Tmax: ScalarType = 973.15,
   ) -> SatResult:
     """Performs the cricindentherm point calculation for a mixture. To
     improve an initial guess of temperature, the preliminary search is
@@ -4644,12 +4713,12 @@ class TmaxPT(object):
       temperature will be calculated from the previous one using the
       formula: `Tnext = Tprev * (1. + step)`. Default is `0.1`.
 
-    lowerlimit: float
+    Tmin: float
       During the preliminary search, the temperature can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `173.15` [Pa].
 
-    upperlimit: float
+    Tmax: float
       During the preliminary search, the temperature can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `973.15` [Pa].
@@ -4672,80 +4741,8 @@ class TmaxPT(object):
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
     """
-    stab = self.stabsolver.run(P, T, yi)
-    logger.debug(
-      'For the initial guess P = %s Pa, T = %s K, '
-      'the one-phase state is stable: %s',
-      P, T, stab.stable,
-    )
-    if stab.stable:
-      logger.debug(
-        'Finding the two-phase region for the upper-bound curve by the '
-        'preliminary search.'
-      )
-      Tmax = T
-      c = 1. - step
-      Tmin = c * T
-      stabmin = self.stabsolver.run(P, Tmin, yi)
-      logger.debug(
-        'Tmin = %s K, the one-phase state is stable: %s',
-        Tmin, stabmin.stable,
-      )
-      if stabmin.stable:
-        Tmax = Tmin
-      while stabmin.stable and Tmin > lowerlimit:
-        Tmin *= c
-        stabmin = self.stabsolver.run(P, Tmin, yi)
-        logger.debug(
-          'Tmin = %s K, the one-phase state is stable: %s',
-          Tmin, stabmin.stable,
-        )
-        if stabmin.stable:
-          Tmax = Tmin
-      if Tmin < lowerlimit:
-        raise ValueError(
-          'The two-phase region was not identified. It could be because of\n'
-          'its narrowness or absence. Try to change the value of `T` or\n'
-          'stability test parameters using the `stabkwargs` parameter of\n'
-          'this class. It also might be helpful to reduce the value of the\n'
-          'parameter `step`.'
-        )
-      else:
-        T = Tmin
-        stab = stabmin
-    elif not stab.stable:
-      logger.debug(
-        'Finding the one-phase region for the upper-bound curve by the '
-        'preliminary search.'
-      )
-      Tmin = T
-      c = 1. + step
-      Tmax = c * T
-      stabmax = self.stabsolver.run(P, Tmax, yi)
-      logger.debug(
-        'Tmax = %s K, the one-phase state is stable: %s',
-        Tmax, stabmax.stable,
-      )
-      if not stabmax.stable:
-        Tmin = Tmax
-      while not stabmax.stable and Tmax < upperlimit:
-        Tmax *= c
-        stabmax = self.stabsolver.run(P, Tmax, yi)
-        logger.debug(
-          'Tmax = %s K, the one-phase state is stable: %s',
-          Tmax, stabmax.stable,
-        )
-        if not stabmax.stable:
-          Tmin = Tmax
-          stab = stabmax
-      if Tmax > upperlimit:
-        raise ValueError(
-          'The one-phase region was not identified. Try to change the\n'
-          'initial guess `T` and/or `upperlimit` parameter.'
-        )
-      else:
-        T = Tmin
-    return self.solver(P, T, yi, stab.kvji[0], Tmin=Tmin, Tmax=Tmax)
+    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, True, step, Tmin, Tmax)
+    return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp)
 
 
 def _TmaxPT_solve_TPDeq_T(
@@ -4919,8 +4916,8 @@ def _TmaxPT_ss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Tmax: ScalarType = 973.15,
-  Tmin: ScalarType = 173.15,
+  Tlow: ScalarType = 173.15,
+  Tupp: ScalarType = 973.15,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondentherm
   calculation using a PT-based equation of state. To find the
@@ -5011,13 +5008,13 @@ def _TmaxPT_ss(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `8`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `973.15` [K].
 
   Returns
   -------
@@ -5032,8 +5029,8 @@ def _TmaxPT_ss(
   """
   logger.debug(
     'The cricondentherm calculation using the SS-method:\n'
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P0, T0, yi, Tmin, Tmax,
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P0, T0, yi, Tlow, Tupp,
   )
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
@@ -5045,7 +5042,7 @@ def _TmaxPT_ss(
   ni = kik * yi
   xi = ni / ni.sum()
   Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
-                                              maxiter, Tmax, Tmin, True)
+                                              maxiter, Tlow, Tupp, True)
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
@@ -5096,8 +5093,8 @@ def _TmaxPT_ss(
     logger.warning(
       "The SS-method for cricondentherm calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P0, T0, yi, Tmin, Tmax,
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P0, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -5114,8 +5111,8 @@ def _TmaxPT_qnss(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Tmax: ScalarType = 973.15,
-  Tmin: ScalarType = 173.15,
+  Tlow: ScalarType = 173.15,
+  Tupp: ScalarType = 973.15,
 ) -> SatResult:
   """Quasi-Newton Successive substitution (QNSS) method for the
   cricondentherm calculation using a PT-based equation of state. To find
@@ -5209,13 +5206,13 @@ def _TmaxPT_qnss(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `8`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `973.15` [K].
 
   Returns
   -------
@@ -5230,8 +5227,8 @@ def _TmaxPT_qnss(
   """
   logger.debug(
     'The cricondentherm calculation using the QNSS-method:\n'
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P0, T0, yi, Tmin, Tmax,
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P0, T0, yi, Tlow, Tupp,
   )
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
@@ -5243,7 +5240,7 @@ def _TmaxPT_qnss(
   ni = kik * yi
   xi = ni / ni.sum()
   Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
-                                              maxiter, Tmax, Tmin, True)
+                                              maxiter, Tlow, Tupp, True)
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
@@ -5305,8 +5302,8 @@ def _TmaxPT_qnss(
     logger.warning(
       "The QNSS-method for cricondentherm calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P0, T0, yi, Tmin, Tmax,
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P0, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
@@ -5323,8 +5320,8 @@ def _TmaxPT_newtC(
   maxiter: int = 50,
   tol_tpd: ScalarType = 1e-6,
   maxiter_tpd: int = 8,
-  Tmax: ScalarType = 973.15,
-  Tmin: ScalarType = 173.15,
+  Tlow: ScalarType = 173.15,
+  Tupp: ScalarType = 973.15,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> SatResult:
   """This function calculates the cricondenthern point by solving a
@@ -5429,13 +5426,13 @@ def _TmaxPT_newtC(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `8`.
 
-  Tmax: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `973.15` [K].
-
-  Tmin: float
+  Tlow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `173.15` [K].
+
+  Tupp: float
+    The upper bound for the TPD-equation solver. This parameter is used
+    only at the zeroth iteration. Default is `973.15` [K].
 
   linsolver: Callable[[ndarray, ndarray], ndarray]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
@@ -5456,8 +5453,8 @@ def _TmaxPT_newtC(
   """
   logger.debug(
     "The cricondentherm calculation using Newton's method (C-form):\n"
-    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K',
-    P0, T0, yi, Tmin, Tmax,
+    '\tP0 = %s Pa\n\tT0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K',
+    P0, T0, yi, Tlow, Tupp,
   )
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
@@ -5471,7 +5468,7 @@ def _TmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Tk, _, _, _, _, TPD = _TsatPT_solve_TPDeq_T(P0, T0, yi, xi, eos, tol,
-                                              maxiter, Tmax, Tmin, True)
+                                              maxiter, Tlow, Tupp, True)
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
@@ -5528,15 +5525,15 @@ def _TmaxPT_newtC(
     logger.warning(
       "Newton's method (C-form) for cricondentherm calculation terminates "
       "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTmin = %s K\n\tTmax = %s K",
-      eos.name, P0, T0, yi, Tmin, Tmax,
+      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      eos.name, P0, T0, yi, Tlow, Tupp,
     )
     return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
                      Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
                      success=False)
 
 
-class EnvelopeResult(object):
+class EnvelopeResult(dict):
   """Container for phase envelope calculation outputs with
   pretty-printing.
 
@@ -5598,91 +5595,255 @@ class EnvelopeResult(object):
     return s
 
 
-def _env2pPT_P(
-  P0: ScalarType,
-  T: ScalarType,
-  yi: VectorType,
-  Fv: ScalarType,
-  kvi0: VectorType,
-  Pmin: ScalarType,
-  Pmax: ScalarType,
-  eos: EOSPTType,
-  tol: ScalarType = 1e-5,
-  maxiter: int = 50,
-  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
-) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
-  logger.debug(
-    'Solving the system for the phase envelope with Fv = %s.\n\t'
-    'The specified variable is T = %s K. Pmin = %s Pa, Pmax = %s Pa.',
-    Fv, T, Pmin, Pmax,
-  )
-  Nc = eos.Nc
-  J = np.empty(shape=(Nc + 1, Nc + 1))
-  J[-1,-1] = 0.
-  g = np.empty(shape=(Nc + 1,))
-  I = np.eye(Nc)
-  Fl = 1. - Fv
-  k = 0
-  Pk = P0
-  kvi = kvi0
-  lnkvik = np.log(kvi)
-  di = 1. + Fv * (kvi - 1.)
-  yli = yi / di
-  yvi = kvi * yli
-  lnphivi, Zv, dlnphividyvj, dlnphividP = eos.getPT_lnphii_Z_dyj_dP(Pk,T,yvi)
-  lnphili, Zl, dlnphilidylj, dlnphilidP = eos.getPT_lnphii_Z_dyj_dP(Pk,T,yli)
-  g[:Nc] = lnkvik + lnphivi - lnphili
-  g[Nc] = np.sum(yvi - yli)
-  gnorm = np.linalg.norm(g)
-  logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
-    k, kvi, Pk, gnorm,
-  )
-  dylidlnkvi = -Fv * yvi / di
-  dyvidlnkvi = yvi + kvi * dylidlnkvi
-  while gnorm > tol and k < maxiter:
-    J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
-    J[-1,:Nc] = yvi / di
-    J[:Nc,-1] = Pk * (dlnphividP - dlnphilidP)
-    try:
-      dlnkvilnP = linsolver(J, -g)
-    except:
-      dlnkvilnP = -g
-    k += 1
-    lnkvik += dlnkvilnP[:-1]
-    Pkp1 = Pk * np.exp(dlnkvilnP[-1])
-    if Pkp1 > Pmax:
-      Pkp1 = .5 * (Pk + Pmax)
-    elif Pkp1 < Pmin:
-      Pkp1 = .5 * (Pmin + Pk)
-    Pk = Pkp1
-    kvi = np.exp(lnkvik)
-    di = 1. + Fv * (kvi - 1.)
-    yli = yi / di
-    yvi = kvi * yli
-    lnphivi, Zv, dlnphividyvj, dlnphividP = eos.getPT_lnphii_Z_dyj_dP(Pk, T,
-                                                                      yvi)
-    lnphili, Zl, dlnphilidylj, dlnphilidP = eos.getPT_lnphii_Z_dyj_dP(Pk, T,
-                                                                      yli)
-    g[:Nc] = lnkvik + lnphivi - lnphili
-    g[Nc] = np.sum(yvi - yli)
-    gnorm = np.linalg.norm(g)
-    logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tgnorm = %s',
-      k, kvi, Pk, gnorm,
-    )
-  if gnorm < tol and np.isfinite(kvi).all() and np.isfinite(Pk):
-    rhol = yli.dot(eos.mwi) / Zl
-    rhov = yvi.dot(eos.mwi) / Zv
-    if rhov < rhol:
-      yji = np.vstack([yvi, yli])
-      Zj = np.array([Zv, Zl])
-    else:
-      yji = np.vstack([yli, yvi])
-      Zj = np.array([Zl, Zv])
-    return Pk, kvi, yji, Zj, k
-  else:
-    raise ValueError(
-      'The solution was not found. Try to increase the `maxiter` parameter.'
-    )
+# class env2pPT(object):
+#   def __init__(self, eos: EOSPTType, psatkwargs: dict = {}, **kwargs) -> None:
+#     self.eos = eos
+#     self.solver = partial(_env2pPT, eos=eos, **kwargs)
+#     pass
 
+#   def run(
+#     self,
+#     yi: VectorType,
+#     Plow: ScalarType = 1.,
+#     Pupp: ScalarType = 1e8,
+#     Tlow: ScalarType = 173.15,
+#     Tupp: ScalarType = 973.15,
+#     maxpoints: int = 200,
+#     Pinit: ScalarType = 2e6,
+#     dT: ScalarType = 1.,
+#     dTmax: ScalarType = 10.,
+#     dTmin: ScalarType = 1e-2,
+#     dP: ScalarType = 50.,
+#     Niternorm: int = 4,
+#   ) -> EnvelopeResult:
+#     Fv = 0.
+#     logger.debug('Constructing the phase envelope for Fv = %s ...', Fv)
+#     Penv = []
+#     Tenv = []
+#     yjienv = []
+#     Zjenv = []
+#     k = 0
+#     Psat = self.psatsolver()
+#     lnyi = np.log(yi)
+#     lnkvi0 = np.log(stab.kvji[0])
+#     Pk, lnkvi, yji, Zj, Niter, suc = self.solver_P(P0, Tk, yi, Fv, lnkvi0, Pmin, Pmax)
+#     Penv.append(Pk)
+#     Tenv.append(Tk)
+#     yjienv.append(yji)
+#     Zjenv.append(Zj)
+#     alpha0 = 1.
+#     for k in range(1, maxpoints):
+#       if Niter > Niternorm:
+#         dT *= 1. - step
+#       else:
+#         dT *= 1. + step
+#       if dT > dTmax:
+#         dT = dTmax
+#       elif dT < dTmin:
+#         raise ValueError
+#       k += 1
+#       Tk += dT
+#       if Tk > 360.:
+#         break
+#       P0, lnkvi0, alpha0 = _xenv2pPT_P(Pk, alpha0, Tk, lnkvi, lnyi, yi, self.eos)
+#       Pk, lnkvi, yji, Zj, Niter, suc = self.solver_P(P0, Tk, yi, Fv, lnkvi0, Plow, Pupp)
+#       if 0. < alpha0 < 0.05:
+#         alpha0 = -1.
+#         lnkvi = -lnkvi
+#         Fv = 1.
+#       # stab1 = self.stabsolver.run(Pk, Tk, yji[0])
+#       # stab2 = self.stabsolver.run(Pk, Tk, yji[1])
+#       # print(f'The first phase is stable: {stab1.stable}')
+#       # print(f'The second phase is stable: {stab2.stable}')
+#       # if np.isclose(lnkvi, 0., atol=5e-2).all() and not switch:
+#       #   Fv = 1.
+#       #   lnkvi = -lnkvi
+#       #   alpha0 = -1.
+#       #   switch = True
+#         # Pcurve = False
+#       if suc:
+#         Penv.append(Pk)
+#         Tenv.append(Tk)
+#         yjienv.append(yji)
+#         Zjenv.append(Zj)
+#       else:
+#         # if Pcurve:
+#         #   Tk -= .5 * dT
+#         continue
+#     Penv = np.array(Penv)
+#     Tenv = np.array(Tenv)
+#     yjienv = np.array(yjienv)
+#     Zjenv = np.array(Zjenv)
+#     return EnvelopeResult(Pk=Penv, Tk=Tenv, ykji=yjienv, Zkj=Zjenv)
+
+
+# def _xenv2pPT_P(
+#   P0: ScalarType,
+#   alpha0: ScalarType,
+#   T: ScalarType,
+#   lnkpi: VectorType,
+#   lnzi: VectorType,
+#   zi: VectorType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-9,
+#   maxiter: int = 10,
+#   dalpha0: ScalarType = 1e-6,
+# ) -> tuple[ScalarType, VectorType]:
+#   logger.debug(
+#     'Finding approximate pressure and trial phase composition for:\n\t'
+#     'P0 = %s Pa\n\tT = %s K\n\tkpi = %s', P0, T, np.exp(lnkpi),
+#   )
+#   k = 0
+#   alphak = alpha0
+#   Pk = P0
+#   Yi = np.exp(lnzi + alphak * lnkpi)
+#   yi = Yi / Yi.sum()
+#   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+#   lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(Pk, T, zi)
+#   lnyi = np.log(yi)
+#   di = lnyi + lnphiyi - lnzi - lnphizi
+#   g1k = yi.dot(di)
+#   g2k = zi.dot(di)
+#   gnorm = np.sqrt(g1k * g1k + g2k * g2k)
+#   logger.debug(
+#     'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
+#     k, Pk, alphak, gnorm,
+#   )
+#   while gnorm > tol and k < maxiter:
+#     Yi = np.exp(lnzi + (alphak + dalpha0) * lnkpi)
+#     yi = Yi / Yi.sum()
+#     lnphiyi = eos.getPT_lnphii(Pk, T, yi)
+#     di = np.log(yi) + lnphiyi - lnzi - lnphizi
+#     g1kp1 = yi.dot(di)
+#     g2kp1 = zi.dot(di)
+#     ddidP = dlnphiyidP - dlnphizidP
+#     dg1dlnP = Pk * yi.dot(ddidP)
+#     dg2dlnP = Pk * zi.dot(ddidP)
+#     dg1dalpha = (g1kp1 - g1k) / dalpha0
+#     dg2dalpha = (g2kp1 - g2k) / dalpha0
+#     D = 1. / (dg1dlnP * dg2dalpha - dg1dalpha * dg2dlnP)
+#     dlnP = D * (dg1dalpha * g2kp1 - dg2dalpha * g1kp1)
+#     dalpha = D * (dg2dlnP * g1kp1 - dg1dlnP * g2kp1)
+#     k += 1
+#     Pk *= np.exp(dlnP)
+#     alphak += dalpha
+#     if np.abs(dalpha / alphak) < tol:
+#       break
+#     Yi = np.exp(lnzi + alphak * lnkpi)
+#     yi = Yi / Yi.sum()
+#     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
+#     lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(Pk, T, zi)
+#     lnyi = np.log(yi)
+#     di = lnyi + lnphiyi - lnzi - lnphizi
+#     g1k = yi.dot(di)
+#     g2k = zi.dot(di)
+#     gnorm = np.sqrt(g1k * g1k + g2k * g2k)
+#     logger.debug(
+#       'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
+#       k, Pk, alphak, gnorm,
+#     )
+#   return Pk, (lnyi - lnzi) * np.sign(alphak), alphak
+
+
+# def _env2pPT(
+#   x0: VectorType,
+#   yi: VectorType,
+#   Fv: ScalarType,
+#   sidx: int,
+#   sval: ScalarType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-5,
+#   maxiter: int = 10,
+#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+# ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
+#   logger.debug(
+#     'Solving the system for the phase envelope with Fv = %s.\n\t'
+#     'The specified variable index is: %s', Fv, sidx,
+#   )
+#   Nc = eos.Nc
+#   J = np.zeros(shape=(Nc + 2, Nc + 2))
+#   J[-1, sidx] = 1.
+#   g = np.empty(shape=(Nc + 2,))
+#   I = np.eye(Nc)
+#   Fl = 1. - Fv
+#   k = 0
+#   xk = x0
+#   ex = np.exp(xk)
+#   P = ex[-2]
+#   T = ex[-1]
+#   lnkvi = xk[:-2]
+#   kvi = ex[:-2]
+#   di = 1. + Fv * (kvi - 1.)
+#   yli = yi / di
+#   yvi = kvi * yli
+#   (lnphivi, Zv, dlnphividP,
+#    dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
+#   (lnphili, Zl, dlnphilidP,
+#    dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
+#   g[:Nc] = lnkvi + lnphivi - lnphili
+#   g[Nc] = np.sum(yvi - yli)
+#   g[Nc+1] = x[sidx] - sval
+#   gnorm = np.linalg.norm(g)
+#   logger.debug(
+#     'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
+#     k, kvi, P, T, gnorm,
+#   )
+#   dylidlnkvi = -Fv * yvi / di
+#   dyvidlnkvi = yvi + kvi * dylidlnkvi
+#   while (gnorm > tol or k < 1) and k < maxiter:
+#     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+#     J[-2,:Nc] = yvi / di
+#     J[:Nc,-2] = Pk * (dlnphividP - dlnphilidP)
+#     J[:Nc,-1] = Tk * (dlnphividT - dlnphilidT)
+#     try:
+#       dx = linsolver(J, -g)
+#     except:
+#       dx = -g
+#     k += 1
+#     xk += dx
+#     ex = np.exp(x)
+#     P = ex[-2]
+#     T = ex[-1]
+#     lnkvi = x[:-2]
+#     kvi = ex[:-2]
+#     di = 1. + Fv * (kvi - 1.)
+#     yli = yi / di
+#     yvi = kvi * yli
+#     (lnphivi, Zv, dlnphividP,
+#      dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
+#     (lnphili, Zl, dlnphilidP,
+#      dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
+#     g[:Nc] = lnkvi + lnphivi - lnphili
+#     g[Nc] = np.sum(yvi - yli)
+#     g[Nc+1] = x[sidx] - sval
+#     gnorm = np.linalg.norm(g)
+#     logger.debug(
+#       'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
+#       k, kvi, P, T, gnorm,
+#     )
+#   suc = gnorm < tol and np.isfinite(ex).all()
+#   rhol = yli.dot(eos.mwi) / Zl
+#   rhov = yvi.dot(eos.mwi) / Zv
+#   if rhov < rhol:
+#     yji = np.vstack([yvi, yli])
+#     Zj = np.array([Zv, Zl])
+#   else:
+#     yji = np.vstack([yli, yvi])
+#     Zj = np.array([Zl, Zv])
+#   return P, T, lnkvi, yji, Zj, k, suc
+
+
+# def _env2pPT_T(
+#   P: ScalarType,
+#   T0: ScalarType,
+#   yi: VectorType,
+#   Fv: ScalarType,
+#   Tmin: ScalarType,
+#   Tmax: ScalarType,
+#   eos: EOSPTType,
+#   tol: ScalarType = 1e-6,
+#   maxiter: int = 20,
+#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+# ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType,
+#            MatrixType]:
+#   pass

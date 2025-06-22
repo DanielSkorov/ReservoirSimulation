@@ -7,11 +7,7 @@ from functools import (
 import numpy as np
 
 from stability import (
-  _stabPT_ss,
-  _stabPT_qnss,
-  _stabPT_newt,
-  _stabPT_ssnewt,
-  _stabPT_qnssnewt,
+  stabilityPT,
 )
 
 from rr import (
@@ -158,6 +154,29 @@ class flash2pPT(object):
 
     Default is `'ss'`.
 
+  level: int
+    Regulates a set of initial k-values obtained by the method
+    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
+
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`. The value of
+    this flag can be changed to `False` if the one-phase state will
+    be unstable.
+
+  runstab: bool
+    If `True` then the algorithm will perform the stability test, for
+    which initial guesses of k-values will be calculated by the method
+    of an eos instance and taken from previous flash calculations if
+    the flag `useprev` was set `True`. Initial guesses of k-values for
+    flash calculations will be taken from the stability test results.
+    Default is `True`.
+
+  useprev: bool
+    Allows to preseve previous calculation results (if the solution was
+    found) and to use them as the first initial guess for the next run.
+    Default is `False`.
+
   stabkwargs: dict
     Dictionary that used to regulate the stability test procedure.
     Default is an empty dictionary.
@@ -179,43 +198,37 @@ class flash2pPT(object):
     self,
     eos: EOSPTType,
     flashmethod: str = 'ss',
-    stabmethod: str = 'ss',
+    level: int = 0,
+    negflash: bool = True,
+    runstab: bool = True,
+    useprev: bool = False,
     stabkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
+    self.level = level
+    self.negflash = negflash
+    self.runstab = runstab
+    self.useprev = useprev
+    self.stabsolver = stabilityPT(eos, level=level, **stabkwargs)
     self.preserved = False
     self.prevkvji: None | MatrixType = None
     if flashmethod == 'ss':
-      self.flashsolver = partial(_flash2pPT_ss, eos=eos, **kwargs)
+      self.solver = partial(_flash2pPT_ss, eos=eos, **kwargs)
     elif flashmethod == 'qnss':
-      self.flashsolver = partial(_flash2pPT_qnss, eos=eos, **kwargs)
+      self.solver = partial(_flash2pPT_qnss, eos=eos, **kwargs)
     elif flashmethod == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for flash calculations is not implemented yet.'
       )
     elif flashmethod == 'newton':
-      self.flashsolver = partial(_flash2pPT_newt, eos=eos, **kwargs)
+      self.solver = partial(_flash2pPT_newt, eos=eos, **kwargs)
     elif flashmethod == 'ss-newton':
-      self.flashsolver = partial(_flash2pPT_ssnewt, eos=eos, **kwargs)
+      self.solver = partial(_flash2pPT_ssnewt, eos=eos, **kwargs)
     elif flashmethod == 'qnss-newton':
-      self.flashsolver = partial(_flash2pPT_qnssnewt, eos=eos, **kwargs)
+      self.solver = partial(_flash2pPT_qnssnewt, eos=eos, **kwargs)
     else:
       raise ValueError(f'The unknown flash-method: {flashmethod}.')
-    if stabmethod == 'ss':
-      self.stabsolver = partial(_stabPT_ss, eos=eos, **stabkwargs)
-    elif stabmethod == 'qnss':
-      self.stabsolver = partial(_stabPT_qnss, eos=eos, **stabkwargs)
-    elif stabmethod == 'newton':
-      self.stabsolver = partial(_stabPT_newt, eos=eos, **stabkwargs)
-    elif stabmethod == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the stability test is not implemented yet.'
-      )
-    elif stabmethod == 'ss-newton':
-      self.stabsolver = partial(_stabPT_ssnewt, eos=eos, **stabkwargs)
-    elif stabmethod == 'qnss-newton':
-      self.stabsolver = partial(_stabPT_qnssnewt, eos=eos, **stabkwargs)
     self._1pstab_yi = np.zeros_like(eos.mwi)
     self._1pstab_Fj = np.array([1., 0.])
     pass
@@ -224,11 +237,7 @@ class flash2pPT(object):
     self,
     P: ScalarType,
     T: ScalarType,
-    yi: VectorType,
-    level: int = 0,
-    negativeflash: bool = True,
-    runstab: bool = True,
-    useprev: bool = False,
+    yi: VectorType
   ) -> FlashResult:
     """Performs flash calculations for given pressure, temperature and
     composition.
@@ -244,29 +253,6 @@ class flash2pPT(object):
     yi: ndarray, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    level: int
-      Regulates a set of initial k-values obtained by the method
-      `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
-
-    negativeflash: bool
-      A flag indicating if unphysical phase mole fractions can be
-      considered as a correct solution. Default is `True`. The value of
-      this flag can be changed to `False` if the one-phase state will
-      be unstable.
-
-    runstab: bool
-      If `True` then the algorithm will perform the stability test, for
-      which initial guesses of k-values will be calculated by the method
-      of an eos instance and taken from previous flash calculations if
-      the flag `useprev` was set `True`. Initial guesses of k-values for
-      flash calculations will be taken from the stability test results.
-      Default is `True`.
-
-    useprev: bool
-      Allows to preseve previous calculation results (if the solution was
-      found) and to use them as the first initial guess for the next run.
-      Default is `False`.
-
     Returns
     -------
     Flash calculation results as an instance of `FlashResult` object.
@@ -277,23 +263,23 @@ class flash2pPT(object):
     - `success` a boolean flag indicating if the calculation completed
       successfully.
     """
-    kvji0 = self.eos.getPT_kvguess(P, T, yi, level)
-    if useprev and self.preserved:
+    kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
+    if self.useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
-    if runstab:
-      stab = self.stabsolver(P, T, yi, kvji0)
+    if self.runstab:
+      stab = self.stabsolver.run(P, T, yi, kvji0)
       if stab.stable:
         return FlashResult(yji=np.vstack([yi, self._1pstab_yi]),
                            Fj=self._1pstab_Fj, Zj=np.array([stab.Z, 0.]),
                            gnorm=-1, success=True)
       else:
-        negativeflash = False
-      if useprev and self.preserved:
+        self.negflash = False
+      if self.useprev and self.preserved:
         kvji0 = *self.prevkvji, *stab.kvji
       else:
         kvji0 = stab.kvji
-    flash = self.flashsolver(P, T, yi, kvji0, negativeflash=negativeflash)
-    if flash.success and useprev:
+    flash = self.solver(P, T, yi, kvji0, negflash=self.negflash)
+    if flash.success and self.useprev:
       self.prevkvji = flash.kvji
       self.preserved = True
     return flash
@@ -307,7 +293,7 @@ def _flash2pPT_ss(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 30,
-  negativeflash: bool = True,
+  negflash: bool = True,
 ) -> FlashResult:
   """Successive substitution method for two-phase flash calculations
   using a PT-based equation of state.
@@ -355,7 +341,7 @@ def _flash2pPT_ss(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  negativeflash: bool
+  negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`.
 
@@ -406,7 +392,7 @@ def _flash2pPT_ss(
         k, kvik, gnorm, Fv,
       )
     if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
-        and (0. < Fv < 1. or negativeflash)):
+        and (0. < Fv < 1. or negflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -445,7 +431,7 @@ def _flash2pPT_qnss(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 30,
-  negativeflash: bool = True,
+  negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for two-phase flash calculations using a PT-based
   equation of state.
@@ -497,7 +483,7 @@ def _flash2pPT_qnss(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  negativeflash: bool
+  negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`.
 
@@ -561,7 +547,7 @@ def _flash2pPT_qnss(
       if lmbd > 30.:
         lmbd = 30.
     if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
-        and (0. < Fv < 1. or negativeflash)):
+        and (0. < Fv < 1. or negflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -600,7 +586,7 @@ def _flash2pPT_newt(
   eos: EOSPTType,
   tol: ScalarType = 1e-5,
   maxiter: int = 30,
-  negativeflash: bool = True,
+  negflash: bool = True,
   forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
@@ -658,7 +644,7 @@ def _flash2pPT_newt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  negativeflash: bool
+  negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`.
 
@@ -748,7 +734,7 @@ def _flash2pPT_newt(
           k, kvik, gnorm, Fv,
         )
     if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
-        and (0. < Fv < 1. or negativeflash)):
+        and (0. < Fv < 1. or negflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -789,7 +775,7 @@ def _flash2pPT_ssnewt(
   maxiter: int = 30,
   tol_ss: ScalarType = 1e-2,
   maxiter_ss: int = 10,
-  negativeflash: bool = True,
+  negflash: bool = True,
   forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
@@ -865,7 +851,7 @@ def _flash2pPT_ssnewt(
     The maximum number of the successive substitution iterations.
     Default is `10`.
 
-  negativeflash: bool
+  negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`.
 
@@ -929,7 +915,7 @@ def _flash2pPT_ssnewt(
       )
     if np.isfinite(kvik).all() and np.isfinite(Fv):
       if gnorm < tol:
-        if 0. < Fv < 1. or negativeflash:
+        if 0. < Fv < 1. or negflash:
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -995,7 +981,7 @@ def _flash2pPT_ssnewt(
               k, kvik, gnorm, Fv,
             )
         if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
-            and (0. < Fv < 1. or negativeflash)):
+            and (0. < Fv < 1. or negflash)):
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1036,7 +1022,7 @@ def _flash2pPT_qnssnewt(
   maxiter: int = 30,
   tol_qnss: ScalarType = 1e-2,
   maxiter_qnss: int = 10,
-  negativeflash: bool = True,
+  negflash: bool = True,
   forcenewton: bool = False,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> FlashResult:
@@ -1115,7 +1101,7 @@ def _flash2pPT_qnssnewt(
     The maximum number of quasi-newton successive substitution
     iterations. Default is `10`.
 
-  negativeflash: bool
+  negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`.
 
@@ -1194,7 +1180,7 @@ def _flash2pPT_qnssnewt(
         lmbd = 30.
     if np.isfinite(kvik).all() and np.isfinite(Fv):
       if gnorm < tol:
-        if 0. < Fv < 1. or negativeflash:
+        if 0. < Fv < 1. or negflash:
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1260,7 +1246,7 @@ def _flash2pPT_qnssnewt(
               k, kvik, gnorm, Fv,
             )
         if (gnorm < tol and np.isfinite(kvik).all() and np.isfinite(Fv)
-            and (0. < Fv < 1. or negativeflash)):
+            and (0. < Fv < 1. or negflash)):
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)

@@ -1082,15 +1082,15 @@ class pr78(object):
                  - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
     return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidnj, dlnphiidT
 
-  def getPT_lnphii_Z_dyj_dP(
+  def getPT_lnphii_Z_dP_dT_dyj(
     self,
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-  ) -> tuple[VectorType, ScalarType, MatrixType, VectorType]:
+  ) -> tuple[VectorType, ScalarType, VectorType, VectorType, MatrixType]:
     """Computes fugacity coefficients of components and their partial
-    derivatives with respect to mole fractions of components and
-    pressure.
+    derivatives with respect to pressure, temperature and mole fractions
+    of components pressure.
 
     The mole fraction constraint isn't taken into account.
 
@@ -1111,16 +1111,20 @@ class pr78(object):
     - an array with the natural logarithm of the fugacity coefficient
       for each component,
     - the compressibility factor of the mixture,
-    - a `(Nc, Nc)` matrix of partial derivatives of logarithms of the
-      fugacity coefficients with respect to component mole fractions,
     - an array of partial derivatives of logarithms of the fugacity
-      coefficients with respect to pressure
+      coefficients with respect to pressure,
+    - an array of partial derivatives of logarithms of the fugacity
+      coefficients with respect to temperature,
+    - a `(Nc, Nc)` matrix of partial derivatives of logarithms of the
+      fugacity coefficients with respect to component mole fractions.
     """
     RT = R * T
     PRT = P / RT
-    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtT = np.sqrt(T)
+    multi = 1. + self.kappai * (1. - sqrtT * self._Tci)
     sqrtalphai = self.sqrtai * multi
-    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    Si_ = self.D.dot(yi * sqrtalphai)
+    Si = sqrtalphai * Si_
     alpham = yi.dot(Si)
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
@@ -1165,86 +1169,6 @@ class pr78(object):
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
     dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
                  - self.vsi_bi / RT)
-    return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidyj, dlnphiidP
-
-  def getPT_lnphii_Z_dyj_dT(
-    self,
-    P: ScalarType,
-    T: ScalarType,
-    yi: VectorType,
-  ) -> tuple[VectorType, ScalarType, MatrixType, VectorType]:
-    """Computes fugacity coefficients of components and their partial
-    derivatives with respect to mole fractions of components and
-    temperature.
-
-    The mole fraction constraint isn't taken into account.
-
-    Parameters
-    ----------
-    P: float
-      Pressure of the mixture [Pa].
-
-    T: float
-      Temperature of the mixture [K].
-
-    yi: ndarray, shape (Nc,)
-      Mole fractions of `Nc` components.
-
-    Returns
-    -------
-    A tuple that contains:
-    - an array of logarithms of the fugacity coefficients of `Nc`
-      components,
-    - the compressibility factor of the mixture,
-    - a `(Nc, Nc)` matrix of partial derivatives of logarithms of
-      the fugacity coefficients with respect to mole fractions of
-      components,
-    - an array with shape `(Nc,)` of partial derivatives of logarithms
-      of the fugacity coefficients with respect to temperature.
-    """
-    RT = R * T
-    PRT = P / RT
-    sqrtT = np.sqrt(T)
-    multi = 1. + self.kappai * (1. - sqrtT * self._Tci)
-    sqrtalphai = self.sqrtai * multi
-    Si_ = self.D.dot(yi * sqrtalphai)
-    Si = sqrtalphai * Si_
-    alpham = yi.dot(Si)
-    bm = yi.dot(self.bi)
-    A = alpham * PRT / RT
-    B = bm * PRT
-    Z = self.solve_eos(A, B)
-    gZ = np.log(Z - B)
-    gphii = A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = (0.3535533905932738 * fZ * gphii - gZ + (Z - 1.) / bm * self.bi
-              - PRT * self.vsi_bi)
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
-    dSidyj = sqrtalphai[:,None] * sqrtalphai * self.D
-    dalphamdyj = Si + yi.dot(dSidyj)
-    dbmdyj = self.bi
-    dAdyj = dalphamdyj * PRT / RT
-    dBdyj = dbmdyj * PRT
-    ddmdyj = ddmdA[:,None] * dAdyj + ddmdB[:,None] * dBdyj
-    dqdyj = np.power(Z, np.array([2, 1, 0])).dot(ddmdyj)
-    dZdyj = -dqdyj / dqdZ
-    dgZdyj = dgZdZ * dZdyj + dgZdB * dBdyj
-    dfZdyj = dfZdZ * dZdyj + dfZdB * dBdyj
-    dgphiidyj = ((2. / alpham * (dSidyj - (Si / alpham)[:,None] * dalphamdyj)
-                  + (self.bi / (bm * bm))[:,None] * dbmdyj)
-                 * (0.3535533905932738 * A / B)
-                 + gphii[:,None] * (dAdyj / A - dBdyj / B))
-    dlnphiidyj = ((self.bi / bm)[:,None] * (dZdyj - (Z - 1.) / bm * dbmdyj)
-                  + (fZ * dgphiidyj + gphii[:,None] * dfZdyj)
-                  - dgZdyj)
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * self.D.dot(yi * dsqrtalphaidT)
@@ -1259,7 +1183,8 @@ class pr78(object):
     dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
     dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
                  - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
-    return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidyj, dlnphiidT
+    return (lnphii, Z - PRT * yi.dot(self.vsi_bi),
+            dlnphiidP, dlnphiidT, dlnphiidyj)
 
   def getPT_lnphii_Z_dP_d2P(
     self,

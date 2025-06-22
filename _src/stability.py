@@ -123,6 +123,15 @@ class stabilityPT(object):
 
     Default is `'ss'`.
 
+  level: int
+    Regulates a set of initial k-values obtained by the method
+    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
+
+  useprev: bool
+    Allows to preseve previous calculation results (if the solution
+    is non-trivial) and to use them as the first initial guess in next
+    run. Default is `False`.
+
   kwargs: dict
     Other arguments for a stability test solver. It may contain such
     arguments as `tol`, `maxiter` and others appropriate for the selected
@@ -140,25 +149,29 @@ class stabilityPT(object):
     self,
     eos: EOSPTType,
     method: str = 'ss',
+    level: int = 0,
+    useprev: bool = False,
     **kwargs,
   ) -> None:
     self.eos = eos
+    self.level = level
+    self.useprev = useprev
     self.prevkvji: None | tuple[VectorType] = None
     self.preserved = False
     if method == 'ss':
-      self.stabsolver = partial(_stabPT_ss, eos=eos, **kwargs)
+      self.solver = partial(_stabPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
-      self.stabsolver = partial(_stabPT_qnss, eos=eos, **kwargs)
+      self.solver = partial(_stabPT_qnss, eos=eos, **kwargs)
     elif method == 'newton':
-      self.stabsolver = partial(_stabPT_newt, eos=eos, **kwargs)
+      self.solver = partial(_stabPT_newt, eos=eos, **kwargs)
     elif method == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for the stability test is not implemented yet.'
       )
     elif method == 'ss-newton':
-      self.stabsolver = partial(_stabPT_ssnewt, eos=eos, **kwargs)
+      self.solver = partial(_stabPT_ssnewt, eos=eos, **kwargs)
     elif method == 'qnss-newton':
-      self.stabsolver = partial(_stabPT_qnssnewt, eos=eos, **kwargs)
+      self.solver = partial(_stabPT_qnssnewt, eos=eos, **kwargs)
     else:
       raise ValueError(f'The unknown method: {method}.')
     pass
@@ -168,8 +181,7 @@ class stabilityPT(object):
     P: ScalarType,
     T: ScalarType,
     yi: VectorType,
-    level: int = 0,
-    useprev: bool = False,
+    kvji0: tuple[VectorType] | None = None,
   ) -> StabResult:
     """Performs the stability test for a given pressure, temperature
     and composition.
@@ -185,14 +197,11 @@ class stabilityPT(object):
     yi: ndarray, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    level: int
-      Regulates a set of initial k-values obtained by the method
-      `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
-
-    useprev: bool
-      Allows to preseve previous calculation results (if the solution
-      is non-trivial) and to use them as the first initial guess in next
-      run. Default is `False`.
+    kvji0: tuple[ndarray], ndarray shape (Nc,) | None
+      A tuple of initial guesses of k-values. `Ng` is the number
+      of guesses of k-values. Default is `None` which means to
+      use initial guesses from the method `getPT_kvguess` of the
+      initialized instance of an EOS.
 
     Returns
     -------
@@ -204,11 +213,12 @@ class stabilityPT(object):
     - `success` a boolean flag indicating if the calculation completed
       successfully.
     """
-    kvji0 = self.eos.getPT_kvguess(P, T, yi, level)
-    if useprev and self.preserved:
+    if kvji0 is None:
+      kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
+    if self.useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
-    stab = self.stabsolver(P, T, yi, kvji0)
-    if stab.success and useprev:
+    stab = self.solver(P, T, yi, kvji0)
+    if stab.success and self.useprev:
       self.prevkvji = stab.kvji
       self.preserved = True
     return stab

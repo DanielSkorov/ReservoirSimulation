@@ -76,8 +76,8 @@ class stab(unittest.TestCase):
     dij = np.array([.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=4)
-    res = stab.run(P, T, yi, level=1)
+    stab = stabilityPT(pr, method='ss', level=1, tol=tol, maxiter=4)
+    res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
 
@@ -149,8 +149,8 @@ class stab(unittest.TestCase):
     dij = np.array([.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=5)
-    res = stab.run(P, T, yi, level=1)
+    stab = stabilityPT(pr, method='qnss', level=1, tol=tol, maxiter=5)
+    res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
 
