@@ -5596,153 +5596,81 @@ class EnvelopeResult(dict):
 
 
 # class env2pPT(object):
-#   def __init__(self, eos: EOSPTType, psatkwargs: dict = {}, **kwargs) -> None:
+#   def __init__(
+#     self,
+#     eos: EOSPTType,
+#     approx: bool = False,
+#     maxpoints: int = 200,
+#     normiter: int = 4,
+#     **kwargs,
+#   ) -> None:
 #     self.eos = eos
-#     self.solver = partial(_env2pPT, eos=eos, **kwargs)
+#     self.maxpoints = maxpoints
+#     self.normiter = normiter
+#     if approx:
+#       self.solver = partial(_xenv2pPT, eos=eos, **kwargs)
+#     else:
+#       self.solver = partial(_env2pPT, eos=eos, **kwargs)
 #     pass
 
 #   def run(
 #     self,
 #     yi: VectorType,
-#     Plow: ScalarType = 1.,
-#     Pupp: ScalarType = 1e8,
-#     Tlow: ScalarType = 173.15,
-#     Tupp: ScalarType = 973.15,
-#     maxpoints: int = 200,
 #     Pinit: ScalarType = 2e6,
-#     dT: ScalarType = 1.,
-#     dTmax: ScalarType = 10.,
-#     dTmin: ScalarType = 1e-2,
-#     dP: ScalarType = 50.,
-#     Niternorm: int = 4,
+#     step0: ScalarType = 0.01,
+#     Pmin: ScalarType = 1.,
+#     Pmax: ScalarType = 1e8,
+#     Tmin: ScalarType = 173.15,
+#     Tmax: ScalarType = 973.15,
 #   ) -> EnvelopeResult:
 #     Fv = 0.
-#     logger.debug('Constructing the phase envelope for Fv = %s ...', Fv)
-#     Penv = []
-#     Tenv = []
-#     yjienv = []
-#     Zjenv = []
+#     logger.debug('Constructing the phase envelope for Fv = %s.', Fv)
+#     xk = np.empty(shape=(self.maxpoints, self.eos.Nc + 2))
+#     ykji = []
+#     Zkj = []
 #     k = 0
-#     Psat = self.psatsolver()
+#     lnkvi = np.log(self.eos.getPT_kvguess(Pinit, Tmin, yi)[0])
+#     lnP = np.log(Pinit)
+#     lnT = np.log(Tmin)
+#     x0 = np.hstack([lnkvi, lnP, lnT])
+#     sidx = -1
+#     sval = lnT
+#     x, yji, Zj, J, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
+#     xk[0] = x
+#     ykji.append(yji)
+#     Zkj.append(Zj)
+#     alpha = 1.
+#     step = step0
 #     lnyi = np.log(yi)
-#     lnkvi0 = np.log(stab.kvji[0])
-#     Pk, lnkvi, yji, Zj, Niter, suc = self.solver_P(P0, Tk, yi, Fv, lnkvi0, Pmin, Pmax)
-#     Penv.append(Pk)
-#     Tenv.append(Tk)
-#     yjienv.append(yji)
-#     Zjenv.append(Zj)
-#     alpha0 = 1.
-#     for k in range(1, maxpoints):
-#       if Niter > Niternorm:
-#         dT *= 1. - step
+#     for k in range(1, self.maxpoints):
+#       if Niter > self.normiter:
+#         step *= 0.9
 #       else:
-#         dT *= 1. + step
-#       if dT > dTmax:
-#         dT = dTmax
-#       elif dT < dTmin:
-#         raise ValueError
-#       k += 1
-#       Tk += dT
-#       if Tk > 360.:
+#         step *= 1.1
+#       if k > 1:
+#         sign = np.sign(xk[k-1,sidx] - xk[k-2,sidx])
+#       else:
+#         sign = 1
+#       sval = x[sidx] + np.log(1. + step) * sign
+#       x0[sidx] = sval
+#       if k > 3: # of the same sidx
 #         break
-#       P0, lnkvi0, alpha0 = _xenv2pPT_P(Pk, alpha0, Tk, lnkvi, lnyi, yi, self.eos)
-#       Pk, lnkvi, yji, Zj, Niter, suc = self.solver_P(P0, Tk, yi, Fv, lnkvi0, Plow, Pupp)
-#       if 0. < alpha0 < 0.05:
-#         alpha0 = -1.
-#         lnkvi = -lnkvi
-#         Fv = 1.
-#       # stab1 = self.stabsolver.run(Pk, Tk, yji[0])
-#       # stab2 = self.stabsolver.run(Pk, Tk, yji[1])
-#       # print(f'The first phase is stable: {stab1.stable}')
-#       # print(f'The second phase is stable: {stab2.stable}')
-#       # if np.isclose(lnkvi, 0., atol=5e-2).all() and not switch:
-#       #   Fv = 1.
-#       #   lnkvi = -lnkvi
-#       #   alpha0 = -1.
-#       #   switch = True
-#         # Pcurve = False
-#       if suc:
-#         Penv.append(Pk)
-#         Tenv.append(Tk)
-#         yjienv.append(yji)
-#         Zjenv.append(Zj)
 #       else:
-#         # if Pcurve:
-#         #   Tk -= .5 * dT
-#         continue
-#     Penv = np.array(Penv)
-#     Tenv = np.array(Tenv)
-#     yjienv = np.array(yjienv)
-#     Zjenv = np.array(Zjenv)
-#     return EnvelopeResult(Pk=Penv, Tk=Tenv, ykji=yjienv, Zkj=Zjenv)
-
-
-# def _xenv2pPT_P(
-#   P0: ScalarType,
-#   alpha0: ScalarType,
-#   T: ScalarType,
-#   lnkpi: VectorType,
-#   lnzi: VectorType,
-#   zi: VectorType,
-#   eos: EOSPTType,
-#   tol: ScalarType = 1e-9,
-#   maxiter: int = 10,
-#   dalpha0: ScalarType = 1e-6,
-# ) -> tuple[ScalarType, VectorType]:
-#   logger.debug(
-#     'Finding approximate pressure and trial phase composition for:\n\t'
-#     'P0 = %s Pa\n\tT = %s K\n\tkpi = %s', P0, T, np.exp(lnkpi),
-#   )
-#   k = 0
-#   alphak = alpha0
-#   Pk = P0
-#   Yi = np.exp(lnzi + alphak * lnkpi)
-#   yi = Yi / Yi.sum()
-#   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-#   lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(Pk, T, zi)
-#   lnyi = np.log(yi)
-#   di = lnyi + lnphiyi - lnzi - lnphizi
-#   g1k = yi.dot(di)
-#   g2k = zi.dot(di)
-#   gnorm = np.sqrt(g1k * g1k + g2k * g2k)
-#   logger.debug(
-#     'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
-#     k, Pk, alphak, gnorm,
-#   )
-#   while gnorm > tol and k < maxiter:
-#     Yi = np.exp(lnzi + (alphak + dalpha0) * lnkpi)
-#     yi = Yi / Yi.sum()
-#     lnphiyi = eos.getPT_lnphii(Pk, T, yi)
-#     di = np.log(yi) + lnphiyi - lnzi - lnphizi
-#     g1kp1 = yi.dot(di)
-#     g2kp1 = zi.dot(di)
-#     ddidP = dlnphiyidP - dlnphizidP
-#     dg1dlnP = Pk * yi.dot(ddidP)
-#     dg2dlnP = Pk * zi.dot(ddidP)
-#     dg1dalpha = (g1kp1 - g1k) / dalpha0
-#     dg2dalpha = (g2kp1 - g2k) / dalpha0
-#     D = 1. / (dg1dlnP * dg2dalpha - dg1dalpha * dg2dlnP)
-#     dlnP = D * (dg1dalpha * g2kp1 - dg2dalpha * g1kp1)
-#     dalpha = D * (dg2dlnP * g1kp1 - dg1dlnP * g2kp1)
-#     k += 1
-#     Pk *= np.exp(dlnP)
-#     alphak += dalpha
-#     if np.abs(dalpha / alphak) < tol:
-#       break
-#     Yi = np.exp(lnzi + alphak * lnkpi)
-#     yi = Yi / Yi.sum()
-#     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-#     lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(Pk, T, zi)
-#     lnyi = np.log(yi)
-#     di = lnyi + lnphiyi - lnzi - lnphizi
-#     g1k = yi.dot(di)
-#     g2k = zi.dot(di)
-#     gnorm = np.sqrt(g1k * g1k + g2k * g2k)
-#     logger.debug(
-#       'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
-#       k, Pk, alphak, gnorm,
-#     )
-#   return Pk, (lnyi - lnzi) * np.sign(alphak), alphak
+#         lnP, lnkvi , alphs = _xenv2pPT_P(x[-2], x[-1], x[:-2], alpha, lnyi,
+#                                          yi, self.eos)
+#         x0[-2] = lnP
+#         x0[:-2] = lnkvi
+#       if sval > 300.:
+#         break
+#       x, yji, Zj, J, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
+#       # if J[.] ...:
+#       #   sidx = ???
+#       #   step = step0
+#     Pk = np.exp(xk[:k,-2])
+#     Tk = np.exp(xk[:k,-1])
+#     ykji = np.array(ykji)
+#     Zkj = np.array(Zkj)
+#     return EnvelopeResult(Pk=Pk, Tk=Tk, ykji=ykji, Zkj=Zkj)
 
 
 # def _env2pPT(
@@ -5757,8 +5685,7 @@ class EnvelopeResult(dict):
 #   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 # ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
 #   logger.debug(
-#     'Solving the system for the phase envelope with Fv = %s.\n\t'
-#     'The specified variable index is: %s', Fv, sidx,
+#     'Solving the system for the phase envelope with Fv = %s.\n\t', Fv,
 #   )
 #   Nc = eos.Nc
 #   J = np.zeros(shape=(Nc + 2, Nc + 2))
@@ -5782,7 +5709,7 @@ class EnvelopeResult(dict):
 #    dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
 #   g[:Nc] = lnkvi + lnphivi - lnphili
 #   g[Nc] = np.sum(yvi - yli)
-#   g[Nc+1] = x[sidx] - sval
+#   g[Nc+1] = xk[sidx] - sval
 #   gnorm = np.linalg.norm(g)
 #   logger.debug(
 #     'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
@@ -5790,21 +5717,21 @@ class EnvelopeResult(dict):
 #   )
 #   dylidlnkvi = -Fv * yvi / di
 #   dyvidlnkvi = yvi + kvi * dylidlnkvi
+#   J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+#   J[-2,:Nc] = yvi / di
+#   J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
+#   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
 #   while (gnorm > tol or k < 1) and k < maxiter:
-#     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
-#     J[-2,:Nc] = yvi / di
-#     J[:Nc,-2] = Pk * (dlnphividP - dlnphilidP)
-#     J[:Nc,-1] = Tk * (dlnphividT - dlnphilidT)
 #     try:
 #       dx = linsolver(J, -g)
 #     except:
 #       dx = -g
 #     k += 1
 #     xk += dx
-#     ex = np.exp(x)
+#     ex = np.exp(xk)
 #     P = ex[-2]
 #     T = ex[-1]
-#     lnkvi = x[:-2]
+#     lnkvi = xk[:-2]
 #     kvi = ex[:-2]
 #     di = 1. + Fv * (kvi - 1.)
 #     yli = yi / di
@@ -5815,13 +5742,23 @@ class EnvelopeResult(dict):
 #      dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
 #     g[:Nc] = lnkvi + lnphivi - lnphili
 #     g[Nc] = np.sum(yvi - yli)
-#     g[Nc+1] = x[sidx] - sval
+#     g[Nc+1] = xk[sidx] - sval
 #     gnorm = np.linalg.norm(g)
 #     logger.debug(
 #       'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
 #       k, kvi, P, T, gnorm,
 #     )
+#     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+#     J[-2,:Nc] = yvi / di
+#     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
+#     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
 #   suc = gnorm < tol and np.isfinite(ex).all()
+#   if not suc:
+#     logger.warning(
+#       "Newton's method for phase diagram construction terminates "
+#       "unsuccessfully:\n\teos = %s\n\tFv = %s\n\tsval = %s\n\tsidx = %s"
+#       "x0 = %s\n\tyi = %s", eos.name, Fv, sval, sidx, x0, yi,
+#     )
 #   rhol = yli.dot(eos.mwi) / Zl
 #   rhov = yvi.dot(eos.mwi) / Zv
 #   if rhov < rhol:
@@ -5830,20 +5767,77 @@ class EnvelopeResult(dict):
 #   else:
 #     yji = np.vstack([yli, yvi])
 #     Zj = np.array([Zl, Zv])
-#   return P, T, lnkvi, yji, Zj, k, suc
+#   return xk, yji, Zj, J, k, suc
 
 
-# def _env2pPT_T(
-#   P: ScalarType,
-#   T0: ScalarType,
-#   yi: VectorType,
-#   Fv: ScalarType,
-#   Tmin: ScalarType,
-#   Tmax: ScalarType,
+# def _xenv2pPT_P(
+#   lnP: ScalarType,
+#   lnT: ScalarType,
+#   lnkpi: VectorType,
+#   alpha0: ScalarType,
+#   lnzi: VectorType,
+#   zi: VectorType,
 #   eos: EOSPTType,
-#   tol: ScalarType = 1e-6,
-#   maxiter: int = 20,
-#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
-# ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType,
-#            MatrixType]:
-#   pass
+#   tol: ScalarType = 1e-9,
+#   maxiter: int = 10,
+#   dalpha0: ScalarType = 1e-6,
+# ) -> tuple[ScalarType, VectorType]:
+#   T = np.exp(lnT)
+#   logger.debug(
+#     'Finding approximate pressure and trial phase composition for:\n\t'
+#     'T = %s K\n\tlnkpi = %s', T, lnkpi,
+#   )
+#   k = 0
+#   alphak = alpha0
+#   lnPk = lnP
+#   P = np.exp(lnPk)
+#   Yi = np.exp(lnzi + alphak * lnkpi)
+#   yi = Yi / Yi.sum()
+#   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(P, T, yi)
+#   lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(P, T, zi)
+#   lnyi = np.log(yi)
+#   di = lnyi + lnphiyi - lnzi - lnphizi
+#   g1k = yi.dot(di)
+#   g2k = zi.dot(di)
+#   gnorm = np.sqrt(g1k * g1k + g2k * g2k)
+#   logger.debug(
+#     'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
+#     k, P, alphak, gnorm,
+#   )
+#   while gnorm > tol and k < maxiter:
+#     Yi = np.exp(lnzi + (alphak + dalpha0) * lnkpi)
+#     yi = Yi / Yi.sum()
+#     lnphiyi = eos.getPT_lnphii(P, T, yi)
+#     di = np.log(yi) + lnphiyi - lnzi - lnphizi
+#     g1kp1 = yi.dot(di)
+#     g2kp1 = zi.dot(di)
+#     ddidP = dlnphiyidP - dlnphizidP
+#     dg1dlnP = P * yi.dot(ddidP)
+#     dg2dlnP = P * zi.dot(ddidP)
+#     dg1dalpha = (g1kp1 - g1k) / dalpha0
+#     dg2dalpha = (g2kp1 - g2k) / dalpha0
+#     D = 1. / (dg1dlnP * dg2dalpha - dg1dalpha * dg2dlnP)
+#     dlnP = D * (dg1dalpha * g2kp1 - dg2dalpha * g1kp1)
+#     dalpha = D * (dg2dlnP * g1kp1 - dg1dlnP * g2kp1)
+#     k += 1
+#     lnPk += dlnP
+#     alphak += dalpha
+#     if np.abs(dalpha / alphak) < tol:
+#       break
+#     P = np.exp(lnPk)
+#     Yi = np.exp(lnzi + alphak * lnkpi)
+#     yi = Yi / Yi.sum()
+#     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(P, T, yi)
+#     lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(P, T, zi)
+#     lnyi = np.log(yi)
+#     di = lnyi + lnphiyi - lnzi - lnphizi
+#     g1k = yi.dot(di)
+#     g2k = zi.dot(di)
+#     gnorm = np.sqrt(g1k * g1k + g2k * g2k)
+#     logger.debug(
+#       'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
+#       k, P, alphak, gnorm,
+#     )
+#   return lnPk, lnyi - lnzi, alphak
+
+
