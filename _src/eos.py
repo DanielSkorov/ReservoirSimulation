@@ -1136,6 +1136,7 @@ class pr78(object):
     ZpB = Z + B * 2.414213562373095
     fZ = np.log(ZmB / ZpB)
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
+    Zpm = np.power(Z, np.array([2, 1, 0]))
     ddmdA = np.array([0., 1., -B])
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
@@ -1149,7 +1150,7 @@ class pr78(object):
     dAdyj = dalphamdyj * PRT / RT
     dBdyj = dbmdyj * PRT
     ddmdyj = ddmdA[:,None] * dAdyj + ddmdB[:,None] * dBdyj
-    dqdyj = np.power(Z, np.array([2, 1, 0])).dot(ddmdyj)
+    dqdyj = Zpm.dot(ddmdyj)
     dZdyj = -dqdyj / dqdZ
     dgZdyj = dgZdZ * dZdyj + dgZdB * dBdyj
     dfZdyj = dfZdZ * dZdyj + dfZdB * dBdyj
@@ -1163,7 +1164,7 @@ class pr78(object):
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = np.power(Z, np.array([2, 1, 0])).dot(ddmdP)
+    dqdP = Zpm.dot(ddmdP)
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
@@ -1176,13 +1177,14 @@ class pr78(object):
     dAdT = PRT / RT * dalphamdT - 2. * A / T
     dBdT = -bm * PRT / T
     ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = np.power(Z, np.array([2, 1, 0])).dot(ddmdT)
+    dqdT = Zpm.dot(ddmdT)
     dZdT = -dqdT / dqdZ
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
-    dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
-    dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
-                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
+    dgphiidT = ((2. * dSidT - dalphamdT / bm * self.bi)
+                / (2.82842712474619* RT * bm) - gphii / T)
+    dlnphiidT = (dfZdT * gphii + fZ * dgphiidT - dgZdT + dZdT / bm * self.bi
+                 + PRT / T * self.vsi_bi)
     return (lnphii, Z - PRT * yi.dot(self.vsi_bi),
             dlnphiidP, dlnphiidT, dlnphiidyj)
 

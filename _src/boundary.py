@@ -5595,193 +5595,215 @@ class EnvelopeResult(dict):
     return s
 
 
-# class env2pPT(object):
-#   def __init__(
-#     self,
-#     eos: EOSPTType,
-#     approx: bool = False,
-#     maxpoints: int = 200,
-#     normiter: int = 3,
-#     **kwargs,
-#   ) -> None:
-#     self.eos = eos
-#     self.maxpoints = maxpoints
-#     self.normiter = normiter
-#     if approx:
-#       self.solver = partial(_xenv2pPT, eos=eos, **kwargs)
-#     else:
-#       self.solver = partial(_env2pPT, eos=eos, **kwargs)
-#     pass
+class env2pPT(object):
+  def __init__(
+    self,
+    eos: EOSPTType,
+    approx: bool = False,
+    maxpoints: int = 200,
+    maxrepeats: int = 4,
+    normiter: int = 3,
+    maxstep: ScalarType = .3,
+    **kwargs,
+  ) -> None:
+    self.eos = eos
+    self.maxpoints = maxpoints
+    self.normiter = normiter
+    self.maxrepeats = maxrepeats
+    self.maxstep = maxstep
+    if approx:
+      raise NotImplementedError(
+        'The construction the approximate phase envelope is not implemented '
+        'yet.'
+      )
+      # self.solver = partial(_xenv2pPT, eos=eos, **kwargs)
+    else:
+      self.solver = partial(_env2pPT, eos=eos, **kwargs)
+    pass
 
-#   def run(
-#     self,
-#     yi: VectorType,
-#     Pinit: ScalarType = 2e6,
-#     step0: ScalarType = 0.01,
-#     Pmin: ScalarType = 1.,
-#     Pmax: ScalarType = 1e8,
-#     Tmin: ScalarType = 173.15,
-#     Tmax: ScalarType = 973.15,
-#   ) -> EnvelopeResult:
-#     Fv = 0.
-#     logger.debug('Constructing the phase envelope for Fv = %s.', Fv)
-#     xk = np.empty(shape=(self.maxpoints, self.eos.Nc + 2))
-#     ykji = []
-#     Zkj = []
-#     k = 0
-#     lnkvi = np.log(self.eos.getPT_kvguess(Pinit, Tmin, yi)[0])
-#     lnP = np.log(Pinit)
-#     lnT = np.log(Tmin)
-#     x0 = np.hstack([lnkvi, lnP, lnT])
-#     sidx = -1
-#     sval = lnT
-#     x, yji, Zj, J, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
-#     xk[0] = x
-#     ykji.append(yji)
-#     Zkj.append(Zj)
-#     alpha = 1.
-#     step = step0
-#     lnyi = np.log(yi)
-#     pows = np.array([2, 3])
-#     ones = np.ones(shape=(4, 1))
-#     M = np.empty(shape=(4, 4))
-#     for k in range(1, self.maxpoints):
-#       if Niter > self.normiter:
-#         step *= 0.95
-#       else:
-#         step *= 1.05
-#       if np.exp(x[-1]) > 272.:
-#         sidx = 0
-#         step = step0
-#       if k > 1:
-#         sign = np.sign(xk[k-1,sidx] - xk[k-2,sidx])
-#       else:
-#         sign = 1.
-#       sval = x[sidx] + np.log(1. + step) * sign
-#       if k > 3:
-#         svals = xk[k-4:k,sidx][:,None]
-#         np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
-#         C = np.linalg.solve(M, xk[k-4:k,:])
-#         sval2 = sval * sval
-#         x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
-#       else:
-#         lnP, lnkvi , alphs = _xenv2pPT_P(x[-2], sval, x[:-2], alpha, lnyi,
-#                                          yi, self.eos)
-#         x0[-2] = lnP
-#         x0[:-2] = lnkvi
-#         x0[sidx] = sval
-#       if sval > 300.:
-#         break
-#       x, yji, Zj, J, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
-#       xk[k] = x
-#       if not suc:
-#         raise ValueError
-#       # if J[.] ...:
-#       #   sidx = ???
-#       #   step = step0
-#     Pk = np.exp(xk[:k,-2])
-#     Tk = np.exp(xk[:k,-1])
-#     ykji = np.array(ykji)
-#     Zkj = np.array(Zkj)
-#     return EnvelopeResult(Pk=Pk, Tk=Tk, ykji=ykji, Zkj=Zkj)
+  def run(
+    self,
+    P0: ScalarType,
+    T0: ScalarType,
+    yi: VectorType,
+    Fv: ScalarType,
+    step0: ScalarType = 0.05,
+    Tmin: ScalarType = 173.15,
+  ) -> EnvelopeResult:
+    Nc = self.eos.Nc
+    lnTmin = np.log(Tmin)
+    logger.debug('Constructing the phase envelope for Fv = %s.', Fv)
+    xk = np.empty(shape=(self.maxpoints, Nc + 2))
+    pows = np.array([2, 3])
+    ones = np.ones(shape=(4, 1))
+    M = np.empty(shape=(4, 4))
+    dgds = np.zeros(shape=(Nc + 2,))
+    dgds[-1] = -1.
+    ykji = []
+    Zkj = []
+    k = 0
+    x = np.log(np.hstack([self.eos.getPT_kvguess(P0, T0, yi)[0], P0, T0]))
+    sidx = -1
+    sval = x[sidx]
+    x, yji, Zj, dgdx, Niter, suc = self.solver(x, yi, Fv, sidx, sval)
+    if not suc:
+      raise ValueError(
+        'The saturation pressure could not be determined for the specified\n'
+        f'starting temperature {T0 = } K and the initial guess {P0 = } Pa.\n'
+        'It may be beneficial to modify the initial guess and/or the\n'
+        'starting temperature. Additionally, increasing the number of\n'
+        'iterations could prove helpful.'
+      )
+    xk[k] = x
+    ykji.append(yji)
+    Zkj.append(Zj)
+    step = step0
+    sign = 1.
+    r = 0
+    while k < self.maxpoints - 1 and x[-1] >= lnTmin:
+      sval = x[sidx] + np.log(1. + step) * sign
+      logger.debug(
+        'Point #%s:\n\tsidx = %s\n\tsign = %s\n\tstep = %s\n\tsval = %s',
+        k+1, sidx, sign, step, sval,
+      )
+      if k > 3:
+        svals = xk[k-4:k,sidx][:,None]
+        np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
+        C = np.linalg.solve(M, xk[k-4:k,:])
+        sval2 = sval * sval
+        x = np.array([1., sval, sval2, sval2 * sval]).dot(C)
+      xkp1, yji, Zj, dgdx, Niter, suc = self.solver(x, yi, Fv, sidx, sval)
+      if suc:
+        dxds = np.abs(np.linalg.solve(dgdx, dgds))
+        sidx = np.argmax(np.abs(dxds))
+        sign = np.sign(xkp1[sidx] - xk[k, sidx])
+        x = xkp1
+        k += 1
+        xk[k] = x
+        ykji.append(yji)
+        Zkj.append(Zj)
+        if Niter > self.normiter:
+          step *= 0.95
+        else:
+          step *= 1.05
+        if step > self.maxstep:
+          step = self.maxstep
+      else:
+        if r > self.maxrepeats:
+          raise ValueError(
+            'The maximum number of step repeats has been reached during the\n'
+            'construction of the phase envelope. Consider adjusting the\n'
+            'value of the `normiter` parameter, increasing the permitted\n'
+            'number of step cuts and/or the maximum number of solver\n'
+            'iterations.'
+          )
+        step *= .5
+        r += 1
+        logger.debug('Repeat Point #%s', k)
+    logger.info(
+      'The phase bound of the vapour mole fraction %s was completed. The '
+      'total number of calculated points is %s.', Fv, k,
+    )
+    Pk = np.exp(xk[:k,-2])
+    Tk = np.exp(xk[:k,-1])
+    ykji = np.array(ykji)
+    Zkj = np.array(Zkj)
+    return EnvelopeResult(Pk=Pk, Tk=Tk, ykji=ykji, Zkj=Zkj, success=True)
 
 
-# def _env2pPT(
-#   x0: VectorType,
-#   yi: VectorType,
-#   Fv: ScalarType,
-#   sidx: int,
-#   sval: ScalarType,
-#   eos: EOSPTType,
-#   tol: ScalarType = 1e-5,
-#   maxiter: int = 10,
-#   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
-# ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
-#   logger.debug(
-#     'Solving the system for the phase envelope with '
-#     'Fv = %s, Sidx = %s, Sval = %s', Fv, sidx, sval,
-#   )
-#   Nc = eos.Nc
-#   J = np.zeros(shape=(Nc + 2, Nc + 2))
-#   J[-1, sidx] = 1.
-#   g = np.empty(shape=(Nc + 2,))
-#   I = np.eye(Nc)
-#   Fl = 1. - Fv
-#   k = 0
-#   xk = x0
-#   ex = np.exp(xk)
-#   P = ex[-2]
-#   T = ex[-1]
-#   lnkvi = xk[:-2]
-#   kvi = ex[:-2]
-#   di = 1. + Fv * (kvi - 1.)
-#   yli = yi / di
-#   yvi = kvi * yli
-#   (lnphivi, Zv, dlnphividP,
-#    dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
-#   (lnphili, Zl, dlnphilidP,
-#    dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
-#   g[:Nc] = lnkvi + lnphivi - lnphili
-#   g[Nc] = np.sum(yvi - yli)
-#   g[Nc+1] = xk[sidx] - sval
-#   gnorm = np.linalg.norm(g)
-#   logger.debug(
-#     'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
-#     k, kvi, P, T, gnorm,
-#   )
-#   dylidlnkvi = -Fv * yvi / di
-#   dyvidlnkvi = yvi + kvi * dylidlnkvi
-#   J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
-#   J[-2,:Nc] = yvi / di
-#   J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
-#   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
-#   while (gnorm > tol or k < 1) and k < maxiter:
-#     try:
-#       dx = linsolver(J, -g)
-#     except:
-#       dx = -g
-#     k += 1
-#     xk += dx
-#     ex = np.exp(xk)
-#     P = ex[-2]
-#     T = ex[-1]
-#     lnkvi = xk[:-2]
-#     kvi = ex[:-2]
-#     di = 1. + Fv * (kvi - 1.)
-#     yli = yi / di
-#     yvi = kvi * yli
-#     (lnphivi, Zv, dlnphividP,
-#      dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
-#     (lnphili, Zl, dlnphilidP,
-#      dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
-#     g[:Nc] = lnkvi + lnphivi - lnphili
-#     g[Nc] = np.sum(yvi - yli)
-#     g[Nc+1] = xk[sidx] - sval
-#     gnorm = np.linalg.norm(g)
-#     logger.debug(
-#       'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
-#       k, kvi, P, T, gnorm,
-#     )
-#     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
-#     J[-2,:Nc] = yvi / di
-#     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
-#     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
-#   suc = gnorm < tol and np.isfinite(ex).all()
-#   if not suc:
-#     logger.warning(
-#       "Newton's method for phase diagram construction terminates "
-#       "unsuccessfully:\n\teos = %s\n\tFv = %s\n\tsval = %s\n\tsidx = %s\n\t"
-#       "x0 = %s\n\tyi = %s", eos.name, Fv, sval, sidx, x0, yi,
-#     )
-#   rhol = yli.dot(eos.mwi) / Zl
-#   rhov = yvi.dot(eos.mwi) / Zv
-#   if rhov < rhol:
-#     yji = np.vstack([yvi, yli])
-#     Zj = np.array([Zv, Zl])
-#   else:
-#     yji = np.vstack([yli, yvi])
-#     Zj = np.array([Zl, Zv])
-#   return xk, yji, Zj, J, k, suc
+def _env2pPT(
+  x0: VectorType,
+  yi: VectorType,
+  Fv: ScalarType,
+  sidx: int,
+  sval: ScalarType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-5,
+  maxiter: int = 5,
+  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+) -> tuple[VectorType, MatrixType, VectorType, MatrixType, int, bool]:
+  logger.debug(
+    'Solving the system for the phase envelope with '
+    'Fv = %s, Sidx = %s, Sval = %s', Fv, sidx, sval,
+  )
+  Nc = eos.Nc
+  J = np.zeros(shape=(Nc + 2, Nc + 2))
+  J[-1, sidx] = 1.
+  g = np.empty(shape=(Nc + 2,))
+  I = np.eye(Nc)
+  k = 0
+  xk = x0.flatten()
+  xk[sidx] = sval
+  ex = np.exp(xk)
+  P = ex[-2]
+  T = ex[-1]
+  lnkvi = xk[:-2]
+  kvi = ex[:-2]
+  di = 1. + Fv * (kvi - 1.)
+  yli = yi / di
+  yvi = kvi * yli
+  (lnphivi, Zv, dlnphividP,
+   dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
+  (lnphili, Zl, dlnphilidP,
+   dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
+  g[:Nc] = lnkvi + lnphivi - lnphili
+  g[Nc] = np.sum(yvi - yli)
+  g[Nc+1] = xk[sidx] - sval
+  gnorm = np.linalg.norm(g)
+  logger.debug(
+    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
+    k, kvi, P, T, gnorm,
+  )
+  dylidlnkvi = -Fv * yvi / di
+  dyvidlnkvi = yvi + kvi * dylidlnkvi
+  J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+  J[-2,:Nc] = yvi / di
+  J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
+  J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
+  while gnorm > tol and k < maxiter:
+    dx = linsolver(J, -g)
+    k += 1
+    xk += dx
+    ex = np.exp(xk)
+    P = ex[-2]
+    T = ex[-1]
+    lnkvi = xk[:-2]
+    kvi = ex[:-2]
+    di = 1. + Fv * (kvi - 1.)
+    yli = yi / di
+    yvi = kvi * yli
+    (lnphivi, Zv, dlnphividP,
+     dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
+    (lnphili, Zl, dlnphilidP,
+     dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
+    g[:Nc] = lnkvi + lnphivi - lnphili
+    g[Nc] = np.sum(yvi - yli)
+    g[Nc+1] = xk[sidx] - sval
+    gnorm = np.linalg.norm(g)
+    logger.debug(
+      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
+      k, kvi, P, T, gnorm,
+    )
+    J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+    J[-2,:Nc] = yvi / di
+    J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
+    J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
+  suc = gnorm < tol and np.isfinite(ex).all()
+  if not suc:
+    logger.warning(
+      "Newton's method for phase diagram construction terminates "
+      "unsuccessfully:\n\teos = %s\n\tFv = %s\n\tsval = %s\n\tsidx = %s\n\t"
+      "x0 = %s\n\tyi = %s", eos.name, Fv, sval, sidx, x0, yi,
+    )
+  rhol = yli.dot(eos.mwi) / Zl
+  rhov = yvi.dot(eos.mwi) / Zv
+  if rhov < rhol:
+    yji = np.vstack([yvi, yli])
+    Zj = np.array([Zv, Zl])
+  else:
+    yji = np.vstack([yli, yvi])
+    Zj = np.array([Zl, Zv])
+  return xk, yji, Zj, J, k, suc
 
 
 # def _xenv2pPT_P(
