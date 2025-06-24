@@ -5601,7 +5601,7 @@ class EnvelopeResult(dict):
 #     eos: EOSPTType,
 #     approx: bool = False,
 #     maxpoints: int = 200,
-#     normiter: int = 4,
+#     normiter: int = 3,
 #     **kwargs,
 #   ) -> None:
 #     self.eos = eos
@@ -5642,27 +5642,40 @@ class EnvelopeResult(dict):
 #     alpha = 1.
 #     step = step0
 #     lnyi = np.log(yi)
+#     pows = np.array([2, 3])
+#     ones = np.ones(shape=(4, 1))
+#     M = np.empty(shape=(4, 4))
 #     for k in range(1, self.maxpoints):
 #       if Niter > self.normiter:
-#         step *= 0.9
+#         step *= 0.95
 #       else:
-#         step *= 1.1
+#         step *= 1.05
+#       if np.exp(x[-1]) > 272.:
+#         sidx = 0
+#         step = step0
 #       if k > 1:
 #         sign = np.sign(xk[k-1,sidx] - xk[k-2,sidx])
 #       else:
-#         sign = 1
+#         sign = 1.
 #       sval = x[sidx] + np.log(1. + step) * sign
-#       x0[sidx] = sval
-#       if k > 3: # of the same sidx
-#         break
+#       if k > 3:
+#         svals = xk[k-4:k,sidx][:,None]
+#         np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
+#         C = np.linalg.solve(M, xk[k-4:k,:])
+#         sval2 = sval * sval
+#         x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
 #       else:
-#         lnP, lnkvi , alphs = _xenv2pPT_P(x[-2], x[-1], x[:-2], alpha, lnyi,
+#         lnP, lnkvi , alphs = _xenv2pPT_P(x[-2], sval, x[:-2], alpha, lnyi,
 #                                          yi, self.eos)
 #         x0[-2] = lnP
 #         x0[:-2] = lnkvi
+#         x0[sidx] = sval
 #       if sval > 300.:
 #         break
 #       x, yji, Zj, J, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
+#       xk[k] = x
+#       if not suc:
+#         raise ValueError
 #       # if J[.] ...:
 #       #   sidx = ???
 #       #   step = step0
@@ -5685,7 +5698,8 @@ class EnvelopeResult(dict):
 #   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 # ) -> tuple[ScalarType, VectorType, VectorType, ScalarType, ScalarType]:
 #   logger.debug(
-#     'Solving the system for the phase envelope with Fv = %s.\n\t', Fv,
+#     'Solving the system for the phase envelope with '
+#     'Fv = %s, Sidx = %s, Sval = %s', Fv, sidx, sval,
 #   )
 #   Nc = eos.Nc
 #   J = np.zeros(shape=(Nc + 2, Nc + 2))
@@ -5756,7 +5770,7 @@ class EnvelopeResult(dict):
 #   if not suc:
 #     logger.warning(
 #       "Newton's method for phase diagram construction terminates "
-#       "unsuccessfully:\n\teos = %s\n\tFv = %s\n\tsval = %s\n\tsidx = %s"
+#       "unsuccessfully:\n\teos = %s\n\tFv = %s\n\tsval = %s\n\tsidx = %s\n\t"
 #       "x0 = %s\n\tyi = %s", eos.name, Fv, sval, sidx, x0, yi,
 #     )
 #   rhol = yli.dot(eos.mwi) / Zl
