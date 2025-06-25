@@ -50,7 +50,7 @@ class env2p(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, maxpoints=100)
+    env = env2pPT(pr)
     res = env.run(P0, T0, yi, 0.)
     self.assertTrue(res.success)
     if plotting:

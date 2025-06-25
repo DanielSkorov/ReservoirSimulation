@@ -112,7 +112,7 @@ class flash2pPT(object):
       - the mixture compressibility factor,
       - partial derivatives of logarithms of the fugacity coefficients
         with respect to components mole numbers (ndarray of shape
-        `(Nc, Nc)`) .
+        `(Nc, Nc)`).
 
     Also, this instance must have attributes:
 

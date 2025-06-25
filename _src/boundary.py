@@ -5595,26 +5595,115 @@ class EnvelopeResult(dict):
     return s
 
 
-class env2pPT(object):
+class env2pPT(PsatPT):
+  """Two-phase envelope construction using a PT-based equation of state.
+
+  The algorithm of the phase envelope construction is based on the
+  paper of M.L. Michelsen (doi: 10.1016/0378-3812(80)80001-X).
+
+  Parameters
+  ----------
+  eos: EOSPTType
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`, where
+      `P: float` is pressure [Pa], `T: float` is temperature [K],
+      and `yi: ndarray`, shape `(Nc,)` is an array of components
+      mole fractions, `Nc` is the number of components. This method
+      is used to generate initial guesses of k-values.
+
+    - `getPT_lnphii_Z_dP_dT_dyj(P, T, yi) -> tuple[ndarray, float, ndarray,
+                                                   ndarray, ndarray]`
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to pressure (ndarray of shape `(Nc,)`),
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to temperature (ndarray of shape `(Nc,)`),
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole fractions (ndarray of shape
+        `(Nc, Nc)`) without taking into account the mole fraction
+        constraint.
+
+    If the contstruction of the approximate phase envelope is selected
+    then it must have instead:
+
+    - `getPT_lnphii_Z_dP_dT(P, T, yi) -> tuple[ndarray, float, ndarray,
+                                               ndarray]`
+      For a given pressure [Pa], temperature [K] and composition
+      (ndarray of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - a vector of logarithms of the fugacity coefficients of
+        components (ndarray of shape `(Nc,)`),
+      - the phase compressibility factor of the mixture,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to pressure (ndarray of shape `(Nc,)`),
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to temperature (ndarray of shape `(Nc,)`).
+
+    Also, this instance must have attributes:
+
+    - `mwi: ndarray`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  approx: bool
+    The flag indicating if the approximate phase envelope must be
+    constructed. The algorithm is based on the paper of M.L. Michelsen
+    (doi: 10.1016/0378-3812(94)80104-5). All points of the approximate
+    phase envelope are located inside and close to the actual two-phase
+    region boundary. The accuracy of the internal phase lines is
+    expected to be poorer than that of the phase boundary. Therefore,
+    this option is most substantial for systems with many components.
+    Default is `False`.
+
+  stabkwargs: dict
+    To clarify the initial guess of the first saturation pressure, the
+    preliminary search can be used. This parameter controls the settings
+    of the stability test solver needed to conduct the preliminary
+    search. Default is an empty dictionary.
+
+  kwargs: dict
+    Other arguments for the two-phase envelope solver. It may contain
+    such arguments as `tol`, `maxiter` and `linsolver`.
+
+  Methods
+  -------
+  run(P0, T0, yi, Fv) -> EnvelopeResult
+    This method should be used to run the envelope construction program,
+    for which the initial guess of the saturation pressure `P0: float`
+    in [Pa], starting temperature `T0: float` in [K], mole fractions
+    of `Nc` components `yi: ndarray` with shape `(Nc,)`, and phase
+    mole fraction `Fv: float` must be given. It returns the phase
+    envelope construction results as an instance of the
+    `EnvelopeResult`.
+  """
   def __init__(
     self,
     eos: EOSPTType,
     approx: bool = False,
-    maxpoints: int = 200,
-    maxrepeats: int = 4,
-    normiter: int = 3,
-    maxstep: ScalarType = .3,
+    stabkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.maxpoints = maxpoints
-    self.normiter = normiter
-    self.maxrepeats = maxrepeats
-    self.maxstep = maxstep
+    self.stabsolver = stabilityPT(eos, **stabkwargs)
     if approx:
       raise NotImplementedError(
-        'The construction the approximate phase envelope is not implemented '
-        'yet.'
+        'The construction of the approximate phase envelope is not '
+        'implemented yet.'
       )
       # self.solver = partial(_xenv2pPT, eos=eos, **kwargs)
     else:
@@ -5629,11 +5718,17 @@ class env2pPT(object):
     Fv: ScalarType,
     step0: ScalarType = 0.05,
     Tmin: ScalarType = 173.15,
+    maxpoints: int = 200,
+    maxrepeats: int = 4,
+    normiter: int = 3,
+    maxstep: ScalarType = .2,
+    improve_P0: bool = False,
+    searchkwargs: dict = {},
   ) -> EnvelopeResult:
     Nc = self.eos.Nc
     lnTmin = np.log(Tmin)
     logger.debug('Constructing the phase envelope for Fv = %s.', Fv)
-    xk = np.empty(shape=(self.maxpoints, Nc + 2))
+    xk = np.empty(shape=(maxpoints, Nc + 2))
     pows = np.array([2, 3])
     ones = np.ones(shape=(4, 1))
     M = np.empty(shape=(4, 4))
@@ -5642,7 +5737,11 @@ class env2pPT(object):
     ykji = []
     Zkj = []
     k = 0
-    x = np.log(np.hstack([self.eos.getPT_kvguess(P0, T0, yi)[0], P0, T0]))
+    if improve_P0:
+      P0, kvi0, _, _ = self.search(P0, T0, yi, True, **searchkwargs)
+      x = np.log(np.hstack([kvi0, P0, T0]))
+    else:
+      x = np.log(np.hstack([self.eos.getPT_kvguess(P0, T0, yi)[0], P0, T0]))
     sidx = -1
     sval = x[sidx]
     x, yji, Zj, dgdx, Niter, suc = self.solver(x, yi, Fv, sidx, sval)
@@ -5652,7 +5751,8 @@ class env2pPT(object):
         f'starting temperature {T0 = } K and the initial guess {P0 = } Pa.\n'
         'It may be beneficial to modify the initial guess and/or the\n'
         'starting temperature. Additionally, increasing the number of\n'
-        'iterations could prove helpful.'
+        'iterations could prove helpful. To locate the initial guess inside\n'
+        'the two-phase region, the `impove_P0` flag can be activated.'
       )
     xk[k] = x
     ykji.append(yji)
@@ -5660,7 +5760,8 @@ class env2pPT(object):
     step = step0
     sign = 1.
     r = 0
-    while k < self.maxpoints - 1 and x[-1] >= lnTmin:
+    kmax = maxpoints - 1
+    while k < kmax and x[-1] >= lnTmin:
       sval = x[sidx] + np.log(1. + step) * sign
       logger.debug(
         'Point #%s:\n\tsidx = %s\n\tsign = %s\n\tstep = %s\n\tsval = %s',
@@ -5682,14 +5783,14 @@ class env2pPT(object):
         xk[k] = x
         ykji.append(yji)
         Zkj.append(Zj)
-        if Niter > self.normiter:
+        if Niter > normiter:
           step *= 0.95
         else:
           step *= 1.05
-        if step > self.maxstep:
-          step = self.maxstep
+        if step > maxstep:
+          step = maxstep
       else:
-        if r > self.maxrepeats:
+        if r > maxrepeats:
           raise ValueError(
             'The maximum number of step repeats has been reached during the\n'
             'construction of the phase envelope. Consider adjusting the\n'
@@ -5701,8 +5802,8 @@ class env2pPT(object):
         r += 1
         logger.debug('Repeat Point #%s', k)
     logger.info(
-      'The phase bound of the vapour mole fraction %s was completed. The '
-      'total number of calculated points is %s.', Fv, k,
+      'The bound of the vapour mole fraction %s was completed. The total '
+      'number of calculated points is %s.', Fv, k,
     )
     Pk = np.exp(xk[:k,-2])
     Tk = np.exp(xk[:k,-1])
