@@ -71,6 +71,54 @@ class env2p(unittest.TestCase):
       self.plot(res, -100., 140., 0., 20.)
     pass
 
+  def test_02(self):
+    P0 = 8e6
+    T0 = 233.15
+    yi = np.array([0.26, 0.04, 0.66, 0.03, 0.01])
+    Pci = np.array([89.37, 73.76, 46.00, 48.84, 42.46]) * 1e5
+    Tci = np.array([373.2, 304.2, 190.6, 305.4, 369.8])
+    mwi = np.array([34.08, 44.01, 16.043, 30.07, 44.097]) / 1e3
+    wi = np.array([0.1, 0.225, 0.008, 0.098, 0.152])
+    vsi = np.array([0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.135,
+      0.070, 0.105,
+      0.085, 0.130, 0.005,
+      0.080, 0.125, 0.010, 0.005,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, maxiter=110)
+    res = env.run(P0, T0, yi, 0., improve_P0=True, Tmin=193.15,
+                  dlnkvnorm=0.05)
+    self.assertTrue(res.success)
+    if plotting:
+      self.plot(res, -80., 10., 0., 15.)
+    pass
+
+  def test_03(self):
+    P0 = 7.3e6
+    T0 = 200.
+    yi = np.array([0.26, 0.04, 0.66, 0.03, 0.01])
+    Pci = np.array([89.37, 73.76, 46.00, 48.84, 42.46]) * 1e5
+    Tci = np.array([373.2, 304.2, 190.6, 305.4, 369.8])
+    mwi = np.array([34.08, 44.01, 16.043, 30.07, 44.097]) / 1e3
+    wi = np.array([0.1, 0.225, 0.008, 0.098, 0.152])
+    vsi = np.array([0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.135,
+      0.070, 0.105,
+      0.085, 0.130, 0.005,
+      0.080, 0.125, 0.010, 0.005,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, maxiter=110)
+    res = env.run(P0, T0, yi, 0., improve_P0=True, Tmin=193.15,
+                  dlnkvnorm=0.009)
+    self.assertTrue(res.success)
+    if plotting:
+      self.plot(res, -80., 10., 0., 15.)
+    pass
+
 
 
 if __name__ == '__main__':

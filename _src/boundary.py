@@ -5700,6 +5700,10 @@ class env2pPT(PsatPT):
   ) -> None:
     self.eos = eos
     self.stabsolver = stabilityPT(eos, **stabkwargs)
+    if 'maxiter' in kwargs:
+      self.maxiter = kwargs['maxiter']
+    else:
+      self.maxiter = 5
     if approx:
       raise NotImplementedError(
         'The construction of the approximate phase envelope is not '
@@ -5716,33 +5720,38 @@ class env2pPT(PsatPT):
     T0: ScalarType,
     yi: VectorType,
     Fv: ScalarType,
-    step0: ScalarType = 0.05,
+    step0: ScalarType = 0.01,
+    sidx0: int = -1,
     Tmin: ScalarType = 173.15,
     maxpoints: int = 200,
-    maxrepeats: int = 4,
-    normiter: int = 3,
-    maxstep: ScalarType = .2,
+    maxrepeats: int = 8,
+    maxstep: ScalarType = 1.2,
+    dlnkvnorm: ScalarType = 0.5,
+    dlnPnorm: ScalarType = 0.15,
+    dlnTnorm: ScalarType = 0.015,
     improve_P0: bool = False,
     searchkwargs: dict = {},
   ) -> EnvelopeResult:
     Nc = self.eos.Nc
+    Ncp2 = Nc + 2
     lnTmin = np.log(Tmin)
     logger.debug('Constructing the phase envelope for Fv = %s.', Fv)
-    xk = np.empty(shape=(maxpoints, Nc + 2))
+    xk = np.empty(shape=(maxpoints, Ncp2))
     pows = np.array([2, 3])
     ones = np.ones(shape=(4, 1))
     M = np.empty(shape=(4, 4))
-    dgds = np.zeros(shape=(Nc + 2,))
+    dgds = np.zeros(shape=(Ncp2,))
+    dxnorm = np.hstack([np.full((Nc,), dlnkvnorm), dlnPnorm, dlnTnorm])
     dgds[-1] = -1.
     ykji = []
     Zkj = []
     k = 0
     if improve_P0:
-      P0, kvi0, _, _ = self.search(P0, T0, yi, True, **searchkwargs)
+      P0, kvi0, _, _ = self.search(P0, T0, yi, **searchkwargs)
       x0 = np.log(np.hstack([kvi0, P0, T0]))
     else:
       x0 = np.log(np.hstack([self.eos.getPT_kvguess(P0, T0, yi)[0], P0, T0]))
-    sidx = -1
+    sidx = sidx0
     sval = x0[sidx]
     x0, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
     if not suc:
@@ -5752,46 +5761,47 @@ class env2pPT(PsatPT):
         'be beneficial to modify the initial guess and/or the starting\n'
         'temperature. Additionally, increasing the number of iterations\n'
         'could prove helpful. To locate the initial guess inside the\n'
-        'two-phase region, the `impove_P0` flag can be activated.'
+        'two-phase region, the `improve_P0` flag can be activated. Changing\n'
+        'the basic variable using `sidx0` may also improve convergence.'
       )
+    logger.debug('%s %.4f %s %.4f' + Ncp2 * ' %.4f', k, 0., sidx, sval, *x0)
     xk[k] = x0
     ykji.append(yji)
     Zkj.append(Zj)
-    step = step0
-    sign = 1.
+    step = 1.
     r = 0
     kmax = maxpoints - 1
+    sval = xk[k, sidx] + np.log(1. + step0)
     while k < kmax and xk[k, -1] >= lnTmin:
-      sval = xk[k, sidx] + np.log(1. + step) * sign
-      logger.debug(
-        'Point #%s:\n\tsidx = %s\n\tsign = %s\n\tstep = %s\n\tsval = %s',
-        k+1, sidx, sign, step, sval,
-      )
       if k > 3:
-        svals = xk[k-4:k, sidx][:, None]
+        svals = xk[k-3:k+1, sidx][:, None]
         np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
-        C = np.linalg.solve(M, xk[k-4:k, :])
+        C = np.linalg.solve(M, xk[k-3:k+1, :])
         sval2 = sval * sval
         x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
       else:
         x0 = xk[k]
       xkp1, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
       if suc:
-        dxds = np.abs(np.linalg.solve(dgdx, dgds))
-        sidx = np.argmax(np.abs(dxds))
-        sign = np.sign(xkp1[sidx] - xk[k, sidx])
+        logger.debug(
+          '%s %.4f %s %.4f' + Ncp2 * ' %.4f', k + 1, step, sidx, sval, *xkp1,
+        )
+        sidx = np.argmax(np.abs(np.linalg.solve(dgdx, dgds)))
+        step /= np.max(np.abs(xkp1 - xk[k]) / dxnorm)
+        if step > maxstep:
+          step = maxstep
+        sval = xkp1[sidx] + step * (xkp1[sidx] - xk[k, sidx])
         k += 1
         xk[k] = xkp1
         ykji.append(yji)
         Zkj.append(Zj)
-        if Niter > normiter:
-          step *= 0.95
-        else:
-          step *= 1.05
-        if step > maxstep:
-          step = maxstep
         r = 0
       else:
+        logger.warning(
+          "Newton's method for phase diagram construction terminates "
+          'unsuccessfully:\n\t%s %.4f %s %.4f' + Ncp2 * ' %.4f',
+          k + 1, step, sidx, sval, *x0,
+        )
         if r > maxrepeats:
           raise ValueError(
             'The maximum number of step repeats has been reached during the\n'
@@ -5801,20 +5811,15 @@ class env2pPT(PsatPT):
             'iterations.'
           )
         step *= .5
+        sval = xk[k, sidx] + step * (xk[k, sidx] - xk[k-1, sidx])
         r += 1
-        logger.debug('Repeat Point #%s', k)
     if xk[0, -1] > lnTmin and k < kmax:
-      xk = np.vstack([np.empty(shape=(maxpoints-k-1, Nc+2)), xk[:k+1]])
+      xk = np.vstack([np.empty(shape=(maxpoints-k-1, Ncp2)), xk[:k+1]])
       k = maxpoints - k - 1
-      step = step0
-      sign = -1.
-      sidx = -1
+      step = 1.
+      sidx = sidx0
+      sval = xk[k, sidx] + step * (xk[k, sidx] - xk[k+1, sidx])
       while k > 0 and xk[k, -1] > lnTmin:
-        sval = xk[k, sidx] + np.log(1. + step) * sign
-        logger.debug(
-          'Point #%s:\n\tsidx = %s\n\tsign = %s\n\tstep = %s\n\tsval = %s',
-          maxpoints - k, sidx, sign, step, sval,
-        )
         svals = xk[k:k+4, sidx][:, None]
         np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
         C = np.linalg.solve(M, xk[k:k+4, :])
@@ -5822,21 +5827,26 @@ class env2pPT(PsatPT):
         x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
         xkm1, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
         if suc:
-          dxds = np.abs(np.linalg.solve(dgdx, dgds))
-          sidx = np.argmax(np.abs(dxds))
-          sign = np.sign(xkm1[sidx] - xk[k, sidx])
+          logger.debug(
+            '%s %.4f %s %.4f' + Ncp2 * ' %.4f',
+            maxpoints - k, step, sidx, sval, *xkm1,
+          )
+          sidx = np.argmax(np.abs(np.linalg.solve(dgdx, dgds)))
+          step /= np.max(np.abs(xkm1 - xk[k]) / dxnorm)
+          if step > maxstep:
+            step = maxstep
+          sval = xkm1[sidx] + step * (xkm1[sidx] - xk[k, sidx])
           k -= 1
           xk[k] = xkm1
           ykji.insert(0, yji)
           Zkj.insert(0, Zj)
-          if Niter > normiter:
-            step *= 0.95
-          else:
-            step *= 1.05
-          if step > maxstep:
-            step = maxstep
           r = 0
         else:
+          logger.warning(
+            "Newton's method for phase diagram construction terminates "
+            'unsuccessfully:\n\t%s %.4f %s %.4f' + Ncp2 * ' %.4f',
+            maxpoints - k, step, sidx, sval, *x0,
+          )
           if r > maxrepeats:
             raise ValueError(
               'The maximum number of step repeats has been reached during\n'
@@ -5846,8 +5856,8 @@ class env2pPT(PsatPT):
               'solver iterations.'
             )
           step *= .5
+          sval = xk[k, sidx] + step * (xk[k, sidx] - xk[k+1, sidx])
           r += 1
-          logger.debug('Repeat Point #%s', k)
       xk = xk[k:]
       Pk = np.exp(xk[:, -2])
       Tk = np.exp(xk[:, -1])
@@ -5858,6 +5868,27 @@ class env2pPT(PsatPT):
     ykji = np.array(ykji)
     Zkj = np.array(Zkj)
     logger.info('The bound of the vapour mole fraction %s was completed.', Fv)
+    # dP = np.diff(Pk, prepend=0.)
+    # dT = np.diff(Tk, prepend=0.)
+    # crit = 0
+    # cbar = 0
+    # ctrm = 0
+    # for i in range(xk.shape[0] - 1):
+    #   if xk[i, 0] * xk[i+1, 0] < 0.:
+    #     cidx = i
+    #   if dP[i] / dT[i] > 0. and dP[i+1] / dT[i+1] < 0.:
+    #     cbar = i
+    #   if dP[i] / dT[i] < 0. and dP[i+1] / dT[i+1] > 0.:
+    #     ctrm = i
+    #   if crit and cbar and ctrm:
+    #     break
+    # if crit:
+    #   ...
+    # else:
+    #   logger.warning(
+    #     'The critical point was not found using the %s EOS for the mixture:'
+    #     'yi = \n\t%s', eos.name, yi,
+    #   )
     return EnvelopeResult(Pk=Pk, Tk=Tk, ykji=ykji, Zkj=Zkj, success=True)
 
 
@@ -5872,10 +5903,6 @@ def _env2pPT(
   maxiter: int = 5,
   linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
 ) -> tuple[VectorType, MatrixType, VectorType, MatrixType, int, bool]:
-  logger.debug(
-    'Solving the system for the phase envelope with '
-    'Fv = %s, Sidx = %s, Sval = %s', Fv, sidx, sval,
-  )
   Nc = eos.Nc
   J = np.zeros(shape=(Nc + 2, Nc + 2))
   J[-1, sidx] = 1.
@@ -5939,12 +5966,6 @@ def _env2pPT(
     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
   suc = gnorm < tol and np.isfinite(ex).all()
-  if not suc:
-    logger.warning(
-      "Newton's method for phase diagram construction terminates "
-      "unsuccessfully:\n\teos = %s\n\tFv = %s\n\tsval = %s\n\tsidx = %s\n\t"
-      "x0 = %s\n\tyi = %s", eos.name, Fv, sval, sidx, x0, yi,
-    )
   rhol = yli.dot(eos.mwi) / Zl
   rhov = yvi.dot(eos.mwi) / Zv
   if rhov < rhol:
