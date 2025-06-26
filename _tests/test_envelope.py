@@ -27,12 +27,26 @@ from boundary import (
   env2pPT,
 )
 
-from matplotlib import pyplot as plt
+from matplotlib import (
+  pyplot as plt,
+)
 
 plotting = True
 
 
 class env2p(unittest.TestCase):
+
+  @staticmethod
+  def plot(res, xmin, xmax, ymin, ymax):
+    fig, ax = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
+    ax.plot(res.Tk-273.15, res.Pk/1e6, lw=2., c='teal', zorder=2)
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
+    ax.set_xlabel('Temperature, C')
+    ax.set_ylabel('Pressure, MPa')
+    ax.grid(zorder=1)
+    plt.show()
+    pass
 
   def test_01(self):
     P0 = 2e6
@@ -54,14 +68,7 @@ class env2p(unittest.TestCase):
     res = env.run(P0, T0, yi, 0.)
     self.assertTrue(res.success)
     if plotting:
-      fig, ax = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-      ax.plot(res.Tk-273.15, res.Pk/1e6, lw=2., c='teal', zorder=3)
-      ax.set_xlim(-100., 140.)
-      ax.set_ylim(0., 20.)
-      ax.set_xlabel('Temperature, C')
-      ax.set_ylabel('Pressure, MPa')
-      ax.grid(zorder=1)
-      plt.show()
+      self.plot(res, -100., 140., 0., 20.)
     pass
 
 

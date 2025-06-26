@@ -5739,48 +5739,49 @@ class env2pPT(PsatPT):
     k = 0
     if improve_P0:
       P0, kvi0, _, _ = self.search(P0, T0, yi, True, **searchkwargs)
-      x = np.log(np.hstack([kvi0, P0, T0]))
+      x0 = np.log(np.hstack([kvi0, P0, T0]))
     else:
-      x = np.log(np.hstack([self.eos.getPT_kvguess(P0, T0, yi)[0], P0, T0]))
+      x0 = np.log(np.hstack([self.eos.getPT_kvguess(P0, T0, yi)[0], P0, T0]))
     sidx = -1
-    sval = x[sidx]
-    x, yji, Zj, dgdx, Niter, suc = self.solver(x, yi, Fv, sidx, sval)
+    sval = x0[sidx]
+    x0, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
     if not suc:
       raise ValueError(
-        'The saturation pressure could not be determined for the specified\n'
-        f'starting temperature {T0 = } K and the initial guess {P0 = } Pa.\n'
-        'It may be beneficial to modify the initial guess and/or the\n'
-        'starting temperature. Additionally, increasing the number of\n'
-        'iterations could prove helpful. To locate the initial guess inside\n'
-        'the two-phase region, the `impove_P0` flag can be activated.'
+        'The saturation pressure was not found for the specified starting\n'
+        f'temperature {T0 = } K and the initial guess {P0 = } Pa. It may\n'
+        'be beneficial to modify the initial guess and/or the starting\n'
+        'temperature. Additionally, increasing the number of iterations\n'
+        'could prove helpful. To locate the initial guess inside the\n'
+        'two-phase region, the `impove_P0` flag can be activated.'
       )
-    xk[k] = x
+    xk[k] = x0
     ykji.append(yji)
     Zkj.append(Zj)
     step = step0
     sign = 1.
     r = 0
     kmax = maxpoints - 1
-    while k < kmax and x[-1] >= lnTmin:
-      sval = x[sidx] + np.log(1. + step) * sign
+    while k < kmax and xk[k, -1] >= lnTmin:
+      sval = xk[k, sidx] + np.log(1. + step) * sign
       logger.debug(
         'Point #%s:\n\tsidx = %s\n\tsign = %s\n\tstep = %s\n\tsval = %s',
         k+1, sidx, sign, step, sval,
       )
       if k > 3:
-        svals = xk[k-4:k,sidx][:,None]
+        svals = xk[k-4:k, sidx][:, None]
         np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
-        C = np.linalg.solve(M, xk[k-4:k,:])
+        C = np.linalg.solve(M, xk[k-4:k, :])
         sval2 = sval * sval
-        x = np.array([1., sval, sval2, sval2 * sval]).dot(C)
-      xkp1, yji, Zj, dgdx, Niter, suc = self.solver(x, yi, Fv, sidx, sval)
+        x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
+      else:
+        x0 = xk[k]
+      xkp1, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
       if suc:
         dxds = np.abs(np.linalg.solve(dgdx, dgds))
         sidx = np.argmax(np.abs(dxds))
         sign = np.sign(xkp1[sidx] - xk[k, sidx])
-        x = xkp1
         k += 1
-        xk[k] = x
+        xk[k] = xkp1
         ykji.append(yji)
         Zkj.append(Zj)
         if Niter > normiter:
@@ -5789,6 +5790,7 @@ class env2pPT(PsatPT):
           step *= 1.05
         if step > maxstep:
           step = maxstep
+        r = 0
       else:
         if r > maxrepeats:
           raise ValueError(
@@ -5801,14 +5803,61 @@ class env2pPT(PsatPT):
         step *= .5
         r += 1
         logger.debug('Repeat Point #%s', k)
-    logger.info(
-      'The bound of the vapour mole fraction %s was completed. The total '
-      'number of calculated points is %s.', Fv, k,
-    )
-    Pk = np.exp(xk[:k,-2])
-    Tk = np.exp(xk[:k,-1])
+    if xk[0, -1] > lnTmin and k < kmax:
+      xk = np.vstack([np.empty(shape=(maxpoints-k-1, Nc+2)), xk[:k+1]])
+      k = maxpoints - k - 1
+      step = step0
+      sign = -1.
+      sidx = -1
+      while k > 0 and xk[k, -1] > lnTmin:
+        sval = xk[k, sidx] + np.log(1. + step) * sign
+        logger.debug(
+          'Point #%s:\n\tsidx = %s\n\tsign = %s\n\tstep = %s\n\tsval = %s',
+          maxpoints - k, sidx, sign, step, sval,
+        )
+        svals = xk[k:k+4, sidx][:, None]
+        np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
+        C = np.linalg.solve(M, xk[k:k+4, :])
+        sval2 = sval * sval
+        x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
+        xkm1, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
+        if suc:
+          dxds = np.abs(np.linalg.solve(dgdx, dgds))
+          sidx = np.argmax(np.abs(dxds))
+          sign = np.sign(xkm1[sidx] - xk[k, sidx])
+          k -= 1
+          xk[k] = xkm1
+          ykji.insert(0, yji)
+          Zkj.insert(0, Zj)
+          if Niter > normiter:
+            step *= 0.95
+          else:
+            step *= 1.05
+          if step > maxstep:
+            step = maxstep
+          r = 0
+        else:
+          if r > maxrepeats:
+            raise ValueError(
+              'The maximum number of step repeats has been reached during\n'
+              'the construction of the phase envelope. Consider adjusting\n'
+              'the value of the `normiter` parameter, increasing the\n'
+              'permitted number of step cuts and/or the maximum number of\n'
+              'solver iterations.'
+            )
+          step *= .5
+          r += 1
+          logger.debug('Repeat Point #%s', k)
+      xk = xk[k:]
+      Pk = np.exp(xk[:, -2])
+      Tk = np.exp(xk[:, -1])
+    else:
+      xk = xk[:k]
+      Pk = np.exp(xk[:, -2])
+      Tk = np.exp(xk[:, -1])
     ykji = np.array(ykji)
     Zkj = np.array(Zkj)
+    logger.info('The bound of the vapour mole fraction %s was completed.', Fv)
     return EnvelopeResult(Pk=Pk, Tk=Tk, ykji=ykji, Zkj=Zkj, success=True)
 
 
