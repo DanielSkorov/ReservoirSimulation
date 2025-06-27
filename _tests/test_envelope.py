@@ -89,7 +89,7 @@ class env2p(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, maxiter=110)
     res = env.run(P0, T0, yi, 0., improve_P0=True, Tmin=193.15,
-                  dlnkvnorm=0.05)
+                  dlnkvnorm=0.05, cfmax=0.)
     self.assertTrue(res.success)
     if plotting:
       self.plot(res, -80., 10., 0., 15.)
@@ -113,7 +113,7 @@ class env2p(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, maxiter=110)
     res = env.run(P0, T0, yi, 0., improve_P0=True, Tmin=193.15,
-                  dlnkvnorm=0.009)
+                  dlnkvnorm=0.009, maxpoints=250, maxstep=1.5)
     self.assertTrue(res.success)
     if plotting:
       self.plot(res, -80., 10., 0., 15.)

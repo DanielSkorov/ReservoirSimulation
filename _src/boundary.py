@@ -5720,16 +5720,17 @@ class env2pPT(PsatPT):
     T0: ScalarType,
     yi: VectorType,
     Fv: ScalarType,
-    step0: ScalarType = 0.01,
     sidx0: int = -1,
-    Tmin: ScalarType = 173.15,
-    maxpoints: int = 200,
-    maxrepeats: int = 8,
+    improve_P0: bool = False,
+    step0: ScalarType = 0.01,
     maxstep: ScalarType = 1.2,
     dlnkvnorm: ScalarType = 0.5,
     dlnPnorm: ScalarType = 0.15,
     dlnTnorm: ScalarType = 0.015,
-    improve_P0: bool = False,
+    cfmax: ScalarType = 0.182,
+    Tmin: ScalarType = 173.15,
+    maxpoints: int = 200,
+    maxrepeats: int = 8,
     searchkwargs: dict = {},
   ) -> EnvelopeResult:
     Nc = self.eos.Nc
@@ -5764,33 +5765,41 @@ class env2pPT(PsatPT):
         'two-phase region, the `improve_P0` flag can be activated. Changing\n'
         'the basic variable using `sidx0` may also improve convergence.'
       )
-    logger.debug('%s %.4f %s %.4f' + Ncp2 * ' %.4f', k, 0., sidx, sval, *x0)
+    logger.debug(
+      '%s %.4f %s %.4f %s' + Ncp2 * ' %.4f', k, 0., sidx, sval, False, *x0,
+    )
     xk[k] = x0
     ykji.append(yji)
     Zkj.append(Zj)
     step = 1.
     r = 0
+    cf = x0[:-2].max() - x0[:-2].min() < cfmax
     kmax = maxpoints - 1
     sval = xk[k, sidx] + np.log(1. + step0)
     while k < kmax and xk[k, -1] >= lnTmin:
-      if k > 3:
+      if k > 3 and not cf:
         svals = xk[k-3:k+1, sidx][:, None]
         np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
         C = np.linalg.solve(M, xk[k-3:k+1, :])
         sval2 = sval * sval
         x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
+      elif k > 1 and cf:
+        x0 = xk[k] + ((xk[k] - xk[k-1])
+                      / (xk[k, sidx] - xk[k-1, sidx]) * (sval - xk[k, sidx]))
       else:
         x0 = xk[k]
       xkp1, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
       if suc:
         logger.debug(
-          '%s %.4f %s %.4f' + Ncp2 * ' %.4f', k + 1, step, sidx, sval, *xkp1,
+          '%s %.4f %s %.4f %s' + Ncp2 * ' %.4f',
+          k + 1, step, sidx, sval, cf, *xkp1,
         )
         sidx = np.argmax(np.abs(np.linalg.solve(dgdx, dgds)))
-        step /= np.max(np.abs(xkp1 - xk[k]) / dxnorm)
+        step *= 1.75 / (0.75 + np.max(np.abs(xkp1 - xk[k]) / dxnorm))
         if step > maxstep:
           step = maxstep
         sval = xkp1[sidx] + step * (xkp1[sidx] - xk[k, sidx])
+        cf = xkp1[:-2].max() - xkp1[:-2].min() < cfmax
         k += 1
         xk[k] = xkp1
         ykji.append(yji)
@@ -5799,8 +5808,8 @@ class env2pPT(PsatPT):
       else:
         logger.warning(
           "Newton's method for phase diagram construction terminates "
-          'unsuccessfully:\n\t%s %.4f %s %.4f' + Ncp2 * ' %.4f',
-          k + 1, step, sidx, sval, *x0,
+          'unsuccessfully:\n\t%s %.4f %s %.4f %s' + Ncp2 * ' %.4f',
+          k + 1, step, sidx, sval, cf, *x0,
         )
         if r > maxrepeats:
           raise ValueError(
@@ -5819,23 +5828,32 @@ class env2pPT(PsatPT):
       step = 1.
       sidx = sidx0
       sval = xk[k, sidx] + step * (xk[k, sidx] - xk[k+1, sidx])
+      cf = xk[k, :-2].max() - xk[k, :-2].min() < cfmax
       while k > 0 and xk[k, -1] > lnTmin:
-        svals = xk[k:k+4, sidx][:, None]
-        np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
-        C = np.linalg.solve(M, xk[k:k+4, :])
-        sval2 = sval * sval
-        x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
+        if k > 3 and not cf:
+          svals = xk[k:k+4, sidx][:, None]
+          np.concatenate([ones, svals, np.power(svals, pows)], axis=1, out=M)
+          C = np.linalg.solve(M, xk[k:k+4, :])
+          sval2 = sval * sval
+          x0 = np.array([1., sval, sval2, sval2 * sval]).dot(C)
+        elif k > 1 and cf:
+          x0 = xk[k] + ((xk[k] - xk[k+1])
+                        / (xk[k, sidx] - xk[k+1, sidx])
+                        * (sval - xk[k, sidx]))
+        else:
+          x0 = xk[k]
         xkm1, yji, Zj, dgdx, Niter, suc = self.solver(x0, yi, Fv, sidx, sval)
         if suc:
           logger.debug(
-            '%s %.4f %s %.4f' + Ncp2 * ' %.4f',
-            maxpoints - k, step, sidx, sval, *xkm1,
+            '%s %.4f %s %.4f %s' + Ncp2 * ' %.4f',
+            maxpoints - k, step, sidx, sval, cf, *xkm1,
           )
           sidx = np.argmax(np.abs(np.linalg.solve(dgdx, dgds)))
-          step /= np.max(np.abs(xkm1 - xk[k]) / dxnorm)
+          step *= 1.75 / (0.75 + np.max(np.abs(xkm1 - xk[k]) / dxnorm))
           if step > maxstep:
             step = maxstep
           sval = xkm1[sidx] + step * (xkm1[sidx] - xk[k, sidx])
+          cf = xkm1[:-2].max() - xkm1[:-2].min() < cfmax
           k -= 1
           xk[k] = xkm1
           ykji.insert(0, yji)
@@ -5844,8 +5862,8 @@ class env2pPT(PsatPT):
         else:
           logger.warning(
             "Newton's method for phase diagram construction terminates "
-            'unsuccessfully:\n\t%s %.4f %s %.4f' + Ncp2 * ' %.4f',
-            maxpoints - k, step, sidx, sval, *x0,
+            'unsuccessfully:\n\t%s %.4f %s %.4f %s' + Ncp2 * ' %.4f',
+            maxpoints - k, step, sidx, sval, cf, *x0,
           )
           if r > maxrepeats:
             raise ValueError(
@@ -5927,10 +5945,10 @@ def _env2pPT(
   g[Nc] = np.sum(yvi - yli)
   g[Nc+1] = xk[sidx] - sval
   gnorm = np.linalg.norm(g)
-  logger.debug(
-    'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
-    k, kvi, P, T, gnorm,
-  )
+  # logger.debug(
+  #   'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
+  #   k, kvi, P, T, gnorm,
+  # )
   dylidlnkvi = -Fv * yvi / di
   dyvidlnkvi = yvi + kvi * dylidlnkvi
   J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
@@ -5957,10 +5975,10 @@ def _env2pPT(
     g[Nc] = np.sum(yvi - yli)
     g[Nc+1] = xk[sidx] - sval
     gnorm = np.linalg.norm(g)
-    logger.debug(
-      'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
-      k, kvi, P, T, gnorm,
-    )
+    # logger.debug(
+    #   'Iteration #%s:\n\tkvi = %s\n\tP = %s Pa\n\tT = %s K\n\tgnorm = %s',
+    #   k, kvi, P, T, gnorm,
+    # )
     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
     J[-2,:Nc] = yvi / di
     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
