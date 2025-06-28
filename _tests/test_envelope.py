@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
-  '%(process)d:%(name)s:%(levelname)s:\n\t%(message)s'
+  '%(process)d:%(name)s:%(levelname)s: %(message)s'
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -49,8 +49,8 @@ class env2p(unittest.TestCase):
     pass
 
   def test_01(self):
-    P0 = 2e6
-    T0 = 173.15
+    P0 = 3.5e6
+    T0 = 193.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -64,21 +64,21 @@ class env2p(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr)
-    res = env.run(P0, T0, yi, 0.)
+    env = env2pPT(pr, stabkwargs=dict(method='qnss'))
+    res = env.run(P0, T0, yi, 0., maxpoints=209)
     self.assertTrue(res.success)
     if plotting:
       self.plot(res, -100., 140., 0., 20.)
     pass
 
   def test_02(self):
-    P0 = 8e6
+    P0 = 8.1e6
     T0 = 233.15
     yi = np.array([0.26, 0.04, 0.66, 0.03, 0.01])
     Pci = np.array([89.37, 73.76, 46.00, 48.84, 42.46]) * 1e5
     Tci = np.array([373.2, 304.2, 190.6, 305.4, 369.8])
     mwi = np.array([34.08, 44.01, 16.043, 30.07, 44.097]) / 1e3
-    wi = np.array([0.1, 0.225, 0.008, 0.098, 0.152])
+    wi = np.array([0.117, 0.225, 0.008, 0.098, 0.152])
     vsi = np.array([0., 0., 0., 0., 0.])
     dij = np.array([
       0.135,
@@ -87,12 +87,11 @@ class env2p(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, maxiter=110)
-    res = env.run(P0, T0, yi, 0., improve_P0=True, Tmin=193.15,
-                  dlnkvnorm=0.05, cfmax=0.)
+    env = env2pPT(pr, Tmin=193.15, stabkwargs=dict(method='qnss'))
+    res = env.run(P0, T0, yi, 0., improve_P0=True, sidx0=4, maxpoints=140)
     self.assertTrue(res.success)
     if plotting:
-      self.plot(res, -80., 10., 0., 15.)
+      self.plot(res, -80., 10., 0., 30.)
     pass
 
   def test_03(self):
@@ -102,7 +101,7 @@ class env2p(unittest.TestCase):
     Pci = np.array([89.37, 73.76, 46.00, 48.84, 42.46]) * 1e5
     Tci = np.array([373.2, 304.2, 190.6, 305.4, 369.8])
     mwi = np.array([34.08, 44.01, 16.043, 30.07, 44.097]) / 1e3
-    wi = np.array([0.1, 0.225, 0.008, 0.098, 0.152])
+    wi = np.array([0.117, 0.225, 0.008, 0.098, 0.152])
     vsi = np.array([0., 0., 0., 0., 0.])
     dij = np.array([
       0.135,
@@ -111,12 +110,11 @@ class env2p(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, maxiter=110)
-    res = env.run(P0, T0, yi, 0., improve_P0=True, Tmin=193.15,
-                  dlnkvnorm=0.009, maxpoints=250, maxstep=1.5)
+    env = env2pPT(pr, Tmin=193.15, stabkwargs=dict(method='qnss'))
+    res = env.run(P0, T0, yi, 0., improve_P0=True, maxpoints=73)
     self.assertTrue(res.success)
     if plotting:
-      self.plot(res, -80., 10., 0., 15.)
+      self.plot(res, -80., 10., 0., 30.)
     pass
 
 

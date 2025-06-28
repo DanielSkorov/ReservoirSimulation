@@ -13,6 +13,8 @@ VectorType = np.ndarray[tuple[int], np.dtype[DType]]
 
 MatrixType = np.ndarray[tuple[int, int], np.dtype[DType]]
 
+TensorType = np.ndarray[tuple[int, int, int], np.dtype[DType]]
+
 
 class EOSPTType(Protocol):
   name: str
