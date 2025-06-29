@@ -5599,9 +5599,6 @@ class EnvelopeResult(dict):
 class env2pPT(PsatPT):
   """Two-phase envelope construction using a PT-based equation of state.
 
-  The algorithm of the phase envelope construction is based on the
-  paper of M.L. Michelsen (doi: 10.1016/0378-3812(80)80001-X).
-
   Parameters
   ----------
   eos: EOSPTType
@@ -5661,25 +5658,69 @@ class env2pPT(PsatPT):
     - `Nc: int`
       The number of components in the system.
 
-  approx: bool
-    The flag indicating if the approximate phase envelope must be
-    constructed. The algorithm is based on the paper of M.L. Michelsen
-    (doi: 10.1016/0378-3812(94)80104-5). All points of the approximate
-    phase envelope are located inside and close to the actual two-phase
-    region boundary. The accuracy of the internal phase lines is
-    expected to be poorer than that of the phase boundary. Therefore,
-    this option is most substantial for systems with many components.
-    Default is `False`.
+  method: str
+    This parameter allows to select the algorithm for the phase envelope
+    construction. It should be one of:
+
+    - `'base'`
+      The standard algorithm of the phase envelope construction is based
+      on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(80)80001-X).
+
+    - `'approx'`
+      The algorithm is based on the paper of M.L. Michelsen
+      (doi: 10.1016/0378-3812(94)80104-5). All points of the approximate
+      phase envelope are located inside and close to the actual two-phase
+      region boundary. The accuracy of the internal phase lines is
+      expected to be poorer than that of the phase boundary. Therefore,
+      this option is most substantial for systems with many components.
+      Currently raises `NotImplementedError`.
+
+    - `'bead-spring'`
+      The algorithm is based on the paper of I.K. Nikolaidis (doi:
+      10.1002/aic.15064). Currently raises `NotImplementedError`.
+
+    Default is `'base'`.
+
+  Pmin: float
+    The minimum pressure [Pa] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `1.0` [Pa].
+
+  Pmax: float
+    The maximum pressure [Pa] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `1e8` [Pa].
+
+  Tmin: float
+    The minimum temperature [K] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `173.15` [K].
+
+  Tmax: float
+    The maximum temperature [K] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `937.15` [K].
+
+  stopunstab: bool
+    The flag indicates whether it is necessary to stop the phase
+    envelope construction if both trial and real phase compositions
+    along it are found unstable by the stability test. Enabling this
+    option may prevent drawing false saturation lines but takes extra
+    CPU time to conduct stability test for each point on the phase
+    envelope. Default is `False`.
 
   stabkwargs: dict
-    To clarify the initial guess of the first saturation pressure, the
-    preliminary search can be used. This parameter controls the settings
-    of the stability test solver needed to conduct the preliminary
-    search. Default is an empty dictionary.
+    To clarify the initial guess for the first saturation point, a
+    preliminary search using the stability test may be employed.
+    Additionally, the stability test can be utilized to examine the
+    stability of both trial and real phase compositions along the
+    phase envelope. This parameter controls the settings of the
+    stability test solver needed to perform the above-mentioned tasks.
+    Default is an empty dictionary.
 
   kwargs: dict
     Other arguments for the two-phase envelope solver. It may contain
-    such arguments as `tol`, `maxiter` and `linsolver`.
+    such arguments as `tol`, `maxiter`, `miniter` and `linsolver`.
 
   Methods
   -------
@@ -5695,7 +5736,7 @@ class env2pPT(PsatPT):
   def __init__(
     self,
     eos: EOSPTType,
-    approx: bool = False,
+    method: str = 'base',
     Pmin: ScalarType = 1.,
     Pmax: ScalarType = 1e8,
     Tmin: ScalarType = 173.15,
@@ -5713,15 +5754,22 @@ class env2pPT(PsatPT):
     self.lnTmin = lnTmin
     self.lnPmin = lnPmin
     self.stopunstab = stopunstab
-    if approx:
+    if method == 'base':
+      self.solver = partial(_env2pPT, eos=eos, lnPmin=lnPmin, lnPmax=lnPmax,
+                            lnTmin=lnTmin, lnTmax=lnTmax, **kwargs)
+    elif method == 'approx':
       raise NotImplementedError(
         'The construction of the approximate phase envelope is not '
         'implemented yet.'
       )
       # self.solver = partial(_xenv2pPT, eos=eos, **kwargs)
+    elif method == 'bead-spring':
+      raise NotImplementedError(
+        'The bead spring method for the phase envelope construction is not '
+        'implemented yet.'
+      )
     else:
-      self.solver = partial(_env2pPT, eos=eos, lnPmin=lnPmin, lnPmax=lnPmax,
-                            lnTmin=lnTmin, lnTmax=lnTmax, **kwargs)
+      raise ValueError(f'The unknown method: {method}.')
     pass
 
   def run(
@@ -5730,21 +5778,218 @@ class env2pPT(PsatPT):
     T0: ScalarType,
     yi: VectorType,
     Fv: ScalarType,
-    sidx0: int = -1,
+    sidx0: int = -2,
     improve_P0: bool = False,
     step0: ScalarType = 0.005,
-    maxstep: ScalarType = 1.1,
     dlnkvnorm: ScalarType = 0.5,
     dlnPnorm: ScalarType = 0.15,
     dlnTnorm: ScalarType = 0.015,
     rdamp: ScalarType = 0.75,
+    maxstep: ScalarType = 1.1,
     maxosfac: ScalarType = 2.,
     cfmax: ScalarType = 0.182,
     maxrepeats: int = 8,
-    dsvalmin: ScalarType = 1e-12,
+    mindsval: ScalarType = 1e-12,
     maxpoints: int = 200,
     searchkwargs: dict = {},
   ) -> EnvelopeResult:
+    """This method should be used to calculate the entire phase envelope.
+
+    Parameters
+    ----------
+    P0: float
+      Initial guess of the saturation pressure [Pa]. It is recommended
+      to not use pressure limits (`Pmin`, `Pmax`) as a starting point
+      for the phase diagram construction.
+
+    T0: float
+      Initial guess of the saturation temperature [K]. It is recomended
+      to not use temperature limits (`Tmin`, `Tmax`) as a starting point
+      for the phase diagram construction.
+
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components in a mixture.
+
+    Fv: float
+      Phase mole fraction for which the envelope is needed.
+
+    sidx0: int
+      For iteration zero, this parameter indexes the specified variable
+      in an array of basic variables. The array of basic variables
+      includes:
+
+      - `Nc` natural logarithms of k-values of components,
+      - the natural logarithm of pressure,
+      - the natural logarithm of temperature.
+
+      The specified variable is considered known and fixed for the
+      algorithm of saturation point determination. Therefore, changing
+      of this index may improve the algorithm converegence for the
+      zeroth iteration. To initiate calculations, a pressure
+      specification was recommended by M.L. Michelsen in his paper
+      (doi: 10.1016/0378-3812(80)80001-X). The general rule for
+      specified variable selection was also given in this paper. It was
+      recommended to select the specified variable based on the largest
+      rate of change, which refers to the largest derivative of the
+      basic variables with respect to the specified variable. Default
+      is `-2`.
+
+    improve_P0: bool
+      The flag indicates whether it is necessary to perform the
+      preliminary search using the stability test to clarify the
+      initial guess of the saturation pressure and corresponding
+      k-values. Default is `False` which refers to considering the
+      given value of `P0` as an initial guess and calculating the
+      initial guess of k-values using the method
+      `getPT_kvguess(P0, T0, yi)` of an initialized instance of
+      an equation of state.
+
+    step0: float
+      The step size (the difference between two subsequent values of a
+      specified variable) for iteration zero. It should be small enough
+      to consider the saturation point found at the zeroth iteration as
+      a good initial guess for the next saturation point calculation.
+      Default is `0.005`.
+
+    dlnkvnorm: float
+      This parameter allows to specify the normal (expected) variation
+      of components k-values when passing from a calculated saturation
+      point to the next one. Expected variations of basic variables
+      controls the step size and the specified variable change according
+      to the foolowing formulas:
+
+      .. math::
+
+        S_{k+1} = S_k + \\lambda \\left( S_k - S_{k-1} \\right) ,
+
+      where :math:`S_{k+1}` is the specified variable for
+      :math:`\\left( k+1 \\right)`-th iteration, :math:`S_k` is the
+      specified variable for :math:`\\left( k \\right)`-th iteration,
+      :math:`S_{k-1}` is the specified variable for
+      :math:`\\left( k-1 \\right)`-th iteration, and :math:`\\lambda`
+      is the step size:
+
+      .. math::
+
+        \\lambda = \\frac{1 + r_d}{r_d + \\max_i \\left( \\frac{
+        \\left| {x_i}_k - {x_i}_{k-1} \\right| }{ \\xi_i } \\right) } ,
+
+      where :math:`r_d` is the damping factor (parameter `rdamp`),
+      :math:`{x_i}_k` is the :math:`\\left( i \\right)`-th element
+      of the array of basic variables at :math:`\\left( k \\right)`-th
+      iteration :math:`{x_i}_{k-1}` is the :math:`\\left( i \\right)`-th
+      element of the array of basic variables at
+      :math:`\\left( k-1 \\right)`-th iteration, :math:`\\xi_i` is the
+      :math:`\\left( i \\right)`-th element of the array of expected
+      variations of basic variables.
+
+      If the basic variable change between two iterations is greater than
+      the corresponding expected variable change, then the step size
+      will be reduced, and the damping factor will control the rate
+      of such reduction.
+
+      Default is `0.5`.
+
+    dlnPnorm: float
+      The normal (expected) change of the natural logarithm of pressure
+      between two subsequent points of the phase envelope. Default is
+      `0.15`.
+
+    dlnTnorm: float
+      The normal (expected) change of the natural logarithm of
+      temperature between two subsequent points of the phase envelope.
+      Default is `0.015`.
+
+    rdamp: float
+      The damping factor used for the calculation of the step size.
+      Default is `0.75`.
+
+    maxstep: float
+      The step size calculated according to the above formula cannot be
+      greater than the value specified by the `maxstep` parameter.
+      Default is `1.1`.
+
+    maxosfac: float
+      Defines the maximum oscillation factor :math:`\\eta` for the basic
+      variables. If the calculated saturation point at any iteration
+      :math:`\\left( k \\right)` (or its initial guess) violates the
+      following condition:
+
+      .. math::
+
+        \\left| {x_i}_k - {x_i}_{k-1} \\right| < \\eta \\xi_i,
+        \\; i = 1 \\, \\ldots \\, N_c + 2 ,
+
+      then the step size :math:`\\lambda` will be reduced by half and
+      the iteration will be repeated. Default is `2`.
+
+    cfmax: float
+      M.L. Michelsen in his paper (doi: 10.1016/0378-3812(80)80001-X)
+      recommended to use the 3rd-order polynomial extrapolation
+      to provide an initial guess for the saturation point calculation.
+      However, according to the papers of Agger and Sorenses, 2017
+      (doi: 10.1021/acs.iecr.7b04246) and Xu and Li, 2023 (doi:
+      10.1016/j.geoen.2023.212058) estimates from extrapolation in the
+      critical or semicritical regions with high-order polynomials may
+      lead to substantial error. Therefore, they recommended to use
+      the linear extrapolation when crossing the critical point. In
+      their paper, Xu and Li introduced the critical-region factor
+      which is calculated according to the following formula:
+
+      .. math::
+
+        cf = \\frac{\\max_i K_i}{\\min_i K_i} - 1 ,
+
+      where :math:`K_i` is the k-value of :math:`\\left( i \\right)`-th
+      component. They suggest to use the following condition:
+
+      .. math::
+
+        cf < 0.2
+
+      to determine whether the current saturation point is inside the
+      near-critical region. This condition can be expressed through
+      natural logarithms of k-values:
+
+      .. math::
+
+        \\max_i \\ln K_i - \\min_i \\ln K_i < \\ln 1.2 .
+
+      Default of the `cfmax` is :math:`\\ln 1.2 \\approx 0.182`.
+      To disable this option, enter zero for this parameter.
+
+    maxrepeats: int
+      The saturation point calculation can be repeated several times
+      with a reduced step size if convergence of equations was not
+      achieved or the condition of maximum oscillation was violated.
+      This parameter allows to specify the maximum number of repeats
+      for any saturation point calculation. If the number of repeats
+      exceeds the given bound, then the construction of the phase
+      envelope will be stopped. Default is `8`.
+
+    mindsval: float
+      Stop the phase envelope construction if the change in the
+      specified variable is less than `mindsval`. Default is `1e-12`.
+
+    maxpoints: int
+      The maximum number of points of the phase envelope. Default is
+      `200`.
+
+    searchkwargs: dict
+      Advanced parameters for the preliminary search function. For the
+      details, see the method `search` of the class `PsatPT`. Default
+      is an empty dictionary.
+
+    Returns
+    -------
+    The phase envelope construction results as an instance of the
+    `EnvelopeResult`.
+
+    Raises
+    ------
+    The `ValueError` if the solution was not found for the zeroth
+    saturation point (for the given initial guesses).
+    """
     logger.info('Constructing the phase envelope for Fv = %s.', Fv)
     Nc = self.eos.Nc
     if improve_P0:
@@ -5777,13 +6022,13 @@ class env2pPT(PsatPT):
     mdgds = np.zeros(shape=(Nc + 2,))
     mdgds[-1] = 1.
     sidx = np.argmax(np.abs(np.linalg.solve(dgdx, mdgds)))
-    xk, ykji, Zkj = self.curve(yi, Fv, x0, step0, sidx, maxstep, dxnorm,
-                               rdamp, dxmax, cfmax, maxrepeats, dsvalmin,
+    xk, ykji, Zkj = self.curve(yi, Fv, x0, step0, sidx, dxnorm, rdamp,
+                               maxstep, dxmax, cfmax, maxrepeats, mindsval,
                                maxpoints)
     if (x0[-2] > self.lnPmin and x0[-1] > self.lnTmin
         and xk.shape[0] < maxpoints):
-      xl, ylji, Zlj = self.curve(yi, Fv, x0, -step0, sidx, maxstep, dxnorm,
-                                 rdamp, dxmax, cfmax, maxrepeats, dsvalmin,
+      xl, ylji, Zlj = self.curve(yi, Fv, x0, -step0, sidx, dxnorm, rdamp,
+                                 maxstep, dxmax, cfmax, maxrepeats, mindsval,
                                  maxpoints - xk.shape[0])
       xk = np.vstack([np.flipud(xk), xl[1:]])
       ykji = np.concatenate([np.flipud(ykji), [y0ji], ylji])
@@ -5824,16 +6069,89 @@ class env2pPT(PsatPT):
     x0: VectorType,
     step0: ScalarType,
     sidx: int,
-    maxstep: ScalarType,
     dxnorm: VectorType,
     rdamp: ScalarType,
+    maxstep: ScalarType,
     dxmax: VectorType,
     cfmax: ScalarType,
     maxrepeats: int,
-    dsvalmin: ScalarType,
+    mindsval: ScalarType,
     maxpoints: int,
   ) -> tuple[MatrixType, TensorType, MatrixType]:
-    """
+    """This method should be used to calculate a part of the phase
+    envelope for a fixed direction.
+
+    Parameters
+    ----------
+    yi: ndarray, shape (Nc,)
+      Mole fractions of `Nc` components in a mixture.
+
+    Fv: float
+      Phase mole fraction for which the envelope is needed.
+
+    x0: ndarray, shape (Nc + 2,)
+      The first point of the phase envelope. The array must contain
+      `Nc + 2` items:
+
+      - `Nc` natural logarithms of k-values of components,
+      - the natural logarithm of pressure,
+      - the natural logarithm of temperature.
+
+    step0: float
+      The step size (the difference between two subsequent values of a
+      specified variable) for iteration zero. This parameter can also be
+      used to specify the direction in which the phase envelope must be
+      calculated by the algorithm. In general, the change in the sign of
+      the initial step size would lead to a different branch of the
+      phase envelope.
+
+    sidx: int
+      This parameter indexes the specified variable in an array of basic
+      variables for the next saturation point calculation.
+
+    dxnorm: ndarray, shape (Nc + 2,)
+      An array of the normal (expected) variations of the basic
+      variables.
+
+    rdamp: float
+      The damping factor used for the calculation of the step size.
+
+    maxstep: float
+      The upper bound for the step size.
+
+    dxmax: ndarray, shape(Nc + 2,)
+      An array of the maximum variations of the basic variables.
+      Saturation point calculation will be repeated with a reduced step
+      size if the current solution deviates from the previous one by
+      more than `dxmax`.
+
+    cfmax: float
+      The critical-region factor, which is used to determine whether the
+      current saturation point is inside the near-critical region.
+
+    maxrepeats: int
+      This parameter allows to specify the maximum number of repeats
+      for any saturation point calculation. If the number of repeats
+      exceeds the given bound, then the construction of the phase
+      envelope will be stopped.
+
+    mindsval: float
+      Stop the phase envelope construction if the change in the
+      specified variable is less than `mindsval`.
+
+    maxpoints: int
+      The maximum number of points of the phase envelope.
+
+    Returns
+    -------
+    A tuple of:
+    - a matrix of the shape (Ns, Nc + 2) of calculated saturation
+      points (`Ns` arrays of basic variables that correspond to the
+      solution of equations),
+    - a tensor of the shape (Ns, 2, Nc) of mole fractions of components
+      in the real and trial phases along the phase envelope,
+    - a matrix of the shape (Ns, 2) of compressibility factors of the
+      real and trial phases along the phase envelope.
     """
     Nc = self.eos.Nc
     Ncp2 = Nc + 2
@@ -5860,7 +6178,7 @@ class env2pPT(PsatPT):
           'The maximum number of step repeats has been reached.'
         )
         break
-      if np.abs(dsval) < dsvalmin:
+      if np.abs(dsval) < mindsval:
         logger.warning(
           'The minimum change of the specified variable has been reached.',
         )
@@ -5906,6 +6224,16 @@ class env2pPT(PsatPT):
         else:
           sidx = np.argmax(np.abs(np.linalg.solve(dgdx, mdgds)))
         step = (1. + rdamp) / (rdamp + np.max(np.abs(xkp1 - xk[k]) / dxnorm))
+        # if Niter <= 1:
+        #   step = 1.75
+        # elif Niter == 2:
+        #   step = 1.25
+        # elif Niter == 3:
+        #   step = 1.15
+        # elif Niter == 4:
+        #   step = 0.75
+        # else:
+        #   step = 0.35
         if np.abs(step) > maxstep:
           step = maxstep
         dsval = step * (xkp1[sidx] - xk[k, sidx])
@@ -5937,7 +6265,7 @@ def _env2pPT(
   yi: VectorType,
   Fv: ScalarType,
   eos: EOSPTType,
-  tol: ScalarType = 1e-5,
+  tol: ScalarType = 1e-7,
   maxiter: int = 5,
   miniter: int = 1,
   lnPmin: ScalarType = 0.,
@@ -5952,10 +6280,11 @@ def _env2pPT(
     'Fv = %.3f, sidx = %s, sval = %.4f', Fv, sidx, sval,
   )
   logger.debug(
-    '%3s%12s%8s' + Nc * '%9s' + '%10s', 'Nit', 'Prs (Pa)', 'Tmp (K)',
-    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'gnorm',
+    '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
+    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT', 'gnorm',
+    'dx2',
   )
-  tmpl = '%3s %11.1f %7.2f' + Nc * ' %8.4f' + ' %9.2e'
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
   J = np.zeros(shape=(Nc + 2, Nc + 2))
   J[-1, sidx] = 1.
   g = np.empty(shape=(Nc + 2,))
@@ -5979,15 +6308,17 @@ def _env2pPT(
   g[Nc] = np.sum(yvi - yli)
   g[Nc+1] = xk[sidx] - sval
   gnorm = np.linalg.norm(g)
-  logger.debug(tmpl, k, P, T, *lnkvi, gnorm)
   dylidlnkvi = -Fv * yvi / di
   dyvidlnkvi = yvi + kvi * dylidlnkvi
   J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
   J[-2,:Nc] = yvi / di
   J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
-  while (gnorm > tol or k < miniter) and k < maxiter:
-    dx = linsolver(J, -g)
+  dx = linsolver(J, -g)
+  dx2 = dx.dot(dx)
+  notsolved = dx2 > tol
+  logger.debug(tmpl, k, *xk, gnorm, dx2)
+  while (notsolved or k < miniter) and k < maxiter:
     k += 1
     xkp1 = xk + dx
     if xkp1[-2] > lnPmax:
@@ -6015,12 +6346,15 @@ def _env2pPT(
     g[Nc] = np.sum(yvi - yli)
     g[Nc+1] = xk[sidx] - sval
     gnorm = np.linalg.norm(g)
-    logger.debug(tmpl, k, P, T, *lnkvi, gnorm)
     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
     J[-2,:Nc] = yvi / di
     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
-  suc = gnorm < tol and np.isfinite(ex).all()
+    dx = linsolver(J, -g)
+    dx2 = dx.dot(dx)
+    notsolved = dx2 > tol
+    logger.debug(tmpl, k, *xk, gnorm, dx2)
+  suc = not notsolved and np.isfinite(ex).all()
   rhol = yli.dot(eos.mwi) / Zl
   rhov = yvi.dot(eos.mwi) / Zv
   if rhov < rhol:
