@@ -6030,10 +6030,11 @@ class env2pPT(PsatPT):
       xl, ylji, Zlj = self.curve(yi, Fv, x0, -step0, sidx, dxnorm, rdamp,
                                  maxstep, dxmax, cfmax, maxrepeats, mindsval,
                                  maxpoints - xk.shape[0])
-      xk = np.vstack([np.flipud(xk), xl[1:]])
-      ykji = np.concatenate([np.flipud(ykji), [y0ji], ylji])
-      Zkj = np.vstack([np.flipud(Zkj), [Z0j], Zlj])
-    else:
+      if xl.shape[0] > 1:
+        xk = np.vstack([np.flipud(xk), xl[1:]])
+        ykji = np.concatenate([np.flipud(ykji), [y0ji], ylji])
+        Zkj = np.vstack([np.flipud(Zkj), [Z0j], Zlj])
+    elif xk.shape[0] > 1:
       ykji = np.concatenate([[y0ji], ykji])
       Zkj = np.vstack([[Z0j], Zkj])
     Pk = np.exp(xk[:, -2])
@@ -6265,7 +6266,7 @@ def _env2pPT(
   yi: VectorType,
   Fv: ScalarType,
   eos: EOSPTType,
-  tol: ScalarType = 1e-7,
+  tol: ScalarType = 1e-14,
   maxiter: int = 5,
   miniter: int = 1,
   lnPmin: ScalarType = 0.,
@@ -6282,7 +6283,7 @@ def _env2pPT(
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
     *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT', 'gnorm',
-    'dx2',
+    'dxnorm',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
   J = np.zeros(shape=(Nc + 2, Nc + 2))
@@ -6354,7 +6355,7 @@ def _env2pPT(
     dx2 = dx.dot(dx)
     notsolved = dx2 > tol
     logger.debug(tmpl, k, *xk, gnorm, dx2)
-  suc = not notsolved and np.isfinite(ex).all()
+  suc = not notsolved and np.isfinite(ex).all() and np.isfinite(dx2)
   rhol = yli.dot(eos.mwi) / Zl
   rhov = yvi.dot(eos.mwi) / Zv
   if rhov < rhol:
