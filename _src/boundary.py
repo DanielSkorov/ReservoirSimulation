@@ -585,7 +585,7 @@ class PsatPT(object):
     """
     stab = self.stabsolver.run(P, T, yi)
     logger.debug(
-      'For the initial guess P = %s Pa, the one-phase state is stable: %s',
+      'For the initial guess P = %.1f Pa, the one-phase state is stable: %s',
       P, stab.stable,
     )
     if stab.stable and upper:
@@ -598,7 +598,7 @@ class PsatPT(object):
       Plow = c * P
       stabmin = self.stabsolver.run(Plow, T, yi)
       logger.debug(
-        'Plow = %s Pa, the one-phase state is stable: %s',
+        'Plow = %.1f Pa, the one-phase state is stable: %s',
         Plow, stabmin.stable,
       )
       if stabmin.stable:
@@ -607,7 +607,7 @@ class PsatPT(object):
         Plow *= c
         stabmin = self.stabsolver.run(Plow, T, yi)
         logger.debug(
-          'Plow = %s Pa, the one-phase state is stable: %s',
+          'Plow = %.1f Pa, the one-phase state is stable: %s',
           Plow, stabmin.stable,
         )
         if stabmin.stable:
@@ -632,7 +632,7 @@ class PsatPT(object):
       Pupp = c * P
       stabmax = self.stabsolver.run(Pupp, T, yi)
       logger.debug(
-        'Pupp = %s Pa, the one-phase state is stable: %s',
+        'Pupp = %.1f Pa, the one-phase state is stable: %s',
         Pupp, stabmax.stable,
       )
       if not stabmax.stable:
@@ -641,7 +641,7 @@ class PsatPT(object):
         Pupp *= c
         stabmax = self.stabsolver.run(Pupp, T, yi)
         logger.debug(
-          'Pupp = %s Pa, the one-phase state is stable: %s',
+          'Pupp = %.1f Pa, the one-phase state is stable: %s',
           Pupp, stabmax.stable,
         )
         if not stabmax.stable:
@@ -664,14 +664,14 @@ class PsatPT(object):
       Pupp = c * P
       stabmax = self.stabsolver.run(Pupp, T, yi)
       logger.debug(
-        'Pupp = %s Pa, the one-phase state is stable: %s',
+        'Pupp = %.1f Pa, the one-phase state is stable: %s',
         Pupp, stabmax.stable,
       )
       while stabmax.stable and Pupp < Pmax:
         Pupp *= c
         stabmax = self.stabsolver.run(Pupp, T, yi)
         logger.debug(
-          'Pupp = %s Pa, the one-phase state is stable: %s',
+          'Pupp = %.1f Pa, the one-phase state is stable: %s',
           Pupp, stabmax.stable,
         )
         if stabmax.stable:
@@ -696,14 +696,14 @@ class PsatPT(object):
       Plow = c * P
       stabmin = self.stabsolver.run(Plow, T, yi)
       logger.debug(
-        'Plow = %s Pa, the one-phase state is stable: %s',
+        'Plow = %.1f Pa, the one-phase state is stable: %s',
         Plow, stabmin.stable,
       )
       while not stabmin.stable and Plow > Pmin:
         Plow *= c
         stabmin = self.stabsolver.run(Plow, T, yi)
         logger.debug(
-          'Plow = %s Pa, the one-phase state is stable: %s',
+          'Plow = %.1f Pa, the one-phase state is stable: %s',
           Plow, stabmin.stable,
         )
         if not stabmin.stable:
@@ -931,11 +931,14 @@ def _PsatPT_ss(
   - `success` a boolean flag indicating if the calculation
     completed successfully.
   """
+  logger.info('Saturation pressure calculation using the SS-method.')
+  Nc = eos.Nc
   logger.debug(
-    'Saturation pressure calculation using the SS-method:\n'
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPmin = %s Pa\n\tPmax = %s Pa',
-    P0, T, yi, Plow, Pupp,
+    '%3s' + Nc * '%9s' + '%12s%10s%11s',
+    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Psat, Pa', 'gnorm', 'TPD',
   )
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -949,10 +952,7 @@ def _PsatPT_ss(
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   TPD = xi.dot(gi - np.log(n))
-  logger.debug(
-    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-    k, kik, Pk, gnorm, TPD,
-  )
+  logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
     lnkik -= gi
     k += 1
@@ -962,10 +962,7 @@ def _PsatPT_ss(
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-      k, kik, Pk, gnorm, TPD,
-    )
+    logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
@@ -978,11 +975,7 @@ def _PsatPT_ss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'Saturation pressure for T = %s K, yi = %s:\n\t'
-      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tTPD = %s\n\tNiter = %s',
-      T, yi, Pk, xi, gnorm, TPD, k,
-    )
+    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
@@ -1099,11 +1092,14 @@ def _PsatPT_qnss(
   - `success` a boolean flag indicating if the calculation
     completed successfully.
   """
+  logger.info('Saturation pressure calculation using the QNSS-method.')
+  Nc = eos.Nc
   logger.debug(
-    'Saturation pressure calculation using the QNSS-method:\n'
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
-    P0, T, yi, Plow, Pupp,
+    '%3s' + Nc * '%9s' + '%12s%10s%11s',
+    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Psat, Pa', 'gnorm', 'TPD',
   )
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -1118,10 +1114,7 @@ def _PsatPT_qnss(
   gnorm = np.linalg.norm(gi)
   TPD = xi.dot(gi - np.log(n))
   lmbd = 1.
-  logger.debug(
-    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-    k, kik, Pk, gnorm, TPD,
-  )
+  logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
@@ -1141,10 +1134,7 @@ def _PsatPT_qnss(
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tPk = %s\n\tgnorm = %s\n\tTPD = %s',
-      k, kik, Pk, gnorm, TPD,
-    )
+    logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
@@ -1157,11 +1147,7 @@ def _PsatPT_qnss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'Saturation pressure for T = %s K, yi = %s:\n\t'
-      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tTPD = %s\n\tNiter = %s',
-      T, yi, Pk, xi, gnorm, TPD, k,
-    )
+    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
@@ -1422,12 +1408,15 @@ def _PsatPT_newtA(
   - `success` a boolean flag indicating if the calculation
     completed successfully.
   """
-  logger.debug(
-    "Saturation pressure calculation using Newton's method (A-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
-    P0, T, yi, Plow, Pupp,
+  logger.info(
+    "Saturation pressure calculation using Newton's method (A-form)."
   )
   Nc = eos.Nc
+  logger.debug(
+    '%3s' + Nc * '%9s' + '%12s%10s', 'Nit',
+    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Psat, Pa', 'gnorm',
+  )
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
@@ -1445,10 +1434,7 @@ def _PsatPT_newtA(
   gi[:Nc] = lnkik + lnphixi - lnphiyi
   gi[-1] = n - 1.
   gnorm = np.linalg.norm(gi)
-  logger.debug(
-    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
-    k, kik, Pk, gnorm,
-  )
+  logger.debug(tmpl, k, *lnkik, Pk, gnorm)
   while gnorm > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = ni
@@ -1476,10 +1462,7 @@ def _PsatPT_newtA(
     gi[:Nc] = lnkik + lnphixi - lnphiyi
     gi[-1] = n - 1.
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
-      k, kik, Pk, gnorm,
-    )
+    logger.debug(tmpl, k, *lnkik, Pk, gnorm)
   if gnorm < tol and np.isfinite(kik).all() and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -1491,11 +1474,7 @@ def _PsatPT_newtA(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'Saturation pressure for T = %s K, yi = %s:\n\t'
-      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
-      T, yi, Pk, xi, gnorm, k,
-    )
+    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
@@ -1641,12 +1620,15 @@ def _PsatPT_newtB(
   - `success` a boolean flag indicating if the calculation
     completed successfully.
   """
-  logger.debug(
-    "Saturation pressure calculation using Newton's method (B-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
-    P0, T, yi, Plow, Pupp,
+  logger.info(
+    "Saturation pressure calculation using Newton's method (B-form)."
   )
   Nc = eos.Nc
+  logger.debug(
+    '%3s' + Nc * '%9s' + '%12s%10s', 'Nit',
+    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Psat, Pa', 'gnorm',
+  )
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
@@ -1665,10 +1647,7 @@ def _PsatPT_newtB(
   hi = gi[:Nc] - np.log(n)
   gi[-1] = xi.dot(hi)
   gnorm = np.linalg.norm(gi)
-  logger.debug(
-    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
-    k, kik, Pk, gnorm,
-  )
+  logger.debug(tmpl, k, *lnkik, Pk, gnorm)
   while gnorm > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = xi * (hi - gi[-1])
@@ -1698,10 +1677,7 @@ def _PsatPT_newtB(
     hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s',
-      k, kik, Pk, gnorm,
-    )
+    logger.debug(tmpl, k, *lnkik, Pk, gnorm)
   if gnorm < tol and np.isfinite(kik).all() and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -1713,11 +1689,7 @@ def _PsatPT_newtB(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'Saturation pressure for T = %s K, yi = %s:\n\t'
-      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tNiter = %s',
-      T, yi, Pk, xi, gnorm, k,
-    )
+    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
@@ -1853,11 +1825,16 @@ def _PsatPT_newtC(
   - `success` a boolean flag indicating if the calculation
     completed successfully.
   """
-  logger.debug(
-    "Saturation pressure calculation using Newton's method (C-form):\n"
-    '\tP0 = %s Pa\n\tT = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa',
-    P0, T, yi, Plow, Pupp,
+  logger.info(
+    "Saturation pressure calculation using Newton's method (C-form)."
   )
+  Nc = eos.Nc
+  logger.debug(
+    '%3s' + Nc * '%9s' + '%12s%10s%11s',
+    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Psat, Pa', 'gnorm', 'TPD',
+  )
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -1872,10 +1849,7 @@ def _PsatPT_newtC(
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   TPD = ni.dot(gi)
-  logger.debug(
-    'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-    k, kik, Pk, gnorm, TPD,
-  )
+  logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
   while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)[2]
     J = I + ni * dlnphixidnj
@@ -1892,10 +1866,7 @@ def _PsatPT_newtC(
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tP = %s Pa\n\tgnorm = %s\n\tTPD = %s',
-      k, kik, Pk, gnorm, TPD,
-    )
+    logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
   if (gnorm < tol and np.abs(TPD) < tol_tpd and np.isfinite(kik).all()
       and np.isfinite(Pk)):
     rhoy = yi.dot(eos.mwi) / Zy
@@ -1908,11 +1879,7 @@ def _PsatPT_newtC(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info(
-      'Saturation pressure for T = %s K, yi = %s:\n\t'
-      'Ps = %s Pa\n\tyti = %s\n\tgnorm = %s\n\tTPD = %s\n\tNiter = %s',
-      T, yi, Pk, xi, gnorm, TPD, k,
-    )
+    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
   else:
     logger.warning(
