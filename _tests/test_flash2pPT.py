@@ -42,7 +42,7 @@ class flash(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss', tol=tol, maxiter=7,
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=7,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -60,7 +60,7 @@ class flash(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='qnss', tol=tol, maxiter=6,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=6,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -78,7 +78,7 @@ class flash(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='newton', tol=tol, maxiter=3,
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=3,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -96,7 +96,7 @@ class flash(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss-newton', tol=tol, maxiter=4,
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='ss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -119,7 +119,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss', tol=tol, maxiter=73,
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=73,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -142,7 +142,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='qnss', tol=tol, maxiter=11,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=11,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -165,7 +165,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='newton', tol=tol, maxiter=4,
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -188,7 +188,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss-newton', tol=tol, maxiter=4,
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -213,7 +213,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss', tol=tol, maxiter=11,
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=11,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -238,7 +238,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='qnss', tol=tol, maxiter=9,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=9,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -263,7 +263,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='newton', tol=tol, maxiter=5,
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=5,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -288,7 +288,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss-newton', tol=tol, maxiter=7,
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=7,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -315,7 +315,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss', tol=tol, maxiter=211,
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=211,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -342,7 +342,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='qnss', tol=tol, maxiter=36,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=36,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -369,7 +369,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='newton', tol=tol, maxiter=12,
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=12,
                       forcenewton=True, stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
@@ -396,7 +396,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='ss-newton', tol=tol, maxiter=37,
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=37,
                       maxiter_ss=30, forcenewton=True,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
@@ -424,7 +424,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, flashmethod='qnss-newton', tol=tol, maxiter=24,
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=24,
                       maxiter_qnss=20, stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))

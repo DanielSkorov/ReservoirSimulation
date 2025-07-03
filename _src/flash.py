@@ -197,7 +197,7 @@ class flash2pPT(object):
   def __init__(
     self,
     eos: EOSPTType,
-    flashmethod: str = 'ss',
+    method: str = 'ss',
     level: int = 0,
     negflash: bool = True,
     runstab: bool = True,
@@ -213,22 +213,22 @@ class flash2pPT(object):
     self.stabsolver = stabilityPT(eos, level=level, **stabkwargs)
     self.preserved = False
     self.prevkvji: None | MatrixType = None
-    if flashmethod == 'ss':
+    if method == 'ss':
       self.solver = partial(_flash2pPT_ss, eos=eos, **kwargs)
-    elif flashmethod == 'qnss':
+    elif method == 'qnss':
       self.solver = partial(_flash2pPT_qnss, eos=eos, **kwargs)
-    elif flashmethod == 'bfgs':
+    elif method == 'bfgs':
       raise NotImplementedError(
         'The BFGS-method for flash calculations is not implemented yet.'
       )
-    elif flashmethod == 'newton':
+    elif method == 'newton':
       self.solver = partial(_flash2pPT_newt, eos=eos, **kwargs)
-    elif flashmethod == 'ss-newton':
+    elif method == 'ss-newton':
       self.solver = partial(_flash2pPT_ssnewt, eos=eos, **kwargs)
-    elif flashmethod == 'qnss-newton':
+    elif method == 'qnss-newton':
       self.solver = partial(_flash2pPT_qnssnewt, eos=eos, **kwargs)
     else:
-      raise ValueError(f'The unknown flash-method: {flashmethod}.')
+      raise ValueError(f'The unknown flash-method: {method}.')
     self._1pstab_yi = np.zeros_like(eos.mwi)
     self._1pstab_Fj = np.array([1., 0.])
     pass
@@ -237,7 +237,8 @@ class flash2pPT(object):
     self,
     P: ScalarType,
     T: ScalarType,
-    yi: VectorType
+    yi: VectorType,
+    kvji0: tuple[VectorType] | None = None,
   ) -> FlashResult:
     """Performs flash calculations for given pressure, temperature and
     composition.
@@ -253,6 +254,11 @@ class flash2pPT(object):
     yi: ndarray, shape (Nc,)
       Mole fractions of `Nc` components.
 
+    kvji0: tuple[ndarray], ndarray shape (Nc,) | None
+      A tuple of initial guesses of k-values. Default is `None` which
+      means to use initial guesses from the method `getPT_kvguess` of
+      the initialized instance of an EOS.
+
     Returns
     -------
     Flash calculation results as an instance of `FlashResult` object.
@@ -263,7 +269,8 @@ class flash2pPT(object):
     - `success` a boolean flag indicating if the calculation completed
       successfully.
     """
-    kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
+    if kvji0 is None:
+      kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
     if self.useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
     if self.runstab:

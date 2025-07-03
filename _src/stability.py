@@ -198,10 +198,9 @@ class stabilityPT(object):
       Mole fractions of `Nc` components.
 
     kvji0: tuple[ndarray], ndarray shape (Nc,) | None
-      A tuple of initial guesses of k-values. `Ng` is the number
-      of guesses of k-values. Default is `None` which means to
-      use initial guesses from the method `getPT_kvguess` of the
-      initialized instance of an EOS.
+      A tuple of initial guesses of k-values. Default is `None` which
+      means to use initial guesses from the method `getPT_kvguess` of
+      the initialized instance of an EOS.
 
     Returns
     -------

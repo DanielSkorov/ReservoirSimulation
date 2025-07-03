@@ -291,13 +291,13 @@ class vdw(object):
       x2 = (-r - D) * .5
       fdG = lambda Z1, Z2: (B * (Z2 - Z1) / (Z1 - B) / (Z2 - B)
         + np.log((Z2 - B) / (Z1 - B)) + 2. * A * (Z1 - Z2) / Z1 / Z2)
-      if x2 > 0:
+      if x2 > B:
         dG = fdG(x0, x2)
         if dG < 0.:
           return x0
         else:
           return x2
-      elif x1 > 0.:
+      elif x1 > B:
         dG = fdG(x0, x1)
         if dG < 0.:
           return x0
@@ -1813,13 +1813,13 @@ class pr78(object):
                                      / (Z1 + B * 2.414213562373095)
                                      / (Z2 - B * 0.414213562373095))
                               * 0.3535533905932738 * A / B)
-      if x2 > 0:
+      if x2 > B:
         dG = fdG(x0, x2)
         if dG < 0.:
           return x0
         else:
           return x2
-      elif x1 > 0.:
+      elif x1 > B:
         dG = fdG(x0, x1)
         if dG < 0.:
           return x0
