@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
-  '%(process)d:%(name)s:%(levelname)s:\n\t%(message)s'
+  '%(process)d:%(name)s:%(levelname)s: %(message)s'
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -188,7 +188,7 @@ class flash(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
-    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=4,
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue((res.gnorm < tol) & (res.success))
