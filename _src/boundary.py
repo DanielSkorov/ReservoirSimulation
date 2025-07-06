@@ -6269,74 +6269,95 @@ def _env2pPT(
   return xk, yji, Zj, J, k, suc
 
 
-# def _xenv2pPT_P(
-#   lnP: ScalarType,
-#   lnT: ScalarType,
-#   lnkpi: VectorType,
-#   alpha0: ScalarType,
-#   lnzi: VectorType,
-#   zi: VectorType,
-#   eos: EOSPTType,
-#   tol: ScalarType = 1e-9,
-#   maxiter: int = 10,
-#   dalpha0: ScalarType = 1e-6,
-# ) -> tuple[ScalarType, VectorType]:
-#   T = np.exp(lnT)
-#   logger.debug(
-#     'Finding approximate pressure and trial phase composition for:\n\t'
-#     'T = %s K\n\tlnkpi = %s', T, lnkpi,
-#   )
-#   k = 0
-#   alphak = alpha0
-#   lnPk = lnP
-#   P = np.exp(lnPk)
-#   Yi = np.exp(lnzi + alphak * lnkpi)
-#   yi = Yi / Yi.sum()
-#   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(P, T, yi)
-#   lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(P, T, zi)
-#   lnyi = np.log(yi)
-#   di = lnyi + lnphiyi - lnzi - lnphizi
-#   g1k = yi.dot(di)
-#   g2k = zi.dot(di)
-#   gnorm = np.sqrt(g1k * g1k + g2k * g2k)
-#   logger.debug(
-#     'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
-#     k, P, alphak, gnorm,
-#   )
-#   while gnorm > tol and k < maxiter:
-#     Yi = np.exp(lnzi + (alphak + dalpha0) * lnkpi)
-#     yi = Yi / Yi.sum()
-#     lnphiyi = eos.getPT_lnphii(P, T, yi)
-#     di = np.log(yi) + lnphiyi - lnzi - lnphizi
-#     g1kp1 = yi.dot(di)
-#     g2kp1 = zi.dot(di)
-#     ddidP = dlnphiyidP - dlnphizidP
-#     dg1dlnP = P * yi.dot(ddidP)
-#     dg2dlnP = P * zi.dot(ddidP)
-#     dg1dalpha = (g1kp1 - g1k) / dalpha0
-#     dg2dalpha = (g2kp1 - g2k) / dalpha0
-#     D = 1. / (dg1dlnP * dg2dalpha - dg1dalpha * dg2dlnP)
-#     dlnP = D * (dg1dalpha * g2kp1 - dg2dalpha * g1kp1)
-#     dalpha = D * (dg2dlnP * g1kp1 - dg1dlnP * g2kp1)
-#     k += 1
-#     lnPk += dlnP
-#     alphak += dalpha
-#     if np.abs(dalpha / alphak) < tol:
-#       break
-#     P = np.exp(lnPk)
-#     Yi = np.exp(lnzi + alphak * lnkpi)
-#     yi = Yi / Yi.sum()
-#     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(P, T, yi)
-#     lnphizi, Zz, dlnphizidP = eos.getPT_lnphii_Z_dP(P, T, zi)
-#     lnyi = np.log(yi)
-#     di = lnyi + lnphiyi - lnzi - lnphizi
-#     g1k = yi.dot(di)
-#     g2k = zi.dot(di)
-#     gnorm = np.sqrt(g1k * g1k + g2k * g2k)
-#     logger.debug(
-#       'Iteration #%s:\n\tP = %s Pa, alpha = %s, gnorm = %s',
-#       k, P, alphak, gnorm,
-#     )
-#   return lnPk, lnyi - lnzi, alphak
 
+def _xenv2pPT(
+  x0: VectorType,
+  alpha: VectorType,
+  lnkpi: VectorType,
+  Fv: ScalarType,
+  zi: VectorType,
+  eos: EOSPTType,
+  tol: ScalarType = 1e-14,
+  maxiter: int = 5,
+  miniter: int = 1,
+  lnPmin: ScalarType = 0.,
+  lnPmax: ScalarType = 18.42,
+  lnTmin: ScalarType = 5.154,
+  lnTmax: ScalarType = 6.881,
+  inplace: bool = True,
+) -> None | tuple[VectorType]:
+  k = 0
+  logger.debug(
+    'Solving the system of equations of the approximate phase boundary for: '
+    'Fv = %.3f, alpha = %.3f', Fv, alpha,
+  )
+  logger.debug('%3s%9s%8s%10s%10s', 'Nit', 'lnP', 'lnT', 'gnorm', 'dx2')
+  tmpl = '%3s %8.4f %7.4f %9.2e %9.2e'
+  dx = np.empty_like(x0)
+  Yi = zi * np.exp(alpha * lnkpi)
+  yi = Yi / Yi.sum()
+  lnkvi = np.log(yi / zi)
+  if inplace:
+    xk = x0
+  else:
+    xk = x0.flatten()
+  P = np.exp(xk[0])
+  T = np.exp(xk[1])
+  lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
+  lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
+  di = lnkvi + lnphiyi - lnphizi
+  g1 = yi.dot(di)
+  g2 = zi.dot(di)
+  gnorm = np.sqrt(g1 * g1 + g2 * g2)
+  ddidP = dlnphiyidP - dlnphizidP
+  ddidT = dlnphiyidT - dlnphizidT
+  dg1dlnP = P * yi.dot(ddidP)
+  dg2dlnP = P * zi.dot(ddidP)
+  dg1dlnT = T * yi.dot(ddidT)
+  dg2dlnT = T * zi.dot(ddidT)
+  D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
+  dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
+  dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
+  dx2 = dx.dot(dx)
+  ongoing = dx2 > tol
+  logger.debug(tmpl, k, *xk, gnorm, dx2)
+  while dx2 > tol and k < maxiter:
+    xkp1 = xk + dx
+    if xkp1[0] > lnPmax:
+      xkp1[0] = .5 * (xk[0] + lnPmax)
+    elif xkp1[0] < lnPmin:
+      xkp1[0] = .5 * (xk[0] + lnPmin)
+    if xkp1[1] > lnTmax:
+      xkp1[1] = .5 * (xk[1] + lnTmax)
+    elif xkp1[1] < lnTmin:
+      xkp1[1] = .5 * (xk[1] + lnTmin)
+    if inplace:
+      xk[:] = xkp1
+    else:
+      xk = xkp1
+    k += 1
+    P = np.exp(xk[0])
+    T = np.exp(xk[1])
+    lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
+    lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
+    di = lnkvi + lnphiyi - lnphizi
+    g1 = yi.dot(di)
+    g2 = zi.dot(di)
+    gnorm = np.sqrt(g1 * g1 + g2 * g2)
+    ddidP = dlnphiyidP - dlnphizidP
+    ddidT = dlnphiyidT - dlnphizidT
+    dg1dlnP = P * yi.dot(ddidP)
+    dg2dlnP = P * zi.dot(ddidP)
+    dg1dlnT = T * yi.dot(ddidT)
+    dg2dlnT = T * zi.dot(ddidT)
+    D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
+    dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
+    dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
+    dx2 = dx.dot(dx)
+    ongoing = dx2 > tol
+    logger.debug(tmpl, k, *xk, gnorm, dx2)
+  if inplace:
+    pass
+  else:
+    return xk, lnkvi, np.array([Zy, Zz])
 
