@@ -9,14 +9,42 @@ import numpy as np
 from typing import Callable
 
 from custom_types import (
-  ScalarType,
-  VectorType,
-  MatrixType,
-  EOSPTType,
+  Scalar,
+  Vector,
+  Matrix,
+  Eos,
 )
 
 
 logger = logging.getLogger('stab')
+
+
+class StabEosPT(Eos):
+
+  def getPT_kvguess(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+    level: int,
+    idx: int,
+    eps: Scalar,
+  ) -> tuple[Vector, ...]: ...
+
+  def getPT_lnphii_Z(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+  ) -> tuple[Vector, Scalar]: ...
+
+  def getPT_lnphii_Z_dnj(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+    n: Scalar,
+  ) -> tuple[Vector, Scalar, Matrix]: ...
 
 
 class StabResult(dict):
@@ -27,23 +55,23 @@ class StabResult(dict):
   stable: bool
     A boolean flag indicating if the one-phase state is stable.
 
-  TPD: float
+  TPD: Scalar
     The tangent-plane distance at a local minimum of the potential
     energy function.
 
-  Z: float
+  Z: Scalar
     The compressibility factor of the tested mixture at a given
     pressure and temperature.
 
-  yti: ndarray, shape (Nc,)
+  yti: Vector, shape (Nc,)
     The trial-phase composition if it was found. `Nc` is the number
     of components.
 
-  kvji: tuple[ndarray]
+  kvji: tuple[Vector, ...]
     K-values of `Nc` components in the trial phase and given mixture.
     They may be further used as an initial guess for flash calculations.
 
-  gnorm: float
+  gnorm: Scalar
     The norm of the vector of equilibrium equations.
 
   success: bool
@@ -78,39 +106,49 @@ class stabilityPT(object):
 
   Parameters
   ----------
-  eos: EOSPTType
+  eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P, T, yi, level) -> tuple[ndarray]`
-      This method is used to generate initial guesses of k-values.
+    - `getPT_kvguess(P: Scalar, T: Scalar,
+                     yi: Vector, level: int) -> tuple[Vector, ...]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
 
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and composition
-      (ndarray of shape `(Nc,)`), this method must return a tuple that
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - a vector of logarithms of the fugacity coefficients of
-        components (ndarray of shape `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the phase compressibility factor of the mixture.
 
     If the solution method would be one of `'newton'`, `'ss-newton'` or
     `'qnss-newton'` then it also must have:
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K], phase composition
-      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients (ndarray of shape
-        `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the mixture compressibility factor,
       - partial derivatives of logarithms of the fugacity coefficients
-        with respect to components mole numbers (ndarray of shape
-        `(Nc, Nc)`) .
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
 
   method: str
-    Type of solver. Should be one of:
+    Type of a solver. Should be one of:
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution),
@@ -125,7 +163,8 @@ class stabilityPT(object):
 
   level: int
     Regulates a set of initial k-values obtained by the method
-    `eos.getPT_kvguess(P, T, yi, level)`. Default is `0`.
+    `getPT_kvguess` of the initialized instance of an EOS.
+    Default is `0`.
 
   useprev: bool
     Allows to preseve previous calculation results (if the solution
@@ -139,15 +178,15 @@ class stabilityPT(object):
 
   Methods
   -------
-  run(P, T, yi) -> StabResult
+  run(P: Scalar, T: Scalar, yi: Vector) -> StabResult
     This method performs stability test procedure for a given pressure
-    `P: float` in [Pa], temperature `T: float` in [K], composition
-    `yi: ndarray` of `Nc` components, and returns stability test
-    results as an instance of `StabResult`.
+    `P` in [Pa], temperature `T` in [K], mole composition `yi` of shape
+    `(Nc,)`, and returns stability test results as an instance of
+    `StabResult`.
   """
   def __init__(
     self,
-    eos: EOSPTType,
+    eos: StabEosPT,
     method: str = 'ss',
     level: int = 0,
     useprev: bool = False,
@@ -156,7 +195,7 @@ class stabilityPT(object):
     self.eos = eos
     self.level = level
     self.useprev = useprev
-    self.prevkvji: None | tuple[VectorType] = None
+    self.prevkvji: None | tuple[Vector, ...] = None
     self.preserved = False
     if method == 'ss':
       self.solver = partial(_stabPT_ss, eos=eos, **kwargs)
@@ -178,29 +217,30 @@ class stabilityPT(object):
 
   def run(
     self,
-    P: ScalarType,
-    T: ScalarType,
-    yi: VectorType,
-    kvji0: tuple[VectorType] | None = None,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+    kvji0: tuple[Vector, ...] | None = None,
   ) -> StabResult:
     """Performs the stability test for a given pressure, temperature
     and composition.
 
     Parameters
     ----------
-    P: float
-      Pressure of a mixture [Pa].
+    P: Scalar
+      Pressure of the mixture [Pa].
 
-    T: float
-      Temperature of a mixture [K].
+    T: Scalar
+      Temperature of the mixture [K].
 
-    yi: ndarray, shape (Nc,)
+    yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    kvji0: tuple[ndarray], ndarray shape (Nc,) | None
-      A tuple of initial guesses of k-values. Default is `None` which
-      means to use initial guesses from the method `getPT_kvguess` of
-      the initialized instance of an EOS.
+    kvji0: tuple[Vector, ...] | None
+      A tuple containing arrays of initial k-value guesses. Each array's
+      shape should be `(Nc,)`. Default is `None` which means to use
+      initial guesses from the method `getPT_kvguess` of the initialized
+      instance of an EOS.
 
     Returns
     -------
@@ -224,13 +264,13 @@ class stabilityPT(object):
 
 
 def _stabPT_ss(
-  P: ScalarType,
-  T: ScalarType,
-  yi: VectorType,
-  kvji0: tuple[VectorType],
-  eos: EOSPTType,
-  eps: ScalarType = -1e-4,
-  tol: ScalarType = 1e-6,
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  kvji0: tuple[Vector, ...],
+  eos: StabEosPT,
+  eps: Scalar = -1e-4,
+  tol: Scalar = 1e-6,
   maxiter: int = 50,
 ) -> StabResult:
   """Successive Substitution (SS) method to perform the stability test
@@ -238,36 +278,43 @@ def _stabPT_ss(
 
   Parameters
   ----------
-  P: float
-    Pressure of a mixture [Pa].
+  P: Scalar
+    Pressure of the mixture [Pa].
 
-  T: float
-    Temperature of a mixture [K].
+  T: Scalar
+    Temperature of the mixture [K].
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[ndarray]
-    Initial guesses for k-values of `Nc` components.
+  kvji0: tuple[Vector, ...]
+    A tuple containing arrays of initial k-value guesses. Each array's
+    shape should be `(Nc,)`.
 
-  eos: EOSPTType
+  eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and composition
-      (ndarray of shape `(Nc,)`), this method must return a tuple that
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - a vector of logarithms of the fugacity coefficients of
-        components (ndarray of shape `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the phase compressibility factor of the mixture.
 
-  eps: float
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+  eps: Scalar
     System will be considered unstable when `TPD < eps`.
     Default is `-1e-4`.
 
-  tol: float
+  tol: Scalar
     Terminate successfully if the norm of the equilibrium equations
     vector is less than `tol`. Default is `1e-6`.
 
@@ -278,48 +325,40 @@ def _stabPT_ss(
   -------
   Stability test results as an instance of `StabResult`. Important
   attributes are:
-
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function,
   - `success` a boolean flag indicating if the calculation completed
     successfully.
   """
+  logger.info('Stability Test (SS-method).')
+  Nc = eos.Nc
   logger.debug(
-    'Stability Test (SS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
-    P, T, yi,
+    '%3s%5s' + Nc * '%9s' + '%11s',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'gnorm',
   )
+  tmpl = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
-  hi = lnphiyi + np.log(yi)
   for j, kvi0 in enumerate(kvji0):
-    logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kik = kvi0.flatten()
-    ni = kik * yi
+    lnkik = np.log(kvi0)
+    ni = kvi0 * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-    gi = np.log(ni) + lnphixi - hi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
-    )
+    logger.debug(tmpl, j, k, *lnkik, gnorm)
     while gnorm > tol and k < maxiter:
       k += 1
-      kik *= np.exp(-gi)
-      ni = kik * yi
+      lnkik -= gi
+      ni = np.exp(lnkik) * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-      gi = np.log(ni) + lnphixi - hi
+      gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      logger.debug(
-        'Iteration #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
-      )
-    if gnorm < tol and np.isfinite(kik).all():
+      logger.debug(tmpl, j, k, *lnkik, gnorm)
+    if gnorm < tol and np.isfinite(gnorm):
       TPD = -np.log(ni.sum())
       if TPD < eps:
-        logger.info(
-          'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-          'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-          P, T, yi, kik, TPD, gnorm, k,
-        )
+        logger.info('The system is unstable. TPD = %.3e.', TPD)
         n = ni.sum()
         xi = ni / n
         kvji = xi / yi, yi / xi
@@ -328,12 +367,7 @@ def _stabPT_ss(
                           lnphiyti=lnphixi, success=True)
   else:
     TPD = -np.log(ni.sum())
-    logger.info(
-      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
-      'The last kv-loop iteration results:\n\t'
-      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, kik, TPD, gnorm, k,
-    )
+    logger.info('The system is stable. TPD = %.3e.', TPD)
     n = ni.sum()
     xi = ni / n
     kvji = xi / yi, yi / xi
@@ -343,13 +377,13 @@ def _stabPT_ss(
 
 
 def _stabPT_qnss(
-  P: ScalarType,
-  T: ScalarType,
-  yi: VectorType,
-  kvji0: tuple[VectorType],
-  eos: EOSPTType,
-  eps: ScalarType = -1e-4,
-  tol: ScalarType = 1e-6,
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  kvji0: tuple[Vector, ...],
+  eos: StabEosPT,
+  eps: Scalar = -1e-4,
+  tol: Scalar = 1e-6,
   maxiter: int = 50,
 ) -> StabResult:
   """QNSS-method to perform the stability test using a PT-based
@@ -362,36 +396,43 @@ def _stabPT_qnss(
 
   Parameters
   ----------
-  P: float
-    Pressure of a mixture [Pa].
+  P: Scalar
+    Pressure of the mixture [Pa].
 
-  T: float
-    Temperature of a mixture [K].
+  T: Scalar
+    Temperature of the mixture [K].
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[ndarray]
-    Initial guesses for k-values of `Nc` components.
+  kvji0: tuple[Vector, ...]
+    A tuple containing arrays of initial k-value guesses. Each array's
+    shape should be `(Nc,)`.
 
-  eos: EOSPTType
+  eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and composition
-      (ndarray of shape `(Nc,)`), this method must return a tuple that
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - a vector of logarithms of the fugacity coefficients of
-        components (ndarray of shape `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the phase compressibility factor of the mixture.
 
-  eps: float
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+  eps: Scalar
     System will be considered unstable when `TPD < eps`.
     Default is `-1e-4`.
 
-  tol: float
+  tol: Scalar
     Terminate successfully if the norm of the equilibrium equations
     vector is less than `tol`. Default is `1e-6`.
 
@@ -401,29 +442,29 @@ def _stabPT_qnss(
   Returns
   -------
   Stability test results as an instance of `StabResult`. Important
-  properties are: `stab` a boolean flag indicating if a one-phase
-  state is stable, `TPD` the tangent-plane distance at a local minima
-  of the Gibbs energy function, `success` a boolean flag indicating
-  if the calculation completed successfully.
+  attributes are:
+  - `stab` a boolean flag indicating if a one-phase state is stable,
+  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+    energy function,
+  - `success` a boolean flag indicating if the calculation completed
+    successfully.
   """
+  logger.info('Stability Test (QNSS-method).')
+  Nc = eos.Nc
   logger.debug(
-    'Stability Test (QNSS-method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
-    P, T, yi,
+    '%3s%5s' + Nc * '%9s' + '%11s',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'gnorm',
   )
+  tmpl = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
-  hi = lnphiyi + np.log(yi)
   for j, kvi0 in enumerate(kvji0):
-    logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kik = kvi0.flatten()
-    ni = kik * yi
+    lnkik = np.log(kvi0)
+    ni = kvi0 * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-    gi = np.log(ni) + lnphixi - hi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tgnorm = %s\n\tlmbd = %s',
-      k, kik, gnorm, 1.,
-    )
+    logger.debug(tmpl, j, k, *lnkik, gnorm)
     lmbd = 1.
     while gnorm > tol and k < maxiter:
       dlnki = -lmbd * gi
@@ -434,28 +475,21 @@ def _stabPT_qnss(
         dlnki *= relax
       k += 1
       tkm1 = dlnki.dot(gi)
-      kik *= np.exp(dlnki)
-      ni = kik * yi
+      lnkik += dlnki
+      ni = np.exp(lnkik) * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-      gi = np.log(ni) + lnphixi - hi
+      gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      logger.debug(
-        'Iteration #%s:\n\tki = %s\n\tgnorm = %s\n\tlmbd = %s',
-        k, kik, gnorm, lmbd,
-      )
+      logger.debug(tmpl, j, k, *lnkik, gnorm)
       if gnorm < tol:
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if gnorm < tol and np.isfinite(kik).all():
+    if gnorm < tol and np.isfinite(gnorm):
       TPD = -np.log(ni.sum())
       if TPD < eps:
-        logger.info(
-          'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-          'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-          P, T, yi, kik, TPD, gnorm, k,
-        )
+        logger.info('The system is unstable. TPD = %.3e.', TPD)
         n = ni.sum()
         xi = ni / n
         kvji = xi / yi, yi / xi
@@ -464,12 +498,7 @@ def _stabPT_qnss(
                           lnphiyti=lnphixi, success=True)
   else:
     TPD = -np.log(ni.sum())
-    logger.info(
-      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
-      'The last kv-loop iteration results:\n\t'
-      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, kik, TPD, gnorm, k,
-    )
+    logger.info('The system is stable. TPD = %.3e.', TPD)
     n = ni.sum()
     xi = ni / n
     kvji = xi / yi, yi / xi
@@ -479,16 +508,16 @@ def _stabPT_qnss(
 
 
 def _stabPT_newt(
-  P: ScalarType,
-  T: ScalarType,
-  yi: VectorType,
-  kvji0: tuple[VectorType],
-  eos: EOSPTType,
-  eps: ScalarType = -1e-4,
-  tol: ScalarType = 1e-6,
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  kvji0: tuple[Vector, ...],
+  eos: StabEosPT,
+  eps: Scalar = -1e-4,
+  tol: Scalar = 1e-6,
   maxiter: int = 20,
   forcenewton: bool = False,
-  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
   distance function using Newton's method and a PT-based equation
@@ -498,48 +527,56 @@ def _stabPT_newt(
 
   Parameters
   ----------
-  P: float
-    Pressure of a mixture [Pa].
+  P: Scalar
+    Pressure of the mixture [Pa].
 
-  T: float
-    Temperature of a mixture [K].
+  T: Scalar
+    Temperature of the mixture [K].
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[ndarray]
-    Initial guesses for k-values of `Nc` components.
+  kvji0: tuple[Vector, ...]
+    A tuple containing arrays of initial k-value guesses. Each array's
+    shape should be `(Nc,)`.
 
-  eos: EOSPTType
+  eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and composition
-      (ndarray of shape `(Nc,)`), this method must return a tuple that
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - a vector of logarithms of the fugacity coefficients of
-        components (ndarray of shape `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the phase compressibility factor of the mixture.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K], phase composition
-      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients (ndarray of shape
-        `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the mixture compressibility factor,
       - partial derivatives of logarithms of the fugacity coefficients
-        with respect to components mole numbers (ndarray of shape
-        `(Nc, Nc)`) .
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
 
-  eps: float
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+  eps: Scalar
     System will be considered unstable when `TPD < eps`.
     Default is `-1e-4`.
 
-  tol: float
+  tol: Scalar
     Terminate Newton's method successfully if the norm of the gradient
     of Michelsen's modified tangent-plane distance function is less than
     `tol`. Default is `1e-6`.
@@ -552,9 +589,9 @@ def _stabPT_newt(
     switch from Newton's method to successive substitution iterations.
     Default is `False`.
 
-  linsolver: Callable[[ndarray, ndarray], ndarray]
+  linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
-    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
@@ -562,24 +599,25 @@ def _stabPT_newt(
   -------
   Stability test results as an instance of `StabResult`. Important
   attributes are:
-
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function,
   - `success` a boolean flag indicating if the calculation completed
     successfully.
   """
+  logger.info("Stability Test (Newton's method).")
+  Nc = eos.Nc
   logger.debug(
-    "Stability Test (Newton's method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s",
-    P, T, yi,
+    '%3s%5s' + Nc * '%9s' + '%11s%9s',
+    'Nkv', 'Nit', *map(lambda s: 'alpha' + s, map(str, range(Nc))),
+    'gnorm', 'method',
   )
+  tmpl = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   hi = lnphiyi + np.log(yi)
   for j, kvi0 in enumerate(kvji0):
-    logger.debug('The kv-loop iteration number = %s', j)
     k = 0
-    kik = kvi0.flatten()
-    ni = kik * yi
+    ni = kvi0 * yi
     sqrtni = np.sqrt(ni)
     alphaik = 2. * sqrtni
     n = ni.sum()
@@ -587,10 +625,7 @@ def _stabPT_newt(
     lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
     gi = sqrtni * (np.log(ni) + lnphixi - hi)
     gnorm = np.linalg.norm(gi)
-    logger.debug(
-      'Iteration #%s:\n\tki = %s\n\tgnorm = %s',
-      k, kik, gnorm,
-    )
+    logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
     while gnorm > tol and k < maxiter:
       H = np.diagflat(.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
       dalphai = linsolver(H, -gi)
@@ -605,11 +640,8 @@ def _stabPT_newt(
       gnormkp1 = np.linalg.norm(gi)
       if gnormkp1 < gnorm or forcenewton:
         gnorm = gnormkp1
-        logger.debug(
-          'Iteration #%s:\n\tki = %s\n\tgnorm = %s', k, ni/yi, gnorm,
-        )
+        logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
       else:
-        # TODO: implement TR-step
         ni *= np.exp(-gi / sqrtni)
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
@@ -618,17 +650,11 @@ def _stabPT_newt(
         lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
         gi = sqrtni * (np.log(ni) + lnphixi - hi)
         gnorm = np.linalg.norm(gi)
-        logger.debug(
-          'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s', k, ni/yi, gnorm,
-        )
-    if gnorm < tol and np.isfinite(kik).all():
+        logger.debug(tmpl, j, k, *alphaik, gnorm, 'ss')
+    if gnorm < tol and np.isfinite(gnorm):
       TPD = -np.log(ni.sum())
       if TPD < eps:
-        logger.info(
-          'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-          'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-          P, T, yi, ni/yi, TPD, gnorm, k,
-        )
+        logger.info('The system is unstable. TPD = %.3e.', TPD)
         n = ni.sum()
         xi = ni / n
         kvji = xi / yi, yi / xi
@@ -637,12 +663,7 @@ def _stabPT_newt(
                           lnphiyti=lnphixi, success=True)
   else:
     TPD = -np.log(ni.sum())
-    logger.info(
-      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
-      'The last kv-loop iteration results:\n\t'
-      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, ni/yi, TPD, gnorm, k,
-    )
+    logger.info('The system is stable. TPD = %.3e.', TPD)
     n = ni.sum()
     xi = ni / n
     kvji = xi / yi, yi / xi
@@ -652,18 +673,18 @@ def _stabPT_newt(
 
 
 def _stabPT_ssnewt(
-  P: ScalarType,
-  T: ScalarType,
-  yi: VectorType,
-  kvji0: tuple[VectorType],
-  eos: EOSPTType,
-  eps: ScalarType = -1e-4,
-  tol: ScalarType = 1e-6,
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  kvji0: tuple[Vector, ...],
+  eos: StabEosPT,
+  eps: Scalar = -1e-4,
+  tol: Scalar = 1e-6,
   maxiter: int = 30,
-  tol_ss: ScalarType = 1e-2,
+  tol_ss: Scalar = 1e-2,
   maxiter_ss: int = 10,
   forcenewton: bool = False,
-  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
   distance function using Newton's method and a PT-based equation
@@ -674,48 +695,56 @@ def _stabPT_ssnewt(
 
   Parameters
   ----------
-  P: float
-    Pressure of a mixture [Pa].
+  P: Scalar
+    Pressure of the mixture [Pa].
 
-  T: float
-    Temperature of a mixture [K].
+  T: Scalar
+    Temperature of the mixture [K].
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[ndarray]
-    Initial guesses for k-values of `Nc` components.
+  kvji0: tuple[Vector, ...]
+    A tuple containing arrays of initial k-value guesses. Each array's
+    shape should be `(Nc,)`.
 
-  eos: EOSPTType
+  eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and composition
-      (ndarray of shape `(Nc,)`), this method must return a tuple that
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - a vector of logarithms of the fugacity coefficients of
-        components (ndarray of shape `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the phase compressibility factor of the mixture.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K], phase composition
-      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients (ndarray of shape
-        `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the mixture compressibility factor,
       - partial derivatives of logarithms of the fugacity coefficients
-        with respect to components mole numbers (ndarray of shape
-        `(Nc, Nc)`) .
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
 
-  eps: float
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+  eps: Scalar
     System will be considered unstable when `TPD < eps`.
     Default is `-1e-4`.
 
-  tol: float
+  tol: Scalar
     Terminate Newton's method successfully if the norm of the gradient
     of Michelsen's modified tangent-plane distance function is less than
     `tol`. Default is `1e-6`.
@@ -724,7 +753,7 @@ def _stabPT_ssnewt(
     The maximum number of iterations (total number, for both methods).
     Default is `30`.
 
-  tol_ss: float
+  tol_ss: Scalar
     Switch to Newton's method if the norm of the vector of equilibrium
     equations is less than `tol_ss`. Default is `1e-2`.
 
@@ -737,9 +766,9 @@ def _stabPT_ssnewt(
     switch from Newton's method to successive substitution iterations.
     Default is `False`.
 
-  linsolver: Callable[[ndarray, ndarray], ndarray]
+  linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
-    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
@@ -747,49 +776,42 @@ def _stabPT_ssnewt(
   -------
   Stability test results as an instance of `StabResult`. Important
   attributes are:
-
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function,
   - `success` a boolean flag indicating if the calculation completed
     successfully.
   """
-  logger.debug(
-    'Stability Test (SS-Newton method)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
-    P, T, yi,
-  )
+  logger.info("Stability Test (SS-Newton method).")
+  Nc = eos.Nc
+  tmpl = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
-  hi = lnphiyi + np.log(yi)
   for j, kvi0 in enumerate(kvji0):
-    logger.debug('The kv-loop iteration number = %s', j)
-    k = 0
-    kik = kvi0.flatten()
-    ni = kik * yi
-    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-    gi = np.log(ni) + lnphixi - hi
-    gnorm = np.linalg.norm(gi)
     logger.debug(
-      'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
+      '%3s%5s' + Nc * '%9s' + '%11s%9s',
+      'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+      'gnorm', 'method',
     )
+    k = 0
+    lnkik = np.log(kvi0)
+    ni = kvi0 * yi
+    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
+    gi = lnkik + lnphixi - lnphiyi
+    gnorm = np.linalg.norm(gi)
+    logger.debug(tmpl, j, k, *lnkik, gnorm, 'ss')
     while gnorm > tol_ss and k < maxiter_ss:
       k += 1
-      kik *= np.exp(-gi)
-      ni = kik * yi
+      lnkik -= gi
+      ni = np.exp(lnkik) * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-      gi = np.log(ni) + lnphixi - hi
+      gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      logger.debug(
-        'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
-      )
-    if np.isfinite(kik).all():
+      logger.debug(tmpl, j, k, *lnkik, gnorm, 'ss')
+    if np.isfinite(gnorm):
       if gnorm < tol:
         TPD = -np.log(ni.sum())
         if TPD < eps:
-          logger.info(
-            'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-            'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-            P, T, yi, kik, TPD, gnorm, k,
-          )
+          logger.info('The system is unstable. TPD = %.3e.', TPD)
           n = ni.sum()
           xi = ni / n
           kvji = xi / yi, yi / xi
@@ -797,6 +819,7 @@ def _stabPT_ssnewt(
                             TPD=TPD, Z=Z, Zt=Zx, lnphiyi=lnphiyi,
                             lnphiyti=lnphixi, success=True)
       else:
+        hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
         n = ni.sum()
@@ -805,9 +828,11 @@ def _stabPT_ssnewt(
         gi = sqrtni * (np.log(ni) + lnphixi - hi)
         gnorm = np.linalg.norm(gi)
         logger.debug(
-          'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
-          k, kik, gnorm,
+          '%3s%5s' + Nc * '%9s' + '%11s%9s',
+          'Nkv', 'Nit', *map(lambda s: 'alpha' + s, map(str, range(Nc))),
+          'gnorm', 'method',
         )
+        logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
         while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
@@ -823,12 +848,8 @@ def _stabPT_ssnewt(
           gnormkp1 = np.linalg.norm(gi)
           if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
-            logger.debug(
-              'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
-              k, ni/yi, gnorm,
-            )
+            logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
           else:
-            # TODO: implement TR-step
             ni *= np.exp(-gi / sqrtni)
             sqrtni = np.sqrt(ni)
             alphaik = 2. * sqrtni
@@ -837,18 +858,11 @@ def _stabPT_ssnewt(
             lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
             gi = sqrtni * (np.log(ni) + lnphixi - hi)
             gnorm = np.linalg.norm(gi)
-            logger.debug(
-              'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s',
-              k, ni/yi, gnorm,
-            )
-        if gnorm < tol and np.isfinite(alphaik).all():
+            logger.debug(tmpl, j, k, *alphaik, gnorm, 'ss')
+        if gnorm < tol and np.isfinite(gnorm):
           TPD = -np.log(ni.sum())
           if TPD < eps:
-            logger.info(
-              'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-              'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-              P, T, yi, ni/yi, TPD, gnorm, k,
-            )
+            logger.info('The system is unstable. TPD = %.3e.', TPD)
             n = ni.sum()
             xi = ni / n
             kvji = xi / yi, yi / xi
@@ -857,12 +871,7 @@ def _stabPT_ssnewt(
                               lnphiyti=lnphixi, success=True)
   else:
     TPD = -np.log(ni.sum())
-    logger.info(
-      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
-      'The last kv-loop iteration results:\n\t'
-      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, ni/yi, TPD, gnorm, k,
-    )
+    logger.info('The system is stable. TPD = %.3e.', TPD)
     n = ni.sum()
     xi = ni / n
     kvji = xi / yi, yi / xi
@@ -872,18 +881,18 @@ def _stabPT_ssnewt(
 
 
 def _stabPT_qnssnewt(
-  P: ScalarType,
-  T: ScalarType,
-  yi: VectorType,
-  kvji0: tuple[VectorType],
-  eos: EOSPTType,
-  eps: ScalarType = -1e-4,
-  tol: ScalarType = 1e-6,
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  kvji0: tuple[Vector, ...],
+  eos: StabEosPT,
+  eps: Scalar = -1e-4,
+  tol: Scalar = 1e-6,
   maxiter: int = 30,
-  tol_qnss: ScalarType = 1e-2,
+  tol_qnss: Scalar = 1e-2,
   maxiter_qnss: int = 10,
   forcenewton: bool = False,
-  linsolver: Callable[[MatrixType, VectorType], VectorType] = np.linalg.solve,
+  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
   distance function using Newton's method and a PT-based equation of
@@ -896,48 +905,56 @@ def _stabPT_qnssnewt(
 
   Parameters
   ----------
-  P: float
-    Pressure of a mixture [Pa].
+  P: Scalar
+    Pressure of the mixture [Pa].
 
-  T: float
-    Temperature of a mixture [K].
+  T: Scalar
+    Temperature of the mixture [K].
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[ndarray]
-    Initial guesses for k-values of `Nc` components.
+  kvji0: tuple[Vector, ...]
+    A tuple containing arrays of initial k-value guesses. Each array's
+    shape should be `(Nc,)`.
 
-  eos: EOSPTType
+  eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P, T, yi) -> tuple[ndarray, float]`
-      For a given pressure [Pa], temperature [K] and composition
-      (ndarray of shape `(Nc,)`), this method must return a tuple that
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - a vector of logarithms of the fugacity coefficients of
-        components (ndarray of shape `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the phase compressibility factor of the mixture.
 
-    - `getPT_lnphii_Z_dnj(P, T, yi, n) -> tuple[ndarray, float, ndarray]`
-      For a given pressure [Pa], temperature [K], phase composition
-      (ndarray of shape `(Nc,)`) and phase mole number [mol], this
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients (ndarray of shape
-        `(Nc,)`),
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
       - the mixture compressibility factor,
       - partial derivatives of logarithms of the fugacity coefficients
-        with respect to components mole numbers (ndarray of shape
-        `(Nc, Nc)`) .
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
 
-  eps: float
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+  eps: Scalar
     System will be considered unstable when `TPD < eps`.
     Default is `-1e-4`.
 
-  tol: float
+  tol: Scalar
     Terminate Newton's method successfully if the norm of the gradient
     of Michelsen's modified tangent-plane distance function is less than
     `tol`. Default is `1e-6`.
@@ -946,7 +963,7 @@ def _stabPT_qnssnewt(
     The maximum number of iterations (total number, for both methods).
     Default is `30`.
 
-  tol_qnss: float
+  tol_qnss: Scalar
     Switch to Newton's method if the norm of the vector of equilibrium
     equations is less than `tol_qnss`. Default is `1e-2`.
 
@@ -959,9 +976,9 @@ def _stabPT_qnssnewt(
     switch from Newton's method to successive substitution iterations.
     Default is `False`.
 
-  linsolver: Callable[[ndarray, ndarray], ndarray]
+  linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
-    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
@@ -976,24 +993,24 @@ def _stabPT_qnssnewt(
   - `success` a boolean flag indicating if the calculation completed
     successfully.
   """
-  logger.debug(
-    'Stability Test (QNSS-Newton)\n\tP = %s Pa\n\tT = %s K\n\tyi = %s',
-    P, T, yi,
-  )
+  logger.info("Stability Test (QNSS-Newton method).")
+  Nc = eos.Nc
+  tmpl = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
-  hi = lnphiyi + np.log(yi)
   for j, kvi0 in enumerate(kvji0):
-    logger.debug('The kv-loop iteration number = %s', j)
+    logger.debug(
+      '%3s%5s' + Nc * '%9s' + '%11s%9s',
+      'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+      'gnorm', 'method',
+    )
     k = 0
-    kik = kvi0.flatten()
-    ni = kik * yi
+    lnkik = np.log(kvi0)
+    ni = kvi0 * yi
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-    gi = np.log(ni) + lnphixi - hi
+    gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     lmbd = 1.
-    logger.debug(
-      'Iteration (QNSS) #%s:\n\tki = %s\n\tgnorm = %s', k, kik, gnorm,
-    )
+    logger.debug(tmpl, j, k, *lnkik, gnorm, 'qnss')
     while gnorm > tol_qnss and k < maxiter_qnss:
       dlnki = -lmbd * gi
       max_dlnki = np.abs(dlnki).max()
@@ -1003,29 +1020,22 @@ def _stabPT_qnssnewt(
         dlnki *= relax
       k += 1
       tkm1 = dlnki.dot(gi)
-      kik *= np.exp(dlnki)
-      ni = kik * yi
+      lnkik += dlnki
+      ni = np.exp(lnkik) * yi
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, ni/ni.sum())
-      gi = np.log(ni) + lnphixi - hi
+      gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      logger.debug(
-        'Iteration (QNSS) #%s:\n\tki = %s\n\tgnorm = %s\n\tlmbd = %s',
-        k, kik, gnorm, lmbd,
-      )
+      logger.debug(tmpl, j, k, *lnkik, gnorm, 'qnss')
       if gnorm < tol_qnss:
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if np.isfinite(kik).all():
+    if np.isfinite(gnorm):
       if gnorm < tol:
         TPD = -np.log(ni.sum())
         if TPD < eps:
-          logger.info(
-            'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-            'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-            P, T, yi, kik, TPD, gnorm, k,
-          )
+          logger.info('The system is unstable. TPD = %.3e.', TPD)
           n = ni.sum()
           xi = ni / n
           kvji = xi / yi, yi / xi
@@ -1033,6 +1043,7 @@ def _stabPT_qnssnewt(
                             TPD=TPD, Z=Z, Zt=Zx, lnphiyi=lnphiyi,
                             lnphiyti=lnphixi, success=True)
       else:
+        hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
         n = ni.sum()
@@ -1041,9 +1052,11 @@ def _stabPT_qnssnewt(
         gi = sqrtni * (np.log(ni) + lnphixi - hi)
         gnorm = np.linalg.norm(gi)
         logger.debug(
-          'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
-          k, kik, gnorm,
+          '%3s%5s' + Nc * '%9s' + '%11s%9s',
+          'Nkv', 'Nit', *map(lambda s: 'alpha' + s, map(str, range(Nc))),
+          'gnorm', 'method',
         )
+        logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
         while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
@@ -1059,12 +1072,8 @@ def _stabPT_qnssnewt(
           gnormkp1 = np.linalg.norm(gi)
           if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
-            logger.debug(
-              'Iteration (Newton) #%s:\n\tki = %s\n\tgnorm = %s',
-              k, ni/yi, gnorm,
-            )
+            logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
           else:
-            # TODO: implement TR-step
             ni *= np.exp(-gi / sqrtni)
             sqrtni = np.sqrt(ni)
             alphaik = 2. * sqrtni
@@ -1073,18 +1082,11 @@ def _stabPT_qnssnewt(
             lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
             gi = sqrtni * (np.log(ni) + lnphixi - hi)
             gnorm = np.linalg.norm(gi)
-            logger.debug(
-              'Iteration (SS) #%s:\n\tki = %s\n\tgnorm = %s',
-              k, ni/yi, gnorm,
-            )
+            logger.debug(tmpl, j, k, *alphaik, gnorm, 'ss')
         if gnorm < tol and np.isfinite(alphaik).all():
           TPD = -np.log(ni.sum())
           if TPD < eps:
-            logger.info(
-              'The system is unstable at P = %s Pa, T = %s K, yi = %s:\n\t'
-              'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-              P, T, yi, ni/yi, TPD, gnorm, k,
-            )
+            logger.info('The system is unstable. TPD = %.3e.', TPD)
             n = ni.sum()
             xi = ni / n
             kvji = xi / yi, yi / xi
@@ -1093,12 +1095,7 @@ def _stabPT_qnssnewt(
                               lnphiyti=lnphixi, success=True)
   else:
     TPD = -np.log(ni.sum())
-    logger.info(
-      'The system is stable at P = %s Pa, T = %s K, yi = %s.\n\t'
-      'The last kv-loop iteration results:\n\t'
-      'ki = %s\n\tTPD = %s\n\tgnorm = %s\n\tNiter = %s',
-      P, T, yi, ni/yi, TPD, gnorm, k,
-    )
+    logger.info('The system is stable. TPD = %.3e.', TPD)
     n = ni.sum()
     xi = ni / n
     kvji = xi / yi, yi / xi

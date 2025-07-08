@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
-  '%(process)d:%(name)s:%(levelname)s:\n\t%(message)s'
+  '%(process)d:%(name)s:%(levelname)s: %(message)s'
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -43,7 +43,7 @@ class rr_solveNp(unittest.TestCase):
       [1.52713341421, 0.02456487977, 1.46348240453, 1.16090546194, 0.24166289908, 0.14815282572, 14.3128010831],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 6
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -56,7 +56,7 @@ class rr_solveNp(unittest.TestCase):
       [1.83256, 1.64847, 1.08723E-02],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 6
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -71,7 +71,7 @@ class rr_solveNp(unittest.TestCase):
       [66.7435876079, 1.26478653025, 0.94711004430, 3.94954222664, 0.35954341233, 0.09327536295, 12.0162990083],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 5
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -86,7 +86,7 @@ class rr_solveNp(unittest.TestCase):
       [1.61947897153, 2.65352105653, 0.68719907526, 0.18483049029, 0.01228448216, 0.00023212526, 0.00000003964],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 6
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -99,7 +99,7 @@ class rr_solveNp(unittest.TestCase):
       [1.011235955, 0.980392157, 0.847457627],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 8
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -114,7 +114,7 @@ class rr_solveNp(unittest.TestCase):
       [1.513154299, 2.490033379, 0.861916482, 0.323730849, 0.034794391, 0.000547609, 5.54587E-07],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 4
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -129,7 +129,7 @@ class rr_solveNp(unittest.TestCase):
       [1.5582362780, 2.1752897740, 0.7919216342, 0.5232473203, 0.3492086459, 0.1630735937, 0.0742862374, 0.0263779361, 0.0067511045, 0.0011477841, 0.0000237639]
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 7
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -144,7 +144,7 @@ class rr_solveNp(unittest.TestCase):
       [1.2793605, 3.5983187, 2.3058527, 0.8619853, 0.4989022, 0.3439748, 0.2907231, 0.1968906, 0.173585, 0.1085509, 0.0428112, 0.0094336, 0.0016732, 0.0002458, 3.4493E-05, 4.7093E-06],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 4
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -157,7 +157,7 @@ class rr_solveNp(unittest.TestCase):
       [28.57470741, 1.5525E-10, 7.7405E-18, 8.0401E-40, 3.8652E-75],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 5
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -170,7 +170,7 @@ class rr_solveNp(unittest.TestCase):
       [28.55840446, 1.55221E-10, 7.73713E-18, 8.03102E-40, 3.85651E-75],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 5
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -183,7 +183,7 @@ class rr_solveNp(unittest.TestCase):
       [9.545344719, 8.93018E-06, 4.53738E-18, 1.15826E-35, 1.07956E-49],
     ])
     Fj0 = np.array([0.3333, 0.3333])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 5
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -199,7 +199,7 @@ class rr_solveNp(unittest.TestCase):
       [644.0243063, 0.001829876, 1.51452E-05, 8.05299E-10, 5.65494E-17, 3.81673E-34, 7.23797E-56, 6.58807E-68],
     ])
     Fj0 = np.array([0.25, 0.25, 0.25])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 6
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -215,7 +215,7 @@ class rr_solveNp(unittest.TestCase):
       [1018.249407, 0.001355733, 2.069E-06, 4.15121E-09, 4.95509E-12, 5.43433E-15, 5.89003E-23, 2.46836E-31, 6.01409E-45, 1.36417E-62, 4.87765E-84, 4.5625E-132],
     ])
     Fj0 = np.array([0.25, 0.25, 0.25])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 6
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))
@@ -228,7 +228,7 @@ class rr_solveNp(unittest.TestCase):
       [6.95031119e+00, 7.78822910e-03, 2.29742520e+00],
     ])
     Fj0 = np.array([0.29977181, 0.0])
-    tol = np.float64(1e-6)
+    tol = 1e-6
     maxiter = 0
     Fj = solveNp(kvji, yi, Fj0, tol, maxiter)
     self.assertTrue(self.check_solution(Fj, kvji, yi, tol))

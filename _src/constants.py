@@ -1,6 +1,6 @@
 from custom_types import (
-  ScalarType,
+  Scalar,
 )
 
 
-R: ScalarType = 8.3144598  # Universal gas constant [J/mol/K]
+R: Scalar = 8.3144598  # Universal gas constant [J/mol/K]

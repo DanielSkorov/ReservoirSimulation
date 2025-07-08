@@ -3,9 +3,9 @@ import logging
 import numpy as np
 
 from custom_types import (
-  ScalarType,
-  VectorType,
-  EOSPTType,
+  Scalar,
+  Vector,
+  EosPT,
 )
 
 from constants import (
@@ -41,12 +41,12 @@ class LabResult(dict):
 
 
 def cvdPT(
-  T: ScalarType,
-  yi: VectorType,
-  eos: EOSPTType,
-  PP: VectorType,
-  Psat0: ScalarType = np.float64(20e6),
-  n: ScalarType = 1.,
+  T: Scalar,
+  yi: Vector,
+  eos: EosPT,
+  PP: Vector,
+  Psat0: Scalar = 20e6,
+  n: Scalar = 1.,
   flashkwargs: dict = {},
   psatkwargs: dict = {},
 ) -> LabResult:
@@ -104,11 +104,11 @@ def cvdPT(
 
 
 def ccePT(
-  T: ScalarType,
-  yi: VectorType,
-  eos: EOSPTType,
-  PP: VectorType,
-  n: ScalarType = 1.,
+  T: Scalar,
+  yi: Vector,
+  eos: EosPT,
+  PP: Vector,
+  n: Scalar = 1.,
   flashkwargs: dict = {},
 ) -> LabResult:
   logger.debug(

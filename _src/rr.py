@@ -11,9 +11,9 @@ from utils import (
 )
 
 from custom_types import (
-  ScalarType,
-  VectorType,
-  MatrixType,
+  Scalar,
+  Vector,
+  Matrix,
 )
 
 
@@ -21,12 +21,12 @@ logger = logging.getLogger('rr')
 
 
 def fG(
-  a: ScalarType,
-  yi: VectorType,
-  di: VectorType,
-  y0: ScalarType,
-  yN: ScalarType,
-) -> tuple[ScalarType, ScalarType]:
+  a: Scalar,
+  yi: Vector,
+  di: Vector,
+  y0: Scalar,
+  yN: Scalar,
+) -> tuple[Scalar, Scalar]:
   denom = 1. / (di * (a + 1.) + a)
   return (
     (a + 1.) * (y0 / a + yi.dot(denom) - yN),
@@ -35,12 +35,12 @@ def fG(
 
 
 def fH(
-  a: ScalarType,
-  yi: VectorType,
-  di: VectorType,
-  y0: ScalarType,
-  yN: ScalarType,
-) -> tuple[ScalarType, ScalarType]:
+  a: Scalar,
+  yi: Vector,
+  di: Vector,
+  y0: Scalar,
+  yN: Scalar,
+) -> tuple[Scalar, Scalar]:
   denom = 1. / (di * (a + 1.) + a)
   G = (1. + a) * (y0 / a + yi.dot(denom) - yN)
   dGda = -y0 / (a * a) - yi.dot(denom * denom) - yN
@@ -48,23 +48,23 @@ def fH(
 
 
 def fD(
-  a: ScalarType,
-  yi: VectorType,
-  di: VectorType,
-  yidi: VectorType,
-  y0: ScalarType,
-  yN: ScalarType,
-) -> tuple[ScalarType, ScalarType]:
+  a: Scalar,
+  yi: Vector,
+  di: Vector,
+  yidi: Vector,
+  y0: Scalar,
+  yN: Scalar,
+) -> tuple[Scalar, Scalar]:
   denom = 1. / (di * (a + 1.) + a)
   return y0 + a * yi.dot(denom) - yN * a, yidi.dot(denom * denom) - yN
 
 
 def solve2p_FGH(
-  kvi: VectorType,
-  yi: VectorType,
-  tol: ScalarType = 1e-8,
+  kvi: Vector,
+  yi: Vector,
+  tol: Scalar = 1e-8,
   maxiter: int = 50,
-) -> ScalarType:
+) -> Scalar:
   """FGH-method for solving the Rachford-Rice equation.
 
   Solves the Rachford-Rice equation for two-phase systems using
@@ -72,13 +72,13 @@ def solve2p_FGH(
 
   Parameters
   ----------
-  kvi: ndarray, shape (Nc,)
+  kvi: Vector, shape (Nc,)
     K-values of `Nc` components.
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  tol: float
+  tol: Scalar
     Terminate successfully if the absolute value of the D-function
     is less than `tol`. Default is `1e-8`.
 
@@ -89,10 +89,9 @@ def solve2p_FGH(
   -------
   A mole fraction of the non-reference phase in a system.
   """
-  logger.debug(
-    'Solving the RR-equation using the FGH-method\n\tkvi = %s\n\tyi = %s',
-    kvi, yi,
-  )
+  logger.info('Solving the two-phase RR-equation (FGH-method)')
+  logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
+  tmpl = '%3s %11.3e %10.2e'
   idx = kvi.argsort()[::-1]
   ysi = yi[idx]
   kvsi = kvi[idx]
@@ -106,7 +105,7 @@ def solve2p_FGH(
   ak = y0 / yN
   D, dDda = pD(ak)
   hk = D / dDda
-  logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', 0, ak, D)
+  logger.debug(tmpl, k, ak, D)
   while np.abs(D) > tol and k < maxiter:
     akp1 = ak - hk
     if akp1 < 0.:
@@ -117,22 +116,19 @@ def solve2p_FGH(
     k += 1
     ak = akp1
     D, dDda = pD(ak)
-    logger.debug('Iteration #%s:\n\ta = %s\n\tD = %s', k, ak, D)
+    logger.debug(tmpl, k, ak, D)
     hk = D / dDda
   F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.info(
-    'For given:\n\tkvi = %s\n\tyi = %s\n\tSolution is:\n\tF = %s\n',
-    kvi, yi, F,
-  )
+  logger.info('Solution is: F = %.2f', F)
   return F
 
 
 def solve2p_GH(
-  kvi: VectorType,
-  yi: VectorType,
-  tol: ScalarType = 1e-8,
+  kvi: Vector,
+  yi: Vector,
+  tol: Scalar = 1e-8,
   maxiter: int = 50,
-) -> ScalarType:
+) -> Scalar:
   """GH-method for solving the Rachford-Rice equation.
 
   Solves the Rachford-rice equation for two-phase systems using
@@ -140,13 +136,13 @@ def solve2p_GH(
 
   Parameters
   ----------
-  kvi: ndarray, shape (Nc,)
+  kvi: Vector, shape (Nc,)
     K-values of `Nc` components.
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  tol: float
+  tol: Scalar
     Terminate successfully if the absolute value of the D-function
     is less than `tol`. Default is `1e-8`.
 
@@ -157,10 +153,9 @@ def solve2p_GH(
   -------
   A mole fraction of the non-reference phase in a system.
   """
-  logger.debug(
-    'Solving the RR-equation using the GH-method\n\tkvi = %s\n\tyi = %s',
-    kvi, yi,
-  )
+  logger.info('Solving the two-phase RR-equation (GH-method)')
+  logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
+  tmpl = '%3s %11.3e %10.2e'
   idx = kvi.argsort()[::-1]
   ysi = yi[idx]
   kvsi = kvi[idx]
@@ -175,38 +170,33 @@ def solve2p_GH(
   eq = (ak + 1.) * (y0 / ak + ysi.dot(denom) - yN)
   deqda = -y0 / (ak * ak) - ysi.dot(denom * denom) - yN
   if eq > 0.:
-    logger.debug('Use G-formulation')
     peq = partial(fG, yi=ysi, di=di, y0=y0, yN=yN)
   else:
-    logger.debug('Use H-formulation')
     peq = partial(fH, yi=ysi, di=di, y0=y0, yN=yN)
     deqda = -eq - ak * deqda
     eq *= -ak
   hk = eq / deqda
-  logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', 0, ak, eq)
+  logger.debug(tmpl, k, ak, eq)
   while eq > tol and k < maxiter:
     k +=1
     ak -= hk
     eq, deqda = peq(ak)
-    logger.debug('Iteration #%s:\n\ta = %s\n\teq = %s', k, ak, eq)
+    logger.debug(tmpl, k, ak, eq)
     hk = eq / deqda
   F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.info(
-    'For given:\n\tkvi = %s\n\tyi = %s\n\tSolution is:\n\tF = %s\n',
-    kvi, yi, F,
-  )
+  logger.info('Solution is: F = %.2f', F)
   return F
 
 
 def solveNp(
-  Kji: MatrixType,
-  yi: VectorType,
-  fj0: VectorType,
-  tol: ScalarType = 1e-6,
+  Kji: Matrix,
+  yi: Vector,
+  fj0: Vector,
+  tol: Scalar = 1e-6,
   maxiter: int = 30,
-  beta: ScalarType = 0.8,
-  c: ScalarType = 0.3,
-):
+  beta: Scalar = 0.8,
+  c: Scalar = 0.3,
+) -> Vector:
   """Solves the system of Rachford-Rice equations
 
   Implementation of Okuno's method for solving systems of Rachford-Rice
@@ -216,27 +206,27 @@ def solveNp(
 
   Parameters
   ----------
-  Kji: ndarray, shape (Np-1, Nc)
+  Kji: Matrix, shape (Np - 1, Nc)
     K-values of `Nc` components in `Np-1` phases.
 
-  yi: ndarray, shape (Nc,)
+  yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fj0: ndarray, shape (Np-1,)
+  fj0: Vector, shape (Np - 1,)
     Initial guess for phase mole fractions.
 
-  tol: float
+  tol: Scalar
     Terminate successfully if the gradient norm is less than `tol`.
     Default is `1e-6`.
 
   maxiter: int
     Maximum number of iterations. Default is `30`.
 
-  beta: float
+  beta: Scalar
     Coefficient used to update step size in the backtracking line
     search procedure. Default is `0.8`.
 
-  c: float
+  c: Scalar
     Coefficient used to calculate the Goldstein's condition for the
     backtracking line search procedure. Default is `0.3`.
 
@@ -244,12 +234,15 @@ def solveNp(
   -------
   A vector of mole fractions of non-reference phases in a system.
   """
+  logger.info("Solving the system of RR-equations (Okuno's method)")
+  Npm1 = Kji.shape[0]
+  assert Npm1 > 1
   logger.debug(
-    "Solving the system of RR-equations using Okuno's method"
-    "\n\tkvji = %s\n\tyi = %s",
-    Kji, yi,
+    '%3s%5s' + Npm1 * '%10s' + '%10s%11s',
+    'Nit', 'Nls', *map(lambda s: 'f' + s, map(str, range(Npm1))),
+    'F', 'gnorm',
   )
-  assert Kji.shape[0] > 1
+  tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %9.4f %10.2e'
   if Kji.shape[0] == 2:
     linsolver = linsolver2d
   else:
@@ -257,17 +250,16 @@ def solveNp(
   Aji = 1. - Kji
   Bji = np.sqrt(yi) * Aji
   bi = np.vstack([Kji * yi, yi]).max(axis=0)
+  k = 0
+  n = 0
   fjk = fj0
   ti = 1. - fjk.dot(Aji)
   F = - np.log(np.abs(ti)).dot(yi)
   gj = Aji.dot(yi / ti)
   gnorm = np.linalg.norm(gj)
+  logger.debug(tmpl, k, n, *fjk, F, gnorm)
   if gnorm < tol:
     return fjk
-  logger.debug(
-    'Iteration #0:\n\tFj = %s\n\tgnorm = %s', fjk, gnorm,
-  )
-  k: int = 1
   while gnorm > tol and k < maxiter:
     Pji = Bji / ti
     Hjl = Pji.dot(Pji.T)
@@ -278,41 +270,32 @@ def solveNp(
     idx = np.argmin(lmbdi)
     lmbdmax = lmbdi[idx]
     if lmbdmax < 1.:
-      logger.debug('Run LS:\n\t\tFk = %s\n\t\tlmbd_max = %s', F, lmbdmax)
       gdf = gj.dot(dfj)
       lmbdn = beta * lmbdmax
       fjkp1 = fjk + lmbdn * dfj
       ti = 1. - fjkp1.dot(Aji)
       Fkp1 = - np.log(np.abs(ti)).dot(yi)
-      n: int = 1
-      logger.debug(
-        '\tLS-Iteration #%s:\n\t\tlmbd = %s\n\t\tFkp1 = %s',
-        n, lmbdn, Fkp1,
-      )
+      n = 1
+      logger.debug(tmpl, k, n, *fjkp1, Fkp1, gnorm)
       while Fkp1 > F + c * lmbdn * gdf:
         lmbdn *= beta
         fjkp1 = fjk + lmbdn * dfj
         ti = 1. - fjkp1.dot(Aji)
         Fkp1 = - np.log(np.abs(ti)).dot(yi)
         n += 1
-        logger.debug(
-          '\tLS-Iteration #%s:\n\t\tlmbd = %s\n\t\tFkp1 = %s',
-          n, lmbdn, Fkp1,
-        )
+        logger.debug(tmpl, k, n, *fjkp1, Fkp1, gnorm)
       fjk = fjkp1
       F = Fkp1
       gj = Aji.dot(yi / ti)
       gnorm = np.linalg.norm(gj)
+      n = 0
     else:
       fjk += dfj
       ti = 1. - fjk.dot(Aji)
       F = - np.log(np.abs(ti)).dot(yi)
       gj = Aji.dot(yi / ti)
       gnorm = np.linalg.norm(gj)
-    logger.debug('Iteration #%s:\n\tFj = %s\n\tgnorm = %s', k, fjk, gnorm)
     k += 1
-  logger.info(
-    'For given:\n\tkvji = %s\n\tyi = %s\n\tSolution is:\n\tFj = %s\n',
-    Kji, yi, fjk,
-  )
+    logger.debug(tmpl, k, n, *fjk, F, gnorm)
+  logger.info('Solution is: Fj = [' + Npm1 * ' %.4f' + ']', *fjk)
   return fjk
