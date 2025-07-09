@@ -5740,6 +5740,22 @@ class EnvelopeResult(dict):
     return s
 
 
+class EnvPointResult(dict):
+  def __getattr__(self, name: str) -> object:
+    try:
+      return self[name]
+    except KeyError as e:
+      raise AttributeError(name) from e
+
+  def __repr__(self) -> str:
+    with np.printoptions(linewidth=np.inf):
+      s = (f"Basic variables: {self.x}\n"
+           f"Number of iterations: {self.Niter}\n"
+           f"Tolerance: {self.tol}\n"
+           f"Calculation completed successfully:\n{self.success}")
+    return s
+
+
 # class env2pPT(object):
 #   """Two-phase envelope construction using a PT-based equation of state.
 
@@ -6170,10 +6186,10 @@ class EnvelopeResult(dict):
 #     x0 = np.log(np.hstack([flash.yji[0] / flash.yji[1], P, T0]))
 #     sidx = sidx0
 #     sval = x0[sidx]
-#     x, Zj, dgdx, Niter, suc = self.solver(x0, sidx, sval, yi, Fv)
-#     logger.info(tmpl, 0, 0, Niter, 0., sidx, sval, 0, *x)
-#     xk, Zkj = self.curve(yi, Fv, x, dgdx, step0, maxstep, cfmax,
-#                          maxrepeats, maxpoints)
+#     point = self.solver(x0, sidx, sval, yi, Fv)
+#     logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, 0, *point.x)
+#     xk, Zkj = self.curve(yi, Fv, point, step0, maxstep, cfmax, maxrepeats,
+#                          maxpoints)
 #     # if (x0[-2] > self.lnPmin and x0[-1] > self.lnTmin
 #     #     and xk.shape[0] < maxpoints):
 #     #   xl, ylji, Zlj = self.curve(yi, Fv, x, dgdx, -step0, maxstep, cfmax,
@@ -6229,7 +6245,7 @@ class EnvelopeResult(dict):
 #       if flash.success:
 #         flashs.append(flash)
 #         Fvs.append(flash.Fj[0])
-#         if np.isclose(flash.Fj[0], Fv) or np.isclose(flash.Fj[1], Fv):
+#         if np.isclose(flash.Fj, Fv).any():
 #           return P, flash
 #     Fvs = np.array(Fvs)
 #     idx = np.argmin(np.abs(Fvs - Fv))
@@ -6239,8 +6255,7 @@ class EnvelopeResult(dict):
 #     self,
 #     yi: Vector,
 #     Fv: Scalar,
-#     x0: Vector,
-#     jac0: Matrix,
+#     point0: EnvPointResult,
 #     step0: Scalar,
 #     maxstep: Scalar,
 #     cfmax: Scalar,
@@ -6266,6 +6281,9 @@ class EnvelopeResult(dict):
 #       - the natural logarithm of pressure,
 #       - the natural logarithm of temperature.
 
+#     jac0: Matrix, shape(Nc + 2, Nc + 2)
+#       This parameter ...
+
 #     step0: Scalar
 #       The step size (the difference between two subsequent values of a
 #       specified variable) for iteration zero. This parameter can also be
@@ -6273,9 +6291,6 @@ class EnvelopeResult(dict):
 #       calculated by the algorithm. In general, the change in the sign of
 #       the initial step size would lead to a different branch of the
 #       phase envelope.
-
-#     jac0: Matrix, shape(Nc + 2, Nc + 2)
-#       This parameter ...
 
 #     maxstep: Scalar
 #       The upper bound for the step size.
@@ -6313,58 +6328,84 @@ class EnvelopeResult(dict):
 #     B = np.empty(shape=(4, Ncp2))
 #     mdgds = np.zeros(shape=(Ncp2,))
 #     mdgds[-1] = 1.
-#     ykji = []
 #     Zkj = []
 #     kmax = maxpoints - 1
 #     k = 0
-#     xk[k] = x0
 #     r = 0
-#     cf = x0[:-2].max() - x0[:-2].min() < cfmax
+#     point = point0
+#     x = point.x
+#     Niter = point.Niter
+#     xk[k] = x
+#     step = step0
+#     dxds = np.linalg.solve(point.jac, mdgds)
+#     cf = x[:-2].max() - x[:-2].min() < cfmax
 #     if cf:
-#       lnkpi = x0[:-2]
 #       alpha = 1.
+#       lnkpi = x[:-2]
 #     else:
-#       dxds = np.linalg.solve(jac0, mdgds)
 #       sidx = np.argmax(np.abs(dxds))
-#       svalk = x0[sidx]
-#       B[0] = x0
-#       B[1] = dxds
-#       step = np.abs(step0)
-#       svalkp1 = svalk + np.sign(step0) * step
-#       xi = x0 + dxds * (svalkp1 - svalk)
+#       svalk = x[sidx]
+#       svalkp1 = svalk + step
+#       xi = x + dxds * (svalkp1 - svalk)
 #     while k < kmax and xk[k, -1] >= self.lnTmin and xk[k, -2] >= self.lnPmin:
 #       if r > maxrepeats:
-#         logger.warning(
-#           'The maximum number of step repeats has been reached.'
-#         )
+#         logger.warning('The maximum number of step repeats has been reached.')
 #         break
 #       if cf:
-#         self.approx(xi[-2:], alpha, lnkpi, Fv, yi)
-#         # ...
-#       else:
-#         x, Zj, dgdx, Niter, suc = self.solver(xi, sidx, svalkp1, yi, Fv)
-#         if suc:
-#           logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, cf, *x)
-#           dxds = np.linalg.solve(dgdx, mdgds)
-#           adxds = np.abs(dxds)
+#         xi = self.approx(x[-2:], alphakp1, lnkpi, Fv, yi)[0]
+#         point = self.refine(xi, )
+#         if point.succeed:
+#           x = point.x
+#           Niter = point.Niter
+#           logger.info(tmpl, k + 1, r, Niter, step, -1, alphakp1, cf, *x)
 #           cf = x[:-2].max() - x[:-2].min() < cfmax
-#           sidxnew = np.argmax(adxds)
-#           if adxds[sidxnew] > 1.1 * adxds[sidx] and sidxnew != sidx:
-#             sidx = sidxnew
-#             step *= .25
+#           if not cf:
+#             dxds = np.linalg.solve(point.jac, mdgds)
+#             sidx = np.argmax(np.abs(dxds))
+#             svalk = x[sidx]
+#             step = step0
+#             svalkp1 = svalk + step
+#             xi = x + dxds * (svalkp1 - svalk)
+#           else:
+#             alphak = alphakp1
+#             if Niter < 3:
+#               step *= 2.
+#             elif Niter > 4:
+#               step *= .5
+#             alphakp1 = alphak - step
+#           k += 1
+#           xk[k] = x
+#           Zkj.append(point.Zj)
+#         else:
+#           step *= .5
+#           alphakp1 = alphak - step
+#           r += 1
+#       else:
+#         point = self.solver(xi, sidx, svalkp1, yi, Fv)
+#         if point.succeed:
+#           r = 0
+#           Niter = point.Niter
+#           x = point.x
+#           logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, cf, *x)
+#           dxds = np.linalg.solve(point.jac, mdgds)
+#           sidx = np.argmax(np.abs(dxds))
+#           svalkm1 = xk[k, sidx]
+#           svalkm12 = svalkm1 * svalkm1
 #           if Niter < 3:
 #             step *= 2.
 #           elif Niter > 4:
 #             step *= .5
 #           if np.abs(step) > maxstep:
 #             step = np.sign(step) * maxstep
-#           svalkm1 = xk[k, sidx]
-#           svalkm12 = svalkm1 * svalkm1
-#           svalk = x[sidx]
+#           svalk = svalkp1
 #           svalk2 = svalk * svalk
+#           k += 1
+#           xk[k] = x
+#           Zkj.append(point.Zj)
+#           cf = x[:-2].max() - x[:-2].min() < cfmax
 #           if cf:
-#             lnkpi = x[:-2]
 #             alpha = 1.
+#             lnkpi = x[:-2]
 #           else:
 #             M[0, 1] = svalk
 #             M[0, 2] = svalk2
@@ -6378,15 +6419,11 @@ class EnvelopeResult(dict):
 #             M[3, 3] = 3. * svalkm12
 #             B[2:] = B[:2]
 #             B[0] = x
-#             B[1] = dxds # this is an incorrect dxds if sidx != sidxnew
+#             B[1] = dxds # this is an incorrect dxds if sidx changed
 #             svalkp1 = svalk + step * np.sign(svalk - svalkm1)
 #             C = np.linalg.solve(M, B)
 #             svalkp12 = svalkp1 * svalkp1
 #             xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
-#           k += 1
-#           xk[k] = x
-#           Zkj.append(Zj)
-#           r = 0
 #         else:
 #           step *= .5
 #           if k > 0:
@@ -6395,7 +6432,7 @@ class EnvelopeResult(dict):
 #             svalkp12 = svalkp1 * svalkp1
 #             xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
 #           else:
-#             svalkp1 = svalk + np.sign(step0) * step
+#             svalkp1 = svalk + step
 #             xi = xk[k] + dxds * (svalkp1 - svalk)
 #           r += 1
 #     xk = xk[:k+1]
@@ -6417,7 +6454,7 @@ class EnvelopeResult(dict):
 #   lnPmax: Scalar = 18.42,
 #   lnTmin: Scalar = 5.154,
 #   lnTmax: Scalar = 6.881,
-# ) -> tuple[Vector, Vector, Matrix, int, bool]:
+# ) -> EnvPointResult:
 #   Nc = eos.Nc
 #   logger.debug(
 #     'Solving the system of phase boundary equations for: '
@@ -6498,8 +6535,8 @@ class EnvelopeResult(dict):
 #     dx2 = dx.dot(dx)
 #     ongoing = dx2 > tol
 #     logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   suc = not ongoing and np.isfinite(dx2)
-#   return xk, np.array([Zv, Zl]), J, k, suc
+#   return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), jac=J, Niter=k, tol=dx2,
+#                         gnorm=gnorm, succeed=not ongoing and np.isfinite(dx2))
 
 
 # def _aenv2pPT(
@@ -6516,7 +6553,7 @@ class EnvelopeResult(dict):
 #   lnPmax: Scalar = 18.42,
 #   lnTmin: Scalar = 5.154,
 #   lnTmax: Scalar = 6.881,
-# ) -> tuple[Vector, Vector, Vector]:
+# ) -> tuple[Vector, Vector]:
 #   k = 0
 #   logger.debug(
 #     'Solving the system of equations of the approximate phase boundary for: '
@@ -6582,7 +6619,23 @@ class EnvelopeResult(dict):
 #     dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
 #     dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
 #     dx2 = dx.dot(dx)
-#     ongoing = dx2 > tol
+#     ongoing = dx2 > tol and np.isfinite(dx2)
 #     logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   return xk, lnkvi, np.array([Zy, Zz])
+#   return np.hstack([lnkvi, xk]), np.array([Zy, Zz])
 
+
+# def _renv2pPT(
+#   x0: Vector,
+#   lnkai: Vector,
+#   Fv: Scalar,
+#   zi: Vector,
+#   eos: Env2pEosPT,
+#   tol: Scalar = 1e-14,
+#   maxiter: int = 5,
+#   miniter: int = 1,
+#   lnPmin: Scalar = 0.,
+#   lnPmax: Scalar = 18.42,
+#   lnTmin: Scalar = 5.154,
+#   lnTmax: Scalar = 6.881,
+# ) -> EnvPointResult:
+#   return EnvPointResult()
