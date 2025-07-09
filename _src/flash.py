@@ -27,7 +27,7 @@ from custom_types import (
 logger = logging.getLogger('flash')
 
 
-class FlashEosPT(Eos):
+class Flash2pEosPT(Eos):
 
   def getPT_kvguess(
     self,
@@ -108,7 +108,7 @@ class flash2pPT(object):
 
   Parameters
   ----------
-  eos: FlashFlashEosPT
+  eos: FlashFlash2pEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -229,7 +229,7 @@ class flash2pPT(object):
   """
   def __init__(
     self,
-    eos: FlashEosPT,
+    eos: Flash2pEosPT,
     method: str = 'ss',
     level: int = 0,
     negflash: bool = True,
@@ -335,7 +335,7 @@ def _flash2pPT_ss(
   T: Scalar,
   yi: Vector,
   kvji0: tuple[Vector, ...],
-  eos: FlashEosPT,
+  eos: Flash2pEosPT,
   tol: Scalar = 1e-5,
   maxiter: int = 30,
   negflash: bool = True,
@@ -358,7 +358,7 @@ def _flash2pPT_ss(
     A tuple containing arrays of initial k-value guesses. Each array's
     shape should be `(Nc,)`.
 
-  eos: FlashEosPT
+  eos: Flash2pEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -469,7 +469,7 @@ def _flash2pPT_qnss(
   T: Scalar,
   yi: Vector,
   kvji0: tuple[Vector, ...],
-  eos: FlashEosPT,
+  eos: Flash2pEosPT,
   tol: Scalar = 1e-5,
   maxiter: int = 30,
   negflash: bool = True,
@@ -496,7 +496,7 @@ def _flash2pPT_qnss(
     A tuple containing arrays of initial k-value guesses. Each array's
     shape should be `(Nc,)`.
 
-  eos: FlashEosPT
+  eos: Flash2pEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -620,7 +620,7 @@ def _flash2pPT_newt(
   T: Scalar,
   yi: Vector,
   kvji0: tuple[Vector, ...],
-  eos: FlashEosPT,
+  eos: Flash2pEosPT,
   tol: Scalar = 1e-5,
   maxiter: int = 30,
   negflash: bool = True,
@@ -647,7 +647,7 @@ def _flash2pPT_newt(
     A tuple containing arrays of initial k-value guesses. Each array's
     shape should be `(Nc,)`.
 
-  eos: FlashEosPT
+  eos: Flash2pEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -796,7 +796,7 @@ def _flash2pPT_ssnewt(
   T: Scalar,
   yi: Vector,
   kvji0: tuple[Vector, ...],
-  eos: FlashEosPT,
+  eos: Flash2pEosPT,
   tol: Scalar = 1e-5,
   maxiter: int = 30,
   tol_ss: Scalar = 1e-2,
@@ -826,7 +826,7 @@ def _flash2pPT_ssnewt(
     A tuple containing arrays of initial k-value guesses. Each array's
     shape should be `(Nc,)`.
 
-  eos: FlashEosPT
+  eos: Flash2pEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1022,7 +1022,7 @@ def _flash2pPT_qnssnewt(
   T: Scalar,
   yi: Vector,
   kvji0: tuple[Vector, ...],
-  eos: FlashEosPT,
+  eos: Flash2pEosPT,
   tol: Scalar = 1e-5,
   maxiter: int = 30,
   tol_qnss: Scalar = 1e-2,
@@ -1055,7 +1055,7 @@ def _flash2pPT_qnssnewt(
     A tuple containing arrays of initial k-value guesses. Each array's
     shape should be `(Nc,)`.
 
-  eos: FlashEosPT
+  eos: Flash2pEosPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 

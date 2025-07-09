@@ -5,7 +5,6 @@ import numpy as np
 from custom_types import (
   Scalar,
   Vector,
-  EosPT,
 )
 
 from constants import (
@@ -13,10 +12,12 @@ from constants import (
 )
 
 from flash import (
+  Flash2pEosPT,
   flash2pPT,
 )
 
 from boundary import (
+  PsatEosPT,
   PsatPT,
 )
 
@@ -41,10 +42,10 @@ class LabResult(dict):
 
 
 def cvdPT(
+  PP: Vector,
   T: Scalar,
   yi: Vector,
-  eos: EosPT,
-  PP: Vector,
+  eos: PsatEosPT,
   Psat0: Scalar = 20e6,
   n: Scalar = 1.,
   flashkwargs: dict = {},
@@ -55,7 +56,7 @@ def cvdPT(
   )
   flash = flash2pPT(eos, **flashkwargs)
   zi = yi.copy()
-  Psatres = PsatPT(eos, **psatkwargs).run(T, zi, Psat0)
+  Psatres = PsatPT(eos, **psatkwargs).run(Psat0, T, zi, True)
   Psat = Psatres.P
   logger.debug(
     'Saturation pressure calculation:\n\tPsat = %s Pa\n\tsuccess = %s',
@@ -104,10 +105,10 @@ def cvdPT(
 
 
 def ccePT(
+  PP: Vector,
   T: Scalar,
   yi: Vector,
-  eos: EosPT,
-  PP: Vector,
+  eos: Flash2pEosPT,
   n: Scalar = 1.,
   flashkwargs: dict = {},
 ) -> LabResult:

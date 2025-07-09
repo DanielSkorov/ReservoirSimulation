@@ -166,6 +166,23 @@ class TmaxEosPT(TsatEosPT):
   ) -> tuple[Vector, Scalar, Vector, Vector]: ...
 
 
+class Env2pEosPT(PsatEosPT):
+
+  def getPT_lnphii_Z_dP_dT_dyj(
+    self,
+    P: Scalar,
+    T:  Scalar,
+    yi: Vector,
+  ) -> tuple[Vector, Scalar, Vector, Vector, Matrix]: ...
+
+  def getPT_lnphii_Z_dP_dT(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+  ) -> tuple[Vector, Scalar, Vector, Vector]: ...
+
+
 def getVT_Tspinodal(
   V: Scalar,
   yi: Vector,
@@ -527,8 +544,7 @@ class PsatPT(object):
     If the solution method would be one of `'newton'`, `'ss-newton'` or
     `'qnss-newton'` then it also must have:
 
-    - `getPT_lnphii_Z_dnj_dP(
-         P: Scalar, T: Scalar, yi: Vector, n: Scalar,
+    - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
        ) -> tuple[Vector, Scalar, Matrix, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition,
       this method must return a tuple of:
@@ -5727,56 +5743,152 @@ class EnvelopeResult(dict):
 # class env2pPT(object):
 #   """Two-phase envelope construction using a PT-based equation of state.
 
+#   The approach of the phase envelope calculation is based on the
+#   algorithms described by M.L. Michelsen with some custom improvements.
+#   For the math and other details behind the algorithms, see:
+
+#   1. M.L. Michelsen. Calculation of phase envelopes and critical points
+#   for multicomponent mixtures. Fluid Phase Equilibria. 1980. Volume 4.
+#   Issues 1 - 2. Pages 1 - 10. DOI: 10.1016/0378-3812(80)80001-X.
+#   2. M.L. Michelsen. A simple method for calculation of approximate phase
+#   boundaries. 1994. Volume 98. Pages 1 - 11. DOI:
+#   10.1016/0378-3812(94)80104-5 .
+
+#   The algorithm starts with the first saturation pressure calculation
+#   using the `PsatPT` class. Then a preliminary search using several
+#   flash calculations through the `flash2pPT` class is implemented to
+#   clarify an initial guess close to the specified phase mole fraction.
+#   After that, the system of the phase envelope equations is solved using
+#   Newton's method described by M.L. Michelsen in the first paper. For
+#   the second point, the initialization procedure relies on linear
+#   extrapolation, while cubic extrapolation is used for subsequent
+#   points. The algorithm switches the initialization procedure to solving
+#   the equations of the approximate phase envelope when approaching the
+#   critical point. The refinement of this initial guess is based on the
+#   algorithm described by M.L. Michelsen in the second paper. The critical
+#   point(s), cricondenbar and cricondentherm, are determined through cubic
+#   interpolation of the calculated phase envelope points. This process
+#   considers the relevant conditions that define each specific point.
+
 #   Parameters
 #   ----------
-#   eos: EosPT
-#     An initialized instance of a PT-based equation of state. Must have
-#     the following methods:
+#   eos: Env2pEosPT
+#     An initialized instance of a PT-based equation of state. First of
+#     all, it should contain methods for the first saturation pressure
+#     calculation:
 
-#     - `getPT_kvguess(P, T, yi, level) -> tuple[Array]`, where
-#       `P: Scalar` is pressure [Pa], `T: Scalar` is temperature [K],
-#       and `yi: Array`, shape `(Nc,)` is an array of components
-#       mole fractions, `Nc` is the number of components. This method
-#       is used to generate initial guesses of k-values.
+#     - `getPT_kvguess(P: Scalar, T: Scalar,
+#                      yi: Vector, level: int) -> tuple[Vector, ...]`
+#       For a given pressure [Pa], temperature [K] and mole composition
+#       (`Vector` of shape `(Nc,)`), this method must generate initial
+#       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
 
-#     - `getPT_lnphii_Z_dP_dT_dyj(P, T, yi) -> tuple[Array, float, Array,
-#                                                    Array, Array]`
-#       For a given pressure [Pa], temperature [K] and composition
+#     - `getPT_lnphii_Z(P: Scalar,
+#                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+#       For a given pressure [Pa], temperature [K] and mole composition
+#       (`Vector` of shape `(Nc,)`), this method must return a tuple that
+#       contains:
+
+#       - logarithms of the fugacity coefficients of components as a
+#         `Vector` of shape `(Nc,)`,
+#       - the phase compressibility factor of the mixture.
+
+#     - `getPT_lnphii_Z_dP(P: Scalar, T: Scalar,
+#                          yi: Vector) -> tuple[Vector, Scalar, Vector]`
+#       For a given pressure [Pa], temperature [K] and mole composition,
+#       this method must return a tuple of:
+
+#       - logarithms of the fugacity coefficients of components as a
+#         `Vector` of shape `(Nc,)`,
+#       - the phase compressibility factor,
+#       - partial derivatives of logarithms of the fugacity coefficients
+#         of components with respect to pressure as a `Vector` of shape
+#         `(Nc,)`.
+
+#     If the solution method of the first saturation pressure calculation
+#     would be one of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it
+#     also must have:
+
+#     - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
+#        ) -> tuple[Vector, Scalar, Matrix, Vector]`
+#       For a given pressure [Pa], temperature [K] and mole composition,
+#       this method must return a tuple of:
+
+#       - logarithms of the fugacity coefficients of components as a
+#         `Vector` of shape `(Nc,)`,
+#       - the phase compressibility factor,
+#       - partial derivatives of logarithms of the fugacity coefficients
+#         with respect to components mole numbers as a `Matrix` of shape
+#         `(Nc, Nc)`,
+#       - partial derivatives of logarithms of the fugacity coefficients
+#         of components with respect to pressure as a `Vector` of shape
+#         `(Nc,)`.
+
+#     The `flash2pPT` class is used to perform the preliminary search for
+#     the specified phase mole fraction. If the solution method for flash
+#     calculations would be one of `'newton'`, `'ss-newton'` or
+#     `'qnss-newton'` then the instance of an EOS also must have:
+
+#     - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+#                           n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+#       For a given pressure [Pa], temperature [K] and mole composition
+#       (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+#       method must return a tuple of:
+
+#       - logarithms of the fugacity coefficients of components as a
+#         `Vector` of shape `(Nc,)`,
+#       - the mixture compressibility factor,
+#       - partial derivatives of logarithms of the fugacity coefficients
+#         with respect to components mole numbers as a `Matrix` of shape
+#         `(Nc, Nc)`.
+
+#     The solution of the phase envelope equations relies on Newton's
+#     method, for which the Jacobian is constructed using the partial
+#     derivatives calculated by the following method.
+
+#     - `getPT_lnphii_Z_dP_dT_dyj(P: Scalar, T: Scalar, yi: Vector,
+#        ) -> tuple[Vector, Scalar, Vector, Vector, Matrix]`
+#       For a given pressure [Pa], temperature [K] and mole composition
 #       (Array of shape `(Nc,)`), this method must return a tuple that
 #       contains:
 
-#       - a vector of logarithms of the fugacity coefficients of
-#         components (Array of shape `(Nc,)`),
+#       - logarithms of the fugacity coefficients of components as a
+#         `Vector` of shape `(Nc,)`,
 #       - the phase compressibility factor of the mixture,
 #       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to pressure (Array of shape `(Nc,)`),
+#         of components with respect to pressure as a `Vector` of shape
+#         `(Nc,)`,
 #       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to temperature (Array of shape `(Nc,)`),
+#         of components with respect to temperature as a `Vector` of
+#         shape `(Nc,)`,
 #       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to components mole fractions (Array of shape
-#         `(Nc, Nc)`) without taking into account the mole fraction
-#         constraint.
+#         with respect to components mole fractions without taking into
+#         account the mole fraction constraint as a `Matrix` of shape
+#         `(Nc, Nc)`.
 
-#     If the contstruction of the approximate phase envelope is selected
-#     then it must have instead:
+#     For solving equations that describe the approximate phase envelope,
+#     the following partial derivatives are required from the initialized
+#     instance of an EOS:
 
-#     - `getPT_lnphii_Z_dP_dT(P, T, yi) -> tuple[Array, float, Array,
-#                                                Array]`
-#       For a given pressure [Pa], temperature [K] and composition
+#     - `getPT_lnphii_Z_dP_dT(P: Scalar, T: Scalar, yi: Vector
+#        ) -> tuple[Vector, Scalar, Vector, Vector]`
+#       For a given pressure [Pa], temperature [K] and mole composition
 #       (Array of shape `(Nc,)`), this method must return a tuple that
 #       contains:
 
-#       - a vector of logarithms of the fugacity coefficients of
-#         components (Array of shape `(Nc,)`),
+#       - logarithms of the fugacity coefficients of components as a
+#         `Vector` of shape `(Nc,)`,
 #       - the phase compressibility factor of the mixture,
 #       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to pressure (Array of shape `(Nc,)`),
+#         of components with respect to pressure as a `Vector` of shape
+#         `(Nc,)`,
 #       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to temperature (Array of shape `(Nc,)`).
+#         of components with respect to temperature as a `Vector` of
+#         shape `(Nc,)`.
 
 #     Also, this instance must have attributes:
 
-#     - `mwi: Array`
+#     - `mwi: Vector`
 #       A vector of components molecular weights [kg/mol] of shape
 #       `(Nc,)`.
 
@@ -5803,10 +5915,6 @@ class EnvelopeResult(dict):
 #       this option is most substantial for systems with many components.
 #       Currently raises `NotImplementedError`.
 
-#     - `'bead-spring'`
-#       The algorithm is based on the paper of I.K. Nikolaidis (doi:
-#       10.1002/aic.15064). Currently raises `NotImplementedError`.
-
 #     Default is `'base'`.
 
 #   Pmin: Scalar
@@ -5831,17 +5939,27 @@ class EnvelopeResult(dict):
 
 #   stopunstab: bool
 #     The flag indicates whether it is necessary to stop the phase
-#     envelope construction if both trial and real phase compositions
+#     envelope construction if any of trial and real phase compositions
 #     along it are found unstable by the stability test. Enabling this
 #     option may prevent drawing false saturation lines but takes extra
 #     CPU time to conduct stability test for each point on the phase
 #     envelope. Default is `False`.
 
+#   stabkwargs: dict
+#     In order to perform the stability test of trial and real phase
+#     compositions the stability test is conducted using the `stabilityPT`
+#     class. This parameter allows to specify settings for this class.
+
 #   psatkwargs: dict
-#     To clarify the initial guess for the first saturation point...
+#     The first saturation point of the phase envelope is calculated
+#     using `PsatPT` class. This parameter allows to specify settings
+#     for the first saturation pressure calculation.
 
 #   flashkwargs: dict
-#     To clarify the initial guess for the first saturation point...
+#     To clarify the initial guess of the first phase envelope point,
+#     a preliminary search is implemented using several flash calculations
+#     launched by the `flash2pPT` class. This parameter allows to specify
+#     settings for the flash calculation procedure.
 
 #   kwargs: dict
 #     Other arguments for the two-phase envelope solver. It may contain
@@ -5849,29 +5967,30 @@ class EnvelopeResult(dict):
 
 #   Methods
 #   -------
-#   run(P0, T0, yi, Fv) -> EnvelopeResult
+#   run(P0: Scalar, T0: Scalar, yi: Vector, Fv: Scalar) -> EnvelopeResult
 #     This method should be used to run the envelope construction program,
-#     for which the initial guess of the saturation pressure `P0: Scalar`
-#     in [Pa], starting temperature `T0: Scalar` in [K], mole fractions
-#     of `Nc` components `yi: Array` with shape `(Nc,)`, and phase
-#     mole fraction `Fv: Scalar` must be given. It returns the phase
-#     envelope construction results as an instance of the
+#     for which the initial guess of the saturation pressure in [Pa],
+#     starting temperature in [K], mole fractions of `Nc` components with
+#     shape `(Nc,)`, and phase mole fraction must be given. It returns the
+#     phase envelope construction results as an instance of the
 #     `EnvelopeResult`.
 #   """
 #   def __init__(
 #     self,
-#     eos: EosPT,
+#     eos: Env2pEosPT,
 #     method: str = 'base',
 #     Pmin: Scalar = 1.,
 #     Pmax: Scalar = 1e8,
 #     Tmin: Scalar = 173.15,
 #     Tmax: Scalar = 973.15,
 #     stopunstab: bool = False,
+#     stabkwargs: dict = {},
 #     psatkwargs: dict = {},
 #     flashkwargs: dict = {},
 #     **kwargs,
 #   ) -> None:
 #     self.eos = eos
+#     self.stabsolver = stabilityPT(eos, **stabkwargs)
 #     self.psatsolver = PsatPT(eos, **psatkwargs)
 #     self.flashsolver = flash2pPT(eos, **flashkwargs)
 #     lnPmin = np.log(Pmin)
@@ -5892,12 +6011,8 @@ class EnvelopeResult(dict):
 #         'The construction of the approximate phase envelope is not '
 #         'implemented yet.'
 #       )
-#       # self.solver = partial(_xenv2pPT, eos=eos, **kwargs)
-#     elif method == 'bead-spring':
-#       raise NotImplementedError(
-#         'The bead spring method for the phase envelope construction is not '
-#         'implemented yet.'
-#       )
+#       # self.approx = partial(_aenv2pPT, eos=eos, **kwargs)
+#       # self.solver = partial(_renv2pPT, eos=eos)
 #     else:
 #       raise ValueError(f'The unknown method: {method}.')
 #     pass
@@ -5906,7 +6021,7 @@ class EnvelopeResult(dict):
 #     self,
 #     P0: Scalar,
 #     T0: Scalar,
-#     yi: Array,
+#     yi: Vector,
 #     Fv: Scalar,
 #     step0: Scalar = 0.005,
 #     sidx0: int = -1,
@@ -5930,7 +6045,7 @@ class EnvelopeResult(dict):
 #       to not use temperature limits (`Tmin`, `Tmax`) as a starting point
 #       for the phase diagram construction.
 
-#     yi: Array, shape (Nc,)
+#     yi: Vector, shape (Nc,)
 #       Mole fractions of `Nc` components in a mixture.
 
 #     Fv: Scalar
@@ -6100,9 +6215,9 @@ class EnvelopeResult(dict):
 #     self,
 #     Pmax: Scalar,
 #     T: Scalar,
-#     yi: Array,
+#     yi: Vector,
 #     Fv: Scalar,
-#     kvji0: tuple[Array] | None = None,
+#     kvji0: tuple[Vector, ...] | None = None,
 #     Pmin: Scalar = 101325.,
 #     Npoints: int = 100,
 #   ) -> tuple[Scalar, FlashResult]:
@@ -6122,28 +6237,28 @@ class EnvelopeResult(dict):
 
 #   def curve(
 #     self,
-#     yi: Array,
+#     yi: Vector,
 #     Fv: Scalar,
-#     x0: Array,
-#     jac0: Array,
+#     x0: Vector,
+#     jac0: Matrix,
 #     step0: Scalar,
 #     maxstep: Scalar,
 #     cfmax: Scalar,
 #     maxrepeats: int,
 #     maxpoints: int,
-#   ) -> tuple[Array]:
+#   ) -> tuple[Matrix, Matrix]:
 #     """This method should be used to calculate a part of the phase
 #     envelope for a fixed direction.
 
 #     Parameters
 #     ----------
-#     yi: Array, shape (Nc,)
+#     yi: Vector, shape (Nc,)
 #       Mole fractions of `Nc` components in a mixture.
 
 #     Fv: Scalar
 #       Phase mole fraction for which the envelope is needed.
 
-#     x0: Array, shape (Nc + 2,)
+#     x0: Vector, shape (Nc + 2,)
 #       The first point of the phase envelope. The array must contain
 #       `Nc + 2` items:
 
@@ -6159,7 +6274,7 @@ class EnvelopeResult(dict):
 #       the initial step size would lead to a different branch of the
 #       phase envelope.
 
-#     jac0: Array, shape(Nc + 2, Nc + 2)
+#     jac0: Matrix, shape(Nc + 2, Nc + 2)
 #       This parameter ...
 
 #     maxstep: Scalar
@@ -6181,10 +6296,10 @@ class EnvelopeResult(dict):
 #     Returns
 #     -------
 #     A tuple of:
-#     - a matrix of the shape (Ns, Nc + 2) of calculated saturation
+#     - a matrix of the shape `(Ns, Nc + 2)` of calculated saturation
 #       points (`Ns` arrays of basic variables that correspond to the
 #       solution of equations),
-#     - a matrix of the shape (Ns, 2) of compressibility factors of the
+#     - a matrix of the shape `(Ns, 2)` of compressibility factors of the
 #       real and trial phases along the phase envelope.
 #     """
 #     Nc = self.eos.Nc
@@ -6225,6 +6340,7 @@ class EnvelopeResult(dict):
 #         break
 #       if cf:
 #         self.approx(xi[-2:], alpha, lnkpi, Fv, yi)
+#         # ...
 #       else:
 #         x, Zj, dgdx, Niter, suc = self.solver(xi, sidx, svalkp1, yi, Fv)
 #         if suc:
@@ -6288,12 +6404,12 @@ class EnvelopeResult(dict):
 
 
 # def _env2pPT(
-#   x0: Array,
+#   x0: Vector,
 #   sidx: int,
 #   sval: Scalar,
-#   yi: Array,
+#   yi: Vector,
 #   Fv: Scalar,
-#   eos: EosPT,
+#   eos: Env2pEosPT,
 #   tol: Scalar = 1e-14,
 #   maxiter: int = 5,
 #   miniter: int = 1,
@@ -6301,7 +6417,7 @@ class EnvelopeResult(dict):
 #   lnPmax: Scalar = 18.42,
 #   lnTmin: Scalar = 5.154,
 #   lnTmax: Scalar = 6.881,
-# ) -> tuple[Array, Array, Array, int, bool]:
+# ) -> tuple[Vector, Vector, Matrix, int, bool]:
 #   Nc = eos.Nc
 #   logger.debug(
 #     'Solving the system of phase boundary equations for: '
@@ -6387,12 +6503,12 @@ class EnvelopeResult(dict):
 
 
 # def _aenv2pPT(
-#   x0: Array,
-#   alpha: Array,
-#   lnkpi: Array,
+#   x0: Vector,
+#   alpha: Vector,
+#   lnkpi: Vector,
 #   Fv: Scalar,
-#   zi: Array,
-#   eos: EosPT,
+#   zi: Vector,
+#   eos: Env2pEosPT,
 #   tol: Scalar = 1e-14,
 #   maxiter: int = 5,
 #   miniter: int = 1,
@@ -6400,7 +6516,7 @@ class EnvelopeResult(dict):
 #   lnPmax: Scalar = 18.42,
 #   lnTmin: Scalar = 5.154,
 #   lnTmax: Scalar = 6.881,
-# ) -> tuple[Array]:
+# ) -> tuple[Vector, Vector, Vector]:
 #   k = 0
 #   logger.debug(
 #     'Solving the system of equations of the approximate phase boundary for: '
