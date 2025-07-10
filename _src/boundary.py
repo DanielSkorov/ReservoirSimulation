@@ -6021,7 +6021,8 @@ class EnvPointResult(dict):
 #                             lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
 #       self.approx = partial(_aenv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
 #                             lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
-#       self.refine = partial(_renv2pPT, eos=eos)
+#       self.refine = partial(_renv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
+#                             lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
 #     elif method == 'approx':
 #       raise NotImplementedError(
 #         'The construction of the approximate phase envelope is not '
@@ -6353,7 +6354,7 @@ class EnvPointResult(dict):
 #         break
 #       if cf:
 #         xi = self.approx(x[-2:], alphakp1, lnkpi, Fv, yi)[0]
-#         point = self.refine(xi, )
+#         point = self.refine(xi, Fv, yi)
 #         if point.succeed:
 #           x = point.x
 #           Niter = point.Niter
@@ -6476,8 +6477,8 @@ class EnvPointResult(dict):
 #   ex = np.exp(xk)
 #   P = ex[-2]
 #   T = ex[-1]
-#   lnkvi = xk[:-2]
-#   kvi = ex[:-2]
+#   lnkvi = xk[:Nc]
+#   kvi = ex[:Nc]
 #   di = 1. + Fv * (kvi - 1.)
 #   yli = yi / di
 #   yvi = kvi * yli
@@ -6497,9 +6498,9 @@ class EnvPointResult(dict):
 #   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
 #   dx = np.linalg.solve(J, -g)
 #   dx2 = dx.dot(dx)
-#   ongoing = dx2 > tol
+#   proceed = (dx2 > tol or k < miniter) and np.isfinite(dx2)
 #   logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   while (ongoing or k < miniter) and k < maxiter:
+#   while proceed and k < maxiter:
 #     k += 1
 #     xkp1 = xk + dx
 #     if xkp1[-2] > lnPmax:
@@ -6514,8 +6515,8 @@ class EnvPointResult(dict):
 #     ex = np.exp(xk)
 #     P = ex[-2]
 #     T = ex[-1]
-#     lnkvi = xk[:-2]
-#     kvi = ex[:-2]
+#     lnkvi = xk[:Nc]
+#     kvi = ex[:Nc]
 #     di = 1. + Fv * (kvi - 1.)
 #     yli = yi / di
 #     yvi = kvi * yli
@@ -6533,10 +6534,10 @@ class EnvPointResult(dict):
 #     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
 #     dx = np.linalg.solve(J, -g)
 #     dx2 = dx.dot(dx)
-#     ongoing = dx2 > tol
+#     proceed = dx2 > tol and np.isfinite(dx2)
 #     logger.debug(tmpl, k, *xk, gnorm, dx2)
 #   return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), jac=J, Niter=k, tol=dx2,
-#                         gnorm=gnorm, succeed=not ongoing and np.isfinite(dx2))
+#                         gnorm=gnorm, succeed=dx2 < tol and np.isfinite(dx2))
 
 
 # def _aenv2pPT(
@@ -6626,9 +6627,9 @@ class EnvPointResult(dict):
 
 # def _renv2pPT(
 #   x0: Vector,
-#   lnkai: Vector,
 #   Fv: Scalar,
 #   zi: Vector,
+#   sidx: int,
 #   eos: Env2pEosPT,
 #   tol: Scalar = 1e-14,
 #   maxiter: int = 5,
@@ -6638,4 +6639,102 @@ class EnvPointResult(dict):
 #   lnTmin: Scalar = 5.154,
 #   lnTmax: Scalar = 6.881,
 # ) -> EnvPointResult:
-#   return EnvPointResult()
+#   Nc = eos.Nc
+#   logger.debug(
+#     'Refinement of the approximate phase envelope point for: Fv = %.3f', Fv,
+#   )
+#   logger.debug(
+#     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
+#     *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+#     'lnP', 'lnT', 'gnorm', 'dx2',
+#   )
+#   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
+#   lnkai = x0[:Nc]
+#   zei = lnkai * zi
+#   ze2 = zei.dot(lnkai)
+#   k = 0
+#   xk = x0.flatten()
+#   lnkvi = xk[:Nc]
+#   lnP = xk[-2]
+#   lnT = xk[-1]
+#   ex = np.exp(xk)
+#   yi = ex[:Nc] * zi
+#   P = ex[-2]
+#   T = ex[-1]
+#   lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
+#   lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
+#   gi = lnkvi + lnphiyi - lnphizi
+#   gp1 = yi.sum() - 1.
+#   gp2 = zei.dot(lnkvi) - ze2
+#   gnorm = np.sqrt(gi.dot(gi) + gp1 * gp1 + gp2 * gp2)
+#   dgidP = dlnphiyidP - dlnphizidP
+#   dgidT = dlnphiyidT - dlnphizidT
+#   g1 = gp1 - yi.dot(gi)
+#   g2 = gp2 - zei.dot(gi)
+#   dg1dlnP = P * yi.dot(dgidP)
+#   dg2dlnP = P * zei.dot(dgidP)
+#   dg1dlnT = T * yi.dot(dgidT)
+#   dg2dlnT = T * zei.dot(dgidT)
+#   D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
+#   dlnP = D * (dg1dlnT * g2 - dg2dlnT * g1)
+#   dlnT = D * (dg2dlnP * g1 - dg1dlnP * g2)
+#   dlnkvi = -(gi + P * dlnP * dgidP + T * dlnT * dgidT)
+#   dx2 = dlnkvi.dot(dlnkvi) + dlnP * dlnP + dlnT * dlnT
+#   proceed = (dx2 > tol or k < miniter) and np.isfinite(dx2)
+#   logger.debug(tmpl, k, *xk, gnorm, dx2)
+#   while proceed and k < maxiter:
+#     k += 1
+#     lnPkp1 = lnP + dlnP
+#     if lnPkp1 > lnPmax:
+#       xk[-2] = .5 * (lnP + lnPmax)
+#     elif lnPkp1 < lnPmin:
+#       xk[-2] = .5 * (lnP + lnPmin)
+#     else:
+#       xk[-2] = lnPkp1
+#     lnTkp1 = lnT + dlnT
+#     if lnTkp1 > lnTmax:
+#       xk[-1] = .5 * (lnT + lnTmax)
+#     elif lnPkp1 < lnPmin:
+#       xk[-1] = .5 * (lnT + lnTmin)
+#     else:
+#       xk[-1] = lnTkp1
+#     xk[:Nc] = lnkvi + dlnkvi
+#     lnkvi = xk[:Nc]
+#     lnP = xk[-2]
+#     lnT = xk[-1]
+#     ex = np.exp(xk)
+#     yi = ex[:Nc] * zi
+#     P = ex[-2]
+#     T = ex[-1]
+#     lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
+#     lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
+#     gi = lnkvi + lnphiyi - lnphizi
+#     gp1 = yi.sum() - 1.
+#     gp2 = zei.dot(lnkvi) - ze2
+#     gnorm = np.sqrt(gi.dot(gi) + gp1 * gp1 + gp2 * gp2)
+#     dgidP = dlnphiyidP - dlnphizidP
+#     dgidT = dlnphiyidT - dlnphizidT
+#     g1 = gp1 - yi.dot(gi)
+#     g2 = gp2 - zei.dot(gi)
+#     dg1dlnP = P * yi.dot(dgidP)
+#     dg2dlnP = P * zei.dot(dgidP)
+#     dg1dlnT = T * yi.dot(dgidT)
+#     dg2dlnT = T * zei.dot(dgidT)
+#     D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
+#     dlnP = D * (dg1dlnT * g2 - dg2dlnT * g1)
+#     dlnT = D * (dg2dlnP * g1 - dg1dlnP * g2)
+#     dlnkvi = -(gi + P * dlnP * dgidP + T * dlnT * dgidT)
+#     dx2 = dlnkvi.dot(dlnkvi) + dlnP * dlnP + dlnT * dlnT
+#     proceed = dx2 > tol and np.isfinite(dx2)
+#     logger.debug(tmpl, k, *xk, gnorm, dx2)
+#   kvi = ex[:Nc]
+#   di = 1. + Fv * (kvi - 1.)
+#   yvi = kvi * zi / di
+#   J = np.zeros(shape=(Nc + 2, Nc + 2))
+#   J[-1, sidx] = 1.
+#   J[np.diag_indices(Nc)] = 1.
+#   J[-2,:Nc] = yvi / di
+#   J[:Nc,-2] = P * dgidP
+#   J[:Nc,-1] = T * dgidT
+#   return EnvPointResult(x=xk, Zj=np.array([Zy, Zz]), jac=J, Niter=k, tol=dx2,
+#                         gnorm=gnorm, succeed=dx2 < tol and np.isfinite(dx2))
