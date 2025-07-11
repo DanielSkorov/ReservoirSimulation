@@ -5751,9 +5751,21 @@ class EnvPointResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Basic variables: {self.x}\n"
            f"Number of iterations: {self.Niter}\n"
-           f"Tolerance: {self.tol}\n"
+           f"Convergence: res = {self.resflag}, var = {self.varflag}\n"
            f"Calculation completed successfully:\n{self.success}")
     return s
+
+
+# def _env2pPT_step(
+#   Niter: int,
+#   dx: Vector,
+# ) -> Scalar:
+#   if Niter < 3:
+#     return 2.
+#   elif Niter > 4:
+#     return .5
+#   else:
+#     return 1.
 
 
 # class env2pPT(object):
@@ -5994,7 +6006,8 @@ class EnvPointResult(dict):
 #   def __init__(
 #     self,
 #     eos: Env2pEosPT,
-#     method: str = 'base',
+#     approx: bool = False,
+#     method: str = 'newton',
 #     Pmin: Scalar = 1.,
 #     Pmax: Scalar = 1e8,
 #     Tmin: Scalar = 173.15,
@@ -6016,22 +6029,27 @@ class EnvPointResult(dict):
 #     self.lnTmin = lnTmin
 #     self.lnPmin = lnPmin
 #     self.stopunstab = stopunstab
-#     if method == 'base':
-#       self.solver = partial(_env2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
-#                             lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
-#       self.approx = partial(_aenv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
-#                             lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
-#       self.refine = partial(_renv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
-#                             lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
-#     elif method == 'approx':
+#     if approx:
 #       raise NotImplementedError(
 #         'The construction of the approximate phase envelope is not '
 #         'implemented yet.'
 #       )
-#       # self.approx = partial(_aenv2pPT, eos=eos, **kwargs)
-#       # self.solver = partial(_renv2pPT, eos=eos)
+#       # self.approx = partial(_aenv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
+#       #                       lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
+#       # self.refine = partial(_renv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
+#       #                       lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
 #     else:
-#       raise ValueError(f'The unknown method: {method}.')
+#       if method == 'newton':
+#         self.solver = partial(_env2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
+#                               lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05,
+#                               **kwargs)
+#       elif method == 'tr':
+#         raise NotImplementedError(
+#           'The trust region method for phase envelope construction is not '
+#           'implemented yet.'
+#         )
+#       else:
+#         raise ValueError(f'The unknown method: {method}.')
 #     pass
 
 #   def run(
@@ -6040,10 +6058,12 @@ class EnvPointResult(dict):
 #     T0: Scalar,
 #     yi: Vector,
 #     Fv: Scalar,
-#     step0: Scalar = 0.005,
 #     sidx0: int = -1,
-#     maxstep: Scalar = 0.1,
-#     cfmax: Scalar = 0.182,
+#     step0: Scalar = 0.01,
+#     fstep: Callable[[int, Vector], Scalar] = _env2pPT_step,
+#     maxstep: Scalar = 0.025,
+#     switchmult: Scalar = 0.1,
+#     unconvmult: Scalar = 0.75,
 #     maxrepeats: int = 8,
 #     maxpoints: int = 200,
 #     searchkwargs: dict = {},
@@ -6068,13 +6088,6 @@ class EnvPointResult(dict):
 #     Fv: Scalar
 #       Phase mole fraction for which the envelope is needed.
 
-#     step0: Scalar
-#       The step size (the difference between two subsequent values of a
-#       specified variable) for iteration zero. It should be small enough
-#       to consider the saturation point found at the zeroth iteration as
-#       a good initial guess for the next saturation point calculation.
-#       Default is `0.005`.
-
 #     sidx0: int
 #       For iteration zero, this parameter indexes the specified variable
 #       in an array of basic variables. The array of basic variables
@@ -6096,45 +6109,17 @@ class EnvPointResult(dict):
 #       basic variables with respect to the specified variable. Default
 #       is `-1`.
 
+#     step0: Scalar
+#       The step size (the difference between two subsequent values of a
+#       specified variable) for iteration zero. It should be small enough
+#       to consider the saturation point found at the zeroth iteration as
+#       a good initial guess for the next saturation point calculation.
+#       Default is `0.005`.
+
 #     maxstep: Scalar
 #       The step size calculated according to the above formula cannot be
 #       greater than the value specified by the `maxstep` parameter.
 #       Default is `0.1`.
-
-#     cfmax: Scalar
-#       M.L. Michelsen in his paper (doi: 10.1016/0378-3812(80)80001-X)
-#       recommended to use the 3rd-order polynomial extrapolation
-#       to provide an initial guess for the saturation point calculation.
-#       However, according to the papers of Agger and Sorenses, 2017
-#       (doi: 10.1021/acs.iecr.7b04246) and Xu and Li, 2023 (doi:
-#       10.1016/j.geoen.2023.212058) estimates from extrapolation in the
-#       critical or semicritical regions with high-order polynomials may
-#       lead to substantial error. Therefore, they recommended to use
-#       the linear extrapolation when crossing the critical point. In
-#       their paper, Xu and Li introduced the critical-region factor
-#       which is calculated according to the following formula:
-
-#       .. math::
-
-#         cf = \\frac{\\max_i K_i}{\\min_i K_i} - 1 ,
-
-#       where :math:`K_i` is the k-value of :math:`\\left( i \\right)`-th
-#       component. They suggest to use the following condition:
-
-#       .. math::
-
-#         cf < 0.2
-
-#       to determine whether the current saturation point is inside the
-#       near-critical region. This condition can be expressed through
-#       natural logarithms of k-values:
-
-#       .. math::
-
-#         \\max_i \\ln K_i - \\min_i \\ln K_i < \\ln 1.2 .
-
-#       Default of the `cfmax` is :math:`\\ln 1.2 \\approx 0.182`.
-#       To disable this option, enter zero for this parameter.
 
 #     maxrepeats: int
 #       The saturation point calculation can be repeated several times
@@ -6179,18 +6164,18 @@ class EnvPointResult(dict):
 #     P, flash = self.search(psres.P, T0, yi, Fv, kvji0)
 #     Nc = self.eos.Nc
 #     logger.info(
-#       '%3s %3s %5s %7s %4s %9s %7s' + Nc * ' %8s' + ' %8s %7s',
-#       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval', 'CF',
+#       '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s',
+#       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
 #       *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT',
 #     )
-#     tmpl = '%4s %4s %5s %7.4f %4s %9.4f %7s' + Nc * ' %8.4f' + ' %8.4f %7.4f'
+#     tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
 #     x0 = np.log(np.hstack([flash.yji[0] / flash.yji[1], P, T0]))
 #     sidx = sidx0
 #     sval = x0[sidx]
 #     point = self.solver(x0, sidx, sval, yi, Fv)
-#     logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, 0, *point.x)
-#     xk, Zkj = self.curve(yi, Fv, point, step0, maxstep, cfmax, maxrepeats,
-#                          maxpoints)
+#     logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, *point.x)
+#     xk, Zkj = self.curve(yi, Fv, point, step0, fstep, maxstep, switchmult,
+#                          unconvmult, maxrepeats, maxpoints)
 #     # if (x0[-2] > self.lnPmin and x0[-1] > self.lnTmin
 #     #     and xk.shape[0] < maxpoints):
 #     #   xl, ylji, Zlj = self.curve(yi, Fv, x, dgdx, -step0, maxstep, cfmax,
@@ -6258,8 +6243,10 @@ class EnvPointResult(dict):
 #     Fv: Scalar,
 #     point0: EnvPointResult,
 #     step0: Scalar,
+#     fstep: Callable[[int, Vector], Scalar],
 #     maxstep: Scalar,
-#     cfmax: Scalar,
+#     switchmult: Scalar,
+#     unconvmult: Scalar,
 #     maxrepeats: int,
 #     maxpoints: int,
 #   ) -> tuple[Matrix, Matrix]:
@@ -6296,10 +6283,6 @@ class EnvPointResult(dict):
 #     maxstep: Scalar
 #       The upper bound for the step size.
 
-#     cfmax: Scalar
-#       The critical-region factor, which is used to determine whether the
-#       current saturation point is inside the near-critical region.
-
 #     maxrepeats: int
 #       This parameter allows to specify the maximum number of repeats
 #       for any saturation point calculation. If the number of repeats
@@ -6320,7 +6303,7 @@ class EnvPointResult(dict):
 #     """
 #     Nc = self.eos.Nc
 #     Ncp2 = Nc + 2
-#     tmpl = '%4s %4s %5s %7.4f %4s %9.4f %7s' + Nc * ' %8.4f' + ' %8.4f %7.4f'
+#     tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
 #     xk = np.zeros(shape=(maxpoints, Ncp2))
 #     M = np.empty(shape=(4, 4))
 #     M[:, 0] = np.array([1., 0., 1., 0.])
@@ -6339,103 +6322,74 @@ class EnvPointResult(dict):
 #     xk[k] = x
 #     step = step0
 #     dxds = np.linalg.solve(point.jac, mdgds)
-#     cf = x[:-2].max() - x[:-2].min() < cfmax
-#     if cf:
-#       alpha = 1.
-#       lnkpi = x[:-2]
-#     else:
-#       sidx = np.argmax(np.abs(dxds))
-#       svalk = x[sidx]
-#       svalkp1 = svalk + step
-#       xi = x + dxds * (svalkp1 - svalk)
+#     sidx = np.argmax(np.abs(dxds))
+#     svalk = x[sidx]
+#     scnt = 1
+#     B[0] = x
+#     B[1] = dxds
+#     svalkp1 = svalk + step
+#     xi = x + dxds * (svalkp1 - svalk)
 #     while k < kmax and xk[k, -1] >= self.lnTmin and xk[k, -2] >= self.lnPmin:
 #       if r > maxrepeats:
 #         logger.warning('The maximum number of step repeats has been reached.')
 #         break
-#       if cf:
-#         xi = self.approx(x[-2:], alphakp1, lnkpi, Fv, yi)[0]
-#         point = self.refine(xi, Fv, yi)
-#         if point.succeed:
-#           x = point.x
-#           Niter = point.Niter
-#           logger.info(tmpl, k + 1, r, Niter, step, -1, alphakp1, cf, *x)
-#           cf = x[:-2].max() - x[:-2].min() < cfmax
-#           if not cf:
-#             dxds = np.linalg.solve(point.jac, mdgds)
-#             sidx = np.argmax(np.abs(dxds))
-#             svalk = x[sidx]
-#             step = step0
-#             svalkp1 = svalk + step
-#             xi = x + dxds * (svalkp1 - svalk)
-#           else:
-#             alphak = alphakp1
-#             if Niter < 3:
-#               step *= 2.
-#             elif Niter > 4:
-#               step *= .5
-#             alphakp1 = alphak - step
-#           k += 1
-#           xk[k] = x
-#           Zkj.append(point.Zj)
+#       point = self.solver(xi, sidx, svalkp1, yi, Fv)
+#       if point.succeed:
+#         Niter = point.Niter
+#         x = point.x
+#         logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, *x)
+#         dxds = np.linalg.solve(point.jac, mdgds)
+#         sidxnew = np.argmax(np.abs(dxds))
+#         if sidxnew != sidx:
+#           scnt = 1
+#           sidx = sidxnew
+#           step *= switchmult
 #         else:
-#           step *= .5
-#           alphakp1 = alphak - step
-#           r += 1
-#       else:
-#         point = self.solver(xi, sidx, svalkp1, yi, Fv)
-#         if point.succeed:
-#           r = 0
-#           Niter = point.Niter
-#           x = point.x
-#           logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, cf, *x)
-#           dxds = np.linalg.solve(point.jac, mdgds)
-#           sidx = np.argmax(np.abs(dxds))
-#           svalkm1 = xk[k, sidx]
-#           svalkm12 = svalkm1 * svalkm1
-#           if Niter < 3:
-#             step *= 2.
-#           elif Niter > 4:
-#             step *= .5
+#           scnt += 1
+#           step *= fstep(Niter, x - xk[k])
 #           if np.abs(step) > maxstep:
 #             step = np.sign(step) * maxstep
-#           svalk = svalkp1
-#           svalk2 = svalk * svalk
-#           k += 1
-#           xk[k] = x
-#           Zkj.append(point.Zj)
-#           cf = x[:-2].max() - x[:-2].min() < cfmax
-#           if cf:
-#             alpha = 1.
-#             lnkpi = x[:-2]
-#           else:
-#             M[0, 1] = svalk
-#             M[0, 2] = svalk2
-#             M[0, 3] = svalk2 * svalk
-#             M[1, 2] = 2. * svalk
-#             M[1, 3] = 3. * svalk2
-#             M[2, 1] = svalkm1
-#             M[2, 2] = svalkm12
-#             M[2, 3] = svalkm12 * svalkm1
-#             M[3, 2] = 2. * svalkm1
-#             M[3, 3] = 3. * svalkm12
-#             B[2:] = B[:2]
-#             B[0] = x
-#             B[1] = dxds # this is an incorrect dxds if sidx changed
-#             svalkp1 = svalk + step * np.sign(svalk - svalkm1)
-#             C = np.linalg.solve(M, B)
-#             svalkp12 = svalkp1 * svalkp1
-#             xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
+#         svalkm1 = xk[k, sidx]
+#         svalkm12 = svalkm1 * svalkm1
+#         svalk = x[sidx]
+#         svalk2 = svalk * svalk
+#         k += 1
+#         xk[k] = x
+#         Zkj.append(point.Zj)
+#         svalkp1 = svalk + step * np.sign(svalk - svalkm1)
+#         M[0, 1] = svalk
+#         M[0, 2] = svalk2
+#         M[0, 3] = svalk2 * svalk
+#         M[1, 2] = 2. * svalk
+#         M[1, 3] = 3. * svalk2
+#         M[2, 1] = svalkm1
+#         M[2, 2] = svalkm12
+#         M[2, 3] = svalkm12 * svalkm1
+#         M[3, 2] = 2. * svalkm1
+#         M[3, 3] = 3. * svalkm12
+#         B[2:] = B[:2]
+#         B[0] = x
+#         B[1] = dxds
+#         if scnt > 1:
+#           C = np.linalg.solve(M, B)
+#           svalkp12 = svalkp1 * svalkp1
+#           xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
 #         else:
-#           step *= .5
-#           if k > 0:
-#             svalkp1 = svalk + step * np.sign(svalk - svalkm1)
-#             C = np.linalg.solve(M, B)
-#             svalkp12 = svalkp1 * svalkp1
-#             xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
-#           else:
-#             svalkp1 = svalk + step
-#             xi = xk[k] + dxds * (svalkp1 - svalk)
-#           r += 1
+#           xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
+#         r = 0
+#       else:
+#         step *= unconvmult
+#         if scnt > 1:
+#           svalkp1 = svalk + step * np.sign(svalk - svalkm1)
+#           C = np.linalg.solve(M, B)
+#           svalkp12 = svalkp1 * svalkp1
+#           xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
+#         elif k > 0:
+#           xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
+#         else:
+#           svalkp1 = svalk + step
+#           xi = x + dxds * (svalkp1 - svalk)
+#         r += 1
 #     xk = xk[:k+1]
 #     Zkj = np.array(Zkj)
 #     return xk, Zkj
@@ -6448,7 +6402,8 @@ class EnvPointResult(dict):
 #   yi: Vector,
 #   Fv: Scalar,
 #   eos: Env2pEosPT,
-#   tol: Scalar = 1e-14,
+#   tolres: Scalar = 1e-12,
+#   tolvar: Scalar = 1e-14,
 #   maxiter: int = 5,
 #   miniter: int = 1,
 #   lnPmin: Scalar = 0.,
@@ -6498,7 +6453,7 @@ class EnvPointResult(dict):
 #   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
 #   dx = np.linalg.solve(J, -g)
 #   dx2 = dx.dot(dx)
-#   proceed = (dx2 > tol or k < miniter) and np.isfinite(dx2)
+#   proceed = (dx2 > tolvar and gnorm > tolres or k < miniter) and np.isfinite(dx2)
 #   logger.debug(tmpl, k, *xk, gnorm, dx2)
 #   while proceed and k < maxiter:
 #     k += 1
@@ -6528,16 +6483,21 @@ class EnvPointResult(dict):
 #     g[Nc] = np.sum(yvi - yli)
 #     g[Nc+1] = xk[sidx] - sval
 #     gnorm = np.linalg.norm(g)
+#     dylidlnkvi = -Fv * yvi / di
+#     dyvidlnkvi = yvi + kvi * dylidlnkvi
 #     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
 #     J[-2,:Nc] = yvi / di
 #     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
 #     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
 #     dx = np.linalg.solve(J, -g)
 #     dx2 = dx.dot(dx)
-#     proceed = dx2 > tol and np.isfinite(dx2)
+#     proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
 #     logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), jac=J, Niter=k, tol=dx2,
-#                         gnorm=gnorm, succeed=dx2 < tol and np.isfinite(dx2))
+#   resflag = gnorm < tolres
+#   varflag = dx2 < tolvar
+#   return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), jac=J, Niter=k, dx2=dx2,
+#                         gnorm=gnorm, resflag=resflag, varflag=varflag,
+#                         succeed=(resflag or varflag) and np.isfinite(dx2))
 
 
 # def _aenv2pPT(
@@ -6547,7 +6507,8 @@ class EnvPointResult(dict):
 #   Fv: Scalar,
 #   zi: Vector,
 #   eos: Env2pEosPT,
-#   tol: Scalar = 1e-14,
+#   tolres: Scalar = 1e-12,
+#   tolvar: Scalar = 1e-14,
 #   maxiter: int = 5,
 #   miniter: int = 1,
 #   lnPmin: Scalar = 0.,
@@ -6585,7 +6546,7 @@ class EnvPointResult(dict):
 #   dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
 #   dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
 #   dx2 = dx.dot(dx)
-#   ongoing = dx2 > tol
+#   proceed = (dx2 > tolvar and gnorm > tolres or k < miniter) and np.isfinite(dx2)
 #   logger.debug(tmpl, k, *xk, gnorm, dx2)
 #   while dx2 > tol and k < maxiter:
 #     xkp1 = xk + dx
@@ -6620,7 +6581,7 @@ class EnvPointResult(dict):
 #     dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
 #     dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
 #     dx2 = dx.dot(dx)
-#     ongoing = dx2 > tol and np.isfinite(dx2)
+#     proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
 #     logger.debug(tmpl, k, *xk, gnorm, dx2)
 #   return np.hstack([lnkvi, xk]), np.array([Zy, Zz])
 
@@ -6649,6 +6610,9 @@ class EnvPointResult(dict):
 #     'lnP', 'lnT', 'gnorm', 'dx2',
 #   )
 #   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
+#   g = np.empty_like(x0)
+#   dx = np.empty_like(x0)
+#   J = np.zeros(shape=(Nc + 2, Nc + 2))
 #   lnkai = x0[:Nc]
 #   zei = lnkai * zi
 #   ze2 = zei.dot(lnkai)
@@ -6661,6 +6625,11 @@ class EnvPointResult(dict):
 #   yi = ex[:Nc] * zi
 #   P = ex[-2]
 #   T = ex[-1]
+#   # (lnphiyi, Zy, dlnphiyidP,
+#   #  dlnphiyidT, dlnphiyidyj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yi)
+#   # (lnphizi, Zz, dlnphizidP,
+#   #  dlnphizidT, dlnphizidyj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, zi)
+#   # J[:Nc,:Nc] = 
 #   lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
 #   lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
 #   gi = lnkvi + lnphiyi - lnphizi
@@ -6676,8 +6645,8 @@ class EnvPointResult(dict):
 #   dg1dlnT = T * yi.dot(dgidT)
 #   dg2dlnT = T * zei.dot(dgidT)
 #   D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
-#   dlnP = D * (dg1dlnT * g2 - dg2dlnT * g1)
-#   dlnT = D * (dg2dlnP * g1 - dg1dlnP * g2)
+#   dlnP = D * (dg2dlnT * g1 - dg1dlnT * g2)
+#   dlnT = D * (dg1dlnP * g2 - dg2dlnP * g1)
 #   dlnkvi = -(gi + P * dlnP * dgidP + T * dlnT * dgidT)
 #   dx2 = dlnkvi.dot(dlnkvi) + dlnP * dlnP + dlnT * dlnT
 #   proceed = (dx2 > tol or k < miniter) and np.isfinite(dx2)
@@ -6721,8 +6690,8 @@ class EnvPointResult(dict):
 #     dg1dlnT = T * yi.dot(dgidT)
 #     dg2dlnT = T * zei.dot(dgidT)
 #     D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
-#     dlnP = D * (dg1dlnT * g2 - dg2dlnT * g1)
-#     dlnT = D * (dg2dlnP * g1 - dg1dlnP * g2)
+#     dlnP = D * (dg2dlnT * g1 - dg1dlnT * g2)
+#     dlnT = D * (dg1dlnP * g2 - dg2dlnP * g1)
 #     dlnkvi = -(gi + P * dlnP * dgidP + T * dlnT * dgidT)
 #     dx2 = dlnkvi.dot(dlnkvi) + dlnP * dlnP + dlnT * dlnT
 #     proceed = dx2 > tol and np.isfinite(dx2)
@@ -6736,5 +6705,7 @@ class EnvPointResult(dict):
 #   J[-2,:Nc] = yvi / di
 #   J[:Nc,-2] = P * dgidP
 #   J[:Nc,-1] = T * dgidT
-#   return EnvPointResult(x=xk, Zj=np.array([Zy, Zz]), jac=J, Niter=k, tol=dx2,
+#   return EnvPointResult(x=xk, Zj=np.array([Zy, Zz]), jac=J, Niter=k, dx2=dx2,
 #                         gnorm=gnorm, succeed=dx2 < tol and np.isfinite(dx2))
+
+
