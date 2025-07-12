@@ -21,3 +21,7 @@ class Eos(Protocol):
   name: str
   Nc: int
   mwi: Vector
+
+
+class SolutionNotFoundError(Exception):
+  pass
