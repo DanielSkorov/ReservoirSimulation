@@ -326,7 +326,7 @@ def _stabPT_ss(
     The maximum number of solver iterations. Default is `500`.
 
   eps: Scalar
-    System will be considered stable when `TPD > eps`.
+    System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
 
   checktrivial: bool
@@ -357,17 +357,17 @@ def _stabPT_ss(
     'TPD*', 'r', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
-  TPDj = []
-  kji = []
-  Ztj = []
-  ytji = []
-  lnphitji = []
-  gnormj = []
-  Ns = 0
-  Nt = 0
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  TPDo = eps
+  kti = np.zeros_like(yi)
+  Zt = Z
+  yti = yi
+  lnphiti = lnphiyi
+  gnormo = 0.
+  Ns = 0
   for j, ki in enumerate(kvji0):
     k = 0
+    trivial = False
     lnkik = np.log(ki)
     ni = ki * yi
     n = ni.sum()
@@ -394,32 +394,26 @@ def _stabPT_ss(
       r = 2. * tpds / (ng - yi.dot(gi))
       logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Nt += 1
+        trivial = True
+        Ns += 1
         break
-    if gnorm < tol and np.isfinite(gnorm):
+    if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
-      TPDj.append(TPD)
-      kji.append(ki)
-      Ztj.append(Zx)
-      ytji.append(xi)
-      lnphitji.append(lnphixi)
-      gnormj.append(gnorm)
+      if TPD < TPDo:
+        TPDo = TPD
+        kti = ki
+        Zt = Zx
+        yti = xi
+        lnphiti = lnphixi
+        gnormo = gnorm
       Ns += 1
   if Ns > 0:
-    j = np.argmin(TPDj)
-    stable = TPDj[j] > eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDj[j])
-    kvji = ytji[j] / yi, yi / ytji[j]
-    return StabResult(stable=stable, yti=ytji[j], kvji=kvji, gnorm=gnormj[j],
-                      TPD=TPDj[j], Z=Z, lnphiyi=lnphiyi, Zt=Ztj[j],
-                      lnphiti=lnphitji[j])
-  elif Nt == j + 1:
-    logger.info(
-      'The system is stable: True. The algorithm converged to the trivial\n'
-      'solution for all initial guesses.'
-    )
-    return StabResult(stable=True, yti=yi, kvji=(np.ones_like(yi),), gnorm=0.,
-                      TPD=tpds, Z=Z, lnphiyi=lnphiyi, Zt=Z, lnphiti=lnphiyi)
+    stable = TPDo >= eps
+    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+    kvji = yti / yi, yi / yti
+    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                      lnphiti=lnphiti)
   else:
     logger.warning(
       'The stability test calculation procedure terminates unsuccessfully.\n'
@@ -498,7 +492,7 @@ def _stabPT_qnss(
     The maximum number of solver iterations. Default is `200`.
 
   eps: Scalar
-    System will be considered stable when `TPD > eps`.
+    System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
 
   checktrivial: bool
@@ -529,17 +523,17 @@ def _stabPT_qnss(
     'TPD*', 'r', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
-  TPDj = []
-  kji = []
-  Ztj = []
-  ytji = []
-  lnphitji = []
-  gnormj = []
-  Ns = 0
-  Nt = 0
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  TPDo = eps
+  kti = np.zeros_like(yi)
+  Zt = Z
+  yti = yi
+  lnphiti = lnphiyi
+  gnormo = 0.
+  Ns = 0
   for j, ki in enumerate(kvji0):
     k = 0
+    trivial = False
     lnkik = np.log(ki)
     ni = ki * yi
     n = ni.sum()
@@ -576,35 +570,29 @@ def _stabPT_qnss(
       if gnorm < tol:
         break
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Nt += 1
+        Ns += 1
+        trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if gnorm < tol and np.isfinite(gnorm):
+    if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
-      TPDj.append(TPD)
-      kji.append(ki)
-      Ztj.append(Zx)
-      ytji.append(xi)
-      lnphitji.append(lnphixi)
-      gnormj.append(gnorm)
+      if TPD < TPDo:
+        TPDo = TPD
+        kti = ki
+        Zt = Zx
+        yti = xi
+        lnphiti = lnphixi
+        gnormo = gnorm
       Ns += 1
   if Ns > 0:
-    j = np.argmin(TPDj)
-    stable = TPDj[j] > eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDj[j])
-    kvji = ytji[j] / yi, yi / ytji[j]
-    return StabResult(stable=stable, yti=ytji[j], kvji=kvji, gnorm=gnormj[j],
-                      TPD=TPDj[j], Z=Z, lnphiyi=lnphiyi, Zt=Ztj[j],
-                      lnphiti=lnphitji[j])
-  elif Nt == j + 1:
-    logger.info(
-      'The system is stable: True. The algorithm converged to the trivial\n'
-      'solution for all initial guesses.'
-    )
-    return StabResult(stable=True, yti=yi, kvji=(np.ones_like(yi),), gnorm=0.,
-                      TPD=tpds, Z=Z, lnphiyi=lnphiyi, Zt=Z, lnphiti=lnphiyi)
+    stable = TPDo >= eps
+    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+    kvji = yti / yi, yi / yti
+    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                      lnphiti=lnphiti)
   else:
     logger.warning(
       'The stability test calculation procedure terminates unsuccessfully.\n'
@@ -697,7 +685,7 @@ def _stabPT_newt(
     The maximum number of Newton's method iterations. Default is `50`.
 
   eps: Scalar
-    System will be considered stable when `TPD > eps`.
+    System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
 
   forcenewton: bool
@@ -739,18 +727,18 @@ def _stabPT_newt(
     'TPD*', 'r', 'gnorm', 'method',
   )
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
-  TPDj = []
-  kji = []
-  Ztj = []
-  ytji = []
-  lnphitji = []
-  gnormj = []
-  Ns = 0
-  Nt = 0
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   hi = lnphiyi + np.log(yi)
+  TPDo = eps
+  kti = np.zeros_like(yi)
+  Zt = Z
+  yti = yi
+  lnphiti = lnphiyi
+  gnormo = 0.
+  Ns = 0
   for j, ki in enumerate(kvji0):
     k = 0
+    trivial = False
     ni = ki * yi
     sqrtni = np.sqrt(ni)
     alphaik = 2. * sqrtni
@@ -796,33 +784,25 @@ def _stabPT_newt(
       r = 2. * tpds / (ng - yi.dot(gpi))
       logger.debug(tmpl, j, k, *alphaik, tpds, r, gnorm, method)
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Nt += 1
+        Ns += 1
         break
-    if gnorm < tol and np.isfinite(gnorm):
+    if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
-      ki = ni / yi
-      TPDj.append(TPD)
-      kji.append(ki)
-      Ztj.append(Zx)
-      ytji.append(xi)
-      lnphitji.append(lnphixi)
-      gnormj.append(gnorm)
+      if TPD < TPDo:
+        TPDo = TPD
+        kti = ni / yi
+        Zt = Zx
+        yti = xi
+        lnphiti = lnphixi
+        gnormo = gnorm
       Ns += 1
   if Ns > 0:
-    j = np.argmin(TPDj)
-    stable = TPDj[j] > eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDj[j])
-    kvji = ytji[j] / yi, yi / ytji[j]
-    return StabResult(stable=stable, yti=ytji[j], kvji=kvji, gnorm=gnormj[j],
-                      TPD=TPDj[j], Z=Z, lnphiyi=lnphiyi, Zt=Ztj[j],
-                      lnphiti=lnphitji[j])
-  elif Nt == j + 1:
-    logger.info(
-      'The system is stable: True. The algorithm converged to the trivial\n'
-      'solution for all initial guesses.'
-    )
-    return StabResult(stable=True, yti=yi, kvji=(np.ones_like(yi),), gnorm=0.,
-                      TPD=tpds, Z=Z, lnphiyi=lnphiyi, Zt=Z, lnphiti=lnphiyi)
+    stable = TPDo >= eps
+    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+    kvji = yti / yi, yi / yti
+    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                      lnphiti=lnphiti)
   else:
     logger.warning(
       'The stability test calculation procedure terminates unsuccessfully.\n'
@@ -927,7 +907,7 @@ def _stabPT_ssnewt(
     Default is `30`.
 
   eps: Scalar
-    System will be considered stable when `TPD > eps`.
+    System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
 
   forcenewton: bool
@@ -968,15 +948,14 @@ def _stabPT_ssnewt(
   strNc = tuple(map(str, range(Nc)))
   lbls_lnkv = tuple(map(lambda s: 'lnkv' + s, strNc))
   lbls_alpha = tuple(map(lambda s: 'alpha' + s, strNc))
-  TPDj = []
-  kji = []
-  Ztj = []
-  ytji = []
-  lnphitji = []
-  gnormj = []
-  Ns = 0
-  Nt = 0
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  TPDo = eps
+  kti = np.zeros_like(yi)
+  Zt = Z
+  yti = yi
+  lnphiti = lnphiyi
+  gnormo = 0.
+  Ns = 0
   for j, ki in enumerate(kvji0):
     logger.debug(
       '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
@@ -1010,20 +989,21 @@ def _stabPT_ssnewt(
       r = 2. * tpds / (ng - yi.dot(gi))
       logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'ss')
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Nt += 1
+        Ns += 1
         trivial = True
         break
-    if np.isfinite(gnorm):
+    if np.isfinite(gnorm) and not trivial:
       if gnorm < tol:
         TPD = -np.log(n)
-        TPDj.append(TPD)
-        kji.append(ki)
-        Ztj.append(Zx)
-        ytji.append(xi)
-        lnphitji.append(lnphixi)
-        gnormj.append(gnorm)
+        if TPD < TPDo:
+          TPDo = TPD
+          kti = ki
+          Zt = Zx
+          yti = xi
+          lnphiti = lnphixi
+          gnormo = gnorm
         Ns += 1
-      elif not trivial:
+      else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
@@ -1064,29 +1044,21 @@ def _stabPT_ssnewt(
           logger.debug(tmpl_nt, j, k, *alphaik, gnorm, method)
         if gnorm < tol and np.isfinite(gnorm):
           TPD = -np.log(n)
-          ki = ni / yi
-          TPDj.append(TPD)
-          kji.append(ki)
-          Ztj.append(Zx)
-          ytji.append(xi)
-          lnphitji.append(lnphixi)
-          gnormj.append(gnorm)
+          if TPD < TPDo:
+            TPDo = TPD
+            kti = ni / yi
+            Zt = Zx
+            yti = xi
+            lnphiti = lnphixi
+            gnormo = gnorm
           Ns += 1
   if Ns > 0:
-    j = np.argmin(TPDj)
-    stable = TPDj[j] > eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDj[j])
-    kvji = ytji[j] / yi, yi / ytji[j]
-    return StabResult(stable=stable, yti=ytji[j], kvji=kvji, gnorm=gnormj[j],
-                      TPD=TPDj[j], Z=Z, lnphiyi=lnphiyi, Zt=Ztj[j],
-                      lnphiti=lnphitji[j])
-  elif Nt == j + 1:
-    logger.info(
-      'The system is stable: True. The algorithm converged to the trivial\n'
-      'solution for all initial guesses.'
-    )
-    return StabResult(stable=True, yti=yi, kvji=(np.ones_like(yi),), gnorm=0.,
-                      TPD=tpds, Z=Z, lnphiyi=lnphiyi, Zt=Z, lnphiti=lnphiyi)
+    stable = TPDo >= eps
+    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+    kvji = yti / yi, yi / yti
+    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                      lnphiti=lnphiti)
   else:
     logger.warning(
       'The stability test calculation procedure terminates unsuccessfully.\n'
@@ -1193,7 +1165,7 @@ def _stabPT_qnssnewt(
     iterations. Default is `30`.
 
   eps: Scalar
-    System will be considered stable when `TPD > eps`.
+    System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
 
   forcenewton: bool
@@ -1234,15 +1206,14 @@ def _stabPT_qnssnewt(
   strNc = tuple(map(str, range(Nc)))
   lbls_lnkv = tuple(map(lambda s: 'lnkv' + s, strNc))
   lbls_alpha = tuple(map(lambda s: 'alpha' + s, strNc))
-  TPDj = []
-  kji = []
-  Ztj = []
-  ytji = []
-  lnphitji = []
-  gnormj = []
-  Ns = 0
-  Nt = 0
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  TPDo = eps
+  kti = np.zeros_like(yi)
+  Zt = Z
+  yti = yi
+  lnphiti = lnphiyi
+  gnormo = 0.
+  Ns = 0
   for j, ki in enumerate(kvji0):
     logger.debug(
       '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
@@ -1286,23 +1257,24 @@ def _stabPT_qnssnewt(
       if gnorm < tol_qnss:
         break
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Nt += 1
+        Ns += 1
         trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if np.isfinite(gnorm):
+    if np.isfinite(gnorm) and not trivial:
       if gnorm < tol:
         TPD = -np.log(n)
-        TPDj.append(TPD)
-        kji.append(ki)
-        Ztj.append(Zx)
-        ytji.append(xi)
-        lnphitji.append(lnphixi)
-        gnormj.append(gnorm)
+        if TPD < TPDo:
+          TPDo = TPD
+          kti = ki
+          Zt = Zx
+          yti = xi
+          lnphiti = lnphixi
+          gnormo = gnorm
         Ns += 1
-      elif not trivial:
+      else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
@@ -1341,31 +1313,23 @@ def _stabPT_qnssnewt(
             gnorm = np.linalg.norm(gi)
             method = 'ss'
           logger.debug(tmpl_nt, j, k, *alphaik, gnorm, method)
-        if gnorm < tol and np.isfinite(alphaik).all():
+        if gnorm < tol and np.isfinite(gnorm):
           TPD = -np.log(n)
-          ki = ni / yi
-          TPDj.append(TPD)
-          kji.append(ki)
-          Ztj.append(Zx)
-          ytji.append(xi)
-          lnphitji.append(lnphixi)
-          gnormj.append(gnorm)
+          if TPD < TPDo:
+            TPDo = TPD
+            kti = ni / yi
+            Zt = Zx
+            yti = xi
+            lnphiti = lnphixi
+            gnormo = gnorm
           Ns += 1
   if Ns > 0:
-    j = np.argmin(TPDj)
-    stable = TPDj[j] > eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDj[j])
-    kvji = ytji[j] / yi, yi / ytji[j]
-    return StabResult(stable=stable, yti=ytji[j], kvji=kvji, gnorm=gnormj[j],
-                      TPD=TPDj[j], Z=Z, lnphiyi=lnphiyi, Zt=Ztj[j],
-                      lnphiti=lnphitji[j])
-  elif Nt == j + 1:
-    logger.info(
-      'The system is stable: True. The algorithm converged to the trivial\n'
-      'solution for all initial guesses.'
-    )
-    return StabResult(stable=True, yti=yi, kvji=(np.ones_like(yi),), gnorm=0.,
-                      TPD=tpds, Z=Z, lnphiyi=lnphiyi, Zt=Z, lnphiti=lnphiyi)
+    stable = TPDo >= eps
+    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+    kvji = yti / yi, yi / yti
+    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                      lnphiti=lnphiti)
   else:
     logger.warning(
       'The stability test calculation procedure terminates unsuccessfully.\n'
