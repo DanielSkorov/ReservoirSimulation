@@ -8,9 +8,7 @@ logger = logging.getLogger('flash')
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter(
-  '%(process)d:%(name)s:%(levelname)s: %(message)s'
-)
+formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -45,7 +43,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='ss', tol=tol, maxiter=7,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_02(self):
@@ -63,7 +61,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=6,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_03(self):
@@ -81,7 +79,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='newton', tol=tol, maxiter=3,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_04(self):
@@ -99,7 +97,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='ss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_05(self):
@@ -122,7 +120,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='ss', tol=tol, maxiter=73,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_06(self):
@@ -145,7 +143,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=11,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_07(self):
@@ -168,7 +166,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_08(self):
@@ -191,7 +189,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=4,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_09(self):
@@ -216,7 +214,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='ss', tol=tol, maxiter=11,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_10(self):
@@ -241,7 +239,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=9,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_11(self):
@@ -266,7 +264,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='newton', tol=tol, maxiter=5,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_12(self):
@@ -291,7 +289,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=7,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_13(self):
@@ -318,7 +316,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='ss', tol=tol, maxiter=211,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_14(self):
@@ -345,7 +343,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=36,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_15(self):
@@ -372,7 +370,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='newton', tol=tol, maxiter=12,
                       forcenewton=True, stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_16(self):
@@ -400,7 +398,7 @@ class flash(unittest.TestCase):
                       maxiter_ss=30, forcenewton=True,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_17(self):
@@ -427,7 +425,7 @@ class flash(unittest.TestCase):
     flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=24,
                       maxiter_qnss=20, stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
-    self.assertTrue((res.gnorm < tol) & (res.success))
+    self.assertTrue(res.gnorm < tol)
     pass
 
 

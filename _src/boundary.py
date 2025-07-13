@@ -17,6 +17,7 @@ from custom_types import (
   Vector,
   Matrix,
   Eos,
+  SolutionNotFoundError,
 )
 
 from stability import (
@@ -254,7 +255,7 @@ def getVT_Tspinodal(
 
   Raises
   ------
-  The `ValueError` if the solution was not found.
+  `SolutionNotFoundError` if the solution was not found.
   """
   logger.debug('Calculating the spinodal temperature.')
   Nc = eos.Nc
@@ -292,12 +293,11 @@ def getVT_Tspinodal(
   if np.abs(lmbdk) < tol:
     return Tk, zetai
   logger.warning(
-    "The spinodal temperature was not found using %s:"
-    "\n\tV = %s\n\tyi = %s\n\tT0 = %s"
-    "\n\tzeta0i = %s\n\tmultdT0 = %s\n\ttol = %s\n\tmaxiter = %s",
-    eos.name, V, yi, T0, zeta0i, multdT0, tol, maxiter,
+    "The spinodal temperature was not found. The EOS was: %s.\nParameters:\n"
+    "V = %s\nyi = %s\nT0 = %s\nzeta0i = %s\nmultdT0 = %s",
+    eos.name, V, yi, T0, zeta0i, multdT0,
   )
-  raise ValueError(
+  raise SolutionNotFoundError(
     "The spinodal temperature solution procedure completed unsuccessfully.\n"
     "Try to increase the number of iterations or change the initial guess."
   )
@@ -392,7 +392,7 @@ def getVT_PcTc(
 
   Raises
   ------
-  The `ValueError` if the solution was not found.
+  `SolutionNotFoundError` if the solution was not found.
   """
   logger.info('Calculating the critical point.')
   Nc = eos.Nc
@@ -450,12 +450,12 @@ def getVT_PcTc(
     logger.info('Critical point is: Pc = %.1f Pa, Tc = %.2f K', Pc, T)
     return Pc, T
   logger.warning(
-    "The critical point was not found using %s:"
-    "\n\tyi = %s\n\tv0 = %s m3/mol\n\tT0 = %s K\n\tkappa0 = %s\n\t"
-    "multdV0 = %s\n\tkrange = %s\n\tkstep = %s\n\ttol = %s\n\tmaxiter = %s",
+    "The critical point was not found. The EOS was %s.\nParameters:\n"
+    "yi = %s\nv0 = %s m3/mol\nT0 = %s K\nkappa0 = %s\nmultdV0 = %s\n"
+    "krange = %s\nkstep = %s\ntol = %s\nmaxiter = %s",
     eos.name, yi, v0, T0, kappa0, multdV0, krange, kstep, tol, maxiter,
   )
-  raise ValueError(
+  raise SolutionNotFoundError(
     "The critical point solution procedure completed unsuccessfully.\n"
     "Try to increase the number of iterations or change the initial guess."
   )
@@ -482,8 +482,14 @@ class SatResult(dict):
     Compressibility factors of each phase. Array of real elements of
     size `(Np,)`, where `Np` is the number of phases.
 
-  success: bool
-    Whether or not the procedure exited successfully.
+  gnorm: Scalar
+    The norm of a vector of equations.
+
+  TPD: Scalar
+    The tangent-plane distance at the solution.
+
+  Niter: int
+    The number of iterations.
   """
   def __getattr__(self, name: str) -> object:
     try:
@@ -496,8 +502,7 @@ class SatResult(dict):
       s = (f"Saturation pressure: {self.P} Pa\n"
            f"Saturation temperature: {self.T} K\n"
            f"Phase composition:\n{self.yji}\n"
-           f"Phase compressibility factors:\n{self.Zj}\n"
-           f"Calculation completed successfully:\n{self.success}")
+           f"Phase compressibility factors:\n{self.Zj}\n")
     return s
 
 
@@ -702,15 +707,18 @@ class PsatPT(object):
     - `P` the saturation pressure in [Pa],
     - `T` the saturation temperature in [K],
     - `yji` the component mole fractions in each phase,
-    - `Zj` the compressibility factors of each phase,
-    - `success` a boolean flag indicating if the calculation completed
-      successfully.
+    - `Zj` the compressibility factors of each phase.
 
     Raises
     ------
     ValueError
-      The `ValueError` exception may be raised if the one-phase or
+      The `ValueError` exception will be raised if the one-phase or
       two-phase region was not found using a preliminary search.
+
+    SolutionNotFoundError
+      The `SolutionNotFoundError` exception will be raised if the
+      saturation pressure calculation procedure terminates
+      unsuccessfully.
     """
     P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper, step, Pmin, Pmax)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
@@ -832,6 +840,7 @@ class PsatPT(object):
       )
       if not stabmax.stable:
         Plow = Pupp
+        stab = stabmax
       while not stabmax.stable and Pupp < Pmax:
         Pupp *= c
         stabmax = self.stabsolver.run(Pupp, T, yi)
@@ -894,6 +903,9 @@ class PsatPT(object):
         'Plow = %.1f Pa, the one-phase state is stable: %s',
         Plow, stabmin.stable,
       )
+      if not stabmin.stable:
+        Pupp = Plow
+        stab = stabmin
       while not stabmin.stable and Plow > Pmin:
         Plow *= c
         stabmin = self.stabsolver.run(Plow, T, yi)
@@ -1126,12 +1138,16 @@ def _PsatPT_ss(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info('Saturation pressure calculation using the SS-method.')
   Nc = eos.Nc
+  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -1174,18 +1190,20 @@ def _PsatPT_ss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
-    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    logger.info('Saturation pressure is: %.1f Pa.', Pk)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, Niter=k)
   else:
     logger.warning(
       "The SS-method for saturation pressure calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation pressure calculation\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _PsatPT_qnss(
@@ -1291,12 +1309,16 @@ def _PsatPT_qnss(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info('Saturation pressure calculation using the QNSS-method.')
   Nc = eos.Nc
+  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -1350,18 +1372,20 @@ def _PsatPT_qnss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
-    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    logger.info('Saturation pressure is: %.1f Pa.', Pk)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, Niter=k)
   else:
     logger.warning(
       "The QNSS-method for saturation pressure calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation pressure calculation\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _PsatPT_newt_improveP0(
@@ -1611,14 +1635,18 @@ def _PsatPT_newtA(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info(
     "Saturation pressure calculation using Newton's method (A-form)."
   )
   Nc = eos.Nc
+  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s', 'Nit',
     *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Psat, Pa', 'gnorm',
@@ -1681,18 +1709,20 @@ def _PsatPT_newtA(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
-    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    logger.info('Saturation pressure is: %.1f Pa.', Pk)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=xi.dot(gi[:Nc] - np.log(n)), Niter=k)
   else:
     logger.warning(
-      "Newton's method (A-form) for saturation pressure calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "Newton's method (A-form) for saturation pressure calculation termin"
+      "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation pressure calculation\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _PsatPT_newtB(
@@ -1825,14 +1855,18 @@ def _PsatPT_newtB(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info(
     "Saturation pressure calculation using Newton's method (B-form)."
   )
   Nc = eos.Nc
+  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s', 'Nit',
     *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Psat, Pa', 'gnorm',
@@ -1898,18 +1932,20 @@ def _PsatPT_newtB(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
-    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    logger.info('Saturation pressure is: %.1f Pa.', Pk)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=gi[-1], Niter=k)
   else:
     logger.warning(
-      "Newton's method (B-form) for saturation pressure calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "Newton's method (B-form) for saturation pressure calculation termin"
+      "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation pressure calculation\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _PsatPT_newtC(
@@ -2033,14 +2069,18 @@ def _PsatPT_newtC(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info(
     "Saturation pressure calculation using Newton's method (C-form)."
   )
   Nc = eos.Nc
+  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -2091,18 +2131,20 @@ def _PsatPT_newtC(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('Saturation pressure for T = %.2f K is: %.1f Pa.', T, Pk)
-    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    logger.info('Saturation pressure is: %.1f Pa.', Pk)
+    return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, Niter=k)
   else:
     logger.warning(
-      "Newton's method (C-form) for saturation pressure calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp= %s Pa",
+      "Newton's method (C-form) for saturation pressure calculation termin"
+      "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=T, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation pressure calculation\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations.'
+    )
 
 
 class TsatPT(object):
@@ -2307,15 +2349,18 @@ class TsatPT(object):
     - `P` the saturation pressure in [Pa],
     - `T` the saturation temperature in [K],
     - `yji` the component mole fractions in each phase,
-    - `Zj` the compressibility factors of each phase,
-    - `success` a boolean flag indicating if the calculation completed
-      successfully.
+    - `Zj` the compressibility factors of each phase.
 
     Raises
     ------
     ValueError
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
+
+    SolutionNotFoundError
+      The `SolutionNotFoundError` exception will be raised if the
+      saturation pressure calculation procedure terminates
+      unsuccessfully.
     """
     T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper, step, Tmin, Tmax)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
@@ -2438,6 +2483,7 @@ class TsatPT(object):
       )
       if not stabmax.stable:
         Tlow = Tupp
+        stab = stabmax
       while not stabmax.stable and Tupp < Tmax:
         Tupp *= c
         stabmax = self.stabsolver.run(P, Tupp, yi)
@@ -2500,6 +2546,9 @@ class TsatPT(object):
         'Tlow = %.2f K, the one-phase state is stable: %s',
         Tlow, stabmin.stable,
       )
+      if not stabmin.stable:
+        Tupp = Tlow
+        stab = stabmin
       while not stabmin.stable and Tlow > Tmin:
         Tlow *= c
         stabmin = self.stabsolver.run(P, Tlow, yi)
@@ -2733,14 +2782,16 @@ def _TsatPT_ss(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
-  logger.info(
-    "Saturation temperature calculation using the SS-method."
-  )
+  logger.info("Saturation temperature calculation using the SS-method.")
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -2782,17 +2833,19 @@ def _TsatPT_ss(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
-    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, Niter=k)
   else:
     logger.warning(
-      "The SS-method for saturation pressure calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "The SS-method for saturation temperature calculation terminates "
+      "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation temperature calculation\nterminates unsuccessfully. '
+      'Try to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _TsatPT_qnss(
@@ -2901,14 +2954,16 @@ def _TsatPT_qnss(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
-  logger.info(
-    "Saturation temperature calculation using the QNSS-method."
-  )
+  logger.info("Saturation temperature calculation using the QNSS-method.")
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -2962,17 +3017,19 @@ def _TsatPT_qnss(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
-    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, Niter=k)
   else:
     logger.warning(
-      "The QNSS-method saturation pressure calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "The QNSS-method for saturation temperature calculation terminates "
+      "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation temperature calculation\nterminates unsuccessfully. '
+      'Try to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _TsatPT_newt_improveT0(
@@ -3224,14 +3281,18 @@ def _TsatPT_newtA(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info(
     "Saturation temperature calculation using Newton's method (A-form)."
   )
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s', 'Nit',
     *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Tsat, K', 'gnorm',
@@ -3295,17 +3356,19 @@ def _TsatPT_newtA(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
-    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=xi.dot(gi[:Nc] - np.log(n)), Niter=k)
   else:
     logger.warning(
-      "Newton's method (A-form) for saturation temperature calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "Newton's method (A-form) for saturation temperature calculation termin"
+      "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation temperature calculation\nterminates unsuccessfully. '
+      'Try to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _TsatPT_newtB(
@@ -3440,14 +3503,18 @@ def _TsatPT_newtB(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info(
-    "Saturation temperature calculation using Newton's method (A-form)."
+    "Saturation temperature calculation using Newton's method (B-form)."
   )
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s', 'Nit',
     *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Tsat, K', 'gnorm',
@@ -3514,17 +3581,19 @@ def _TsatPT_newtB(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
-    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=gi[-1], Niter=k)
   else:
     logger.warning(
-      "Newton's method (B-form) for saturation temperature calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "Newton's method (B-form) for saturation temperature calculation termin"
+      "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation temperature calculation\nterminates unsuccessfully. '
+      'Try to increase the maximum number of\nsolver iterations.'
+    )
 
 
 def _TsatPT_newtC(
@@ -3650,14 +3719,18 @@ def _TsatPT_newtC(
   - `P` the saturation pressure in [Pa],
   - `T` the saturation temperature in [K],
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the saturation pressure calculation
+  procedure terminates unsuccessfully.
   """
   logger.info(
     "Saturation temperature calculation using Newton's method (C-form)."
   )
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -3708,17 +3781,19 @@ def _TsatPT_newtC(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
-    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, success=True)
+    return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, Niter=k)
   else:
     logger.warning(
-      "Newton's method (C-form) for saturation temperature calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "Newton's method (C-form) for saturation temperature calculation termin"
+      "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=P, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The saturation temperature calculation\nterminates unsuccessfully. '
+      'Try to increase the maximum number of\nsolver iterations.'
+    )
 
 
 class PmaxPT(PsatPT):
@@ -3929,15 +4004,17 @@ class PmaxPT(PsatPT):
     - `P` the cricondenbar pressure in [Pa],
     - `T` the cricondenbar temperature in [K],
     - `yji` the component mole fractions in each phase,
-    - `Zj` the compressibility factors of each phase,
-    - `success` a boolean flag indicating if the calculation completed
-      successfully.
+    - `Zj` the compressibility factors of each phase.
 
     Raises
     ------
     ValueError
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
+
+    SolutionNotFoundError
+      The `SolutionNotFoundError` exception will be raised if the
+      cricondenbar calculation procedure terminates unsuccessfully.
     """
     P0, kvi0, Plow, Pupp = self.search(P, T, yi, True, step, Pmin, Pmax)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp)
@@ -4222,12 +4299,16 @@ def _PmaxPT_ss(
   - `P` the pressure in [Pa] of the cricondenbar point,
   - `T` the temperature in [K] of the cricondenbar point,
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the cricondenbar calculation procedure
+  terminates unsuccessfully.
   """
   logger.info('Cricondenbar calculation using the SS-method.')
   Nc = eos.Nc
+  logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -4275,19 +4356,21 @@ def _PmaxPT_ss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
+    logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, dTPDdT=dTPDdT, Niter=k)
   else:
     logger.warning(
-      "The SS-method for cricondenbar calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "The SS-method for cricondenbar calculation terminates unsuccessfully. "
+      "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nPlow = %s Pa\n"
+      "Pupp = %s Pa",
       eos.name, P0, T0, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The cricondenbar calculation\nterminates unsuccessfully. Try to '
+      'increase the maximum number of\nsolver iterations and/or improve the '
+      'initial guess.'
+    )
 
 
 def _PmaxPT_qnss(
@@ -4412,12 +4495,16 @@ def _PmaxPT_qnss(
   - `P` the pressure in [Pa] of the cricondenbar point,
   - `T` the temperature in [K] of the cricondenbar point,
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the cricondenbar calculation procedure
+  terminates unsuccessfully.
   """
   logger.info('Cricondenbar calculation using the QNSS-method.')
   Nc = eos.Nc
+  logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -4476,19 +4563,21 @@ def _PmaxPT_qnss(
       yji = np.vstack([xi, yi])
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
-    logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
+    logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, dTPDdT=dTPDdT, Niter=k)
   else:
     logger.warning(
       "The QNSS-method for cricondenbar calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T0, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The cricondenbar calculation\nterminates unsuccessfully. Try to '
+      'increase the maximum number of\nsolver iterations and/or improve the '
+      'initial guess.'
+    )
 
 
 def _PmaxPT_newtC(
@@ -4629,12 +4718,16 @@ def _PmaxPT_newtC(
   - `P` the pressure in [Pa] of the cricondenbar point,
   - `T` the temperature in [K] of the cricondenbar point,
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the cricondenbar calculation procedure
+  terminates unsuccessfully.
   """
   logger.info("Cricondenbar calculation using Newton's method (C-form).")
   Nc = eos.Nc
+  logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -4691,18 +4784,20 @@ def _PmaxPT_newtC(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, dTPDdT=dTPDdT, Niter=k)
   else:
     logger.warning(
-      "Newton's method (C-form) for cricondenbar calculation "
-      "terminates unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tPlow = %s Pa\n\tPupp = %s Pa",
+      "Newton's method (C-form) for cricondenbar calculation terminates "
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
       eos.name, P0, T0, yi, Plow, Pupp,
     )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The cricondenbar calculation\nterminates unsuccessfully. Try to '
+      'increase the maximum number of\nsolver iterations and/or improve the '
+      'initial guess.'
+    )
 
 
 class TmaxPT(TsatPT):
@@ -4903,6 +4998,10 @@ class TmaxPT(TsatPT):
     ValueError
       The `ValueError` exception may be raised if the one-phase or
       two-phase region was not found using a preliminary search.
+
+    SolutionNotFoundError
+      The `SolutionNotFoundError` exception will be raised if the
+      cricondentherm calculation procedure terminates unsuccessfully.
     """
     T0, kvi0, Tlow, Tupp = self.search(P, T, yi, True, step, Tmin, Tmax)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp)
@@ -5191,12 +5290,16 @@ def _TmaxPT_ss(
   - `P` the pressure in [Pa] of the cricondentherm point,
   - `T` the temperature in [K] of the cricondentherm point,
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the cricondentherm calculation procedure
+  terminates unsuccessfully.
   """
   logger.info("Cricondentherm calculation using the SS-method.")
   Nc = eos.Nc
+  logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -5245,18 +5348,20 @@ def _TmaxPT_ss(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, dTPDdP=dTPDdP, Niter=k)
   else:
     logger.warning(
       "The SS-method for cricondentherm calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P0, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The cricondentherm calculation\nterminates unsuccessfully. Try to '
+      'increase the maximum number of\nsolver iterations and/or improve the '
+      'initial guess.'
+    )
 
 
 def _TmaxPT_qnss(
@@ -5383,12 +5488,16 @@ def _TmaxPT_qnss(
   - `P` the pressure in [Pa] of the cricondentherm point,
   - `T` the temperature in [K] of the cricondentherm point,
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the cricondentherm calculation procedure
+  terminates unsuccessfully.
   """
   logger.info("Cricondentherm calculation using the QNSS-method.")
   Nc = eos.Nc
+  logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -5448,18 +5557,20 @@ def _TmaxPT_qnss(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, dTPDdP=dTPDdP, Niter=k)
   else:
     logger.warning(
       "The QNSS-method for cricondentherm calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P0, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The cricondentherm calculation\nterminates unsuccessfully. Try to '
+      'increase the maximum number of\nsolver iterations and/or improve the '
+      'initial guess.'
+    )
 
 
 def _TmaxPT_newtC(
@@ -5602,12 +5713,16 @@ def _TmaxPT_newtC(
   - `P` the pressure in [Pa] of the cricondentherm point,
   - `T` the temperature in [K] of the cricondentherm point,
   - `yji` the component mole fractions in each phase,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation
-    completed successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the cricondentherm calculation procedure
+  terminates unsuccessfully.
   """
   logger.info("Cricondentherm calculation using Newton's method (C-form).")
   Nc = eos.Nc
+  logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -5664,18 +5779,20 @@ def _TmaxPT_newtC(
       Zj = np.array([Zx, Zy])
       lnphiji = np.vstack([lnphixi, lnphiyi])
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
-                     success=True)
+    return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
+                     TPD=TPD, dTPDdP=dTPDdP, Niter=k)
   else:
     logger.warning(
       "Newton's method (C-form) for cricondentherm calculation terminates "
-      "unsuccessfully. EOS: %s. Parameters:"
-      "\n\tP0 = %s Pa, T0 = %s K\n\tyi = %s\n\tTlow = %s K\n\tTupp = %s K",
+      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+      "yi = %s\nTlow = %s K\nTupp = %s K",
       eos.name, P0, T0, yi, Tlow, Tupp,
     )
-    return SatResult(P=Pk, T=Tk, lnphiji=np.vstack([lnphixi, lnphiyi]),
-                     Zj=np.array([Zx, Zy]), yji=np.vstack([xi, yi]),
-                     success=False)
+    raise SolutionNotFoundError(
+      'The cricondentherm calculation\nterminates unsuccessfully. Try to '
+      'increase the maximum number of\nsolver iterations and/or improve the '
+      'initial guess.'
+    )
 
 
 class EnvelopeResult(dict):
@@ -5692,38 +5809,41 @@ class EnvelopeResult(dict):
     This array includes temperatures [K] of the phase envelope that
     consists of `Ns` states (points).
 
-  ykji: Tensor, shape (Ns, Np, Nc)
-    The phase state boundary compises `Ns` states (points), each
-    representing the mole fractions of `Nc` components in `Np` phases
-    that are in equilibrium along the `Np`-phase envelope. These phase
-    compositions were calculated and stored in this three-dimensional
-    array.
+  kvki: Matrix, shape (Ns, Nc)
+    Equilibrium k-values of components along the phase envelope.
 
   Zkj: Matrix, shape (Ns, Np)
     This two-dimensional array represents compressibility factors of
     phases that are in equilibrium along the `Np`-phase envelope
     consisting of `Ns` states (points).
 
-  Pc: Scalar
-    Critical point pressure [Pa].
+  Pc: list[Scalar]
+    Pressure(s) of critical point(s) [Pa]. It might be empty if none of
+    the critical points was found.
 
-  Tc: Scalar
-    Critical point temperature [K].
+  Tc: list[Scalar]
+    Temperature(s) of critical point(s) [K]. It might be empty if none
+    of the critical points was found.
 
-  Pcb: Scalar
-    Cricondenbar point pressure [Pa].
+  Pcb: list[Scalar]
+    Pressure(s) of cricondenbar point(s) [Pa]. It might be empty if none
+    of the cricondenbars was found.
 
-  Tcb: Scalar
-    Cricondenbar point temperature [Pa].
+  Tcb: list[Scalar]
+    Temperature(s) of cricondenbar point(s) [K]. It might be empty if
+    none of the cricondenbars was found.
 
-  Pct: Scalar
-    Cricondentherm point pressure [Pa].
+  Pct: list[Scalar]
+    Pressure(s) of cricondentherm point(s) [Pa]. It might be empty if
+    none of the cricondentherms was found.
 
-  Tct: Scalar
-    Cricondentherm point temperature [Pa].
+  Tct: list[Scalar]
+    Temperature(s) of cricondentherm point(s) [K]. It might be empty if
+    none of the cricondentherms was found.
 
-  success: bool
-    Whether or not the procedure exited successfully.
+  succeed: bool
+    A flag indicating whether the phase envelope construction procedure
+    terminated successfully.
   """
   def __getattr__(self, name: str) -> object:
     try:
@@ -5735,12 +5855,47 @@ class EnvelopeResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Critical point: {self.Pc} Pa, {self.Tc} K\n"
            f"Cricondenbar: {self.Pcb} Pa, {self.Tcb} K\n"
-           f"Cricondentherm: {self.Pct} Pa, {self.Tct} K\n"
-           f"Calculation completed successfully:\n{self.success}")
+           f"Cricondentherm: {self.Pct} Pa, {self.Tct} K\n")
     return s
 
 
 class EnvPointResult(dict):
+  """Container that holds the outputs from phase envelope point
+  calculations.
+
+  Attributes
+  ----------
+  x: Vector, shape (Nc + 2,)
+    Solution of the phase envelope equations.
+
+  Zj: Vector, shape (Np,)
+    Compressibility factors of the real and trial phases corresponding
+    the phase envelope point.
+
+  jac: Matrix, shape (Nc + 2, Nc + 2)
+    Jacobian at the solution of the phase envelope equations.
+
+  Niter: int
+    The number of iterations to converge.
+
+  dx2: Scalar
+    The sum of squared elements of the direction vector at the solution.
+
+  gnorm: Scalar
+    The norm of the phase envelope equations vector at the solution.
+
+  resflag: bool
+    A flag indicating whether the condition on the residuals was
+    achieved.
+
+  varflag: bool
+    A flag indicating whether the condition on the basic variables
+    change was achieved.
+
+  succeed: bool
+    A flag indicating whether any of the solution conditions were
+    satisfied.
+  """
   def __getattr__(self, name: str) -> object:
     try:
       return self[name]
@@ -5751,961 +5906,874 @@ class EnvPointResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Basic variables: {self.x}\n"
            f"Number of iterations: {self.Niter}\n"
-           f"Convergence: res = {self.resflag}, var = {self.varflag}\n"
-           f"Calculation completed successfully:\n{self.success}")
+           f"Convergence: res = {self.resflag}, var = {self.varflag}\n")
     return s
 
 
-# def _env2pPT_step(
-#   Niter: int,
-#   dx: Vector,
-# ) -> Scalar:
-#   if Niter < 3:
-#     return 2.
-#   elif Niter > 4:
-#     return .5
-#   else:
-#     return 1.
-
-
-# class env2pPT(object):
-#   """Two-phase envelope construction using a PT-based equation of state.
-
-#   The approach of the phase envelope calculation is based on the
-#   algorithms described by M.L. Michelsen with some custom improvements.
-#   For the math and other details behind the algorithms, see:
-
-#   1. M.L. Michelsen. Calculation of phase envelopes and critical points
-#   for multicomponent mixtures. Fluid Phase Equilibria. 1980. Volume 4.
-#   Issues 1 - 2. Pages 1 - 10. DOI: 10.1016/0378-3812(80)80001-X.
-#   2. M.L. Michelsen. A simple method for calculation of approximate phase
-#   boundaries. 1994. Volume 98. Pages 1 - 11. DOI:
-#   10.1016/0378-3812(94)80104-5 .
-
-#   The algorithm starts with the first saturation pressure calculation
-#   using the `PsatPT` class. Then a preliminary search using several
-#   flash calculations through the `flash2pPT` class is implemented to
-#   clarify an initial guess close to the specified phase mole fraction.
-#   After that, the system of the phase envelope equations is solved using
-#   Newton's method described by M.L. Michelsen in the first paper. For
-#   the second point, the initialization procedure relies on linear
-#   extrapolation, while cubic extrapolation is used for subsequent
-#   points. The algorithm switches the initialization procedure to solving
-#   the equations of the approximate phase envelope when approaching the
-#   critical point. The refinement of this initial guess is based on the
-#   algorithm described by M.L. Michelsen in the second paper. The critical
-#   point(s), cricondenbar and cricondentherm, are determined through cubic
-#   interpolation of the calculated phase envelope points. This process
-#   considers the relevant conditions that define each specific point.
-
-#   Parameters
-#   ----------
-#   eos: Env2pEosPT
-#     An initialized instance of a PT-based equation of state. First of
-#     all, it should contain methods for the first saturation pressure
-#     calculation:
-
-#     - `getPT_kvguess(P: Scalar, T: Scalar,
-#                      yi: Vector, level: int) -> tuple[Vector, ...]`
-#       For a given pressure [Pa], temperature [K] and mole composition
-#       (`Vector` of shape `(Nc,)`), this method must generate initial
-#       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
-
-#     - `getPT_lnphii_Z(P: Scalar,
-#                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
-#       For a given pressure [Pa], temperature [K] and mole composition
-#       (`Vector` of shape `(Nc,)`), this method must return a tuple that
-#       contains:
-
-#       - logarithms of the fugacity coefficients of components as a
-#         `Vector` of shape `(Nc,)`,
-#       - the phase compressibility factor of the mixture.
-
-#     - `getPT_lnphii_Z_dP(P: Scalar, T: Scalar,
-#                          yi: Vector) -> tuple[Vector, Scalar, Vector]`
-#       For a given pressure [Pa], temperature [K] and mole composition,
-#       this method must return a tuple of:
-
-#       - logarithms of the fugacity coefficients of components as a
-#         `Vector` of shape `(Nc,)`,
-#       - the phase compressibility factor,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         of components with respect to pressure as a `Vector` of shape
-#         `(Nc,)`.
-
-#     If the solution method of the first saturation pressure calculation
-#     would be one of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it
-#     also must have:
-
-#     - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
-#        ) -> tuple[Vector, Scalar, Matrix, Vector]`
-#       For a given pressure [Pa], temperature [K] and mole composition,
-#       this method must return a tuple of:
-
-#       - logarithms of the fugacity coefficients of components as a
-#         `Vector` of shape `(Nc,)`,
-#       - the phase compressibility factor,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to components mole numbers as a `Matrix` of shape
-#         `(Nc, Nc)`,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         of components with respect to pressure as a `Vector` of shape
-#         `(Nc,)`.
-
-#     The `flash2pPT` class is used to perform the preliminary search for
-#     the specified phase mole fraction. If the solution method for flash
-#     calculations would be one of `'newton'`, `'ss-newton'` or
-#     `'qnss-newton'` then the instance of an EOS also must have:
-
-#     - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
-#                           n: Scalar) -> tuple[Vector, Scalar, Matrix]`
-#       For a given pressure [Pa], temperature [K] and mole composition
-#       (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-#       method must return a tuple of:
-
-#       - logarithms of the fugacity coefficients of components as a
-#         `Vector` of shape `(Nc,)`,
-#       - the mixture compressibility factor,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to components mole numbers as a `Matrix` of shape
-#         `(Nc, Nc)`.
-
-#     The solution of the phase envelope equations relies on Newton's
-#     method, for which the Jacobian is constructed using the partial
-#     derivatives calculated by the following method.
-
-#     - `getPT_lnphii_Z_dP_dT_dyj(P: Scalar, T: Scalar, yi: Vector,
-#        ) -> tuple[Vector, Scalar, Vector, Vector, Matrix]`
-#       For a given pressure [Pa], temperature [K] and mole composition
-#       (Array of shape `(Nc,)`), this method must return a tuple that
-#       contains:
-
-#       - logarithms of the fugacity coefficients of components as a
-#         `Vector` of shape `(Nc,)`,
-#       - the phase compressibility factor of the mixture,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         of components with respect to pressure as a `Vector` of shape
-#         `(Nc,)`,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         of components with respect to temperature as a `Vector` of
-#         shape `(Nc,)`,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         with respect to components mole fractions without taking into
-#         account the mole fraction constraint as a `Matrix` of shape
-#         `(Nc, Nc)`.
-
-#     For solving equations that describe the approximate phase envelope,
-#     the following partial derivatives are required from the initialized
-#     instance of an EOS:
-
-#     - `getPT_lnphii_Z_dP_dT(P: Scalar, T: Scalar, yi: Vector
-#        ) -> tuple[Vector, Scalar, Vector, Vector]`
-#       For a given pressure [Pa], temperature [K] and mole composition
-#       (Array of shape `(Nc,)`), this method must return a tuple that
-#       contains:
-
-#       - logarithms of the fugacity coefficients of components as a
-#         `Vector` of shape `(Nc,)`,
-#       - the phase compressibility factor of the mixture,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         of components with respect to pressure as a `Vector` of shape
-#         `(Nc,)`,
-#       - partial derivatives of logarithms of the fugacity coefficients
-#         of components with respect to temperature as a `Vector` of
-#         shape `(Nc,)`.
-
-#     Also, this instance must have attributes:
-
-#     - `mwi: Vector`
-#       A vector of components molecular weights [kg/mol] of shape
-#       `(Nc,)`.
-
-#     - `name: str`
-#       The EOS name (for proper logging).
-
-#     - `Nc: int`
-#       The number of components in the system.
-
-#   method: str
-#     This parameter allows to select the algorithm for the phase envelope
-#     construction. It should be one of:
-
-#     - `'base'`
-#       The standard algorithm of the phase envelope construction is based
-#       on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(80)80001-X).
-
-#     - `'approx'`
-#       The algorithm is based on the paper of M.L. Michelsen
-#       (doi: 10.1016/0378-3812(94)80104-5). All points of the approximate
-#       phase envelope are located inside and close to the actual two-phase
-#       region boundary. The accuracy of the internal phase lines is
-#       expected to be poorer than that of the phase boundary. Therefore,
-#       this option is most substantial for systems with many components.
-#       Currently raises `NotImplementedError`.
-
-#     Default is `'base'`.
-
-#   Pmin: Scalar
-#     The minimum pressure [Pa] for phase envelope construction.
-#     This limit is also used by the saturation point solver. Default is
-#     `1.0` [Pa].
-
-#   Pmax: Scalar
-#     The maximum pressure [Pa] for phase envelope construction.
-#     This limit is also used by the saturation point solver. Default is
-#     `1e8` [Pa].
-
-#   Tmin: Scalar
-#     The minimum temperature [K] for phase envelope construction.
-#     This limit is also used by the saturation point solver. Default is
-#     `173.15` [K].
-
-#   Tmax: Scalar
-#     The maximum temperature [K] for phase envelope construction.
-#     This limit is also used by the saturation point solver. Default is
-#     `937.15` [K].
-
-#   stopunstab: bool
-#     The flag indicates whether it is necessary to stop the phase
-#     envelope construction if any of trial and real phase compositions
-#     along it are found unstable by the stability test. Enabling this
-#     option may prevent drawing false saturation lines but takes extra
-#     CPU time to conduct stability test for each point on the phase
-#     envelope. Default is `False`.
-
-#   stabkwargs: dict
-#     In order to perform the stability test of trial and real phase
-#     compositions the stability test is conducted using the `stabilityPT`
-#     class. This parameter allows to specify settings for this class.
-
-#   psatkwargs: dict
-#     The first saturation point of the phase envelope is calculated
-#     using `PsatPT` class. This parameter allows to specify settings
-#     for the first saturation pressure calculation.
-
-#   flashkwargs: dict
-#     To clarify the initial guess of the first phase envelope point,
-#     a preliminary search is implemented using several flash calculations
-#     launched by the `flash2pPT` class. This parameter allows to specify
-#     settings for the flash calculation procedure.
-
-#   kwargs: dict
-#     Other arguments for the two-phase envelope solver. It may contain
-#     such arguments as `tol`, `maxiter` and `miniter`.
-
-#   Methods
-#   -------
-#   run(P0: Scalar, T0: Scalar, yi: Vector, Fv: Scalar) -> EnvelopeResult
-#     This method should be used to run the envelope construction program,
-#     for which the initial guess of the saturation pressure in [Pa],
-#     starting temperature in [K], mole fractions of `Nc` components with
-#     shape `(Nc,)`, and phase mole fraction must be given. It returns the
-#     phase envelope construction results as an instance of the
-#     `EnvelopeResult`.
-#   """
-#   def __init__(
-#     self,
-#     eos: Env2pEosPT,
-#     approx: bool = False,
-#     method: str = 'newton',
-#     Pmin: Scalar = 1.,
-#     Pmax: Scalar = 1e8,
-#     Tmin: Scalar = 173.15,
-#     Tmax: Scalar = 973.15,
-#     stopunstab: bool = False,
-#     stabkwargs: dict = {},
-#     psatkwargs: dict = {},
-#     flashkwargs: dict = {},
-#     **kwargs,
-#   ) -> None:
-#     self.eos = eos
-#     self.stabsolver = stabilityPT(eos, **stabkwargs)
-#     self.psatsolver = PsatPT(eos, **psatkwargs)
-#     self.flashsolver = flash2pPT(eos, **flashkwargs)
-#     lnPmin = np.log(Pmin)
-#     lnPmax = np.log(Pmax)
-#     lnTmin = np.log(Tmin)
-#     lnTmax = np.log(Tmax)
-#     self.lnTmin = lnTmin
-#     self.lnPmin = lnPmin
-#     self.stopunstab = stopunstab
-#     if approx:
-#       raise NotImplementedError(
-#         'The construction of the approximate phase envelope is not '
-#         'implemented yet.'
-#       )
-#       # self.approx = partial(_aenv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
-#       #                       lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
-#       # self.refine = partial(_renv2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
-#       #                       lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05, **kwargs)
-#     else:
-#       if method == 'newton':
-#         self.solver = partial(_env2pPT, eos=eos, lnPmax=lnPmax, lnTmax=lnTmax,
-#                               lnPmin=lnPmin-0.05, lnTmin=lnTmin-0.05,
-#                               **kwargs)
-#       elif method == 'tr':
-#         raise NotImplementedError(
-#           'The trust region method for phase envelope construction is not '
-#           'implemented yet.'
-#         )
-#       else:
-#         raise ValueError(f'The unknown method: {method}.')
-#     pass
-
-#   def run(
-#     self,
-#     P0: Scalar,
-#     T0: Scalar,
-#     yi: Vector,
-#     Fv: Scalar,
-#     sidx0: int = -1,
-#     step0: Scalar = 0.01,
-#     fstep: Callable[[int, Vector], Scalar] = _env2pPT_step,
-#     maxstep: Scalar = 0.025,
-#     switchmult: Scalar = 0.1,
-#     unconvmult: Scalar = 0.75,
-#     maxrepeats: int = 8,
-#     maxpoints: int = 200,
-#     searchkwargs: dict = {},
-#   ) -> EnvelopeResult:
-#     """This method should be used to calculate the entire phase envelope.
-
-#     Parameters
-#     ----------
-#     P0: Scalar
-#       Initial guess of the saturation pressure [Pa]. It is recommended
-#       to not use pressure limits (`Pmin`, `Pmax`) as a starting point
-#       for the phase diagram construction.
-
-#     T0: Scalar
-#       Initial guess of the saturation temperature [K]. It is recomended
-#       to not use temperature limits (`Tmin`, `Tmax`) as a starting point
-#       for the phase diagram construction.
-
-#     yi: Vector, shape (Nc,)
-#       Mole fractions of `Nc` components in a mixture.
-
-#     Fv: Scalar
-#       Phase mole fraction for which the envelope is needed.
-
-#     sidx0: int
-#       For iteration zero, this parameter indexes the specified variable
-#       in an array of basic variables. The array of basic variables
-#       includes:
-
-#       - `Nc` natural logarithms of k-values of components,
-#       - the natural logarithm of pressure,
-#       - the natural logarithm of temperature.
-
-#       The specified variable is considered known and fixed for the
-#       algorithm of saturation point determination. Therefore, changing
-#       of this index may improve the algorithm converegence for the
-#       zeroth iteration. To initiate calculations, a pressure
-#       specification was recommended by M.L. Michelsen in his paper
-#       (doi: 10.1016/0378-3812(80)80001-X). The general rule for
-#       specified variable selection was also given in this paper. It was
-#       recommended to select the specified variable based on the largest
-#       rate of change, which refers to the largest derivative of the
-#       basic variables with respect to the specified variable. Default
-#       is `-1`.
-
-#     step0: Scalar
-#       The step size (the difference between two subsequent values of a
-#       specified variable) for iteration zero. It should be small enough
-#       to consider the saturation point found at the zeroth iteration as
-#       a good initial guess for the next saturation point calculation.
-#       Default is `0.005`.
-
-#     maxstep: Scalar
-#       The step size calculated according to the above formula cannot be
-#       greater than the value specified by the `maxstep` parameter.
-#       Default is `0.1`.
-
-#     maxrepeats: int
-#       The saturation point calculation can be repeated several times
-#       with a reduced step size if convergence of equations was not
-#       achieved or the condition of maximum oscillation was violated.
-#       This parameter allows to specify the maximum number of repeats
-#       for any saturation point calculation. If the number of repeats
-#       exceeds the given bound, then the construction of the phase
-#       envelope will be stopped. Default is `8`.
-
-#     maxpoints: int
-#       The maximum number of points of the phase envelope. Default is
-#       `200`.
-
-#     searchkwargs: dict
-#       Advanced parameters for the preliminary search. It can contain
-#       such keys as `Pmin`, `Pmax and `step`. For the details, see the
-#       method `search` of the class `PsatPT`. Default is an empty
-#       dictionary.
-
-#     Returns
-#     -------
-#     The phase envelope construction results as an instance of the
-#     `EnvelopeResult`.
-
-#     Raises
-#     ------
-#     The `ValueError` if the solution was not found for the zeroth
-#     saturation point (for the given initial guesses).
-#     """
-#     logger.info('Constructing the phase envelope for Fv = %s.', Fv)
-#     psres = self.psatsolver.run(P0, T0, yi, True, **searchkwargs)
-#     if not psres.success:
-#       raise ValueError(
-#         'The saturation pressure was not found for the specified\n'
-#         f'starting temperature {T0 = } K and the initial guess {P0 = } Pa.\n'
-#         'It may be beneficial to modify the initial guess and/or the\n'
-#         'starting temperature. Changing the solution method and its\n'
-#         'numerical settings can also be helpful.'
-#       )
-#     kvji0 = (psres.yji[0] / psres.yji[1], psres.yji[1] / psres.yji[0])
-#     P, flash = self.search(psres.P, T0, yi, Fv, kvji0)
-#     Nc = self.eos.Nc
-#     logger.info(
-#       '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s',
-#       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
-#       *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT',
-#     )
-#     tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
-#     x0 = np.log(np.hstack([flash.yji[0] / flash.yji[1], P, T0]))
-#     sidx = sidx0
-#     sval = x0[sidx]
-#     point = self.solver(x0, sidx, sval, yi, Fv)
-#     logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, *point.x)
-#     xk, Zkj = self.curve(yi, Fv, point, step0, fstep, maxstep, switchmult,
-#                          unconvmult, maxrepeats, maxpoints)
-#     # if (x0[-2] > self.lnPmin and x0[-1] > self.lnTmin
-#     #     and xk.shape[0] < maxpoints):
-#     #   xl, ylji, Zlj = self.curve(yi, Fv, x, dgdx, -step0, maxstep, cfmax,
-#     #                              maxrepeats, maxpoints - xk.shape[0])
-#     #   if xl.shape[0] > 1:
-#     #     xk = np.vstack([np.flipud(xk), xl[1:]])
-#     #     ykji = np.concatenate([np.flipud(ykji), [y0ji], ylji])
-#     #     Zkj = np.vstack([np.flipud(Zkj), [Z0j], Zlj])
-#     # elif xk.shape[0] > 1:
-#     #   ykji = np.concatenate([[y0ji], ykji])
-#     #   Zkj = np.vstack([[Z0j], Zkj])
-#     Pk = np.exp(xk[:, -2])
-#     Tk = np.exp(xk[:, -1])
-#     # logger.info('The phase envelope for Fv = %s was completed.', Fv)
-#     # dP = np.diff(Pk, prepend=0.)
-#     # dT = np.diff(Tk, prepend=0.)
-#     # crit = 0
-#     # cbar = 0
-#     # ctrm = 0
-#     # for i in range(xk.shape[0] - 1):
-#     #   if xk[i, 0] * xk[i+1, 0] < 0.:
-#     #     cidx = i
-#     #   if dP[i] / dT[i] > 0. and dP[i+1] / dT[i+1] < 0.:
-#     #     cbar = i
-#     #   if dP[i] / dT[i] < 0. and dP[i+1] / dT[i+1] > 0.:
-#     #     ctrm = i
-#     #   if crit and cbar and ctrm:
-#     #     break
-#     # if crit:
-#     #   ...
-#     # else:
-#     #   logger.warning(
-#     #     'The critical point was not found using the %s EOS for the mixture:'
-#     #     'yi = \n\t%s', eos.name, yi,
-#     #   )
-#     return EnvelopeResult(Pk=Pk, Tk=Tk, Zkj=Zkj, success=True)
-
-#   def search(
-#     self,
-#     Pmax: Scalar,
-#     T: Scalar,
-#     yi: Vector,
-#     Fv: Scalar,
-#     kvji0: tuple[Vector, ...] | None = None,
-#     Pmin: Scalar = 101325.,
-#     Npoints: int = 100,
-#   ) -> tuple[Scalar, FlashResult]:
-#     PP = np.linspace(Pmax, Pmin, Npoints, endpoint=True)
-#     flashs = []
-#     Fvs = []
-#     for P in PP:
-#       flash = self.flashsolver.run(P, T, yi, kvji0)
-#       if flash.success:
-#         flashs.append(flash)
-#         Fvs.append(flash.Fj[0])
-#         if np.isclose(flash.Fj, Fv).any():
-#           return P, flash
-#     Fvs = np.array(Fvs)
-#     idx = np.argmin(np.abs(Fvs - Fv))
-#     return PP[idx], flashs[idx]
-
-#   def curve(
-#     self,
-#     yi: Vector,
-#     Fv: Scalar,
-#     point0: EnvPointResult,
-#     step0: Scalar,
-#     fstep: Callable[[int, Vector], Scalar],
-#     maxstep: Scalar,
-#     switchmult: Scalar,
-#     unconvmult: Scalar,
-#     maxrepeats: int,
-#     maxpoints: int,
-#   ) -> tuple[Matrix, Matrix]:
-#     """This method should be used to calculate a part of the phase
-#     envelope for a fixed direction.
-
-#     Parameters
-#     ----------
-#     yi: Vector, shape (Nc,)
-#       Mole fractions of `Nc` components in a mixture.
-
-#     Fv: Scalar
-#       Phase mole fraction for which the envelope is needed.
-
-#     x0: Vector, shape (Nc + 2,)
-#       The first point of the phase envelope. The array must contain
-#       `Nc + 2` items:
-
-#       - `Nc` natural logarithms of k-values of components,
-#       - the natural logarithm of pressure,
-#       - the natural logarithm of temperature.
-
-#     jac0: Matrix, shape(Nc + 2, Nc + 2)
-#       This parameter ...
-
-#     step0: Scalar
-#       The step size (the difference between two subsequent values of a
-#       specified variable) for iteration zero. This parameter can also be
-#       used to specify the direction in which the phase envelope must be
-#       calculated by the algorithm. In general, the change in the sign of
-#       the initial step size would lead to a different branch of the
-#       phase envelope.
-
-#     maxstep: Scalar
-#       The upper bound for the step size.
-
-#     maxrepeats: int
-#       This parameter allows to specify the maximum number of repeats
-#       for any saturation point calculation. If the number of repeats
-#       exceeds the given bound, then the construction of the phase
-#       envelope will be stopped.
-
-#     maxpoints: int
-#       The maximum number of points of the phase envelope.
-
-#     Returns
-#     -------
-#     A tuple of:
-#     - a matrix of the shape `(Ns, Nc + 2)` of calculated saturation
-#       points (`Ns` arrays of basic variables that correspond to the
-#       solution of equations),
-#     - a matrix of the shape `(Ns, 2)` of compressibility factors of the
-#       real and trial phases along the phase envelope.
-#     """
-#     Nc = self.eos.Nc
-#     Ncp2 = Nc + 2
-#     tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
-#     xk = np.zeros(shape=(maxpoints, Ncp2))
-#     M = np.empty(shape=(4, 4))
-#     M[:, 0] = np.array([1., 0., 1., 0.])
-#     M[1, 1] = 1.
-#     M[3, 1] = 1.
-#     B = np.empty(shape=(4, Ncp2))
-#     mdgds = np.zeros(shape=(Ncp2,))
-#     mdgds[-1] = 1.
-#     Zkj = []
-#     kmax = maxpoints - 1
-#     k = 0
-#     r = 0
-#     point = point0
-#     x = point.x
-#     Niter = point.Niter
-#     xk[k] = x
-#     step = step0
-#     dxds = np.linalg.solve(point.jac, mdgds)
-#     sidx = np.argmax(np.abs(dxds))
-#     svalk = x[sidx]
-#     scnt = 1
-#     B[0] = x
-#     B[1] = dxds
-#     svalkp1 = svalk + step
-#     xi = x + dxds * (svalkp1 - svalk)
-#     while k < kmax and xk[k, -1] >= self.lnTmin and xk[k, -2] >= self.lnPmin:
-#       if r > maxrepeats:
-#         logger.warning('The maximum number of step repeats has been reached.')
-#         break
-#       point = self.solver(xi, sidx, svalkp1, yi, Fv)
-#       if point.succeed:
-#         Niter = point.Niter
-#         x = point.x
-#         logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, *x)
-#         dxds = np.linalg.solve(point.jac, mdgds)
-#         sidxnew = np.argmax(np.abs(dxds))
-#         if sidxnew != sidx:
-#           scnt = 1
-#           sidx = sidxnew
-#           step *= switchmult
-#         else:
-#           scnt += 1
-#           step *= fstep(Niter, x - xk[k])
-#           if np.abs(step) > maxstep:
-#             step = np.sign(step) * maxstep
-#         svalkm1 = xk[k, sidx]
-#         svalkm12 = svalkm1 * svalkm1
-#         svalk = x[sidx]
-#         svalk2 = svalk * svalk
-#         k += 1
-#         xk[k] = x
-#         Zkj.append(point.Zj)
-#         svalkp1 = svalk + step * np.sign(svalk - svalkm1)
-#         M[0, 1] = svalk
-#         M[0, 2] = svalk2
-#         M[0, 3] = svalk2 * svalk
-#         M[1, 2] = 2. * svalk
-#         M[1, 3] = 3. * svalk2
-#         M[2, 1] = svalkm1
-#         M[2, 2] = svalkm12
-#         M[2, 3] = svalkm12 * svalkm1
-#         M[3, 2] = 2. * svalkm1
-#         M[3, 3] = 3. * svalkm12
-#         B[2:] = B[:2]
-#         B[0] = x
-#         B[1] = dxds
-#         if scnt > 1:
-#           C = np.linalg.solve(M, B)
-#           svalkp12 = svalkp1 * svalkp1
-#           xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
-#         else:
-#           xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
-#         r = 0
-#       else:
-#         step *= unconvmult
-#         if scnt > 1:
-#           svalkp1 = svalk + step * np.sign(svalk - svalkm1)
-#           C = np.linalg.solve(M, B)
-#           svalkp12 = svalkp1 * svalkp1
-#           xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
-#         elif k > 0:
-#           xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
-#         else:
-#           svalkp1 = svalk + step
-#           xi = x + dxds * (svalkp1 - svalk)
-#         r += 1
-#     xk = xk[:k+1]
-#     Zkj = np.array(Zkj)
-#     return xk, Zkj
-
-
-# def _env2pPT(
-#   x0: Vector,
-#   sidx: int,
-#   sval: Scalar,
-#   yi: Vector,
-#   Fv: Scalar,
-#   eos: Env2pEosPT,
-#   tolres: Scalar = 1e-12,
-#   tolvar: Scalar = 1e-14,
-#   maxiter: int = 5,
-#   miniter: int = 1,
-#   lnPmin: Scalar = 0.,
-#   lnPmax: Scalar = 18.42,
-#   lnTmin: Scalar = 5.154,
-#   lnTmax: Scalar = 6.881,
-# ) -> EnvPointResult:
-#   Nc = eos.Nc
-#   logger.debug(
-#     'Solving the system of phase boundary equations for: '
-#     'Fv = %.3f, sidx = %s, sval = %.4f', Fv, sidx, sval,
-#   )
-#   logger.debug(
-#     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
-#     *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-#     'lnP', 'lnT', 'gnorm', 'dx2',
-#   )
-#   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
-#   J = np.zeros(shape=(Nc + 2, Nc + 2))
-#   J[-1, sidx] = 1.
-#   g = np.empty(shape=(Nc + 2,))
-#   I = np.eye(Nc)
-#   k = 0
-#   xk = x0.flatten()
-#   xk[sidx] = sval
-#   ex = np.exp(xk)
-#   P = ex[-2]
-#   T = ex[-1]
-#   lnkvi = xk[:Nc]
-#   kvi = ex[:Nc]
-#   di = 1. + Fv * (kvi - 1.)
-#   yli = yi / di
-#   yvi = kvi * yli
-#   (lnphivi, Zv, dlnphividP,
-#    dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
-#   (lnphili, Zl, dlnphilidP,
-#    dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
-#   g[:Nc] = lnkvi + lnphivi - lnphili
-#   g[Nc] = np.sum(yvi - yli)
-#   g[Nc+1] = xk[sidx] - sval
-#   gnorm = np.linalg.norm(g)
-#   dylidlnkvi = -Fv * yvi / di
-#   dyvidlnkvi = yvi + kvi * dylidlnkvi
-#   J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
-#   J[-2,:Nc] = yvi / di
-#   J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
-#   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
-#   dx = np.linalg.solve(J, -g)
-#   dx2 = dx.dot(dx)
-#   proceed = (dx2 > tolvar and gnorm > tolres or k < miniter) and np.isfinite(dx2)
-#   logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   while proceed and k < maxiter:
-#     k += 1
-#     xkp1 = xk + dx
-#     if xkp1[-2] > lnPmax:
-#       xkp1[-2] = .5 * (xk[-2] + lnPmax)
-#     elif xkp1[-2] < lnPmin:
-#       xkp1[-2] = .5 * (xk[-2] + lnPmin)
-#     if xkp1[-1] > lnTmax:
-#       xkp1[-1] = .5 * (xk[-1] + lnTmax)
-#     elif xkp1[-1] < lnTmin:
-#       xkp1[-1] = .5 * (xk[-1] + lnTmin)
-#     xk = xkp1
-#     ex = np.exp(xk)
-#     P = ex[-2]
-#     T = ex[-1]
-#     lnkvi = xk[:Nc]
-#     kvi = ex[:Nc]
-#     di = 1. + Fv * (kvi - 1.)
-#     yli = yi / di
-#     yvi = kvi * yli
-#     (lnphivi, Zv, dlnphividP,
-#      dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
-#     (lnphili, Zl, dlnphilidP,
-#      dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
-#     g[:Nc] = lnkvi + lnphivi - lnphili
-#     g[Nc] = np.sum(yvi - yli)
-#     g[Nc+1] = xk[sidx] - sval
-#     gnorm = np.linalg.norm(g)
-#     dylidlnkvi = -Fv * yvi / di
-#     dyvidlnkvi = yvi + kvi * dylidlnkvi
-#     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
-#     J[-2,:Nc] = yvi / di
-#     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
-#     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
-#     dx = np.linalg.solve(J, -g)
-#     dx2 = dx.dot(dx)
-#     proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
-#     logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   resflag = gnorm < tolres
-#   varflag = dx2 < tolvar
-#   return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), jac=J, Niter=k, dx2=dx2,
-#                         gnorm=gnorm, resflag=resflag, varflag=varflag,
-#                         succeed=(resflag or varflag) and np.isfinite(dx2))
-
-
-# def _aenv2pPT(
-#   x0: Vector,
-#   alpha: Vector,
-#   lnkpi: Vector,
-#   Fv: Scalar,
-#   zi: Vector,
-#   eos: Env2pEosPT,
-#   tolres: Scalar = 1e-12,
-#   tolvar: Scalar = 1e-14,
-#   maxiter: int = 5,
-#   miniter: int = 1,
-#   lnPmin: Scalar = 0.,
-#   lnPmax: Scalar = 18.42,
-#   lnTmin: Scalar = 5.154,
-#   lnTmax: Scalar = 6.881,
-# ) -> tuple[Vector, Vector]:
-#   k = 0
-#   logger.debug(
-#     'Solving the system of equations of the approximate phase boundary for: '
-#     'Fv = %.3f, alpha = %.3f', Fv, alpha,
-#   )
-#   logger.debug('%3s%9s%8s%10s%10s', 'Nit', 'lnP', 'lnT', 'gnorm', 'dx2')
-#   tmpl = '%3s %8.4f %7.4f %9.2e %9.2e'
-#   dx = np.empty_like(x0)
-#   Yi = zi * np.exp(alpha * lnkpi)
-#   yi = Yi / Yi.sum()
-#   lnkvi = np.log(yi / zi)
-#   xk = x0
-#   P = np.exp(xk[0])
-#   T = np.exp(xk[1])
-#   lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
-#   lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
-#   di = lnkvi + lnphiyi - lnphizi
-#   g1 = yi.dot(di)
-#   g2 = zi.dot(di)
-#   gnorm = np.sqrt(g1 * g1 + g2 * g2)
-#   ddidP = dlnphiyidP - dlnphizidP
-#   ddidT = dlnphiyidT - dlnphizidT
-#   dg1dlnP = P * yi.dot(ddidP)
-#   dg2dlnP = P * zi.dot(ddidP)
-#   dg1dlnT = T * yi.dot(ddidT)
-#   dg2dlnT = T * zi.dot(ddidT)
-#   D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
-#   dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
-#   dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
-#   dx2 = dx.dot(dx)
-#   proceed = (dx2 > tolvar and gnorm > tolres or k < miniter) and np.isfinite(dx2)
-#   logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   while dx2 > tol and k < maxiter:
-#     xkp1 = xk + dx
-#     if xkp1[0] > lnPmax:
-#       xk[0] = .5 * (xk[0] + lnPmax)
-#     elif xkp1[0] < lnPmin:
-#       xk[0] = .5 * (xk[0] + lnPmin)
-#     else:
-#       xk[0] = xkp1[0]
-#     if xkp1[1] > lnTmax:
-#       xk[1] = .5 * (xk[1] + lnTmax)
-#     elif xkp1[1] < lnTmin:
-#       xk[1] = .5 * (xk[1] + lnTmin)
-#     else:
-#       xk[1] = xkp1[1]
-#     k += 1
-#     P = np.exp(xk[0])
-#     T = np.exp(xk[1])
-#     lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
-#     lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
-#     di = lnkvi + lnphiyi - lnphizi
-#     g1 = yi.dot(di)
-#     g2 = zi.dot(di)
-#     gnorm = np.sqrt(g1 * g1 + g2 * g2)
-#     ddidP = dlnphiyidP - dlnphizidP
-#     ddidT = dlnphiyidT - dlnphizidT
-#     dg1dlnP = P * yi.dot(ddidP)
-#     dg2dlnP = P * zi.dot(ddidP)
-#     dg1dlnT = T * yi.dot(ddidT)
-#     dg2dlnT = T * zi.dot(ddidT)
-#     D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
-#     dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
-#     dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
-#     dx2 = dx.dot(dx)
-#     proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
-#     logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   return np.hstack([lnkvi, xk]), np.array([Zy, Zz])
-
-
-# def _renv2pPT(
-#   x0: Vector,
-#   Fv: Scalar,
-#   zi: Vector,
-#   sidx: int,
-#   eos: Env2pEosPT,
-#   tol: Scalar = 1e-14,
-#   maxiter: int = 5,
-#   miniter: int = 1,
-#   lnPmin: Scalar = 0.,
-#   lnPmax: Scalar = 18.42,
-#   lnTmin: Scalar = 5.154,
-#   lnTmax: Scalar = 6.881,
-# ) -> EnvPointResult:
-#   Nc = eos.Nc
-#   logger.debug(
-#     'Refinement of the approximate phase envelope point for: Fv = %.3f', Fv,
-#   )
-#   logger.debug(
-#     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
-#     *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-#     'lnP', 'lnT', 'gnorm', 'dx2',
-#   )
-#   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
-#   g = np.empty_like(x0)
-#   dx = np.empty_like(x0)
-#   J = np.zeros(shape=(Nc + 2, Nc + 2))
-#   lnkai = x0[:Nc]
-#   zei = lnkai * zi
-#   ze2 = zei.dot(lnkai)
-#   k = 0
-#   xk = x0.flatten()
-#   lnkvi = xk[:Nc]
-#   lnP = xk[-2]
-#   lnT = xk[-1]
-#   ex = np.exp(xk)
-#   yi = ex[:Nc] * zi
-#   P = ex[-2]
-#   T = ex[-1]
-#   # (lnphiyi, Zy, dlnphiyidP,
-#   #  dlnphiyidT, dlnphiyidyj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yi)
-#   # (lnphizi, Zz, dlnphizidP,
-#   #  dlnphizidT, dlnphizidyj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, zi)
-#   # J[:Nc,:Nc] = 
-#   lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
-#   lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
-#   gi = lnkvi + lnphiyi - lnphizi
-#   gp1 = yi.sum() - 1.
-#   gp2 = zei.dot(lnkvi) - ze2
-#   gnorm = np.sqrt(gi.dot(gi) + gp1 * gp1 + gp2 * gp2)
-#   dgidP = dlnphiyidP - dlnphizidP
-#   dgidT = dlnphiyidT - dlnphizidT
-#   g1 = gp1 - yi.dot(gi)
-#   g2 = gp2 - zei.dot(gi)
-#   dg1dlnP = P * yi.dot(dgidP)
-#   dg2dlnP = P * zei.dot(dgidP)
-#   dg1dlnT = T * yi.dot(dgidT)
-#   dg2dlnT = T * zei.dot(dgidT)
-#   D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
-#   dlnP = D * (dg2dlnT * g1 - dg1dlnT * g2)
-#   dlnT = D * (dg1dlnP * g2 - dg2dlnP * g1)
-#   dlnkvi = -(gi + P * dlnP * dgidP + T * dlnT * dgidT)
-#   dx2 = dlnkvi.dot(dlnkvi) + dlnP * dlnP + dlnT * dlnT
-#   proceed = (dx2 > tol or k < miniter) and np.isfinite(dx2)
-#   logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   while proceed and k < maxiter:
-#     k += 1
-#     lnPkp1 = lnP + dlnP
-#     if lnPkp1 > lnPmax:
-#       xk[-2] = .5 * (lnP + lnPmax)
-#     elif lnPkp1 < lnPmin:
-#       xk[-2] = .5 * (lnP + lnPmin)
-#     else:
-#       xk[-2] = lnPkp1
-#     lnTkp1 = lnT + dlnT
-#     if lnTkp1 > lnTmax:
-#       xk[-1] = .5 * (lnT + lnTmax)
-#     elif lnPkp1 < lnPmin:
-#       xk[-1] = .5 * (lnT + lnTmin)
-#     else:
-#       xk[-1] = lnTkp1
-#     xk[:Nc] = lnkvi + dlnkvi
-#     lnkvi = xk[:Nc]
-#     lnP = xk[-2]
-#     lnT = xk[-1]
-#     ex = np.exp(xk)
-#     yi = ex[:Nc] * zi
-#     P = ex[-2]
-#     T = ex[-1]
-#     lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
-#     lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
-#     gi = lnkvi + lnphiyi - lnphizi
-#     gp1 = yi.sum() - 1.
-#     gp2 = zei.dot(lnkvi) - ze2
-#     gnorm = np.sqrt(gi.dot(gi) + gp1 * gp1 + gp2 * gp2)
-#     dgidP = dlnphiyidP - dlnphizidP
-#     dgidT = dlnphiyidT - dlnphizidT
-#     g1 = gp1 - yi.dot(gi)
-#     g2 = gp2 - zei.dot(gi)
-#     dg1dlnP = P * yi.dot(dgidP)
-#     dg2dlnP = P * zei.dot(dgidP)
-#     dg1dlnT = T * yi.dot(dgidT)
-#     dg2dlnT = T * zei.dot(dgidT)
-#     D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
-#     dlnP = D * (dg2dlnT * g1 - dg1dlnT * g2)
-#     dlnT = D * (dg1dlnP * g2 - dg2dlnP * g1)
-#     dlnkvi = -(gi + P * dlnP * dgidP + T * dlnT * dgidT)
-#     dx2 = dlnkvi.dot(dlnkvi) + dlnP * dlnP + dlnT * dlnT
-#     proceed = dx2 > tol and np.isfinite(dx2)
-#     logger.debug(tmpl, k, *xk, gnorm, dx2)
-#   kvi = ex[:Nc]
-#   di = 1. + Fv * (kvi - 1.)
-#   yvi = kvi * zi / di
-#   J = np.zeros(shape=(Nc + 2, Nc + 2))
-#   J[-1, sidx] = 1.
-#   J[np.diag_indices(Nc)] = 1.
-#   J[-2,:Nc] = yvi / di
-#   J[:Nc,-2] = P * dgidP
-#   J[:Nc,-1] = T * dgidT
-#   return EnvPointResult(x=xk, Zj=np.array([Zy, Zz]), jac=J, Niter=k, dx2=dx2,
-#                         gnorm=gnorm, succeed=dx2 < tol and np.isfinite(dx2))
-
-
+def _env2pPT_step(Niter: int, dx: Vector) -> Scalar:
+  """Function for step control in the phase envelope construction
+  procedure.
+
+  Parameters
+  ----------
+  Niter: int
+    The number of iterations required to achieve the current solution.
+
+  dx: Vector, shape (Nc + 2,)
+    Basic variables change between previous and current solutions.
+
+  Returns
+  -------
+  The step multiplier used to calculate the next value of the specified
+  variable.
+  """
+  if Niter <= 1:
+    return 2.
+  elif Niter == 2:
+    return 1.5
+  elif Niter == 3:
+    return 1.2
+  elif Niter == 4:
+    return 0.9
+  else:
+    return 0.5
+
+
+class env2pPT(object):
+  """Two-phase envelope construction using a PT-based equation of state.
+
+  The approach of the phase envelope calculation is based on the
+  algorithms described by M.L. Michelsen with some custom modifications.
+  For the math and other details behind the algorithms, see:
+
+  1. M.L. Michelsen. Calculation of phase envelopes and critical points
+  for multicomponent mixtures. Fluid Phase Equilibria. 1980. Volume 4.
+  Issues 1 - 2. Pages 1 - 10. DOI: 10.1016/0378-3812(80)80001-X.
+
+  2. M.L. Michelsen. A simple method for calculation of approximate phase
+  boundaries. 1994. Volume 98. Pages 1 - 11. DOI:
+  10.1016/0378-3812(94)80104-5 .
+
+  The algorithm starts with the first saturation pressure calculation
+  using the `PsatPT` class. Then a preliminary search using several
+  flash calculations by the `flash2pPT` class is implemented to clarify
+  an initial guess close for the specified phase mole fraction. After
+  that, the system of the phase envelope equations is solved using
+  Newton's method described by M.L. Michelsen in the first paper. For
+  the second point, the initialization procedure relies on linear
+  extrapolation, while cubic extrapolation is used for subsequent
+  points. The critical point(s), cricondenbar and cricondentherm, are
+  determined through cubic interpolation of the calculated phase
+  envelope points. This process considers the relevant conditions that
+  define each specific point.
+
+  Parameters
+  ----------
+  eos: Env2pEosPT
+    An initialized instance of a PT-based equation of state. First of
+    all, it should contain methods for the first saturation pressure
+    calculation:
+
+    - `getPT_kvguess(P: Scalar, T: Scalar,
+                     yi: Vector, level: int) -> tuple[Vector, ...]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dP(P: Scalar, T: Scalar,
+                         yi: Vector) -> tuple[Vector, Scalar, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition,
+      this method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`.
+
+    If the solution method of the first saturation pressure calculation
+    would be one of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it
+    also must have:
+
+    - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
+       ) -> tuple[Vector, Scalar, Matrix, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition,
+      this method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`.
+
+    The `flash2pPT` class is used to perform the preliminary search for
+    the specified phase mole fraction. If the solution method for flash
+    calculations would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then the instance of an EOS also must have:
+
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    The solution of the phase envelope equations relies on Newton's
+    method, for which the Jacobian is constructed using the partial
+    derivatives calculated by the following method.
+
+    - `getPT_lnphii_Z_dP_dT_dyj(P: Scalar, T: Scalar, yi: Vector,
+       ) -> tuple[Vector, Scalar, Vector, Vector, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to temperature as a `Vector` of
+        shape `(Nc,)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole fractions without taking into
+        account the mole fraction constraint as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    For solving equations that describe the approximate phase envelope,
+    the following partial derivatives are required from the initialized
+    instance of an EOS:
+
+    - `getPT_lnphii_Z_dP_dT(P: Scalar, T: Scalar, yi: Vector
+       ) -> tuple[Vector, Scalar, Vector, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to temperature as a `Vector` of
+        shape `(Nc,)`.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  approx: bool
+    A flag indicating whether the approximate phase envelope should be
+    calculated. If set to `False`, the standard algorithm of the phase
+    envelope construction, which is based on the paper of M.L. Michelsen
+    (doi: 10.1016/0378-3812(80)80001-X), will be used. If set to `True`
+    the phase envelope construction procedure implements the solution
+    of equations of the approximate phase envelope. All points of the
+    approximate phase envelope are located inside and close to the
+    actual two-phase region boundary. The accuracy of the internal
+    phase lines is expected to be poorer than that of the phase
+    boundary. Therefore, this approach is most substantial for systems
+    with many components. This algorithm is based on the paper of
+    M.L. Michelsen (10.1016/0378-3812(94)80104-5). Activating this flag
+    currently raises `NotImplementedError`. Default is `False`.
+
+  method: str
+    This parameter allows to select a solution algorithm for the phase
+    envelope construction. It should be one of:
+
+    - `'newton'` (Newton's method),
+    - `'tr'` (the trust region method, currently raises
+              `NotImplementedError`).
+
+    Default is `'newton'`.
+
+  Pmin: Scalar
+    The minimum pressure [Pa] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `1.0` [Pa].
+
+  Pmax: Scalar
+    The maximum pressure [Pa] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `1e8` [Pa].
+
+  Tmin: Scalar
+    The minimum temperature [K] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `173.15` [K].
+
+  Tmax: Scalar
+    The maximum temperature [K] for phase envelope construction.
+    This limit is also used by the saturation point solver. Default is
+    `937.15` [K].
+
+  stopunstab: bool
+    The flag indicates whether it is necessary to stop the phase
+    envelope construction if any of trial and real phase compositions
+    along it are found unstable by the stability test. Enabling this
+    option may prevent drawing false saturation lines but takes extra
+    CPU time to conduct stability test for each point on the phase
+    envelope. Default is `False`.
+
+  stabkwargs: dict
+    In order to perform the stability test of trial and real phase
+    compositions the stability test is conducted using the `stabilityPT`
+    class. This parameter allows to specify settings for this class.
+
+  psatkwargs: dict
+    The first saturation point of the phase envelope is calculated
+    using `PsatPT` class. This parameter allows to specify settings
+    for the first saturation pressure calculation.
+
+  flashkwargs: dict
+    To clarify the initial guess of the first phase envelope point,
+    a preliminary search is implemented using several flash calculations
+    launched by the `flash2pPT` class. This parameter allows to specify
+    settings for the flash calculation procedure.
+
+  kwargs: dict
+    Other arguments for the two-phase envelope solver. It may contain
+    such arguments as `tolres`, `tolvar`, `maxiter` and `miniter`.
+
+  Methods
+  -------
+  run(P0: Scalar, T0: Scalar, yi: Vector, Fv: Scalar) -> EnvelopeResult
+    This method should be used to run the envelope construction program,
+    for which the initial guess of the saturation pressure in [Pa],
+    starting temperature in [K], mole fractions of `Nc` components with
+    shape `(Nc,)`, and phase mole fraction must be given. It returns the
+    phase envelope construction results as an instance of the
+    `EnvelopeResult`.
+  """
+  def __init__(
+    self,
+    eos: Env2pEosPT,
+    approx: bool = False,
+    method: str = 'newton',
+    Pmin: Scalar = 1.,
+    Pmax: Scalar = 1e8,
+    Tmin: Scalar = 173.15,
+    Tmax: Scalar = 973.15,
+    stopunstab: bool = False,
+    stabkwargs: dict = {},
+    psatkwargs: dict = {},
+    flashkwargs: dict = {},
+    **kwargs,
+  ) -> None:
+    self.eos = eos
+    self.stabsolver = stabilityPT(eos, **stabkwargs)
+    self.psatsolver = PsatPT(eos, **psatkwargs)
+    self.flashsolver = flash2pPT(eos, **flashkwargs)
+    lnPmin = np.log(Pmin)
+    lnPmax = np.log(Pmax)
+    lnTmin = np.log(Tmin)
+    lnTmax = np.log(Tmax)
+    self.lnTmin = lnTmin
+    self.lnPmin = lnPmin
+    self.lnTmax = lnTmax
+    self.lnPmax = lnPmax
+    self.stopunstab = stopunstab
+    if approx:
+      raise NotImplementedError(
+        'The construction of the approximate phase envelope is not '
+        'implemented yet.'
+      )
+    else:
+      if method == 'newton':
+        self.solver = partial(_env2pPT, eos=eos, lnPmax=lnPmax+0.05,
+                              lnTmax=lnTmax+0.05, lnPmin=lnPmin-0.05,
+                              lnTmin=lnTmin-0.05, **kwargs)
+      elif method == 'tr':
+        raise NotImplementedError(
+          'The trust region method for phase envelope construction is not '
+          'implemented yet.'
+        )
+      else:
+        raise ValueError(f'The unknown method: {method}.')
+    pass
+
+  def run(
+    self,
+    P0: Scalar,
+    T0: Scalar,
+    yi: Vector,
+    Fv: Scalar,
+    sidx0: int = -1,
+    step0: Scalar = 0.01,
+    fstep: Callable[[int, Vector], Scalar] = _env2pPT_step,
+    maxstep: Scalar = 0.025,
+    switchmult: Scalar = 0.5,
+    unconvmult: Scalar = 0.75,
+    maxrepeats: int = 8,
+    maxpoints: int = 200,
+    searchkwargs: dict = {},
+  ) -> EnvelopeResult:
+    """This method should be used to calculate the entire phase envelope.
+
+    Parameters
+    ----------
+    P0: Scalar
+      Initial guess of the saturation pressure [Pa].
+
+    T0: Scalar
+      Initial guess of the saturation temperature [K].
+
+    yi: Vector, shape (Nc,)
+      Mole fractions of `Nc` components in the mixture.
+
+    Fv: Scalar
+      Phase mole fraction for which the envelope is needed.
+
+    sidx0: int
+      For iteration zero, this parameter indexes the specified variable
+      in an array of basic variables. The array of basic variables
+      includes:
+
+      - `Nc` natural logarithms of k-values of components,
+      - the natural logarithm of pressure,
+      - the natural logarithm of temperature.
+
+      The specified variable is considered known and fixed for the
+      algorithm of saturation point determination. Therefore, changing
+      of this index may improve the algorithm converegence for the
+      zeroth point. To initiate calculations, a pressure specification
+      was recommended by M.L. Michelsen in his paper
+      (doi: 10.1016/0378-3812(80)80001-X). The general rule for
+      specified variable selection was also given in this paper. It was
+      recommended to select the specified variable based on the largest
+      rate of change, which refers to the largest derivative of the
+      basic variables with respect to the specified variable. Default
+      is `-1`.
+
+    step0: Scalar
+      The step size (the difference between two subsequent values of a
+      specified variable) for iteration zero. It should be small enough
+      to consider the saturation point found at the zeroth iteration as
+      a good initial guess for the next saturation point calculation.
+      Default is `0.01`.
+
+    fstep: Callable[[int, Vector], Scalar]
+      Function for step control in the phase envelope construction
+      procedure. It should accept the number of iterations and basic
+      variables change between previous and current solutions as a
+      `Vector` of shape `(Nc + 2,)` and return the step size
+      multiplier. Default is `_env2pPT_step`.
+
+    maxstep: Scalar
+      The step size in the phase envelope construction procedure cannot
+      be greater than the value specified by the `maxstep` parameter.
+      Default is `0.025`. A good practice would be to specify the
+      `maxstep` as 2.5 times greater than the `step0`.
+
+    switchmult: Scalar
+      The step size multiplier is implemented if the specified variable
+      is changed. Default is `0.5`.
+
+    unconvmult: Scalar
+      The step size multiplier is implemented if the solution is not
+      found for the specified variable value. Default is `0.75`.
+
+    maxrepeats: int
+      The saturation point calculation can be repeated several times
+      with a reduced step size if convergence of equations was not
+      achieved. This parameter allows to specify the maximum number
+      of repeats for any saturation point calculation. If the number
+      of repeats exceeds the given bound, then the construction of
+      the phase envelope will be stopped. Default is `8`.
+
+    maxpoints: int
+      The maximum number of points of the phase envelope. Default is
+      `200`.
+
+    searchkwargs: dict
+      Advanced parameters for the preliminary search. It can contain
+      such keys as `Pmin`, `Pmax and `step`. For the details, see the
+      method `search` of the class `PsatPT`. Default is an empty
+      dictionary.
+
+    Returns
+    -------
+    The phase envelope construction results as an instance of the
+    `EnvelopeResult`.
+
+    Raises
+    ------
+    `SolutionNotFoundError` if the solution was not found for the
+    zeroth saturation point (for the given initial guesses).
+    """
+    logger.info('Constructing the phase envelope for Fv = %s.', Fv)
+    try:
+      psres = self.psatsolver.run(P0, T0, yi, True, **searchkwargs)
+    except SolutionNotFoundError:
+      raise SolutionNotFoundError(
+        'The saturation pressure was not found for the specified\n'
+        f'starting temperature {T0 = } K and the initial guess {P0 = } Pa.\n'
+        'It may be beneficial to modify the initial guess and/or the\n'
+        'starting temperature. Changing the solution method and its\n'
+        'numerical settings can also be helpful.'
+      )
+    kvji0 = (psres.yji[0] / psres.yji[1], psres.yji[1] / psres.yji[0])
+    P, flash = self.search(psres.P, T0, yi, Fv, kvji0)
+    F = np.abs(flash.Fj[0])
+    Nc = self.eos.Nc
+    logger.info(
+      '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s %6s %6s',
+      'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
+      *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT',
+      'res', 'var',
+    )
+    tmpl = ('%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f'
+            + ' %8.4f %7.4f %6s %6s')
+    x0 = np.log(np.hstack([flash.yji[0] / flash.yji[1], P, T0]))
+    sidx = sidx0
+    sval = x0[sidx]
+    point = self.solver(x0, sidx, sval, yi, F)
+    logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, *point.x,
+                point.resflag, point.varflag)
+    xk, Zkj, succeed = self.curve(yi, F, point, step0, fstep, maxstep,
+                                  switchmult, unconvmult, maxrepeats,
+                                  maxpoints)
+    if (point.x[-2] > self.lnPmin and point.x[-1] > self.lnTmin and
+        point.x[-2] < self.lnPmax and point.x[-1] < self.lnTmax and
+        xk.shape[0] < maxpoints):
+      xl, Zlj, tmp = self.curve(yi, F, point, -step0, fstep, maxstep,
+                                switchmult, unconvmult, maxrepeats,
+                                maxpoints - xk.shape[0])
+      if xl.shape[0] > 1:
+        xk = np.vstack([np.flipud(xk), xl[1:]])
+        Zkj = np.vstack([np.flipud(Zkj), [point.Zj], Zlj])
+        succeed = succeed and tmp
+    elif xk.shape[0] > 1:
+      Zkj = np.vstack([[point.Zj], Zkj])
+    Pk = np.exp(xk[:, -2])
+    Tk = np.exp(xk[:, -1])
+    lnkvki = xk[:, :Nc]
+    return EnvelopeResult(Pk=Pk, Tk=Tk, kvki=np.exp(lnkvki), Zkj=Zkj,
+                          succeed=succeed)
+
+  def search(
+    self,
+    Pmax: Scalar,
+    T: Scalar,
+    yi: Vector,
+    Fv: Scalar,
+    kvji0: tuple[Vector, ...] | None = None,
+    Pmin: Scalar = 101325.,
+    Npoints: int = 100,
+  ) -> tuple[Scalar, FlashResult]:
+    """
+    """
+    PP = np.linspace(Pmax, Pmin, Npoints, endpoint=True)
+    flashs = []
+    Fvs = []
+    for P in PP:
+      flash = self.flashsolver.run(P, T, yi, kvji0)
+      flashs.append(flash)
+      Fvs.append(flash.Fj[0])
+      if np.isclose(flash.Fj, Fv).any():
+        return P, flash
+    Fvs = np.array(Fvs)
+    idx = np.argmin(np.abs(Fvs - Fv))
+    return PP[idx], flashs[idx]
+
+  def curve(
+    self,
+    yi: Vector,
+    Fv: Scalar,
+    point0: EnvPointResult,
+    step0: Scalar,
+    fstep: Callable[[int, Vector], Scalar],
+    maxstep: Scalar,
+    switchmult: Scalar,
+    unconvmult: Scalar,
+    maxrepeats: int,
+    maxpoints: int,
+  ) -> tuple[Matrix, Matrix, bool]:
+    """This method should be used to calculate a part of the phase
+    envelope for a given direction.
+
+    Parameters
+    ----------
+    yi: Vector, shape (Nc,)
+      Mole fractions of `Nc` components in a mixture.
+
+    Fv: Scalar
+      Phase mole fraction for which the envelope is needed.
+
+    point0: EnvPointResult
+      The zeroth point of the phase envelope as an instance of
+      `EnvPointResult`.
+
+    step0: Scalar
+      The step size (the difference between two subsequent values of a
+      specified variable) for iteration zero. This parameter can also be
+      used to specify the direction in which the phase envelope must be
+      calculated by the algorithm. In general, the change in the sign of
+      the initial step size would lead to a different branch of the
+      phase envelope.
+
+    fstep: Callable[[int, Vector], Scalar]
+      Function for step control in the phase envelope construction
+      procedure. It should accept the number of iterations and basic
+      variables change between previous and current solutions as a
+      `Vector` of shape `(Nc + 2,)` and return the step size
+      multiplier.
+
+    maxstep: Scalar
+      The upper bound for the step size.
+
+    switchmult: Scalar
+      The step size multiplier is implemented if the specified variable
+      is changed.
+
+    unconvmult: Scalar
+      The step size multiplier is implemented if the solution is not
+      found for the specified variable value.
+
+    maxrepeats: int
+      This parameter allows to specify the maximum number of repeats
+      for any saturation point calculation. If the number of repeats
+      exceeds the given bound, then the construction of the phase
+      envelope will be stopped.
+
+    maxpoints: int
+      The maximum number of points of the phase envelope.
+
+    Returns
+    -------
+    A tuple of:
+    - a matrix of the shape `(Ns, Nc + 2)` of calculated saturation
+      points (`Ns` arrays of basic variables that correspond to the
+      solution of equations),
+    - a matrix of the shape `(Ns, 2)` of compressibility factors of the
+      real and trial phases along the phase envelope.
+    """
+    Nc = self.eos.Nc
+    Ncp2 = Nc + 2
+    tmpl = ('%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f'
+            + ' %8.4f %7.4f %6s %6s')
+    xk = np.zeros(shape=(maxpoints, Ncp2))
+    succeed = True
+    M = np.empty(shape=(4, 4))
+    M[:, 0] = np.array([1., 0., 1., 0.])
+    M[1, 1] = 1.
+    M[3, 1] = 1.
+    B = np.empty(shape=(4, Ncp2))
+    mdgds = np.zeros(shape=(Ncp2,))
+    mdgds[-1] = 1.
+    Zkj = []
+    kmax = maxpoints - 1
+    k = 0
+    r = 0
+    point = point0
+    x = point.x
+    Niter = point.Niter
+    xk[k] = x
+    step = np.abs(step0)
+    dxds = np.linalg.solve(point.jac, mdgds)
+    sidx = np.argmax(np.abs(dxds))
+    svalk = x[sidx]
+    scnt = 1
+    B[0] = x
+    B[1] = dxds
+    svalkp1 = svalk + np.sign(step0) * step
+    xi = x + dxds * (svalkp1 - svalk)
+    while (k < kmax and
+           xk[k, -1] >= self.lnTmin and xk[k, -2] >= self.lnPmin and
+           xk[k, -1] <= self.lnTmax and xk[k, -2] <= self.lnPmax):
+      if r > maxrepeats:
+        logger.warning('The maximum number of step repeats has been reached.')
+        succeed = False
+        break
+      point = self.solver(xi, sidx, svalkp1, yi, Fv)
+      if point.succeed:
+        Niter = point.Niter
+        x = point.x
+        logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, *x,
+                    point.resflag, point.varflag)
+        dxds = np.linalg.solve(point.jac, mdgds)
+        sidxnew = np.argmax(np.abs(dxds))
+        if sidxnew != sidx:
+          scnt = 1
+          sidx = sidxnew
+          step *= switchmult
+        else:
+          scnt += 1
+          step *= fstep(Niter, x - xk[k])
+          if np.abs(step) > maxstep:
+            step = np.sign(step) * maxstep
+        svalkm1 = xk[k, sidx]
+        svalkm12 = svalkm1 * svalkm1
+        svalk = x[sidx]
+        svalk2 = svalk * svalk
+        k += 1
+        xk[k] = x
+        Zkj.append(point.Zj)
+        svalkp1 = svalk + step * np.sign(svalk - svalkm1)
+        M[0, 1] = svalk
+        M[0, 2] = svalk2
+        M[0, 3] = svalk2 * svalk
+        M[1, 2] = 2. * svalk
+        M[1, 3] = 3. * svalk2
+        M[2, 1] = svalkm1
+        M[2, 2] = svalkm12
+        M[2, 3] = svalkm12 * svalkm1
+        M[3, 2] = 2. * svalkm1
+        M[3, 3] = 3. * svalkm12
+        B[2:] = B[:2]
+        B[0] = x
+        B[1] = dxds
+        if scnt > 1:
+          C = np.linalg.solve(M, B)
+          svalkp12 = svalkp1 * svalkp1
+          xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
+        else:
+          xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
+        r = 0
+      else:
+        step *= unconvmult
+        if scnt > 1:
+          svalkp1 = svalk + step * np.sign(svalk - svalkm1)
+          C = np.linalg.solve(M, B)
+          svalkp12 = svalkp1 * svalkp1
+          xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
+        elif k > 0:
+          svalkp1 = svalk + step * np.sign(svalk - svalkm1)
+          xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
+        else:
+          svalkp1 = svalk + np.sign(step0) * step
+          xi = x + dxds * (svalkp1 - svalk)
+        r += 1
+    xk = xk[:k+1]
+    Zkj = np.array(Zkj)
+    return xk, Zkj, succeed
+
+
+def _env2pPT(
+  x0: Vector,
+  sidx: int,
+  sval: Scalar,
+  yi: Vector,
+  Fv: Scalar,
+  eos: Env2pEosPT,
+  tolres: Scalar = 1e-12,
+  tolvar: Scalar = 1e-14,
+  maxiter: int = 5,
+  miniter: int = 0,
+  lnPmin: Scalar = 0.,
+  lnPmax: Scalar = 18.42,
+  lnTmin: Scalar = 5.154,
+  lnTmax: Scalar = 6.881,
+) -> EnvPointResult:
+  """
+  """
+  Nc = eos.Nc
+  logger.debug(
+    'Solving the system of phase boundary equations for: '
+    'Fv = %.3f, sidx = %s, sval = %.4f', Fv, sidx, sval,
+  )
+  logger.debug(
+    '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
+    *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'lnP', 'lnT', 'gnorm', 'dx2',
+  )
+  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
+  J = np.zeros(shape=(Nc + 2, Nc + 2))
+  J[-1, sidx] = 1.
+  g = np.empty(shape=(Nc + 2,))
+  I = np.eye(Nc)
+  k = 0
+  xk = x0.flatten()
+  xk[sidx] = sval
+  ex = np.exp(xk)
+  P = ex[-2]
+  T = ex[-1]
+  lnkvi = xk[:Nc]
+  kvi = ex[:Nc]
+  di = 1. + Fv * (kvi - 1.)
+  yli = yi / di
+  yvi = kvi * yli
+  (lnphivi, Zv, dlnphividP,
+   dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
+  (lnphili, Zl, dlnphilidP,
+   dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
+  g[:Nc] = lnkvi + lnphivi - lnphili
+  g[Nc] = np.sum(yvi - yli)
+  g[Nc+1] = xk[sidx] - sval
+  gnorm = np.linalg.norm(g)
+  dylidlnkvi = -Fv * yvi / di
+  dyvidlnkvi = yvi + kvi * dylidlnkvi
+  J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+  J[-2,:Nc] = yvi / di
+  J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
+  J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
+  dx = np.linalg.solve(J, -g)
+  dx2 = dx.dot(dx)
+  proceed = (np.isfinite(dx2) and
+             (dx2 > tolvar and gnorm > tolres or k < miniter))
+  logger.debug(tmpl, k, *xk, gnorm, dx2)
+  while proceed and k < maxiter:
+    k += 1
+    xkp1 = xk + dx
+    if xkp1[-2] > lnPmax:
+      xkp1[-2] = .5 * (xk[-2] + lnPmax)
+    elif xkp1[-2] < lnPmin:
+      xkp1[-2] = .5 * (xk[-2] + lnPmin)
+    if xkp1[-1] > lnTmax:
+      xkp1[-1] = .5 * (xk[-1] + lnTmax)
+    elif xkp1[-1] < lnTmin:
+      xkp1[-1] = .5 * (xk[-1] + lnTmin)
+    xk = xkp1
+    ex = np.exp(xk)
+    P = ex[-2]
+    T = ex[-1]
+    lnkvi = xk[:Nc]
+    kvi = ex[:Nc]
+    di = 1. + Fv * (kvi - 1.)
+    yli = yi / di
+    yvi = kvi * yli
+    (lnphivi, Zv, dlnphividP,
+     dlnphividT, dlnphividyvj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yvi)
+    (lnphili, Zl, dlnphilidP,
+     dlnphilidT, dlnphilidylj) = eos.getPT_lnphii_Z_dP_dT_dyj(P, T, yli)
+    g[:Nc] = lnkvi + lnphivi - lnphili
+    g[Nc] = np.sum(yvi - yli)
+    g[Nc+1] = xk[sidx] - sval
+    gnorm = np.linalg.norm(g)
+    dylidlnkvi = -Fv * yvi / di
+    dyvidlnkvi = yvi + kvi * dylidlnkvi
+    J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+    J[-2,:Nc] = yvi / di
+    J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
+    J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
+    dx = np.linalg.solve(J, -g)
+    dx2 = dx.dot(dx)
+    proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
+    logger.debug(tmpl, k, *xk, gnorm, dx2)
+  resflag = gnorm < tolres
+  varflag = dx2 < tolvar
+  return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), jac=J, Niter=k, dx2=dx2,
+                        gnorm=gnorm, resflag=resflag, varflag=varflag,
+                        succeed=(resflag or varflag) and np.isfinite(dx2))
+
+
+def _aenv2pPT(
+  x0: Vector,
+  alpha: Vector,
+  lnkpi: Vector,
+  Fv: Scalar,
+  zi: Vector,
+  eos: Env2pEosPT,
+  tolres: Scalar = 1e-12,
+  tolvar: Scalar = 1e-14,
+  maxiter: int = 5,
+  miniter: int = 1,
+  lnPmin: Scalar = 0.,
+  lnPmax: Scalar = 18.42,
+  lnTmin: Scalar = 5.154,
+  lnTmax: Scalar = 6.881,
+) -> tuple[Vector, Vector]:
+  """
+  """
+  k = 0
+  logger.debug(
+    'Solving the system of equations of the approximate phase boundary for: '
+    'Fv = %.3f, alpha = %.3f', Fv, alpha,
+  )
+  logger.debug('%3s%9s%8s%10s%10s', 'Nit', 'lnP', 'lnT', 'gnorm', 'dx2')
+  tmpl = '%3s %8.4f %7.4f %9.2e %9.2e'
+  dx = np.empty_like(x0)
+  Yi = zi * np.exp(alpha * lnkpi)
+  yi = Yi / Yi.sum()
+  lnkvi = np.log(yi / zi)
+  xk = x0
+  P = np.exp(xk[0])
+  T = np.exp(xk[1])
+  lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
+  lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
+  di = lnkvi + lnphiyi - lnphizi
+  g1 = yi.dot(di)
+  g2 = zi.dot(di)
+  gnorm = np.sqrt(g1 * g1 + g2 * g2)
+  ddidP = dlnphiyidP - dlnphizidP
+  ddidT = dlnphiyidT - dlnphizidT
+  dg1dlnP = P * yi.dot(ddidP)
+  dg2dlnP = P * zi.dot(ddidP)
+  dg1dlnT = T * yi.dot(ddidT)
+  dg2dlnT = T * zi.dot(ddidT)
+  D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
+  dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
+  dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
+  dx2 = dx.dot(dx)
+  proceed = (np.isfinite(dx2) and
+             (dx2 > tolvar and gnorm > tolres or k < miniter))
+  logger.debug(tmpl, k, *xk, gnorm, dx2)
+  while dx2 > tol and k < maxiter:
+    xkp1 = xk + dx
+    if xkp1[0] > lnPmax:
+      xk[0] = .5 * (xk[0] + lnPmax)
+    elif xkp1[0] < lnPmin:
+      xk[0] = .5 * (xk[0] + lnPmin)
+    else:
+      xk[0] = xkp1[0]
+    if xkp1[1] > lnTmax:
+      xk[1] = .5 * (xk[1] + lnTmax)
+    elif xkp1[1] < lnTmin:
+      xk[1] = .5 * (xk[1] + lnTmin)
+    else:
+      xk[1] = xkp1[1]
+    k += 1
+    P = np.exp(xk[0])
+    T = np.exp(xk[1])
+    lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_lnphii_Z_dP_dT(P, T, yi)
+    lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_lnphii_Z_dP_dT(P, T, zi)
+    di = lnkvi + lnphiyi - lnphizi
+    g1 = yi.dot(di)
+    g2 = zi.dot(di)
+    gnorm = np.sqrt(g1 * g1 + g2 * g2)
+    ddidP = dlnphiyidP - dlnphizidP
+    ddidT = dlnphiyidT - dlnphizidT
+    dg1dlnP = P * yi.dot(ddidP)
+    dg2dlnP = P * zi.dot(ddidP)
+    dg1dlnT = T * yi.dot(ddidT)
+    dg2dlnT = T * zi.dot(ddidT)
+    D = 1. / (dg1dlnP * dg2dlnT - dg1dlnT * dg2dlnP)
+    dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
+    dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
+    dx2 = dx.dot(dx)
+    proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
+    logger.debug(tmpl, k, *xk, gnorm, dx2)
+  return np.hstack([lnkvi, xk]), np.array([Zy, Zz])

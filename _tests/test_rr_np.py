@@ -8,9 +8,7 @@ logger = logging.getLogger('rr')
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter(
-  '%(process)d:%(name)s:%(levelname)s: %(message)s'
-)
+formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 

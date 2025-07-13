@@ -21,6 +21,7 @@ from custom_types import (
   Vector,
   Matrix,
   Eos,
+  SolutionNotFoundError,
 )
 
 
@@ -81,9 +82,8 @@ class FlashResult(dict):
   gnorm: Scalar
     The norm of the vector of equilibrium equations.
 
-  success: bool
-    A boolean flag indicating whether or not the procedure exited
-    successfully.
+  Niter: int
+    The number of iterations.
   """
   def __getattr__(self, name: str) -> object:
     try:
@@ -95,8 +95,7 @@ class FlashResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Phase composition:\n{self.yji}\n"
            f"Phase mole fractions:\n{self.Fj}\n"
-           f"Phase compressibility factors:\n{self.Zj}\n"
-           f"Calculation completed successfully:\n{self.success}")
+           f"Phase compressibility factors:\n{self.Zj}\n")
     return s
 
 
@@ -303,9 +302,12 @@ class flash2pPT(object):
     Important attributes are:
     - `yji` the component mole fractions in each phase,
     - `Fj` the phase mole fractions,
-    - `Zj` the compressibility factors of each phase,
-    - `success` a boolean flag indicating if the calculation completed
-      successfully.
+    - `Zj` the compressibility factors of each phase.
+
+    Raises
+    ------
+    `SolutionNotFoundError` if the flash calculation procedure terminates
+    unsuccessfully.
     """
     if kvji0 is None:
       kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
@@ -316,7 +318,7 @@ class flash2pPT(object):
       if stab.stable:
         return FlashResult(yji=np.vstack([yi, self._1pstab_yi]),
                            Fj=self._1pstab_Fj, Zj=np.array([stab.Z, 0.]),
-                           gnorm=-1, success=True)
+                           gnorm=-1)
       else:
         self.negflash = False
       if self.useprev and self.preserved:
@@ -324,7 +326,7 @@ class flash2pPT(object):
       else:
         kvji0 = stab.kvji
     flash = self.solver(P, T, yi, kvji0, negflash=self.negflash)
-    if flash.success and self.useprev:
+    if self.useprev:
       self.prevkvji = flash.kvji
       self.preserved = True
     return flash
@@ -336,7 +338,7 @@ def _flash2pPT_ss(
   yi: Vector,
   kvji0: tuple[Vector, ...],
   eos: Flash2pEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 30,
   negflash: bool = True,
 ) -> FlashResult:
@@ -386,7 +388,7 @@ def _flash2pPT_ss(
 
   tol: Scalar
     Terminate successfully if the norm of the equilibrium equations
-    vector is less than `tol`. Default is `1e-5`.
+    vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
@@ -401,19 +403,23 @@ def _flash2pPT_ss(
   Important attributes are:
   - `yji` the component mole fractions in each phase,
   - `Fj` the phase mole fractions,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation completed
-    successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the flash calculation procedure terminates
+  unsuccessfully.
   """
   logger.info("Two-phase flash calculation (SS method).")
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
     'Fv', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e'
-  for i, kvi0 in enumerate(kvji0):
+  for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
     lnkvik = np.log(kvik)
@@ -424,7 +430,7 @@ def _flash2pPT_ss(
     lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
-    logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm)
+    logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm)
     while gnorm > tol and k < maxiter:
       k += 1
       lnkvik -= gi
@@ -436,7 +442,7 @@ def _flash2pPT_ss(
       lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
-      logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm)
+      logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm)
     if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
@@ -451,17 +457,19 @@ def _flash2pPT_ss(
         Zj = np.array([Zl, Zv])
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                         success=True)
+                         Niter=k)
   else:
     logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n\t"
-      "The solution method was SS, EOS: %s. Parameters:"
-      "\n\tP = %s Pa\n\tT = %s K\n\tyi = %s\n\tkvji = %s.",
-      eos.name, P, T, yi, kvji0,
+      "Two-phase flash calculation terminates unsuccessfully.\n"
+      "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
+      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+      eos.name, P, T, yi, *kvji0,
     )
-    return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
-                       Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
-                       gnorm=gnorm, success=False)
+    raise SolutionNotFoundError(
+      'The flash calculation procedure\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations. It also may be '
+      'advisable to improve the initial\nguesses of k-values.'
+    )
 
 
 def _flash2pPT_qnss(
@@ -470,7 +478,7 @@ def _flash2pPT_qnss(
   yi: Vector,
   kvji0: tuple[Vector, ...],
   eos: Flash2pEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 30,
   negflash: bool = True,
 ) -> FlashResult:
@@ -524,7 +532,7 @@ def _flash2pPT_qnss(
 
   tol: Scalar
     Terminate successfully if the norm of the equilibrium equations
-    vector is less than `tol`. Default is `1e-5`.
+    vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
@@ -539,19 +547,23 @@ def _flash2pPT_qnss(
   Important attributes are:
   - `yji` the component mole fractions in each phase,
   - `Fj` the phase mole fractions,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation completed
-    successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the flash calculation procedure terminates
+  unsuccessfully.
   """
   logger.info("Two-phase flash calculation (QNSS method).")
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
     'Fv', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e'
-  for i, kvi0 in enumerate(kvji0):
+  for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
     lnkvik = np.log(kvik)
@@ -563,7 +575,7 @@ def _flash2pPT_qnss(
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
     lmbd = 1.
-    logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm)
+    logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm)
     while gnorm > tol and k < maxiter:
       dlnkvi = -lmbd * gi
       max_dlnkvi = np.abs(dlnkvi).max()
@@ -582,7 +594,7 @@ def _flash2pPT_qnss(
       lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
-      logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm)
+      logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm)
       if gnorm < tol:
         break
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
@@ -602,17 +614,19 @@ def _flash2pPT_qnss(
         Zj = np.array([Zl, Zv])
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                         success=True)
+                         Niter=k)
   else:
     logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n\t"
-      "The solution method was QNSS, EOS: %s. Parameters:"
-      "\n\tP = %s Pa\n\tT = %s K\n\tyi = %s\n\tkvji = %s.",
-      eos.name, P, T, yi, kvji0,
+      "Two-phase flash calculation terminates unsuccessfully.\n"
+      "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
+      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+      eos.name, P, T, yi, *kvji0,
     )
-    return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
-                       Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
-                       gnorm=gnorm, success=False)
+    raise SolutionNotFoundError(
+      'The flash calculation procedure\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations. It also may be '
+      'advisable to improve the initial\nguesses of k-values.'
+    )
 
 
 def _flash2pPT_newt(
@@ -621,7 +635,7 @@ def _flash2pPT_newt(
   yi: Vector,
   kvji0: tuple[Vector, ...],
   eos: Flash2pEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 30,
   negflash: bool = True,
   forcenewton: bool = False,
@@ -704,12 +718,16 @@ def _flash2pPT_newt(
   Important attributes are:
   - `yji` the component mole fractions in each phase,
   - `Fj` the phase mole fractions,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation completed
-    successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the flash calculation procedure terminates
+  unsuccessfully.
   """
   logger.info("Two-phase flash calculation (Newton's method).")
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -717,7 +735,7 @@ def _flash2pPT_newt(
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
   U = np.full(shape=(Nc, Nc), fill_value=-1.)
-  for i, kvi0 in enumerate(kvji0):
+  for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
     lnkvik = np.log(kvik)
@@ -732,7 +750,7 @@ def _flash2pPT_newt(
     lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
-    logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'Newt')
+    logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'Newt')
     while gnorm > tol and k < maxiter:
       ui = yi / (yli * yvi) - 1.
       FvFl = 1. / (Fv * (1. - Fv))
@@ -752,7 +770,7 @@ def _flash2pPT_newt(
       gnormkp1 = np.linalg.norm(gi)
       if gnormkp1 < gnorm or forcenewton:
         gnorm = gnormkp1
-        logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'Newt')
+        logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'Newt')
       else:
         lnkvik -= gi
         kvik = np.exp(lnkvik)
@@ -763,7 +781,7 @@ def _flash2pPT_newt(
         lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
         gi = lnkvik + lnphivi - lnphili
         gnorm = np.linalg.norm(gi)
-        logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
+        logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'SS')
     if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
@@ -778,17 +796,19 @@ def _flash2pPT_newt(
         Zj = np.array([Zl, Zv])
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                         success=True)
+                         Niter=k)
   else:
     logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n\t"
-      "The solution method was Newton (forced: %s), EOS: %s. Parameters:"
-      "\n\tP = %s Pa\n\tT = %s K\n\tyi = %s\n\tkvji = %s.",
-      forcenewton, eos.name, P, T, yi, kvji0,
+      "Two-phase flash calculation terminates unsuccessfully.\n"
+      "The solution method was Newton, EOS: %s.\nParameters:\nP = %s Pa"
+      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+      eos.name, P, T, yi, *kvji0,
     )
-    return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
-                       Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
-                       gnorm=gnorm, success=False)
+    raise SolutionNotFoundError(
+      'The flash calculation procedure\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations. It also may be '
+      'advisable to improve the initial\nguesses of k-values.'
+    )
 
 
 def _flash2pPT_ssnewt(
@@ -797,7 +817,7 @@ def _flash2pPT_ssnewt(
   yi: Vector,
   kvji0: tuple[Vector, ...],
   eos: Flash2pEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 30,
   tol_ss: Scalar = 1e-2,
   maxiter_ss: int = 10,
@@ -867,7 +887,7 @@ def _flash2pPT_ssnewt(
 
   tol: Scalar
     Terminate successfully if the norm of the equilibrium equations
-    vector is less than `tol`. Default is `1e-5`.
+    vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
@@ -901,12 +921,16 @@ def _flash2pPT_ssnewt(
   Important attributes are:
   - `yji` the component mole fractions in each phase,
   - `Fj` the phase mole fractions,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation completed
-    successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the flash calculation procedure terminates
+  unsuccessfully.
   """
   logger.info('Two-phase flash calculation (SS-Newton method).')
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -953,7 +977,7 @@ def _flash2pPT_ssnewt(
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
           return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             success=True)
+                             Niter=k)
       else:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
@@ -1004,17 +1028,19 @@ def _flash2pPT_ssnewt(
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
           return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             success=True)
+                             Niter=k)
   else:
     logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n\t"
-      "The solution method was SS-Newton (forced: %s), EOS: %s. Parameters:"
-      "\n\tP = %s Pa\n\tT = %s K\n\tyi = %s\n\tkvji = %s.",
-      forcenewton, eos.name, P, T, yi, kvji0,
+      "Two-phase flash calculation terminates unsuccessfully.\n"
+      "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
+      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+      eos.name, P, T, yi, *kvji0,
     )
-    return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
-                       Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
-                       gnorm=gnorm, success=False)
+    raise SolutionNotFoundError(
+      'The flash calculation procedure\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations. It also may be '
+      'advisable to improve the initial\nguesses of k-values.'
+    )
 
 
 def _flash2pPT_qnssnewt(
@@ -1023,7 +1049,7 @@ def _flash2pPT_qnssnewt(
   yi: Vector,
   kvji0: tuple[Vector, ...],
   eos: Flash2pEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 30,
   tol_qnss: Scalar = 1e-2,
   maxiter_qnss: int = 10,
@@ -1096,7 +1122,7 @@ def _flash2pPT_qnssnewt(
 
   tol: Scalar
     Terminate successfully if the norm of the equilibrium equations
-    vector is less than `tol`. Default is `1e-5`.
+    vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
@@ -1130,12 +1156,16 @@ def _flash2pPT_qnssnewt(
   Important attributes are:
   - `yji` the component mole fractions in each phase,
   - `Fj` the phase mole fractions,
-  - `Zj` the compressibility factors of each phase,
-  - `success` a boolean flag indicating if the calculation completed
-    successfully.
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the flash calculation procedure terminates
+  unsuccessfully.
   """
   logger.info('Two-phase flash calculation (QNSS-Newton method).')
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
@@ -1195,7 +1225,7 @@ def _flash2pPT_qnssnewt(
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
           return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             success=True)
+                             Niter=k)
       else:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
@@ -1246,15 +1276,17 @@ def _flash2pPT_qnssnewt(
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
           return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             success=True)
+                             Niter=k)
   else:
     logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n\t"
-      "The solution method was QNSS-Newton (forced: %s), EOS: %s. Parameters:"
-      "\n\tP = %s Pa\n\tT = %s K\n\tyi = %s\n\tkvji = %s.",
-      forcenewton, eos.name, P, T, yi, kvji0,
+      "Two-phase flash calculation terminates unsuccessfully.\n"
+      "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
+      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+      eos.name, P, T, yi, *kvji0,
     )
-    return FlashResult(yji=np.vstack([yvi, yli]), Fj=np.array([Fv, 1. - Fv]),
-                       Zj=np.array([Zv, Zl]), kvji=np.atleast_2d(kvik),
-                       gnorm=gnorm, success=False)
+    raise SolutionNotFoundError(
+      'The flash calculation procedure\nterminates unsuccessfully. Try '
+      'to increase the maximum number of\nsolver iterations. It also may be '
+      'advisable to improve the initial\nguesses of k-values.'
+    )
 

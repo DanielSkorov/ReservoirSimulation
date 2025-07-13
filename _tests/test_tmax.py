@@ -8,9 +8,7 @@ logger = logging.getLogger('bound')
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter(
-  '%(process)d:%(name)s:%(levelname)s: %(message)s'
-)
+formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -45,10 +43,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Tmax = TmaxPT(pr, method='ss', stabkwargs=dict(method='qnss'),
-                  maxiter=20)
+    tol = 1e-5
+    Tmax = TmaxPT(pr, method='ss', stabkwargs=dict(method='qnss-newton'),
+                  maxiter=20, tol=tol)
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.success)
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_02(self):
@@ -67,10 +66,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Tmax = TmaxPT(pr, method='ss', stabkwargs=dict(method='qnss'),
-                  maxiter=16)
+    tol = 1e-5
+    Tmax = TmaxPT(pr, method='ss', stabkwargs=dict(method='qnss-newton'),
+                  maxiter=16, tol=tol)
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.success)
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_03(self):
@@ -89,10 +89,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Tmax = TmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss'),
-                  maxiter=10)
+    tol = 1e-5
+    Tmax = TmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss-newton'),
+                  maxiter=10, tol=tol)
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.success)
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_04(self):
@@ -111,10 +112,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Tmax = TmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss'),
-                  maxiter=9)
+    tol = 1e-5
+    Tmax = TmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss-newton'),
+                  maxiter=9, tol=tol)
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.success)
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_05(self):
@@ -133,10 +135,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Tmax = TmaxPT(pr, method='newton', stabkwargs=dict(method='qnss'),
-                  maxiter=14)
+    tol = 1e-5
+    Tmax = TmaxPT(pr, method='newton', stabkwargs=dict(method='qnss-newton'),
+                  maxiter=14, tol=tol)
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.success)
+    self.assertTrue(res.gnorm < tol)
     pass
 
   def test_06(self):
@@ -155,10 +158,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Tmax = TmaxPT(pr, method='newton', stabkwargs=dict(method='qnss'),
-                  maxiter=11)
+    tol = 1e-5
+    Tmax = TmaxPT(pr, method='newton', stabkwargs=dict(method='qnss-newton'),
+                  maxiter=11, tol=tol)
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.success)
+    self.assertTrue(res.gnorm < tol)
     pass
 
 if __name__ == '__main__':
