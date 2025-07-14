@@ -226,6 +226,9 @@ def getVT_Tspinodal(
     - `Nc: int`
       The number of components in the system.
 
+    - `name: str`
+      The EOS name (for proper logging).
+
   T0: None | Scalar
     An initial guess of the spinodal temperature [K]. If it equals
     `None`, a pseudocritical temperature multiplied by a factor `1.3`
@@ -355,6 +358,9 @@ def getVT_PcTc(
 
     - `Nc: int`
       The number of components in the system.
+
+    - `name: str`
+      The EOS name (for proper logging).
 
   v0: Scalar
     An initial guess of the critical molar volume of a mixture [m3/mol].
@@ -6394,7 +6400,44 @@ class env2pPT(object):
     Pmin: Scalar = 101325.,
     Npoints: int = 100,
   ) -> tuple[Scalar, FlashResult]:
-    """
+    """The preliminary search is conducted to identify an initial guess
+    that is close to the specified phase mole fraction by performing
+    flash calculations along the pressure axis.
+
+    Parameters
+    ----------
+    Pmax: Scalar
+      The upper bound of the pressure interval. As a general rule, it
+      should be equal to the saturation pressure for a given temperature
+      and composition.
+
+    T: Scalar
+      Temperature of the mixture.
+
+    yi: Vector, shape (Nc,)
+      Mole fractions of components in the mixture.
+
+    Fv: Scalar
+      Phase mole fraction close to which the initial guess is needed.
+
+    kvji0: tuple[Vector, ...] | None
+      A tuple of initial guesses of k-values for flash calculations.
+      Default is `None`.
+
+    Pmin: Scalar
+      The lower bound of the pressure interval. Default is
+      `101325.0` [Pa].
+
+    Npoint: int
+      The number of points into which the pressure interval is divided.
+      Default is `100`.
+
+    Returns
+    -------
+    A tuple that contains:
+    - pressure [Pa] at which the system is split, resulting in a phase
+      mole fraction that closely resembles the specified value,
+    - flash calculation results as an instance of `FlashResult`.
     """
     PP = np.linspace(Pmax, Pmin, Npoints, endpoint=True)
     flashs = []
@@ -6598,7 +6641,96 @@ def _env2pPT(
   lnTmin: Scalar = 5.154,
   lnTmax: Scalar = 6.881,
 ) -> EnvPointResult:
-  """
+  """Sovles phase envelope equations using Newton's method.
+
+  Parameters
+  ----------
+  x0: Vector, shape (Nc + 2,)
+    Initial guess of basic variables. The array of basic variables
+    includes:
+      - `Nc` natural logarithms of k-values of components,
+      - the natural logarithm of pressure,
+      - the natural logarithm of temperature.
+
+  sidx: int
+    The specified variable index. The specified variable is considered
+    known and fixed for the algorithm of saturation point determination.
+
+  yi: Vector, shape (Nc,)
+    Mole fractions of components in the mixture.
+
+  Fv: Scalar
+    Phase mole fraction for which the phase envelope should be
+    constructed.
+
+  eos: Env2pEosPT
+    An inizialized instance of an equation of state. Solution of the
+    phase envelope equations relies on Newton's method, for which the
+    Jacobian is constructed using the partial derivatives calculated by
+    the following method:
+
+    - `getPT_lnphii_Z_dP_dT_dyj(P: Scalar, T: Scalar, yi: Vector,
+       ) -> tuple[Vector, Scalar, Vector, Vector, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to temperature as a `Vector` of
+        shape `(Nc,)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole fractions without taking into
+        account the mole fraction constraint as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+  tolres: Scalar
+    Terminate successfully if the norm of the phase envelope equations
+    vector is less than `tolres`. Default is `1e-12`.
+
+  tolvar: Scalar
+    Terminate successfully if the sum of squared elements of the
+    direction vector is less than `tolvar`. Default is `1e-14`.
+
+  maxiter: int
+    The maximum number of iterations. Default is `5`.
+
+  miniter: int
+    The minimum number of iterations. Default is `0`.
+
+  lnPmin: Scalar
+    Minimum natural logarithm of pressure. Default is `0.0`.
+
+  lnPmax: Scalar
+    Maximum natural logarithm of pressure. Default is `18.42`
+    (~ 1e8 [Pa]).
+
+  lnTmin: Scalar
+    Minimum natural logarithm of temperature. Default is `5.154`
+    (~ 173.12 [K]).
+
+  lnTmax: Scalar
+    Maximum natural logarithm of temperature. Default is `6.881`
+    (~ 937.60 [K]).
+
+  Returns
+  -------
+  Saturation point calculation results as an instance of
+  `EnvPointResult`. Important attributes:
+  - `x` solution of the phase envelope equations,
+  - `Zj` compressibility factors of phases,
+  - `succeed` a boolean flag indicating whether any of the solution
+    conditions were satisfied.
   """
   Nc = eos.Nc
   logger.debug(

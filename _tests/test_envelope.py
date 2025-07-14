@@ -161,6 +161,36 @@ class env2p(unittest.TestCase):
     pass
 
   def test_05(self):
+    P0 = 36e6
+    T0 = 348.15
+    yi = np.array([0.7548, 0.0173, 0.0436, 0.0486, 0.0785, 0.0387, 0.0185])
+    Pci = np.array([73.77, 46.00, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.2, 190.6, 338.8, 466.1, 611.1, 777.8, 972.2])
+    mwi = np.array([44.01, 16.04, 36.01, 70.52, 147.18, 301.48, 562.81]) / 1e3
+    wi = np.array([0.2250, 0.0080, 0.1260, 0.2439, 0.6386, 1.0002, 1.2812])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.05,
+      0.05, 0.0052,
+      0.05, 0.0214, 0.0057,
+      0.09, 0.0494, 0.0234, 0.0062,
+      0.09, 0.0717, 0.0401, 0.0162, 0.0024,
+      0.09, 0.0783, 0.0452, 0.0196, 0.0038, 0.0002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=293.15,
+                  psatkwargs=dict(method='newton',
+                                  stabkwargs=dict(method='qnss-newton'),
+                                  tol=1e-8, tol_tpd=1e-8),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=107, maxstep=0.25)
+    self.assertTrue(res.succeed)
+    if plotting:
+      self.plot(res, -20., 500., 0., 100.)
+    pass
+
+  def test_06(self):
     P0 = 25e6
     T0 = 373.15
     yi = np.array([0.7051, 0.0526, 0.0673, 0.0502, 0.0727, 0.0365, 0.0156])
@@ -191,7 +221,7 @@ class env2p(unittest.TestCase):
       self.plot(res, 0., 500., 0., 100.)
     pass
 
-  def test_06(self):
+  def test_07(self):
     P0 = 25e6
     T0 = 373.15
     yi = np.array([0.6673, 0.0958, 0.0354, 0.0445, 0.0859, 0.0447, 0.0264])
@@ -221,7 +251,7 @@ class env2p(unittest.TestCase):
       self.plot(res, 0., 500., 0., 100.)
     pass
 
-  def test_07(self):
+  def test_08(self):
     P0 = 23.3e6
     T0 = 373.15
     yi = np.array([0.55, 0.1323, 0.0459, 0.0376, 0.0149, 0.0542, 0.0711,

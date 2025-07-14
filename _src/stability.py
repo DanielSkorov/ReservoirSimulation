@@ -13,7 +13,6 @@ from custom_types import (
   Vector,
   Matrix,
   Eos,
-  SolutionNotFoundError,
 )
 
 
@@ -147,6 +146,9 @@ class stabilityPT(object):
 
     - `Nc: int`
       The number of components in the system.
+
+    - `name: str`
+      The EOS name (for proper logging).
 
   method: str
     Type of a solver. Should be one of:
@@ -342,11 +344,6 @@ def _stabPT_ss(
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function.
-
-  Raises
-  ------
-  `SolutionNotFoundError` if none of the local minima of the Gibbs
-  energy function was found.
   """
   logger.info('Stability Test (SS-method).')
   Nc = eos.Nc
@@ -359,12 +356,10 @@ def _stabPT_ss(
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
-  kti = np.zeros_like(yi)
   Zt = Z
   yti = yi
   lnphiti = lnphiyi
   gnormo = 0.
-  Ns = 0
   for j, ki in enumerate(kvji0):
     k = 0
     trivial = False
@@ -395,7 +390,6 @@ def _stabPT_ss(
       logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
         trivial = True
-        Ns += 1
         break
     if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
@@ -406,26 +400,11 @@ def _stabPT_ss(
         yti = xi
         lnphiti = lnphixi
         gnormo = gnorm
-      Ns += 1
-  if Ns > 0:
-    stable = TPDo >= eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-    kvji = yti / yi, yi / yti
-    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
-                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                      lnphiti=lnphiti)
-  else:
-    logger.warning(
-      'The stability test calculation procedure terminates unsuccessfully.\n'
-      'The solution method was SS, EOS: %s.\nInputs:\nP = %s Pa\n'
-      'T = %s K\nyi = %s\nInitial guesses of k-values:' + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'None of the local minima of the\nGibbs energy function was found. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  stable = TPDo >= eps
+  logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+  kvji = yti / yi, yi / yti
+  return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                    TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
 
 
 def _stabPT_qnss(
@@ -508,11 +487,6 @@ def _stabPT_qnss(
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function.
-
-  Raises
-  ------
-  `SolutionNotFoundError` if none of the local minima of the Gibbs
-  energy function was found.
   """
   logger.info('Stability Test (QNSS-method).')
   Nc = eos.Nc
@@ -525,12 +499,10 @@ def _stabPT_qnss(
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
-  kti = np.zeros_like(yi)
   Zt = Z
   yti = yi
   lnphiti = lnphiyi
   gnormo = 0.
-  Ns = 0
   for j, ki in enumerate(kvji0):
     k = 0
     trivial = False
@@ -570,7 +542,6 @@ def _stabPT_qnss(
       if gnorm < tol:
         break
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Ns += 1
         trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
@@ -585,26 +556,11 @@ def _stabPT_qnss(
         yti = xi
         lnphiti = lnphixi
         gnormo = gnorm
-      Ns += 1
-  if Ns > 0:
-    stable = TPDo >= eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-    kvji = yti / yi, yi / yti
-    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
-                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                      lnphiti=lnphiti)
-  else:
-    logger.warning(
-      'The stability test calculation procedure terminates unsuccessfully.\n'
-      'The solution method was QNSS, EOS: %s.\nInputs:\nP = %s Pa\n'
-      'T = %s K\nyi = %s\nInitial guesses of k-values:' + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'None of the local minima of the\nGibbs energy function was found. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  stable = TPDo >= eps
+  logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+  kvji = yti / yi, yi / yti
+  return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                    TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
 
 
 def _stabPT_newt(
@@ -712,11 +668,6 @@ def _stabPT_newt(
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function.
-
-  Raises
-  ------
-  `SolutionNotFoundError` if none of the local minima of the Gibbs
-  energy function was found.
   """
   logger.info("Stability Test (Newton's method).")
   Nc = eos.Nc
@@ -730,12 +681,10 @@ def _stabPT_newt(
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   hi = lnphiyi + np.log(yi)
   TPDo = eps
-  kti = np.zeros_like(yi)
   Zt = Z
   yti = yi
   lnphiti = lnphiyi
   gnormo = 0.
-  Ns = 0
   for j, ki in enumerate(kvji0):
     k = 0
     trivial = False
@@ -784,7 +733,6 @@ def _stabPT_newt(
       r = 2. * tpds / (ng - yi.dot(gpi))
       logger.debug(tmpl, j, k, *alphaik, tpds, r, gnorm, method)
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Ns += 1
         break
     if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
@@ -795,26 +743,11 @@ def _stabPT_newt(
         yti = xi
         lnphiti = lnphixi
         gnormo = gnorm
-      Ns += 1
-  if Ns > 0:
-    stable = TPDo >= eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-    kvji = yti / yi, yi / yti
-    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
-                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                      lnphiti=lnphiti)
-  else:
-    logger.warning(
-      'The stability test calculation procedure terminates unsuccessfully.\n'
-      'The solution method was Newton, EOS: %s.\nInputs:\nP = %s Pa\n'
-      'T = %s K\nyi = %s\nInitial guesses of k-values:' + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'None of the local minima of the\nGibbs energy function was found. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  stable = TPDo >= eps
+  logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+  kvji = yti / yi, yi / yti
+  return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                    TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
 
 
 def _stabPT_ssnewt(
@@ -934,11 +867,6 @@ def _stabPT_ssnewt(
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function.
-
-  Raises
-  ------
-  `SolutionNotFoundError` if none of the local minima of the Gibbs
-  energy function was found.
   """
   logger.info("Stability Test (SS-Newton method).")
   Nc = eos.Nc
@@ -950,12 +878,10 @@ def _stabPT_ssnewt(
   lbls_alpha = tuple(map(lambda s: 'alpha' + s, strNc))
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
-  kti = np.zeros_like(yi)
   Zt = Z
   yti = yi
   lnphiti = lnphiyi
   gnormo = 0.
-  Ns = 0
   for j, ki in enumerate(kvji0):
     logger.debug(
       '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
@@ -989,7 +915,6 @@ def _stabPT_ssnewt(
       r = 2. * tpds / (ng - yi.dot(gi))
       logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'ss')
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Ns += 1
         trivial = True
         break
     if np.isfinite(gnorm) and not trivial:
@@ -1002,7 +927,6 @@ def _stabPT_ssnewt(
           yti = xi
           lnphiti = lnphixi
           gnormo = gnorm
-        Ns += 1
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
@@ -1051,26 +975,11 @@ def _stabPT_ssnewt(
             yti = xi
             lnphiti = lnphixi
             gnormo = gnorm
-          Ns += 1
-  if Ns > 0:
-    stable = TPDo >= eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-    kvji = yti / yi, yi / yti
-    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
-                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                      lnphiti=lnphiti)
-  else:
-    logger.warning(
-      'The stability test calculation procedure terminates unsuccessfully.\n'
-      'The solution method was SS+Newton, EOS: %s.\nInputs:\nP = %s Pa\n'
-      'T = %s K\nyi = %s\nInitial guesses of k-values:' + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'None of the local minima of the\nGibbs energy function was found. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  stable = TPDo >= eps
+  logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+  kvji = yti / yi, yi / yti
+  return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                    TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
 
 
 def _stabPT_qnssnewt(
@@ -1192,11 +1101,6 @@ def _stabPT_qnssnewt(
   - `stab` a boolean flag indicating if a one-phase state is stable,
   - `TPD` the tangent-plane distance at a local minimum of the Gibbs
     energy function.
-
-  Raises
-  ------
-  `SolutionNotFoundError` if none of the local minima of the Gibbs
-  energy function was found.
   """
   logger.info("Stability Test (QNSS-Newton method).")
   Nc = eos.Nc
@@ -1208,12 +1112,10 @@ def _stabPT_qnssnewt(
   lbls_alpha = tuple(map(lambda s: 'alpha' + s, strNc))
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
-  kti = np.zeros_like(yi)
   Zt = Z
   yti = yi
   lnphiti = lnphiyi
   gnormo = 0.
-  Ns = 0
   for j, ki in enumerate(kvji0):
     logger.debug(
       '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
@@ -1257,7 +1159,6 @@ def _stabPT_qnssnewt(
       if gnorm < tol_qnss:
         break
       if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
-        Ns += 1
         trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
@@ -1273,7 +1174,6 @@ def _stabPT_qnssnewt(
           yti = xi
           lnphiti = lnphixi
           gnormo = gnorm
-        Ns += 1
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
@@ -1322,23 +1222,8 @@ def _stabPT_qnssnewt(
             yti = xi
             lnphiti = lnphixi
             gnormo = gnorm
-          Ns += 1
-  if Ns > 0:
-    stable = TPDo >= eps
-    logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-    kvji = yti / yi, yi / yti
-    return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
-                      TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                      lnphiti=lnphiti)
-  else:
-    logger.warning(
-      'The stability test calculation procedure terminates unsuccessfully.\n'
-      'The solution method was QNSS+Newton, EOS: %s.\nInputs:\nP = %s Pa\n'
-      'T = %s K\nyi = %s\nInitial guesses of k-values:' + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'None of the local minima of the\nGibbs energy function was found. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  stable = TPDo >= eps
+  logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+  kvji = yti / yi, yi / yti
+  return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                    TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)

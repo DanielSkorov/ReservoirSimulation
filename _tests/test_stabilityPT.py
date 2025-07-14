@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('stab')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
