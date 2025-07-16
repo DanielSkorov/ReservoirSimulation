@@ -29,7 +29,7 @@ from matplotlib import (
   pyplot as plt,
 )
 
-plotting = True
+plotting = False
 
 
 class env2p(unittest.TestCase):
@@ -47,6 +47,7 @@ class env2p(unittest.TestCase):
     pass
 
   def test_01(self):
+    print('=== test_01 ===')
     P0 = 3.5e6
     T0 = 193.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
@@ -63,9 +64,8 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
     res = env.run(P0, T0, yi, 0., maxpoints=118)
@@ -75,6 +75,7 @@ class env2p(unittest.TestCase):
     pass
 
   def test_02(self):
+    print('=== test_02 ===')
     P0 = 8.1e6
     T0 = 233.15
     yi = np.array([0.26, 0.04, 0.66, 0.03, 0.01])
@@ -91,18 +92,18 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=111, maxstep=0.1)
+    res = env.run(P0, T0, yi, 0., maxpoints=104, maxstep=0.1)
     if plotting:
       self.plot(res, -80., 10., 0., 30.)
     self.assertTrue(res.succeed)
     pass
 
   def test_03(self):
+    print('=== test_03 ===')
     P0 = 7.3e6
     T0 = 200.
     yi = np.array([0.26, 0.04, 0.66, 0.03, 0.01])
@@ -119,9 +120,8 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
     res = env.run(P0, T0, yi, 0., maxpoints=33, sidx0=5)
@@ -131,6 +131,7 @@ class env2p(unittest.TestCase):
     pass
 
   def test_04(self):
+    print('=== test_04 ===')
     P0 = 20e6
     T0 = 263.15
     yi = np.array([0.6077, 0.0277, 0.0697, 0.0778, 0.1255, 0.0620, 0.0296])
@@ -149,18 +150,18 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=258.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=140)
+    res = env.run(P0, T0, yi, 0., maxpoints=140)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)
     self.assertTrue(res.succeed)
     pass
 
   def test_05(self):
+    print('=== test_05 ===')
     P0 = 36e6
     T0 = 348.15
     yi = np.array([0.7548, 0.0173, 0.0436, 0.0486, 0.0785, 0.0387, 0.0185])
@@ -179,9 +180,8 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=293.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
     res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=104)
@@ -191,6 +191,7 @@ class env2p(unittest.TestCase):
     pass
 
   def test_06(self):
+    print('=== test_06 ===')
     P0 = 25e6
     T0 = 373.15
     yi = np.array([0.7051, 0.0526, 0.0673, 0.0502, 0.0727, 0.0365, 0.0156])
@@ -206,22 +207,21 @@ class env2p(unittest.TestCase):
       0.104, 0.0451, 0.0199, 0.0057,
       0.104, 0.0677, 0.0363, 0.0158, 0.0026,
       0.104, 0.0760, 0.0427, 0.0203, 0.0046, 0.0003,
-
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=295.6,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=104)
+    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=104)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
     self.assertTrue(res.succeed)
     pass
 
   def test_07(self):
+    print('=== test_07 ===')
     P0 = 25e6
     T0 = 373.15
     yi = np.array([0.6673, 0.0958, 0.0354, 0.0445, 0.0859, 0.0447, 0.0264])
@@ -240,18 +240,18 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=328.15,
-                  psatkwargs=dict(method='newton-b',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton-b', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=101)
+    res = env.run(P0, T0, yi, 0., maxpoints=101)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
     self.assertTrue(res.succeed)
     pass
 
   def test_08(self):
+    print('=== test_08 ===')
     P0 = 23.3e6
     T0 = 373.15
     yi = np.array([0.5500, 0.1323, 0.0459, 0.0376, 0.0149, 0.0542, 0.0711,
@@ -279,9 +279,8 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=303.15,
-                  psatkwargs=dict(method='newton-b',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton-b', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
     res = env.run(P0, T0, yi, 0., maxpoints=129)
@@ -291,6 +290,7 @@ class env2p(unittest.TestCase):
     pass
 
   def test_09(self):
+    print('=== test_09 ===')
     P0 = 30e6
     T0 = 373.15
     yi = np.array([0.7000, 0.0882, 0.0306, 0.0251, 0.0099, 0.0361, 0.0474,
@@ -318,9 +318,8 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=323.15,
-                  psatkwargs=dict(method='newton-b',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton-b', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
     res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=110)
@@ -330,6 +329,7 @@ class env2p(unittest.TestCase):
     pass
 
   def test_10(self):
+    print('=== test_10 ===')
     P0 = 5e6
     T0 = 273.15
     yi = np.array([0.0001, 0.3499, 0.0300, 0.0400, 0.0600, 0.0400, 0.0300,
@@ -357,18 +357,18 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=322)
+    res = env.run(P0, T0, yi, 0., maxpoints=322)
     if plotting:
       self.plot(res, -150., 350., 0., 16.)
     self.assertTrue(res.succeed)
     pass
 
   def test_11(self):
+    print('=== test_11 ===')
     P0 = 5e6
     T0 = 273.15
     yi = np.array([0.200, 0.280, 0.024, 0.032, 0.048, 0.032, 0.024, 0.040,
@@ -396,18 +396,18 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=321)
+    res = env.run(P0, T0, yi, 0., maxpoints=321)
     if plotting:
       self.plot(res, -150., 350., 0., 16.)
     self.assertTrue(res.succeed)
     pass
 
   def test_12(self):
+    print('=== test_12 ===')
     P0 = 10e6
     T0 = 313.15
     yi = np.array([0.800, 0.070, 0.006, 0.008, 0.012, 0.008, 0.006, 0.010,
@@ -435,14 +435,175 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton',
-                                  stabkwargs=dict(method='qnss-newton'),
-                                  tol=1e-8, tol_tpd=1e-8),
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=121)
+    res = env.run(P0, T0, yi, 0., sidx0=11, maxpoints=118)
     if plotting:
       self.plot(res, 0., 240., 0., 100.)
+    self.assertTrue(res.succeed)
+    pass
+
+  def test_13(self):
+    print('=== test_13 ===')
+    P0 = 25e6
+    T0 = 273.15
+    yi = np.array([0.0046, 0.0336, 0.6236, 0.0890, 0.0531, 0.0092, 0.0208,
+                   0.0073, 0.0085, 0.0105, 0.0185, 0.0175, 0.0140, 0.0464,
+                   0.0291, 0.0143])
+    Pci = np.array([33.94, 73.76, 46.00, 48.84, 42.46, 36.48, 38.00, 33.84,
+                    33.74, 29.69, 31.95, 29.44, 26.08, 20.82, 15.80,
+                    13.06]) * 1e5
+    Tci = np.array([126.2, 304.3, 190.6, 305.5, 369.9, 408.2, 425.3, 460.5,
+                    469.7, 507.5, 532.9, 553.1, 575.8, 635.0, 732.1, 908.1])
+    mwi = np.array([28.0, 44.0, 16.0, 30.1, 44.1, 58.1, 58.1, 72.2, 72.2,
+                    86.2, 95.0, 106.0, 121.0, 165.1, 265.1, 488.8]) / 1e3
+    wi = np.array([0.040, 0.225, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.296, 0.465, 0.497, 0.540, 0.669, 0.919, 1.246])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0., 0.])
+    dij = np.array([
+      0.032,
+      0.028, 0.120,
+      0.041, 0.120, 0.,
+      0.076, 0.120, 0., 0.,
+      0.094, 0.120, 0., 0., 0.,
+      0.070, 0.120, 0., 0., 0., 0.,
+      0.087, 0.120, 0., 0., 0., 0., 0.,
+      0.088, 0.120, 0., 0., 0., 0., 0., 0.,
+      0.080, 0.120, 0., 0., 0., 0., 0., 0., 0.,
+      0.080, 0.100, 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.080, 0.100, 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.080, 0.100, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.080, 0.100, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.080, 0.100, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.080, 0.100, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=193.15,
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    res = env.run(P0, T0, yi, 0., maxpoints=131)
+    if plotting:
+      self.plot(res, -100., 450., 0., 45.)
+    self.assertTrue(res.succeed)
+    pass
+
+  def test_14(self):
+    print('=== test_14 ===')
+    P0 = 10e6
+    T0 = 253.15
+    yi = np.array([0.0987, 0.4023, 0.4990])
+    Pci = np.array([72.8, 88.2, 45.4]) * 101325.
+    Tci = np.array([304.2, 373.2, 190.6])
+    mwi = np.array([44.010, 34.080, 16.043]) / 1e3
+    wi = np.array([0.225, 0.100, 0.008])
+    vsi = np.array([0., 0., 0.])
+    dij = np.array([
+      0.0974,
+      0.1100, 0.0690,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=213.15, miniter=1,
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton'),),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    res = env.run(P0, T0, yi, 0., maxpoints=255, maxstep=0.025)
+    if plotting:
+      self.plot(res, -70., 30., 0., 15.)
+    self.assertTrue(res.succeed)
+    pass
+
+  def test_15(self):
+    print('=== test_15 ===')
+    P0 = 12e6
+    T0 = 273.15
+    yi = np.array([0.08798, 0.37452, 0.08064, 0.07376, 0.02630, 0.01496,
+                   0.01744, 0.14328, 0.07280, 0.04840, 0.03576, 0.02416])
+    Pci = np.array([73.74, 45.92, 48.75, 42.38, 37.93, 33.68, 29.64, 28.83,
+                    19.32, 16.59, 15.27, 14.67]) * 1e5
+    Tci = np.array([304.1, 190.6, 305.4, 369.8, 425.2, 469.6, 507.4, 616.2,
+                    698.9, 770.4, 853.1, 1001.2])
+    mwi = np.array([44.01, 16.04, 30.07, 44.10, 58.12, 72.15, 86.17, 118.30,
+                    172.00, 236.00, 338.80, 451.00]) / 1e3
+    wi = np.array([0.228, 0.008, 0.098, 0.152, 0.193, 0.251, 0.296, 0.454,
+                   0.787, 1.048, 1.276, 1.299])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.12,
+      0.15, 0.,
+      0.15, 0., 0.,
+      0.15, 0., 0., 0.,
+      0.15, 0., 0., 0., 0.,
+      0.15, 0., 0., 0., 0., 0,
+      0.15, 0., 0., 0., 0., 0, 0.,
+      0.15, 0., 0., 0., 0., 0, 0., 0.,
+      0.15, 0., 0., 0., 0., 0, 0., 0., 0.,
+      0.15, 0., 0., 0., 0., 0, 0., 0., 0., 0.,
+      0.15, 0., 0., 0., 0., 0, 0., 0., 0., 0., 0.,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=73.15,
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    res = env.run(P0, T0, yi, 0., maxpoints=652, maxstep=0.5)
+    if plotting:
+      self.plot(res, -200., 550., 0., 35.)
+    self.assertTrue(res.succeed)
+    pass
+
+  def test_16(self):
+    print('=== test_16 ===')
+    P0 = 20e6
+    T0 = 273.15
+    yi = np.array([0.00331450, 0.00945166, 0.55073030, 0.05606356,
+                   0.03620950, 0.00759774, 0.01825016, 0.00788670,
+                   0.01129328, 0.01700266, 0.03945694, 0.07437480,
+                   0.07904020, 0.05889600, 0.03043200])
+    Pci = np.array([73.815, 33.991, 46.043, 48.801, 42.492, 36.480, 37.969,
+                    33.812, 33.688, 30.123, 31.776, 26.190, 19.637, 14.519,
+                    11.066]) * 1e5
+    Tci = np.array([304.2, 126.3, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.7, 507.4, 563.2, 638.3, 736.5, 837.0, 936.9])
+    mwi = np.array([44.01, 28.01, 16.04, 30.07, 44.10, 58.12, 58.12, 72.15,
+                    72.15, 86.18, 98.55, 135.84, 206.65, 319.83,
+                    500.00]) / 1e3
+    wi = np.array([0.2310, 0.0450, 0.0115, 0.0908, 0.1454, 0.1756, 0.1928,
+                   0.2273, 0.2510, 0.2957, 0.2753, 0.3761, 0.5552, 0.8021,
+                   1.108])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    dij = np.array([
+      0.000,
+      0.105, 0.025,
+      0.130, 0.010, 0.000,
+      0.125, 0.090, 0.000, 0.,
+      0.120, 0.095, 0.000, 0., 0.,
+      0.115, 0.095, 0.000, 0., 0., 0.,
+      0.115, 0.100, 0.000, 0., 0., 0., 0.,
+      0.115, 0.110, 0.000, 0., 0., 0., 0., 0.,
+      0.115, 0.110, 0.000, 0., 0., 0., 0., 0., 0.,
+      0.115, 0.110, 0.020, 0., 0., 0., 0., 0., 0., 0.,
+      0.115, 0.110, 0.028, 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.115, 0.110, 0.040, 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+      0.115, 0.110, 0.052, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0,
+      0.115, 0.110, 0.064, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=123.15,
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    res = env.run(P0, T0, yi, 0., maxpoints=162)
+    if plotting:
+      self.plot(res, -150., 500., 0., 100.)
     self.assertTrue(res.succeed)
     pass
 

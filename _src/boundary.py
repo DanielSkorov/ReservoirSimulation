@@ -6153,7 +6153,7 @@ class env2pPT(object):
     along it are found unstable by the stability test. Enabling this
     option may prevent drawing false saturation lines but takes extra
     CPU time to conduct stability test for each point on the phase
-    envelope. Default is `False`.
+    envelope. Default is `False`. This option is not implemented yet.
 
   stabkwargs: dict
     In order to perform the stability test of trial and real phase
@@ -6238,7 +6238,7 @@ class env2pPT(object):
     T0: Scalar,
     yi: Vector,
     Fv: Scalar,
-    sidx0: int = -1,
+    sidx0: int | None = None,
     step0: Scalar = 0.01,
     fstep: Callable[[int, Vector], Scalar] = _env2pPT_step,
     maxstep: Scalar = 0.25,
@@ -6264,7 +6264,7 @@ class env2pPT(object):
     Fv: Scalar
       Phase mole fraction for which the envelope is needed.
 
-    sidx0: int
+    sidx0: int | None
       For iteration zero, this parameter indexes the specified variable
       in an array of basic variables. The array of basic variables
       includes:
@@ -6282,8 +6282,10 @@ class env2pPT(object):
       specified variable selection was also given in this paper. It was
       recommended to select the specified variable based on the largest
       rate of change, which refers to the largest derivative of the
-      basic variables with respect to the specified variable. Default
-      is `-1`.
+      basic variables with respect to the specified variable. When
+      `sidx0` is set to `None`, it will desigante the least volatile
+      component on the bubble point line and the most volatile component
+      on the dew point line. Default is `None`.
 
     step0: Scalar
       The step size (the difference between two subsequent values of a
@@ -6348,7 +6350,6 @@ class env2pPT(object):
     `SolutionNotFoundError` if the solution was not found for the
     zeroth saturation point (for the given initial guesses).
     """
-    logger.info('Constructing the phase envelope for Fv = %s.', Fv)
     try:
       psres = self.psatsolver.run(P0, T0, yi, True, **searchkwargs)
     except SolutionNotFoundError:
@@ -6362,6 +6363,7 @@ class env2pPT(object):
     kvji0 = (psres.yji[0] / psres.yji[1], psres.yji[1] / psres.yji[0])
     P, flash = self.search(psres.P, T0, yi, Fv, kvji0)
     F = np.abs(flash.Fj[0])
+    logger.info('Constructing the phase envelope for F = %.3f.', F)
     Nc = self.eos.Nc
     logger.info(
       '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s %6s %6s',
@@ -6371,8 +6373,14 @@ class env2pPT(object):
     )
     tmpl = ('%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f'
             + ' %8.4f %7.4f %6s %6s')
-    x0 = np.log(np.hstack([flash.yji[0] / flash.yji[1], P, T0]))
-    sidx = sidx0
+    x0 = np.log(np.hstack([flash.kvji[0], P, T0]))
+    if sidx0 is None:
+      if F > .5:
+        sidx = np.argmax(flash.kvji[0])
+      else:
+        sidx = np.argmin(flash.kvji[0])
+    else:
+      sidx = sidx0
     sval = x0[sidx]
     point = self.solver(x0, sidx, sval, yi, F)
     logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, *point.x,
@@ -6536,7 +6544,7 @@ class env2pPT(object):
     Ncp2 = Nc + 2
     tmpl = ('%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f'
             + ' %8.4f %7.4f %6s %6s')
-    xk = np.zeros(shape=(maxpoints, Ncp2))
+    xx = np.zeros(shape=(maxpoints, Ncp2))
     succeed = True
     M = np.empty(shape=(4, 4))
     M[:, 0] = np.array([1., 0., 1., 0.])
@@ -6550,21 +6558,21 @@ class env2pPT(object):
     k = 0
     r = 0
     point = point0
-    x = point.x
+    xk = point.x
     Niter = point.Niter
-    xk[k] = x
+    xx[k] = xk
     step = np.abs(step0)
-    dxds = np.linalg.solve(point.jac, mdgds)
-    sidx = np.argmax(np.abs(dxds))
-    svalk = x[sidx]
+    dxkds = np.linalg.solve(point.jac, mdgds)
+    sidx = np.argmax(np.abs(dxkds))
+    svalk = xk[sidx]
     scnt = 1
-    B[0] = x
-    B[1] = dxds
+    B[0] = xk
+    B[1] = dxkds
     svalkp1 = svalk + np.sign(step0) * step
-    xi = x + dxds * (svalkp1 - svalk)
+    xi = xk + dxkds * (svalkp1 - svalk)
     while (k < kmax and
-           xk[k, -1] >= self.lnTmin and xk[k, -2] >= self.lnPmin and
-           xk[k, -1] <= self.lnTmax and xk[k, -2] <= self.lnPmax):
+           xk[-1] >= self.lnTmin and xk[-2] >= self.lnPmin and
+           xk[-1] <= self.lnTmax and xk[-2] <= self.lnPmax):
       if r > maxrepeats:
         logger.warning('The maximum number of step repeats has been reached.')
         succeed = False
@@ -6572,27 +6580,25 @@ class env2pPT(object):
       point = self.solver(xi, sidx, svalkp1, yi, Fv)
       if point.succeed:
         Niter = point.Niter
-        x = point.x
-        logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, *x,
+        xkp1 = point.x
+        logger.info(tmpl, k + 1, r, Niter, step, sidx, svalkp1, *xkp1,
                     point.resflag, point.varflag)
-        dxds = np.linalg.solve(point.jac, mdgds)
-        sidxnew = np.argmax(np.abs(dxds))
+        dxkp1ds = np.linalg.solve(point.jac, mdgds)
+        # if (xkp1[:-2] * xk[:-2] < 0.).all():
+        sidxnew = np.argmax(np.abs(dxkp1ds))
         if sidxnew != sidx:
           scnt = 0
           sidx = sidxnew
           step *= switchmult
         else:
           scnt += 1
-          step *= fstep(Niter, x - xk[k])
+          step *= fstep(Niter, xkp1 - xk)
           if np.abs(step) > maxstep:
             step = np.sign(step) * maxstep
-        svalkm1 = xk[k, sidx]
+        svalkm1 = xk[sidx]
         svalkm12 = svalkm1 * svalkm1
-        svalk = x[sidx]
+        svalk = xkp1[sidx]
         svalk2 = svalk * svalk
-        k += 1
-        xk[k] = x
-        Zkj.append(point.Zj)
         svalkp1 = svalk + step * np.sign(svalk - svalkm1)
         M[0, 1] = svalk
         M[0, 2] = svalk2
@@ -6605,15 +6611,20 @@ class env2pPT(object):
         M[3, 2] = 2. * svalkm1
         M[3, 3] = 3. * svalkm12
         B[2:] = B[:2]
-        B[0] = x
-        B[1] = dxds
+        B[0] = xkp1
+        B[1] = dxkp1ds
         if scnt > 1:
           C = np.linalg.solve(M, B)
           svalkp12 = svalkp1 * svalkp1
           xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
         else:
-          xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
+          xi = xkp1 + (xkp1 - xk) / (svalk - svalkm1) * (svalkp1 - svalk)
         r = 0
+        k += 1
+        dxkds = dxkp1ds
+        xk = xkp1
+        xx[k] = xk
+        Zkj.append(point.Zj)
       else:
         step *= unconvmult
         if scnt > 1:
@@ -6623,14 +6634,14 @@ class env2pPT(object):
           xi = np.array([1., svalkp1, svalkp12, svalkp12 * svalkp1]).dot(C)
         elif k > 0:
           svalkp1 = svalk + step * np.sign(svalk - svalkm1)
-          xi = x + (x - xk[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
+          xi = xk + (xk - xx[k - 1]) / (svalk - svalkm1) * (svalkp1 - svalk)
         else:
           svalkp1 = svalk + np.sign(step0) * step
-          xi = x + dxds * (svalkp1 - svalk)
+          xi = xk + dxkds * (svalkp1 - svalk)
         r += 1
-    xk = xk[:k+1]
+    xx = xx[:k+1]
     Zkj = np.array(Zkj)
-    return xk, Zkj, succeed
+    return xx, Zkj, succeed
 
 
 def _env2pPT(
