@@ -5164,10 +5164,12 @@ def _TmaxPT_solve_dTPDdPeq_P(
   while np.abs(dP) / Pk > tol and k < maxiter:
     k += 1
     Pk += dP
-    lnphiyi, Zy, dlnphiyidP, d2lnphiyidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T,
-                                                                      yi)
-    lnphixi, Zx, dlnphixidP, d2lnphixidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T,
-                                                                      xi)
+    lnphiyi, Zy, dlnphiyidP, d2lnphiyidP2 = eos.getPT_lnphii_Z_dP_d2P(
+      Pk, T, yi,
+    )
+    lnphixi, Zx, dlnphixidP, d2lnphixidP2 = eos.getPT_lnphii_Z_dP_d2P(
+      Pk, T, xi,
+    )
     eq = xi.dot(dlnphixidP - dlnphiyidP)
     deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
     dP = -eq / deqdP
