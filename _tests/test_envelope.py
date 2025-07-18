@@ -29,7 +29,7 @@ from matplotlib import (
   pyplot as plt,
 )
 
-plotting = False
+plotting = True
 
 
 class env2p(unittest.TestCase):
@@ -68,7 +68,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=118)
+    res = env.run(P0, T0, yi, 0., maxpoints=117)
     if plotting:
       self.plot(res, -100., 140., 0., 20.)
     self.assertTrue(res.succeed)
@@ -96,7 +96,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=104, maxstep=0.1)
+    res = env.run(P0, T0, yi, 0., maxpoints=102, maxstep=0.1)
     if plotting:
       self.plot(res, -80., 10., 0., 30.)
     self.assertTrue(res.succeed)
@@ -124,7 +124,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=33, sidx0=5)
+    res = env.run(P0, T0, yi, 0., maxpoints=31, sidx0=5)
     if plotting:
       self.plot(res, -80., 10., 0., 30.)
     self.assertTrue(res.succeed)
@@ -154,7 +154,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=140)
+    res = env.run(P0, T0, yi, 0., maxpoints=138)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)
     self.assertTrue(res.succeed)
@@ -184,7 +184,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=104)
+    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=102)
     if plotting:
       self.plot(res, -20., 500., 0., 100.)
     self.assertTrue(res.succeed)
@@ -214,7 +214,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=104)
+    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=100)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
     self.assertTrue(res.succeed)
@@ -244,7 +244,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=101)
+    res = env.run(P0, T0, yi, 0., maxpoints=98)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
     self.assertTrue(res.succeed)
@@ -283,7 +283,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=129)
+    res = env.run(P0, T0, yi, 0., maxpoints=184, maxstep=0.15)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
     self.assertTrue(res.succeed)
@@ -322,7 +322,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=110)
+    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=108)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
     self.assertTrue(res.succeed)
@@ -361,7 +361,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=322)
+    res = env.run(P0, T0, yi, 0., maxpoints=320)
     if plotting:
       self.plot(res, -150., 350., 0., 16.)
     self.assertTrue(res.succeed)
@@ -400,7 +400,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=321)
+    res = env.run(P0, T0, yi, 0., maxpoints=319)
     if plotting:
       self.plot(res, -150., 350., 0., 16.)
     self.assertTrue(res.succeed)
@@ -439,7 +439,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=11, maxpoints=118)
+    res = env.run(P0, T0, yi, 0., sidx0=11, maxpoints=116)
     if plotting:
       self.plot(res, 0., 240., 0., 100.)
     self.assertTrue(res.succeed)
@@ -486,7 +486,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=131)
+    res = env.run(P0, T0, yi, 0., maxpoints=126)
     if plotting:
       self.plot(res, -100., 450., 0., 45.)
     self.assertTrue(res.succeed)
@@ -512,7 +512,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton'),),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=255, maxstep=0.025)
+    res = env.run(P0, T0, yi, 0., maxpoints=253, maxstep=0.025)
     if plotting:
       self.plot(res, -70., 30., 0., 15.)
     self.assertTrue(res.succeed)
@@ -552,7 +552,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=652, maxstep=0.5)
+    res = env.run(P0, T0, yi, 0., maxpoints=650, maxstep=0.5)
     if plotting:
       self.plot(res, -200., 550., 0., 35.)
     self.assertTrue(res.succeed)
@@ -601,7 +601,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=162)
+    res = env.run(P0, T0, yi, 0., maxpoints=160)
     if plotting:
       self.plot(res, -150., 500., 0., 100.)
     self.assertTrue(res.succeed)
