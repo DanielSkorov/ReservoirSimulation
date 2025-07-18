@@ -42,7 +42,7 @@ $$ \exists ~ \mathbf{T} \in {\rm I\!R}^{n \times m \times k}. $$
 
 $$ \exists ~ \mathbf{A} \in {\rm I\!R}^{n \times m} $$
 
-читается следующим образом: *существует* $\left( \exists \right)$ *матрица* $\left( \mathbf{A} \right)$ *, принадлежащая пространству реальных чисел* $\left( {\rm I\!R} \right)$, *размерностью* $n \times m$. Данная запись объявляет матрицу $\mathbf{A}$ следующего вида:
+читается следующим образом: *существует* $\left( \exists \right)$ *матрица* $\left( \mathbf{A} \right)$ *, принадлежащая пространству действительных чисел* $\left( {\rm I\!R} \right)$, *размерностью* $n \times m$. Данная запись объявляет матрицу $\mathbf{A}$ следующего вида:
 
 $$ \mathbf{A} = \begin{bmatrix} a_{1,1} & a_{1,2} & \ldots & a_{1,m} \\ a_{2,1} & a_{2,2} & \ldots & a_{2,m} \\ \vdots & \vdots & \ddots & \vdots \\ a_{n,1} & a_{n,2} & \ldots & a_{n,m} \end{bmatrix}. $$
 
@@ -161,13 +161,13 @@ I
 $$ \mathbf{M} \mathbf{a} = \mathbf{b}. $$
 
 ```{code-cell} python
-v = np.array([1, 4])
-M.dot(v)
+a = np.array([1, 4])
+M.dot(a)
 ```
 
 Кроме того, произведение матрицы $\mathbf{A} = \left\{ a_{ij}, \, i=1 \ldotp \ldotp n, \, j = 1 \ldotp \ldotp m \right\}$ и вектора $\mathbf{b} = \left\{b_j, \, j = 1 \ldotp \ldotp m \right\}$ можно записать следующим образом:
 
-$$ \sum_{j=1}^m a_{ij} \cdot b_j = c_i. $$
+$$ \sum_{j=1}^m a_{ij} \cdot b_j = c_i, \; i = 1 \, \ldots \, n. $$
 
 ```{code-cell} python
 A = np.array([[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]])

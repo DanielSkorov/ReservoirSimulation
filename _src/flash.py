@@ -318,7 +318,7 @@ class flash2pPT(object):
       if stab.stable:
         return FlashResult(yji=np.vstack([yi, self._1pstab_yi]),
                            Fj=self._1pstab_Fj, Zj=np.array([stab.Z, 0.]),
-                           gnorm=-1)
+                           gnorm=0.)
       else:
         self.negflash = False
       if self.useprev and self.preserved:
@@ -456,8 +456,8 @@ def _flash2pPT_ss(
         Fj = np.array([1. - Fv, Fv])
         Zj = np.array([Zl, Zv])
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                         Niter=k)
+      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                         gnorm=gnorm, Niter=k)
   else:
     logger.warning(
       "Two-phase flash calculation terminates unsuccessfully.\n"
@@ -613,8 +613,8 @@ def _flash2pPT_qnss(
         Fj = np.array([1. - Fv, Fv])
         Zj = np.array([Zl, Zv])
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                         Niter=k)
+      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                         gnorm=gnorm, Niter=k)
   else:
     logger.warning(
       "Two-phase flash calculation terminates unsuccessfully.\n"
@@ -795,8 +795,8 @@ def _flash2pPT_newt(
         Fj = np.array([1. - Fv, Fv])
         Zj = np.array([Zl, Zv])
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                         Niter=k)
+      return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                         gnorm=gnorm, Niter=k)
   else:
     logger.warning(
       "Two-phase flash calculation terminates unsuccessfully.\n"
@@ -976,8 +976,8 @@ def _flash2pPT_ssnewt(
             Fj = np.array([1. - Fv, Fv])
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             Niter=k)
+          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                             gnorm=gnorm, Niter=k)
       else:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
@@ -1027,8 +1027,8 @@ def _flash2pPT_ssnewt(
             Fj = np.array([1. - Fv, Fv])
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             Niter=k)
+          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                             gnorm=gnorm, Niter=k)
   else:
     logger.warning(
       "Two-phase flash calculation terminates unsuccessfully.\n"
@@ -1224,8 +1224,8 @@ def _flash2pPT_qnssnewt(
             Fj = np.array([1. - Fv, Fv])
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             Niter=k)
+          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                             gnorm=gnorm, Niter=k)
       else:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
@@ -1275,8 +1275,8 @@ def _flash2pPT_qnssnewt(
             Fj = np.array([1. - Fv, Fv])
             Zj = np.array([Zl, Zv])
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
-          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji, gnorm=gnorm,
-                             Niter=k)
+          return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
+                             gnorm=gnorm, Niter=k)
   else:
     logger.warning(
       "Two-phase flash calculation terminates unsuccessfully.\n"
