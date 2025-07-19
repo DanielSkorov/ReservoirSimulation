@@ -37,11 +37,16 @@ class env2p(unittest.TestCase):
   @staticmethod
   def plot(res, xmin, xmax, ymin, ymax):
     fig, ax = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-    ax.plot(res.Tk-273.15, res.Pk/1e6, lw=2., c='teal', zorder=2)
+    ax.plot(res.Tk-273.15, res.Pk/1e6, lw=2., c='teal', zorder=2,
+            label='Phase boundary')
+    if res.Pc is not None:
+      ax.plot(res.Tc-273.15, res.Pc/1e6, 'o', lw=0., c='r', zorder=2,
+              label='Critical point')
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     ax.set_xlabel('Temperature, C')
     ax.set_ylabel('Pressure, MPa')
+    ax.legend(loc='best', fontsize=9)
     ax.grid(zorder=1)
     plt.show()
     pass
@@ -68,10 +73,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=117)
+    maxpoints = 118
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -100., 140., 0., 20.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_02(self):
@@ -96,10 +102,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=102, maxstep=0.1)
+    maxpoints = 103
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.1)
     if plotting:
-      self.plot(res, -80., 10., 0., 30.)
-    self.assertTrue(res.succeed)
+      self.plot(res, -90., 10., 0., 35.)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_03(self):
@@ -124,10 +131,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=31, sidx0=5)
+    maxpoints = 32
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, sidx0=5)
     if plotting:
-      self.plot(res, -80., 10., 0., 30.)
-    self.assertTrue(res.succeed)
+      self.plot(res, -90., 10., 0., 35.)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_04(self):
@@ -154,10 +162,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=138)
+    maxpoints = 139
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_05(self):
@@ -184,10 +193,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=102)
+    maxpoints = 103
+    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=maxpoints)
     if plotting:
       self.plot(res, -20., 500., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_06(self):
@@ -214,10 +224,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=100)
+    maxpoints = 99
+    res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=maxpoints)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_07(self):
@@ -244,10 +255,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=98)
+    maxpoints = 99
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_08(self):
@@ -283,10 +295,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=184, maxstep=0.15)
+    maxpoints = 185
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.15)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_09(self):
@@ -322,10 +335,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=108)
+    maxpoints = 109
+    res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=maxpoints)
     if plotting:
       self.plot(res, 0., 500., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_10(self):
@@ -361,10 +375,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=320)
+    maxpoints = 321
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -150., 350., 0., 16.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_11(self):
@@ -400,10 +415,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=319)
+    maxpoints = 320
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -150., 350., 0., 16.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_12(self):
@@ -439,10 +455,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., sidx0=11, maxpoints=116)
+    maxpoints = 117
+    res = env.run(P0, T0, yi, 0., sidx0=11, maxpoints=maxpoints)
     if plotting:
       self.plot(res, 0., 240., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_13(self):
@@ -486,10 +503,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=126)
+    maxpoints = 127
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -100., 450., 0., 45.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_14(self):
@@ -512,10 +530,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton'),),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=253, maxstep=0.025)
+    maxpoints = 254
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.025)
     if plotting:
       self.plot(res, -70., 30., 0., 15.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_15(self):
@@ -552,10 +571,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=650, maxstep=0.5)
+    maxpoints = 651
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.5)
     if plotting:
       self.plot(res, -200., 550., 0., 35.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
   def test_16(self):
@@ -601,10 +621,11 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    res = env.run(P0, T0, yi, 0., maxpoints=160)
+    maxpoints = 161
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -150., 500., 0., 100.)
-    self.assertTrue(res.succeed)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
 

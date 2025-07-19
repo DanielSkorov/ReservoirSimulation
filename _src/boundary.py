@@ -5889,60 +5889,6 @@ class EnvelopeResult(dict):
     return s
 
 
-class EnvPointResult(dict):
-  """Container that holds the outputs from phase envelope point
-  calculations.
-
-  Attributes
-  ----------
-  x: Vector, shape (Nc + 2,)
-    Solution of the phase envelope equations.
-
-  Zj: Vector, shape (Np,)
-    Compressibility factors of the real and trial phases corresponding
-    the phase envelope point.
-
-  jac: Matrix, shape (Nc + 2, Nc + 2)
-    Jacobian at the solution of the phase envelope equations.
-
-  sidx: int
-    Index of the specified variable.
-
-  Niter: int
-    The number of iterations to converge.
-
-  dx2: Scalar
-    The sum of squared elements of the direction vector at the solution.
-
-  gnorm: Scalar
-    The norm of the phase envelope equations vector at the solution.
-
-  resflag: bool
-    A flag indicating whether the condition on the residuals was
-    achieved.
-
-  varflag: bool
-    A flag indicating whether the condition on the basic variables
-    change was achieved.
-
-  succeed: bool
-    A flag indicating whether any of the solution conditions were
-    satisfied.
-  """
-  def __getattr__(self, name: str) -> object:
-    try:
-      return self[name]
-    except KeyError as e:
-      raise AttributeError(name) from e
-
-  def __repr__(self) -> str:
-    with np.printoptions(linewidth=np.inf):
-      s = (f"Basic variables: {self.x}\n"
-           f"Number of iterations: {self.Niter}\n"
-           f"Convergence: res = {self.resflag}, var = {self.varflag}\n")
-    return s
-
-
 def _env2pPT_step(Niter: int, dx: Vector) -> Scalar:
   """Function for step control in the phase envelope construction
   procedure. The step size miltipliers were taken from the paper of
@@ -6390,51 +6336,175 @@ class env2pPT(object):
     kvji0 = psres.yji[0] / psres.yji[1], psres.yji[1] / psres.yji[0]
     P, flash = self.search(psres.P, T0, yi, Fv, kvji0)
     F = np.abs(flash.Fj[0])
+    xi = np.log(np.hstack([flash.kvji[0], P, T0]))
+
     logger.info('Constructing the phase envelope for F = %.3f.', F)
     Nc = self.eos.Nc
+    Ncp2 = Nc + 2
+    xki = np.zeros(shape=(maxpoints * 2, Ncp2))
+    Zkj = np.zeros(shape=(maxpoints * 2, 2))
+    M = np.empty(shape=(4, 4))
+    M[:, 0] = np.array([1., 0., 1., 0.])
+    M[1, 1] = 1.
+    M[3, 1] = 1.
+    B = np.empty(shape=(4, Ncp2))
+    mdgds = np.zeros(shape=(Ncp2,))
+    mdgds[-1] = 1.
+    crits = []
+    crcbars = []
+    crctrms = []
+
     logger.info(
-      '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s %6s %6s',
+      '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s',
       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
       *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT',
-      'res', 'var',
     )
-    tmpl = ('%4s %4s %5s %7.4f %4s %9.4f'
-            + Nc * ' %8.4f'
-            + ' %8.4f %7.4f %6s %6s')
-    x0 = np.log(np.hstack([flash.kvji[0], P, T0]))
+    tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
+
+    c = 0
+    cmax = maxpoints - 1
+    k = cmax
     if sidx0 is None:
       if F > .5:
-        sidx = np.argmax(flash.kvji[0])
+        s0_idx = np.argmax(flash.kvji[0])
       else:
-        sidx = np.argmin(flash.kvji[0])
+        s0_idx = np.argmin(flash.kvji[0])
     else:
-      sidx = sidx0
-    sval = x0[sidx]
-    point = self.solver(x0, sidx, sval, yi, F)
-    logger.info(tmpl, 0, 0, point.Niter, 0., sidx, sval, *point.x,
-                point.resflag, point.varflag)
-    xk, Zkj, succeed = self.curve(yi, F, point, step0, fstep, maxstep,
-                                  switchmult, unconvmult, maxrepeats,
-                                  maxpoints)
-    if (point.x[-2] > self.lnPmin and point.x[-1] > self.lnTmin and
-        point.x[-2] < self.lnPmax and point.x[-1] < self.lnTmax and
-        xk.shape[0] < maxpoints):
-      xl, Zlj, tmp = self.curve(yi, F, point, -step0, fstep, maxstep,
-                                switchmult, unconvmult, maxrepeats,
-                                maxpoints - xk.shape[0])
-      if xl.shape[0] > 1:
-        xk = np.vstack([np.flipud(xk), [point.x], xl])
-        Zkj = np.vstack([np.flipud(Zkj), [point.Zj], Zlj])
-        succeed = succeed and tmp
-    elif xk.shape[0] > 1:
-      xk = np.vstack([[point.x], xk])
-      Zkj = np.vstack([[point.Zj], Zkj])
-    # print(xk)
-    Pk = np.exp(xk[:, -2])
-    Tk = np.exp(xk[:, -1])
-    lnkvki = xk[:, :Nc]
-    return EnvelopeResult(Pk=Pk, Tk=Tk, kvki=np.exp(lnkvki),
-                          Zkj=Zkj, succeed=succeed)
+      s0_idx = sidx0
+    s0_val = xi[s0_idx]
+    x0, Z0j, J0, nit, flg = self.solver(xi, s0_idx, s0_val, yi, F)
+    if flg:
+      logger.info(tmpl, c, 0, nit, 0., s0_idx, s0_val, *x0)
+      xki[k] = x0
+      Zkj[k] = Z0j
+      dx0ds = np.linalg.solve(J0, mdgds)
+    else:
+      raise SolutionNotFoundError(
+        '...'
+      )
+
+    bounds = []
+    for k_dir in [-1, 1]:
+      k = cmax
+      r = 0
+      s_cnt = 1
+      lnP = x0[-2]
+      lnT = x0[-1]
+      xk = x0
+      Jk = J0
+      sk_idx = s0_idx
+      sk_val = s0_val
+      dxkds = dx0ds
+      B[0] = xk
+      B[1] = dxkds
+      step = step0
+      skp1_idx = np.argmax(np.abs(dxkds))
+      skp1_val = sk_val + k_dir * step
+      xi = xk + dxkds * (skp1_val - sk_val)
+      while (lnT >= self.lnTmin and lnT <= self.lnTmax and
+             lnP >= self.lnPmin and lnP <= self.lnPmax and c < cmax):
+        if r > maxrepeats:
+          logger.warning(
+            'The maximum number of step repeats has been reached.'
+          )
+          break
+        xkp1, Zj, Jkp1, nit, flg = self.solver(xi, skp1_idx, skp1_val, yi, F)
+        if flg:
+          r = 0
+          xkm1 = xk
+          Jkm1 = Jk
+          dxkm1ds = dxkds
+          k += k_dir
+          xk = xkp1
+          Jk = Jkp1
+          xki[k] = xk
+          Zkj[k] = Zj
+          c += 1
+          lnP = xk[-2]
+          lnT = xk[-1]
+          logger.info(tmpl, c, r, nit, step, skp1_idx, skp1_val, *xk)
+          dxkds = np.linalg.solve(Jk, mdgds)
+          if (xk[:Nc] * xkm1[:Nc] < 0.).all():
+            if sk_idx == skp1_idx and skp1_idx < Nc:
+              lnk_idx = sk_idx
+              dlnPTkds = dxkds[Nc:]
+              dlnPTkm1ds = dxkm1ds[Nc:]
+            elif skp1_idx < Nc:
+              lnk_idx = skp1_idx
+              dlnPTkds = dxkds[Nc:]
+              Jkm1[-1, sk_idx] = 0.
+              Jkm1[-1, lnk_idx] = 1.
+              dlnPTkm1ds = np.linalg.solve(Jkm1, mdgds)[Nc:]
+            elif sk_idx < Nc:
+              lnk_idx = sk_idx
+              Jk[-1, skp1_idx] = 0.
+              Jk[-1, lnk_idx] = 1.
+              dlnPTkds = np.linalg.solve(Jk, mdgds)[Nc:]
+              dlnPTkm1ds = dxkm1ds[Nc:]
+            else:
+              lnk_idx = 0
+              Jk[-1, skp1_idx] = 0.
+              Jk[-1, lnk_idx] = 1.
+              dlnPTkds = np.linalg.solve(Jk, mdgds)[Nc:]
+              Jkm1[-1, sk_idx] = 0.
+              Jkm1[-1, lnk_idx] = 1.
+              dlnPTkm1ds = np.linalg.solve(Jkm1, mdgds)[Nc:]
+            lnkk_val = xk[lnk_idx]
+            lnkkm1_val = xkm1[lnk_idx]
+            self._update_M(lnkk_val, lnkkm1_val, M)
+            b = np.vstack([xk[Nc:], dlnPTkds, xkm1[Nc:], dlnPTkm1ds])
+            crits.append(np.linalg.solve(M, b)[0])
+          sk_idx = skp1_idx
+          skp1_idx = np.argmax(np.abs(dxkds))
+          if skp1_idx != sk_idx:
+            s_cnt = 0
+            step *= switchmult
+          else:
+            s_cnt += 1
+            step *= fstep(nit, xk - xkm1)
+            if np.abs(step) > maxstep:
+              step = np.sign(step) * maxstep
+          skm1_val = xkm1[skp1_idx]
+          sk_val = xk[skp1_idx]
+          self._update_M(sk_val, skm1_val, M)
+          self._update_B(xk, dxkds, B)
+          skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
+          if s_cnt > 1:
+            C = np.linalg.solve(M, B)
+            skp1_val2 = skp1_val * skp1_val
+            skp1_val3 = skp1_val2 * skp1_val
+            xi = np.array([1., skp1_val, skp1_val2, skp1_val3]).dot(C)
+          else:
+            xi = xk + (xk - xkm1) / (sk_val - skm1_val) * (skp1_val - sk_val)
+        else:
+          step *= unconvmult
+          if s_cnt > 1:
+            skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
+            skp1_val2 = skp1_val * skp1_val
+            skp1_val3 = skp1_val2 * skp1_val
+            xi = np.array([1., skp1_val, skp1_val2, skp1_val3]).dot(C)
+          elif c > 0:
+            skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
+            xi = xk + (xk - xkm1) / (sk_val - skm1_val) * (skp1_val - sk_val)
+          else:
+            skp1_val = sk_val + s_dir * step0
+            xi = xk + dxkds * (skp1_val - sk_val)
+          r += 1
+      bounds.append(k)
+    bounds[-1] += 1
+    slc = slice(*bounds)
+    Pk = np.exp(xki[slc, -2])
+    Tk = np.exp(xki[slc, -1])
+    lnkvki = xki[slc, :Nc]
+    if crits:
+      crits = np.exp(crits)
+      Pc = crits[:, 0]
+      Tc = crits[:, 1]
+    else:
+      Pc = None
+      Tc = None
+    return EnvelopeResult(Pk=Pk, Tk=Tk, kvki=np.exp(lnkvki), Zkj=Zkj,
+                          Pc=Pc, Tc=Tc, succeed=flg)
 
   def search(
     self,
@@ -6498,182 +6568,28 @@ class env2pPT(object):
     idx = np.argmin(np.abs(Fvs - Fv))
     return PP[idx], flashs[idx]
 
-  def curve(
-    self,
-    yi: Vector,
-    Fv: Scalar,
-    point0: EnvPointResult,
-    step0: Scalar,
-    fstep: Callable[[int, Vector], Scalar],
-    maxstep: Scalar,
-    switchmult: Scalar,
-    unconvmult: Scalar,
-    maxrepeats: int,
-    maxpoints: int,
-  ) -> tuple[Matrix, Matrix, bool]:
-    """This method should be used to calculate a part of the phase
-    envelope for a given direction.
+  @staticmethod
+  def _update_M(sk_val, skm1_val, M):
+    skm1_val2 = skm1_val * skm1_val
+    sk_val2 = sk_val * sk_val
+    M[0, 1] = sk_val
+    M[0, 2] = sk_val2
+    M[0, 3] = sk_val2 * sk_val
+    M[1, 2] = 2. * sk_val
+    M[1, 3] = 3. * sk_val2
+    M[2, 1] = skm1_val
+    M[2, 2] = skm1_val2
+    M[2, 3] = skm1_val2 * skm1_val
+    M[3, 2] = 2. * skm1_val
+    M[3, 3] = 3. * skm1_val2
+    pass
 
-    Parameters
-    ----------
-    yi: Vector, shape (Nc,)
-      Mole fractions of `Nc` components in a mixture.
-
-    Fv: Scalar
-      Phase mole fraction for which the envelope is needed.
-
-    point0: EnvPointResult
-      The zeroth point of the phase envelope as an instance of
-      `EnvPointResult`.
-
-    step0: Scalar
-      The step size (the difference between two subsequent values of a
-      specified variable) for iteration zero. This parameter can also be
-      used to specify the direction in which the phase envelope must be
-      calculated by the algorithm. In general, the change in the sign of
-      the initial step size would lead to a different branch of the
-      phase envelope.
-
-    fstep: Callable[[int, Vector], Scalar]
-      Function for step control in the phase envelope construction
-      procedure. It should accept the number of iterations and basic
-      variables change between previous and current solutions as a
-      `Vector` of shape `(Nc + 2,)` and return the step size
-      multiplier.
-
-    maxstep: Scalar
-      The upper bound for the step size.
-
-    switchmult: Scalar
-      The step size multiplier is implemented if the specified variable
-      is changed.
-
-    unconvmult: Scalar
-      The step size multiplier is implemented if the solution is not
-      found for the specified variable value.
-
-    maxrepeats: int
-      This parameter allows to specify the maximum number of repeats
-      for any saturation point calculation. If the number of repeats
-      exceeds the given bound, then the construction of the phase
-      envelope will be stopped.
-
-    maxpoints: int
-      The maximum number of points of the phase envelope.
-
-    Returns
-    -------
-    A tuple of:
-    - a matrix of the shape `(Ns, Nc + 2)` of calculated saturation
-      points (`Ns` arrays of basic variables that correspond to the
-      solution of equations),
-    - a matrix of the shape `(Ns, 2)` of compressibility factors of the
-      real and trial phases along the phase envelope.
-    """
-    Nc = self.eos.Nc
-    Ncp2 = Nc + 2
-    tmpl = ('%4s %4s %5s %7.4f %4s %9.4f'
-            + Nc * ' %8.4f'
-            + ' %8.4f %7.4f %6s %6s')
-    xx = np.zeros(shape=(maxpoints, Ncp2))
-    succeed = True
-    M = np.empty(shape=(4, 4))
-    M[:, 0] = np.array([1., 0., 1., 0.])
-    M[1, 1] = 1.
-    M[3, 1] = 1.
-    B = np.empty(shape=(4, Ncp2))
-    mdgds = np.zeros(shape=(Ncp2,))
-    mdgds[-1] = 1.
-    Zkj = []
-    kmax = maxpoints
-    k = 0
-    r = 0
-    point = point0
-    sk_idx = point.sidx
-    xk = point.x
-    dxkds = np.linalg.solve(point.jac, mdgds)
-    scnt = 1
+  @staticmethod
+  def _update_B(xk, dxkds, B):
+    B[2:] = B[:2]
     B[0] = xk
     B[1] = dxkds
-    step = np.abs(step0)
-    skp1_idx = np.argmax(np.abs(dxkds))
-    sk_val = xk[skp1_idx]
-    skp1_val = sk_val + np.sign(step0) * step
-    xi = xk + dxkds * (skp1_val - sk_val)
-    while (k < kmax and
-           xk[-1] >= self.lnTmin and xk[-2] >= self.lnPmin and
-           xk[-1] <= self.lnTmax and xk[-2] <= self.lnPmax):
-      if r > maxrepeats:
-        logger.warning('The maximum number of step repeats has been reached.')
-        succeed = False
-        break
-      point = self.solver(xi, skp1_idx, skp1_val, yi, Fv)
-      if point.succeed:
-        xkm1 = xk
-        xk = point.x
-        xx[k] = xk
-        k += 1
-        Niter = point.Niter
-        logger.info(tmpl, k, r, Niter, step, skp1_idx, skp1_val, *xk,
-                    point.resflag, point.varflag)
-        # if (xk[:-2] * xkm1[:-2] < 0.).all():
-        #   if sk_idx == skp1_idx and skp1_idx < Nc:
-        #     ...
-        #   else:
-        #     ...
-        sk_idx = skp1_idx
-        dxkds = np.linalg.solve(point.jac, mdgds)
-        skp1_idx = np.argmax(np.abs(dxkds))
-        if skp1_idx != sk_idx:
-          scnt = 0
-          step *= switchmult
-        else:
-          scnt += 1
-          step *= fstep(Niter, xk - xkm1)
-          if np.abs(step) > maxstep:
-            step = np.sign(step) * maxstep
-        skm1_val = xkm1[skp1_idx]
-        skm1_val2 = skm1_val * skm1_val
-        sk_val = xk[skp1_idx]
-        sk_val2 = sk_val * sk_val
-        skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
-        M[0, 1] = sk_val
-        M[0, 2] = sk_val2
-        M[0, 3] = sk_val2 * sk_val
-        M[1, 2] = 2. * sk_val
-        M[1, 3] = 3. * sk_val2
-        M[2, 1] = skm1_val
-        M[2, 2] = skm1_val2
-        M[2, 3] = skm1_val2 * skm1_val
-        M[3, 2] = 2. * skm1_val
-        M[3, 3] = 3. * skm1_val2
-        B[2:] = B[:2]
-        B[0] = xk
-        B[1] = dxkds
-        if scnt > 1:
-          C = np.linalg.solve(M, B)
-          skp1_val2 = skp1_val * skp1_val
-          xi = np.array([1., skp1_val, skp1_val2, skp1_val2*skp1_val]).dot(C)
-        else:
-          xi = xk + (xk - xkm1) / (sk_val - skm1_val) * (skp1_val - sk_val)
-        r = 0
-        Zkj.append(point.Zj)
-      else:
-        step *= unconvmult
-        if scnt > 1:
-          skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
-          skp1_val2 = skp1_val * skp1_val
-          xi = np.array([1., skp1_val, skp1_val2, skp1_val2*skp1_val]).dot(C)
-        elif k > 0:
-          skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
-          xi = xk + (xk - xkm1) / (sk_val - skm1_val) * (skp1_val - sk_val)
-        else:
-          skp1_val = sk_val + np.sign(step0) * step
-          xi = xk + dxkds * (skp1_val - sk_val)
-        r += 1
-    xx = xx[:k]
-    Zkj = np.array(Zkj)
-    return xx, Zkj, succeed
+    pass
 
 
 def _env2pPT(
@@ -6691,7 +6607,7 @@ def _env2pPT(
   lnPmax: Scalar = 18.42,
   lnTmin: Scalar = 5.154,
   lnTmax: Scalar = 6.881,
-) -> EnvPointResult:
+) -> tuple[Vector, Vector, Matrix, int, bool]:
   """Sovles phase envelope equations using Newton's method.
 
   Parameters
@@ -6776,12 +6692,15 @@ def _env2pPT(
 
   Returns
   -------
-  Saturation point calculation results as an instance of
-  `EnvPointResult`. Important attributes:
-  - `x` solution of the phase envelope equations,
-  - `Zj` compressibility factors of phases,
-  - `succeed` a boolean flag indicating whether any of the solution
-    conditions were satisfied.
+  A tuple that contains:
+  - the solution of the phase envelope equations as a `Vector` of shape
+    `(Nc + 2,)`,
+  - compressibility factors of phases as a `Vector` of shape `(2,)`,
+  - jacobian (at the solution) as a `Matrix` of shape
+    `(Nc + 2, Nc + 2)`,
+  - the number of iterations to converge,
+  - a boolean flag indicating whether any of the solution conditions
+    were satisfied.
   """
   Nc = eos.Nc
   logger.debug(
@@ -6866,12 +6785,8 @@ def _env2pPT(
     dx2 = dx.dot(dx)
     proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
     logger.debug(tmpl, k, *xk, gnorm, dx2)
-  resflag = gnorm < tolres
-  varflag = dx2 < tolvar
-  return EnvPointResult(x=xk, Zj=np.array([Zv, Zl]), sidx=sidx, jac=J,
-                        gnorm=gnorm, dx2=dx2, Niter=k,
-                        resflag=resflag, varflag=varflag,
-                        succeed=(resflag or varflag) and np.isfinite(dx2))
+  succeed = (gnorm < tolres or dx2 < tolvar) and np.isfinite(dx2)
+  return xk, np.array([Zv, Zl]), J, k, succeed
 
 
 def _aenv2pPT(
