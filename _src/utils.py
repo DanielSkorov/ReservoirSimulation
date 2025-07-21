@@ -1,5 +1,24 @@
 import numpy as np
 
+from custom_types import (
+  Vector,
+  Matrix,
+  LinAlgError,
+)
+
+from futils import (
+  linalg as fla,
+)
+
+def dgem(A: Matrix, b: Vector) -> Vector:
+  assert A.dtype == b.dtype == np.float64
+  fA = np.asfortranarray(A)
+  fb = np.asfortranarray(b)
+  x, singular = fla.dgem(fA, fb)
+  if singular:
+    raise LinAlgError('Singular matrix.')
+  return x
+
 
 def linsolver2d(A, b):
   D = 1. / (A[0,0] * A[1,1] - A[0,1] * A[1,0])

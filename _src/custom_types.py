@@ -25,3 +25,6 @@ class Eos(Protocol):
 
 class SolutionNotFoundError(Exception):
   pass
+
+class LinAlgError(Exception):
+  pass
