@@ -58,6 +58,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '1-PVT/3-SEC/SEC-6-Saturation';</script>
     <script src="../../_static/custom.js?v=4c678b35"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -385,8 +387,13 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vt">VT-термодинамика</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-psat">Определение давления насыщения</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-tsat">Определение температуры насыщения</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-psatmax">Определение криконденбары</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-tsatmax">Определение крикондентермы</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-bound">Построение границы двухфазной области</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-internals">Промежуточные линии (линии постоянной мольной доли фазы)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-retrograde">Границы ретроградных областей</a></li>
 </ul>
             </nav>
         </div>
@@ -400,11 +407,38 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pvt-esc-saturation">
 <span id="id1"></span><h1>Определение насыщенного состояния системы<a class="headerlink" href="#pvt-esc-saturation" title="Link to this heading">#</a></h1>
-<section id="pt">
-<span id="pvt-esc-saturation-pt"></span><h2>PT-термодинамика<a class="headerlink" href="#pt" title="Link to this heading">#</a></h2>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<div class="note admonition">
+<p class="admonition-title">Дополнительно</p>
+<p>Данный раздел посвящен рассмотрению численных алгоритмов построения границы двухфазной области, являющейся одной из наиболее распространенных задач в PVT-моделировании пластовых углеводородных систем. Важно отметить, что для многокомпонентных термодинамических систем могут быть определены границы трехфазной области, подходы к построению которых не будут рассматриваться в рамках данного раздела. Достаточно подробно они рассмотрены авторами работы [<a class="reference external" href="https://doi.org/10.2118/85971-PA">Lindeloff and Michelsen, 2003</a>]. Также в данном разделе не будет уделено внимание алгоритмам построения фазовых диаграмм для бинарных систем, для изучения которых рекомендуется обратиться к работам [<a class="reference external" href="https://doi.org/10.1016/j.supflu.2006.03.011">Cismondi and Michelsen, 2007</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2007.07.019">Cismondi and Michelsen, 2007</a>; <a class="reference external" href="https://doi.org/10.1021/ie8002914">Cismondi et al, 2008</a>].</p>
+</div>
+</aside>
+<p><a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">Ранее</span></a> было показано, что однофазное состояние многокомпонентной системы (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) известного компонентного состава <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span> является стабильным при фиксированных и известных давлении и температуре, если касательная, проведенная к функции энергии Гиббса в точке с заданным компонентным составом, не пересекает ее в любых других точках. Данный критерий эквивалентен условию неотрицательности функции TPD (<em>tangent plane distance</em>), определяемой расстоянием от гиперповерхности энергии Гиббса до касательной гиперплоскости, проведенной в точке с заданным компонентным составом:</p>
+<div class="math notranslate nohighlight">
+\[ \bar{D} \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln \varphi_i \left( \mathbf{y} \right) - \ln \varphi_i \left( \mathbf{z} \right) - \ln z_i \right), \]</div>
+<p>где <span class="math notranslate nohighlight">\(\bar{D} \left( \mathbf{y} \right)\)</span> – приведенная функция TPD, <span class="math notranslate nohighlight">\(\mathbf{y} \in {\rm I\!R}^{N_c}\)</span> – мольные доли компонентов в мнимой фазе, <span class="math notranslate nohighlight">\(\varphi_i \left( \mathbf{y} \right)\)</span> – коэффициент летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента в мнимой фазе, <span class="math notranslate nohighlight">\(\varphi_i \left( \mathbf{z} \right)\)</span> – коэффициент летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента в исходной рассматриваемой теродинамической системе.</p>
+<p>При этом нет необходимости проверять значения функции TPD во всех точках – достаточно проверить ее значение в глобальном минимуме или во всех локальных минимумах, задаваясь различными начальными приближениями. То есть, если для рассматриваемой термодинамической системы функция TPD характеризуется отрицательным значением в ее глобальном минимуме, то однофазное состояние не является стабильным. И наоборот: если положительным, то однофазное состояние системы стабильно. Следовательно, граница двухфазной области, характеризующаяся пренебрежимо малым количеством другой, мнимой фазы (<em>trial phase</em>), находящейся в термодинамическом равновесии с исходным компонентным составом, определяется условием равенства нулю функции TPD в ее глобальном минимуме.</p>
+<section id="pvt-esc-saturation-psat">
+<span id="id2"></span><h2>Определение давления насыщения<a class="headerlink" href="#pvt-esc-saturation-psat" title="Link to this heading">#</a></h2>
 </section>
-<section id="vt">
-<span id="pvt-esc-saturation-vt"></span><h2>VT-термодинамика<a class="headerlink" href="#vt" title="Link to this heading">#</a></h2>
+<section id="pvt-esc-saturation-tsat">
+<span id="id3"></span><h2>Определение температуры насыщения<a class="headerlink" href="#pvt-esc-saturation-tsat" title="Link to this heading">#</a></h2>
+</section>
+<section id="pvt-esc-saturation-psatmax">
+<span id="id4"></span><h2>Определение криконденбары<a class="headerlink" href="#pvt-esc-saturation-psatmax" title="Link to this heading">#</a></h2>
+</section>
+<section id="pvt-esc-saturation-tsatmax">
+<span id="id5"></span><h2>Определение крикондентермы<a class="headerlink" href="#pvt-esc-saturation-tsatmax" title="Link to this heading">#</a></h2>
+</section>
+<section id="pvt-esc-saturation-bound">
+<span id="id6"></span><h2>Построение границы двухфазной области<a class="headerlink" href="#pvt-esc-saturation-bound" title="Link to this heading">#</a></h2>
+</section>
+<section id="pvt-esc-saturation-internals">
+<span id="id7"></span><h2>Промежуточные линии (линии постоянной мольной доли фазы)<a class="headerlink" href="#pvt-esc-saturation-internals" title="Link to this heading">#</a></h2>
+</section>
+<section id="pvt-esc-saturation-retrograde">
+<span id="id8"></span><h2>Границы ретроградных областей<a class="headerlink" href="#pvt-esc-saturation-retrograde" title="Link to this heading">#</a></h2>
 </section>
 </section>
 
@@ -472,8 +506,13 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pt">PT-термодинамика</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vt">VT-термодинамика</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-psat">Определение давления насыщения</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-tsat">Определение температуры насыщения</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-psatmax">Определение криконденбары</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-tsatmax">Определение крикондентермы</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-bound">Построение границы двухфазной области</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-internals">Промежуточные линии (линии постоянной мольной доли фазы)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pvt-esc-saturation-retrograde">Границы ретроградных областей</a></li>
 </ul>
   </nav></div>
 

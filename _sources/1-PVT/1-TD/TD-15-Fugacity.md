@@ -237,7 +237,7 @@ $$ PV = n R T, $$
 
 где $n = \sum_{i=1}^{N_c} n_i.$ В данном выражении $N_c$ – количество компонентов в системе. Следовательно, частная производная давления по количеству вещества компонента $i$:
 
-$$ \left( \frac{\partial P}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} \sum_{i=1}^{N_c} \left( \frac{\partial n_i}{\partial n_i} \right)_{V, T, n_{j \neq i}} = \frac{RT}{V} . $$
+$$ \left( \frac{\partial P}{\partial n_j} \right)_{V, T, n_{i \neq j}} = \frac{RT}{V} \sum_{i=1}^{N_c} \left( \frac{\partial n_i}{\partial n_j} \right)_{V, T, n_{i \neq j}} = \frac{RT}{V} . $$
 
 Тогда логарифм коэффициента летучести $i$-го компонента:
 

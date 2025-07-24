@@ -480,9 +480,7 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i y_i, \; i = 1 \, \ldots \, N_c,
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
 False
 Tangent-plane distance:
--0.004053333662825822
-Calculation completed successfully:
-True
+-0.0040533336630620065
 </pre></div>
 </div>
 </div>
@@ -490,7 +488,7 @@ True
 <p>Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">stabmethod</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">,</span> <span class="n">flashmethod</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">,</span> <span class="n">stabkwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss&#39;</span><span class="p">))</span>
 <span class="n">flashres</span> <span class="o">=</span> <span class="n">flash</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
 <span class="n">flashres</span>
 </pre></div>
@@ -498,14 +496,12 @@ True
 </div>
 <div class="cell_output docutils container">
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase composition:
-[[0.8738966  0.1261034 ]
- [0.91968867 0.08031133]]
+[[0.87389659 0.12610341]
+ [0.91968935 0.08031065]]
 Phase mole fractions:
-[0.42995808 0.57004192]
+[0.42996646 0.57003354]
 Phase compressibility factors:
-[0.44121501 0.21140309]
-Calculation completed successfully:
-True
+[0.44121504 0.21140232]
 </pre></div>
 </div>
 </div>
@@ -520,7 +516,7 @@ True
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase densities: [267.51465072 575.98657723] kg/m3
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase densities: [267.51463205 575.98896013] kg/m3
 </pre></div>
 </div>
 </div>
@@ -763,7 +759,7 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 </div>
 </div>
 </div>
-<p>Вычилим начальное приближение для температуры:</p>
+<p>Вычислим начальное приближение для температуры:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Iteration count for the first critical condition</span>

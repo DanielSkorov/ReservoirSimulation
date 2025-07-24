@@ -93,7 +93,7 @@ stabres
 Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:
 
 ```{code-cell} python
-flash = flash2pPT(pr, stabmethod='ss', flashmethod='ss')
+flash = flash2pPT(pr, method='ss', stabkwargs=dict(method='ss'))
 flashres = flash.run(P, T, yi)
 flashres
 ```
@@ -521,7 +521,7 @@ bm = yi.dot(pr.bi) # Repulsion parameter [m3/gmole]
 V = kappa * bm * n # Volume of the mixture [m3]
 ```
 
-Вычилим начальное приближение для температуры:
+Вычислим начальное приближение для температуры:
 
 ```{code-cell} python
 k = 0 # Iteration count for the first critical condition

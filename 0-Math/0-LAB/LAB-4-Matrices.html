@@ -427,7 +427,7 @@ document.write(`
 <p>Для обозначения матрицы здесь и далее будут использоваться заглавные латинские буквы, выделенные жирным, например, <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>. В отличие от <a class="reference internal" href="LAB-1-Vectors.html"><span class="std std-doc">вектора</span></a>, представляющего собой одномерный набор действительных чисел, матрица является двумерной. Например, следующая запись</p>
 <div class="math notranslate nohighlight">
 \[ \exists ~ \mathbf{A} \in {\rm I\!R}^{n \times m} \]</div>
-<p>читается следующим образом: <em>существует</em> <span class="math notranslate nohighlight">\(\left( \exists \right)\)</span> <em>матрица</em> <span class="math notranslate nohighlight">\(\left( \mathbf{A} \right)\)</span> <em>, принадлежащая пространству реальных чисел</em> <span class="math notranslate nohighlight">\(\left( {\rm I\!R} \right)\)</span>, <em>размерностью</em> <span class="math notranslate nohighlight">\(n \times m\)</span>. Данная запись объявляет матрицу <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> следующего вида:</p>
+<p>читается следующим образом: <em>существует</em> <span class="math notranslate nohighlight">\(\left( \exists \right)\)</span> <em>матрица</em> <span class="math notranslate nohighlight">\(\left( \mathbf{A} \right)\)</span> <em>, принадлежащая пространству действительных чисел</em> <span class="math notranslate nohighlight">\(\left( {\rm I\!R} \right)\)</span>, <em>размерностью</em> <span class="math notranslate nohighlight">\(n \times m\)</span>. Данная запись объявляет матрицу <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> следующего вида:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split} \mathbf{A} = \begin{bmatrix} a_{1,1} &amp; a_{1,2} &amp; \ldots &amp; a_{1,m} \\ a_{2,1} &amp; a_{2,2} &amp; \ldots &amp; a_{2,m} \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ a_{n,1} &amp; a_{n,2} &amp; \ldots &amp; a_{n,m} \end{bmatrix}. \end{split}\]</div>
 <p>Кроме того, матрица может обозначаться путем указания элементов с индексами, например, для изложенного выше примера:</p>
@@ -640,8 +640,8 @@ document.write(`
 \[ \mathbf{M} \mathbf{a} = \mathbf{b}. \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
-<span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -653,7 +653,7 @@ document.write(`
 </div>
 <p>Кроме того, произведение матрицы <span class="math notranslate nohighlight">\(\mathbf{A} = \left\{ a_{ij}, \, i=1 \ldotp \ldotp n, \, j = 1 \ldotp \ldotp m \right\}\)</span> и вектора <span class="math notranslate nohighlight">\(\mathbf{b} = \left\{b_j, \, j = 1 \ldotp \ldotp m \right\}\)</span> можно записать следующим образом:</p>
 <div class="math notranslate nohighlight">
-\[ \sum_{j=1}^m a_{ij} \cdot b_j = c_i. \]</div>
+\[ \sum_{j=1}^m a_{ij} \cdot b_j = c_i, \; i = 1 \, \ldots \, n. \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>

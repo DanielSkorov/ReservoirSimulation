@@ -90,7 +90,7 @@ mod_v
 
 Обозначим через $\alpha$ угол между вектором $\mathbf{v}$ и положительным направлением оси $Ox$ (вектором $\mathbf{i}$). Тогда косинус этого угла:
 
-$$ \cos \alpha = \frac{v_x}{\left| \mathbf{v} \right|}. $$
+$$ \cos \alpha = \frac{v_x}{\lVert \mathbf{v} \rVert_2}. $$
 
 ```{code-cell} python
 cos_alpha = v_x / mod_v
@@ -99,7 +99,7 @@ cos_alpha
 
 Аналогично для угла $\beta$:
 
-$$ \cos \beta = \frac{v_y}{\left| \mathbf{v} \right|}. $$
+$$ \cos \beta = \frac{v_y}{\lVert \mathbf{v} \rVert_2}. $$
 
 ```{code-cell} python
 cos_beta = v_y / mod_v
