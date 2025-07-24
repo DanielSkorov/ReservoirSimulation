@@ -10,8 +10,10 @@ from futils import (
   linalg as fla,
 )
 
+
 def dgem(A: Matrix, b: Vector) -> Vector:
   assert A.dtype == b.dtype == np.float64
+  assert A.shape[0] == A.shape[1] == b.shape[0]
   fA = np.asfortranarray(A)
   fb = np.asfortranarray(b)
   x, singular = fla.dgem(fA, fb)

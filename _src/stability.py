@@ -94,7 +94,7 @@ class StabResult(dict):
   def __repr__(self) -> str:
     with np.printoptions(linewidth=np.inf):
       s = (f"The one-phase state is stable:\n{self.stable}\n"
-           f"Tangent-plane distance:\n{self.TPD}\n")
+           f"Tangent-plane distance:\n{self.TPD}")
     return s
 
 

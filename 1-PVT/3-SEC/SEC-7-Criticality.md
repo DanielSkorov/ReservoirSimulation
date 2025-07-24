@@ -93,7 +93,7 @@ stabres
 Однофазное состояние системы является нестабильным. Выполним расчет двухфазного равновесного состояния:
 
 ```{code-cell} python
-flash = flash2pPT(pr, stabmethod='ss', flashmethod='ss')
+flash = flash2pPT(pr, method='ss', stabkwargs=dict(method='ss'))
 flashres = flash.run(P, T, yi)
 flashres
 ```
