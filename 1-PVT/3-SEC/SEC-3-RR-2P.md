@@ -265,7 +265,7 @@ def condit(carry, tol, maxiter):
     i, a, _, eq = carry
     return (i < maxiter) & (np.abs(eq) > tol)
 
-pcondit = partial(condit, tol=np.float64(1e-8), maxiter=50)
+pcondit = partial(condit, tol=1e-8, maxiter=50)
 ```
 
 Далее создадим функцию, которая принимает на вход кортеж с результатами предыдущей итерации и обновляет их значениями для новой итерации:
@@ -799,7 +799,7 @@ def condit(carry, tol, maxiter):
     i, a, _, D = carry
     return (i < maxiter) & (np.abs(D) > tol)
 
-pcondit = partial(condit, tol=np.float64(1e-10), maxiter=50)
+pcondit = partial(condit, tol=1e-10, maxiter=50)
 ```
 
 Далее создадим функцию, которая принимает на вход кортеж с результатами предыдущей итерации и обновляет их значениями для новой итерации:
@@ -878,7 +878,7 @@ def condit(carry, tol, maxiter):
     i, a, _, D = carry
     return (i < maxiter) & (np.abs(D) > tol)
 
-pcondit = partial(condit, tol=np.float64(1e-10), maxiter=50)
+pcondit = partial(condit, tol=1e-10, maxiter=50)
 
 def update(carry, pD):
     i, a_, h_, D_ = carry
@@ -1063,7 +1063,7 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD)
 
-pcondit = partial(condit, tol=np.float64(1e-12), maxiter=50)
+pcondit = partial(condit, tol=1e-12, maxiter=50)
 
 a = yi[0] / yi[-1]
 D, dDda = pD(a)
@@ -1104,7 +1104,7 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD)
 
-pcondit = partial(condit, tol=np.float64(1e-12), maxiter=50)
+pcondit = partial(condit, tol=1e-12, maxiter=50)
 
 a = yi[0] / yi[-1]
 D, dDda = pD(a)
@@ -1150,7 +1150,7 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD)
 
-pcondit = partial(condit, tol=np.float64(1e-10), maxiter=50)
+pcondit = partial(condit, tol=1e-10, maxiter=50)
 
 a = yi[0] / yi[-1]
 D, dDda = pD(a)
@@ -1190,7 +1190,7 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD)
 
-pcondit = partial(condit, tol=np.float64(1e-10), maxiter=50)
+pcondit = partial(condit, tol=1e-10, maxiter=50)
 
 a = yi[0] / yi[-1]
 D, dDda = pD(a)

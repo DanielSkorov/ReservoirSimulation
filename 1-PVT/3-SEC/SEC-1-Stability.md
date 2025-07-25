@@ -347,8 +347,8 @@ from eos import pr78
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 ```
 
@@ -440,8 +440,8 @@ import sys
 sys.path.append('../../_src/')
 from eos import pr78
 
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
@@ -493,8 +493,8 @@ glue('glued_fig2', fig2)
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
@@ -559,8 +559,8 @@ plt.show()
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 
 lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
@@ -649,7 +649,7 @@ $$ \sum_{i=1}^{N_c} y_i \frac{\partial \mu_i \left( \mathbf{y} \right)}{\partial
 
 Кроме того, частная производная $\frac{\partial y_i}{\partial y_j}$ принимает следующие значения:
 
-$$ \frac{\partial y_i}{\partial y_j} = \begin{cases} 1, & i=j, \, i = 1 \, \ldots \, N_c -1; \\ -1, & i=j, \, i = N_c; \\ 0, & i \neq j. \end{cases} $$
+$$ \frac{\partial y_i}{\partial y_j} = \begin{cases} 1, & i=j, \, i = 1 \, \ldots \, N_c -1; \\ -1, & i \neq j, \, i = N_c; \\ 0, & i \neq j. \end{cases} $$
 
 Следовательно,
 
@@ -724,7 +724,7 @@ $$ \ln \sum_{i=1}^{N_c} Y_i \leq 0 \Leftrightarrow \sum_{i=1}^{N_c} Y_i \leq 1. 
 
 Стоит отметить, что значение $Y_i, \, i = 1 \, \ldots \, N_c,$ можно условно интерпретировать как количество вещества $i$-го компонента, действительно:
 
-$$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c,. $$
+$$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c. $$
 
 Таким образом, система нелинейных уравнений, определяющая условие стационарности функции TPD, записывается следующим образом:
 
@@ -884,8 +884,8 @@ $$ k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, & i = \mathrm{sp
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 ```
 
@@ -893,8 +893,8 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 
 ``` python
 maxiter = 50 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 ```
 
 Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений $\mathbf{K}$. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:
@@ -974,8 +974,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 
 maxiter = 50 # Maximum number of iterations
@@ -1062,8 +1062,8 @@ glue('glued_out1', MultilineText(out1))
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
@@ -1123,8 +1123,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -1189,8 +1189,8 @@ glue('glued_out2', MultilineText(out2))
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
@@ -1228,8 +1228,8 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 ``` python
 maxiter = 200 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 ```
 
 Проинициализируем функции `condit` и `update`:
@@ -1275,8 +1275,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
 Pci = np.array([4.599, 4.872, 4.248, 3.796, 2.398]) * 1e6 # Critical pressures [Pa]
@@ -1298,8 +1298,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 maxiter = 200 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 
 pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
@@ -1563,8 +1563,8 @@ $$ \lVert \mathbf{g} \rVert_2 > \epsilon_{ssi}, $$
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
@@ -1585,8 +1585,8 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 ``` python
 maxiter = 20 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 ```
 
 Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:
@@ -1663,8 +1663,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -1673,8 +1673,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 maxiter = 20 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 
 def condit_newt(carry, tol, maxiter):
     k, alphai, gi, H = carry

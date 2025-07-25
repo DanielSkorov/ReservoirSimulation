@@ -768,7 +768,7 @@ yi = np.array(
 ) # Global component composition
 fj0 = np.array([0.3333, 0.3333]) # Initial estimate
 
-def solveNp_out(Kji, yi, fj0, tol=np.float64(1e-6), maxiter=30, tol_ls=np.float64(1e-5), maxiter_ls=10):
+def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     out = ''
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
