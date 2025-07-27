@@ -6,7 +6,9 @@ from functools import (
 
 import numpy as np
 
-from typing import Callable
+from typing import (
+  Callable,
+)
 
 from custom_types import (
   Scalar,

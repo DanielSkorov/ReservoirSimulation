@@ -14,7 +14,9 @@ from rr import (
   solve2p_FGH,
 )
 
-from typing import Callable
+from typing import (
+  Callable,
+)
 
 from custom_types import (
   Scalar,

@@ -6,8 +6,8 @@ from functools import (
 
 import numpy as np
 
-from utils import (
-  linsolver2d,
+from typing import (
+  Callable,
 )
 
 from custom_types import (
@@ -89,7 +89,7 @@ def solve2p_FGH(
   -------
   A mole fraction of the non-reference phase in a system.
   """
-  logger.info('Solving the two-phase RR-equation (FGH-method)')
+  logger.info('Solving the two-phase Rachford-Rice equation (FGH-method).')
   logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
   tmpl = '%3s %11.3e %10.2e'
   idx = kvi.argsort()[::-1]
@@ -119,7 +119,7 @@ def solve2p_FGH(
     logger.debug(tmpl, k, ak, D)
     hk = D / dDda
   F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.info('Solution is: F = %.2f', F)
+  logger.info('Solution is: F = %.2f.', F)
   return F
 
 
@@ -153,7 +153,7 @@ def solve2p_GH(
   -------
   A mole fraction of the non-reference phase in a system.
   """
-  logger.info('Solving the two-phase RR-equation (GH-method)')
+  logger.info('Solving the two-phase Rachford-Rice equation (GH-method).')
   logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
   tmpl = '%3s %11.3e %10.2e'
   idx = kvi.argsort()[::-1]
@@ -184,7 +184,7 @@ def solve2p_GH(
     logger.debug(tmpl, k, ak, eq)
     hk = eq / deqda
   F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.info('Solution is: F = %.2f', F)
+  logger.info('Solution is: F = %.2f.', F)
   return F
 
 
@@ -196,6 +196,7 @@ def solveNp(
   maxiter: int = 30,
   beta: Scalar = 0.8,
   c: Scalar = 0.3,
+  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> Vector:
   """Solves the system of Rachford-Rice equations
 
@@ -230,11 +231,17 @@ def solveNp(
     Coefficient used to calculate the Goldstein's condition for the
     backtracking line search procedure. Default is `0.3`.
 
+  linsolver: Callable[[Matrix, Vector], Vector]
+    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+    a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
+    `(Nc,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
+
   Returns
   -------
   A vector of mole fractions of non-reference phases in a system.
   """
-  logger.info("Solving the system of RR-equations (Okuno's method)")
+  logger.info("Solving the system of Rachford-Rice equations.")
   Npm1 = Kji.shape[0]
   assert Npm1 > 1
   logger.debug(
@@ -243,10 +250,6 @@ def solveNp(
     'F', 'gnorm',
   )
   tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %9.4f %10.2e'
-  if Kji.shape[0] == 2:
-    linsolver = linsolver2d
-  else:
-    linsolver = np.linalg.solve
   Aji = 1. - Kji
   Bji = np.sqrt(yi) * Aji
   bi = np.vstack([Kji * yi, yi]).max(axis=0)
@@ -297,5 +300,5 @@ def solveNp(
       gnorm = np.linalg.norm(gj)
     k += 1
     logger.debug(tmpl, k, n, *fjk, F, gnorm)
-  logger.info('Solution is: Fj = [' + Npm1 * ' %.4f' + ']', *fjk)
+  logger.info('Solution is: Fj = [' + Npm1 * ' %.4f' + '].', *fjk)
   return fjk

@@ -7,10 +7,12 @@ from functools import (
 import numpy as np
 
 from utils import (
-  mineig_rayquot,
+  pyrqi,
 )
 
-from typing import Callable
+from typing import (
+  Callable,
+)
 
 from custom_types import (
   Scalar,
@@ -276,7 +278,7 @@ def getVT_Tspinodal(
   if zeta0i is None:
     zeta0i = yi
   Q = eos.getVT_lnfi_dnj(V, Tk, yi)[1]
-  Nitrq, zetai, lmbdk = mineig_rayquot(Q, zeta0i)
+  zetai, lmbdk = pyrqi(Q, zeta0i)
   dT = multdT0 * Tk
   QdT = eos.getVT_lnfi_dnj(V, Tk + dT, yi)[1]
   lmbdkdT = np.linalg.eigvals(QdT).min()
@@ -286,7 +288,7 @@ def getVT_Tspinodal(
   while np.abs(lmbdk) > tol and k < maxiter:
     Tkp1 = Tk + dT
     Q = eos.getVT_lnfi_dnj(V, Tkp1, yi)[1]
-    Nitrq, zetai, lmbdkp1 = mineig_rayquot(Q, zetai)
+    zetai, lmbdkp1 = pyrqi(Q, zetai)
     dlmbddT = (lmbdkp1 - lmbdk) / dT
     dT = -lmbdkp1 / dlmbddT
     k += 1

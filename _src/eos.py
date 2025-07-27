@@ -1,4 +1,5 @@
 import logging
+
 import numpy as np
 
 from custom_types import (
