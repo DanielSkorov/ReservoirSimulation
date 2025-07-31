@@ -203,7 +203,7 @@ class stab(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=3)
+    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=4)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -225,7 +225,7 @@ class stab(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=13)
+    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=9)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass

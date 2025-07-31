@@ -704,7 +704,7 @@ def _stabPT_newt(
     r = 2. * tpds / (ng - yi.dot(gpi))
     logger.debug(tmpl, j, k, *alphaik, tpds, r, gnorm, 'newt')
     while gnorm > tol and k < maxiter:
-      H = np.diagflat(.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+      H = np.diagflat(.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
       dalphai = linsolver(H, -gi)
       k += 1
       alphaik += dalphai
@@ -934,7 +934,8 @@ def _stabPT_ssnewt(
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
         lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-        gi = sqrtni * gi
+        gpi = gi
+        gi = sqrtni * gpi
         gnorm = np.linalg.norm(gi)
         logger.debug(
           '%3s%5s' + Nc * '%9s' + '%11s%9s',
@@ -942,7 +943,7 @@ def _stabPT_ssnewt(
         )
         logger.debug(tmpl_nt, j, k, *alphaik, gnorm, 'newt')
         while gnorm > tol and k < maxiter:
-          H = (np.diagflat(.5 * gi + 1.)
+          H = (np.diagflat(.5 * gpi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
           dalphai = linsolver(H, -gi)
           k += 1
@@ -952,7 +953,8 @@ def _stabPT_ssnewt(
           n = ni.sum()
           xi = ni / n
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-          gi = sqrtni * (np.log(ni) + lnphixi - hi)
+          gpi = np.log(ni) + lnphixi - hi
+          gi = sqrtni * gpi
           gnormkp1 = np.linalg.norm(gi)
           if gnormkp1 < gnorm or forcenewton:
             method = 'newt'
@@ -964,7 +966,8 @@ def _stabPT_ssnewt(
             n = ni.sum()
             xi = ni / n
             lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-            gi = sqrtni * (np.log(ni) + lnphixi - hi)
+            gpi = np.log(ni) + lnphixi - hi
+            gi = sqrtni * gpi
             gnorm = np.linalg.norm(gi)
             method = 'ss'
           logger.debug(tmpl_nt, j, k, *alphaik, gnorm, method)
@@ -1181,7 +1184,8 @@ def _stabPT_qnssnewt(
         sqrtni = np.sqrt(ni)
         alphaik = 2. * sqrtni
         lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-        gi = sqrtni * gi
+        gpi = gi
+        gi = sqrtni * gpi
         gnorm = np.linalg.norm(gi)
         logger.debug(
           '%3s%5s' + Nc * '%9s' + '%11s%9s',
@@ -1189,7 +1193,7 @@ def _stabPT_qnssnewt(
         )
         logger.debug(tmpl_nt, j, k, *alphaik, gnorm, 'newt')
         while gnorm > tol and k < maxiter:
-          H = (np.diagflat(.5 * gi + 1.)
+          H = (np.diagflat(.5 * gpi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
           dalphai = linsolver(H, -gi)
           k += 1
@@ -1199,7 +1203,8 @@ def _stabPT_qnssnewt(
           n = ni.sum()
           xi = ni / n
           lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-          gi = sqrtni * (np.log(ni) + lnphixi - hi)
+          gpi = np.log(ni) + lnphixi - hi
+          gi = sqrtni * gpi
           gnormkp1 = np.linalg.norm(gi)
           if gnormkp1 < gnorm or forcenewton:
             method = 'newt'
@@ -1211,7 +1216,8 @@ def _stabPT_qnssnewt(
             n = ni.sum()
             xi = ni / n
             lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-            gi = sqrtni * (np.log(ni) + lnphixi - hi)
+            gpi = np.log(ni) + lnphixi - hi
+            gi = sqrtni * gpi
             gnorm = np.linalg.norm(gi)
             method = 'ss'
           logger.debug(tmpl_nt, j, k, *alphaik, gnorm, method)

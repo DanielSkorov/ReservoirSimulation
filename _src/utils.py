@@ -29,7 +29,7 @@ def drqi(
   Q: Matrix,
   x0: Vector | None = None,
   lmbd0: Scalar | None = None,
-  tol: Scalar = 1e-8,
+  tol: Scalar = 1e-14,
   maxiter: int = 20,
 ) -> tuple[Vector, Scalar]:
   assert Q.shape[0] == Q.shape[1]
@@ -38,12 +38,14 @@ def drqi(
     x = np.full((Q.shape[0],), 1. / Q.shape[0])
   else:
     assert x0.shape[0] == Q.shape[0]
-    x = x0
+    x = x0.copy()
   if lmbd0 is None:
     lmbd = np.atleast_1d(x.dot(fQ).dot(x))
   else:
     lmbd = np.atleast_1d(lmbd0)
-  singular = fla.drqi(fQ, maxiter, tol, x, lmbd)
+  with np.testing.suppress_warnings() as sup:
+    sup.filter(DeprecationWarning)
+    singular = fla.drqi(fQ, maxiter, tol, x, lmbd)
   if singular:
     raise LinAlgError('Singular matrix.')
   return x, lmbd[0]
