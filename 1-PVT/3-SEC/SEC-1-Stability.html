@@ -678,8 +678,8 @@ G \left( \hat{M} \right) &amp; \leq G \left( \hat{K} \right).
 </pre></div>
 </div>
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">2e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">40.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">2e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">40.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.15</span><span class="p">,</span> <span class="mf">.85</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -749,8 +749,8 @@ G \left( \hat{M} \right) &amp; \leq G \left( \hat{K} \right).
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">6e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">6e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -846,7 +846,7 @@ D \left( \mathbf{r} \right)
 \[ \sum_{i=1}^{N_c} y_i \frac{\partial \mu_i \left( \mathbf{y} \right)}{\partial y_j} = 0. \]</div>
 <p>Кроме того, частная производная <span class="math notranslate nohighlight">\(\frac{\partial y_i}{\partial y_j}\)</span> принимает следующие значения:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split} \frac{\partial y_i}{\partial y_j} = \begin{cases} 1, &amp; i=j, \, i = 1 \, \ldots \, N_c -1; \\ -1, &amp; i=j, \, i = N_c; \\ 0, &amp; i \neq j. \end{cases} \end{split}\]</div>
+\[\begin{split} \frac{\partial y_i}{\partial y_j} = \begin{cases} 1, &amp; i=j, \, i = 1 \, \ldots \, N_c -1; \\ -1, &amp; i \neq j, \, i = N_c; \\ 0, &amp; i \neq j. \end{cases} \end{split}\]</div>
 <p>Следовательно,</p>
 <div class="math notranslate nohighlight">
 \[ \mu_i \left( \mathbf{y} \right) - \mu_i \left( \mathbf{z} \right) = \mu_{N_c} \left( \mathbf{y} \right) - \mu_{N_c} \left( \mathbf{z} \right) = K, \; i = 1 \, \ldots \, N_c - 1. \]</div>
@@ -902,7 +902,7 @@ D \left( \mathbf{y} \right) &amp;= \sum_{i=1}^{N_c} y_i \left( \mu_i \left( \mat
 \[ \ln \sum_{i=1}^{N_c} Y_i \leq 0 \Leftrightarrow \sum_{i=1}^{N_c} Y_i \leq 1. \]</div>
 <p>Стоит отметить, что значение <span class="math notranslate nohighlight">\(Y_i, \, i = 1 \, \ldots \, N_c,\)</span> можно условно интерпретировать как количество вещества <span class="math notranslate nohighlight">\(i\)</span>-го компонента, действительно:</p>
 <div class="math notranslate nohighlight">
-\[ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c,. \]</div>
+\[ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Таким образом, система нелинейных уравнений, определяющая условие стационарности функции TPD, записывается следующим образом:</p>
 <div class="math notranslate nohighlight">
 \[ g_i = \ln Y_i + \ln \phi_i \left( \mathbf{y} \right) - h_i = 0, \; i = 1 \, \ldots \, N_c. \]</div>
@@ -1000,7 +1000,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 \[ k_i^{go} = \frac{{P_c}_i}{P} \cdot \exp \left( 5.3727 \left(1 + \omega_i \right) \left(1 - \frac{{T_c}_i}{T} \right) \right), \; i = 1 \, \ldots \, N_c. \]</div>
 <p>То есть в качестве начальных приближений <span class="math notranslate nohighlight">\(k_i, \, i = 1 \, \ldots \, N_c,\)</span> в работе [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] применялся набор из следующих векторов:</p>
 <div class="math notranslate nohighlight">
-\[ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
+\[ k_{ji} = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; j = \left\{ 1, \, 2 \right\}, \; i = 1 \, \ldots \, N_c. \]</div>
 <p>Автором отмечается, что если рассматривать системы, состоящие из углеводородных компонентов, то при использовании одного из данных векторов в качестве начального приближения алгоритм сходится к тривиальному решению, а при использовании другого – к искомому решению системы нелинейных уравнений. Следовательно, для многих углеводородных смесей необходим только один из данных векторов: если заданный компонентный состав рассматриваемой системы больше походит на жидкость, то в качестве начального приближения подходит вектор <span class="math notranslate nohighlight">\(k_i^{go}, \, i = 1 \, \ldots \, N_c,\)</span> иначе: <span class="math notranslate nohighlight">\(1 \, / \, k_i^{go}, \, i = 1 \, \ldots \, N_c\)</span>. Однако для систем, находящихся вблизи критической точки, необходимо использование обоих начальных приближений, поскольку значения плотностей фаз становятся близкими друг к другу, и заранее неизвестно, к какому фазовому состоянию (жидкому или газообразному) ближе исходный компонентный состав рассматриваемой системы.</p>
 <aside class="margin sidebar">
 <p class="sidebar-title"></p>
@@ -1028,15 +1028,15 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">2e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">40.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">2e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">40.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.15</span><span class="p">,</span> <span class="mf">.85</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Также зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>, численную погрешность расчета <span class="math notranslate nohighlight">\(\epsilon_2\)</span>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">maxiter</span> <span class="o">=</span> <span class="mi">50</span> <span class="c1"># Maximum number of iterations</span>
-<span class="n">eps1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
-<span class="n">eps2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">eps1</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="c1"># Tolerance</span>
+<span class="n">eps2</span> <span class="o">=</span> <span class="mf">1e-4</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:</p>
@@ -1063,7 +1063,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
+<p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit_ss</span></code> и <code class="docutils literal notranslate"><span class="pre">update_ss</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
 <span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit_ss</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">)</span>
@@ -1085,7 +1085,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">gnorm</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
@@ -1117,8 +1117,8 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">6e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">6e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -1131,7 +1131,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
+<p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit_ss</span></code> и <code class="docutils literal notranslate"><span class="pre">update_ss</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pcondit</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">condit_ss</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps1</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">)</span>
 <span class="n">pupdate</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">update_ss</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span> <span class="n">plnphi</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">))</span>
 </pre></div>
@@ -1151,7 +1151,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">gnorm</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
@@ -1207,8 +1207,8 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">17e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">17e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7167</span><span class="p">,</span> <span class="mf">0.0895</span><span class="p">,</span> <span class="mf">0.0917</span><span class="p">,</span> <span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.0573</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -1238,8 +1238,8 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 </div>
 <p class="sd-card-text">Зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>, численную погрешность расчета <span class="math notranslate nohighlight">\(\epsilon_2\)</span>. Для данного примера увеличим максимальное число итераций:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">maxiter</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># Maximum number of iterations</span>
-<span class="n">eps1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
-<span class="n">eps2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">eps1</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="c1"># Tolerance</span>
+<span class="n">eps2</span> <span class="o">=</span> <span class="mf">1e-4</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Проинициализируем функции <code class="docutils literal notranslate"><span class="pre">condit</span></code> и <code class="docutils literal notranslate"><span class="pre">update</span></code>:</p>
@@ -1329,7 +1329,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 &amp; \sum_{i=1}^{N_c} n_i \frac{\partial \ln f_i}{\partial n_j} = 0, \\
 &amp; j = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
-<p>Далее воспользуемся соотношением между частными производными логарифма летучести и логарифма коэффициента летучести, полученным <a class="reference internal" href="#../2-EOS/EOS/Appendix-A-PD.md"><span class="xref myst">ранее</span></a>:</p>
+<p>Далее воспользуемся соотношением между частными производными логарифма летучести и логарифма коэффициента летучести, полученным <a class="reference internal" href="#../2-EOS/Appendix-A-PD.md"><span class="xref myst">ранее</span></a>:</p>
 <div class="math notranslate nohighlight">
 \[ \frac{\partial \ln f_i}{\partial n_j}  = \frac{\partial \ln \phi_i}{\partial n_j} + \frac{\delta_{ij}}{n_i} - \frac{1}{n}. \]</div>
 <p>Подставив данное выражение в уравнение Гиббса-Дюгема и выполнив некоторые преобразования, получим:</p>
@@ -1374,7 +1374,7 @@ H_{ij}
 &amp;= \frac{\partial}{\partial Y_j} \left( \ln Y_i + \ln \phi_i - h_i \right) \\
 &amp;= \frac{\delta_{ij}}{Y_i} + \frac{\partial \ln \phi_i}{\partial Y_j}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
-<p>Аналитические выражения частных производных логарифма коэффициента летучести с использованием уравнений состояния были получены <a class="reference internal" href="#../2-EOS/EOS/Appendix-A-PD.md"><span class="xref myst">ранее</span></a>.</p>
+<p>Аналитические выражения частных производных логарифма коэффициента летучести с использованием уравнений состояния были получены <a class="reference internal" href="#../2-EOS/Appendix-A-PD.md"><span class="xref myst">ранее</span></a>.</p>
 <p>При этом задача минимизации модифицированной функции <span class="math notranslate nohighlight">\(\bar{D}^* \left( \mathbf{Y} \right)\)</span> по-прежнему является условной, поскольку должны рассматриваться значения вектора <span class="math notranslate nohighlight">\(\mathbf{Y}\)</span> имеющие физический смысл, то есть <span class="math notranslate nohighlight">\(Y_i &gt; 0, \, i = 1 \, \ldots \, N_c\)</span>. Для исключения данного условия автором работы [<a class="reference external" href="https://doi.org/10.1016/0378-3812(82)85001-2">Michelsen, 1982</a>] было предложено ввести следующую замену основных переменных:</p>
 <div class="math notranslate nohighlight">
 \[ \alpha_i = 2 \sqrt{Y_i}, \; i = 1 \, \ldots \, N_c. \]</div>
@@ -1391,11 +1391,11 @@ H_{ij}
 <div class="math notranslate nohighlight">
 \[\begin{split} \begin{align}
 \frac{\partial^2 \bar{D}^*}{\partial \alpha_j \partial \alpha_k}
-&amp;= \frac{\partial \bar{D}^*}{\partial \alpha_k} \left( \frac{\partial \bar{D}^*}{\partial \alpha_j} \right) \\
-&amp;= \frac{\partial \bar{D}^*}{\partial \alpha_k} \left( \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j - h_j \right) \right) \\
+&amp;= \frac{\partial}{\partial \alpha_k} \left( \frac{\partial \bar{D}^*}{\partial \alpha_j} \right) \\
+&amp;= \frac{\partial}{\partial \alpha_k} \left( \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j - h_j \right) \right) \\
 &amp;= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial \sqrt{Y_j}}{\partial \alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial \alpha_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \\
-&amp;= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{1}{2 Y_j} \frac{\partial Y_j}{\alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial Y_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial Y_k}{\partial \alpha_k} \\
-&amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \sqrt{Y_j} \left( \frac{\delta_{jk}}{Y_j} + \frac{\partial \ln \phi_j}{\partial Y_k} \right) \\
+&amp;= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{1}{2 Y_j} \frac{\partial Y_j}{\partial \alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial Y_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial Y_k}{\partial \alpha_k} \\
+&amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \sqrt{Y_j} \left( \frac{\delta_{jk}}{Y_j} + \frac{\partial \ln \phi_j}{\partial Y_k} \right) \sqrt{Y_k} \\
 &amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \frac{\sqrt{Y_j Y_k} \delta_{jk}}{Y_j} + \sqrt{Y_j Y_k} \frac{\partial \ln \phi_j}{\partial Y_k} \\
 &amp;= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \delta_{jk} + \sqrt{Y_j Y_k} \frac{\partial \ln \phi_j}{\partial Y_k}, \; j = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_c.
 \end{align} \end{split}\]</div>
@@ -1424,7 +1424,7 @@ H_{ij}
  <span class="math notranslate nohighlight">\(\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)\)</span> <span class="comment"># Вектор невязок</span><br />
  <span class="math notranslate nohighlight">\(c := 1\)</span><br />
  <strong>while</strong> <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2 &gt; \epsilon_1\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(c &lt; N_{iter}\)</span> <strong>do</strong><br />
-  <span class="math notranslate nohighlight">\(\mathbf{H} := \mathrm{diag} \left( {\frac{1}{2} \mathbf{g} }\right) + \mathbf{I} + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}\)</span> <span class="comment"># Гессиан</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{H} := \mathrm{diag} \left( \frac{1}{2} \left( \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right) + 1 \right) + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}\)</span> <span class="comment"># Гессиан</span><br />
   <span class="math notranslate nohighlight">\(\Delta \boldsymbol{\alpha} := -\mathbf{H}^{-1} \mathbf{g}\)</span> <span class="comment"># Вектор изменения основных переменных</span><br />
   <span class="math notranslate nohighlight">\(\boldsymbol{\alpha} := \boldsymbol{\alpha} + \Delta \boldsymbol{\alpha}\)</span> <span class="comment"># Обновление вектора основных переменных</span><br />
   <span class="math notranslate nohighlight">\(\mathbf{n} := \boldsymbol{\alpha} \cdot \boldsymbol{\alpha} \, / \, 4\)</span><br />
@@ -1446,7 +1446,7 @@ H_{ij}
 </div>
 <section id="pvt-sec-stability-pt-newton-init">
 <span id="id8"></span><h4>Начальные приближения<a class="headerlink" href="#pvt-sec-stability-pt-newton-init" title="Link to this heading">#</a></h4>
-<p>Начальные значения вектора <span class="math notranslate nohighlight">\(\alpha_i, \, i = 1 \, \ldots \, N_c,\)</span> при использовании метода Ньютона для минимизации функции TPD могут быть получены аналогично способу, рассмотренному <a class="reference internal" href="#pvt-sec-stability-pt-ss-init"><span class="std std-ref">ранее</span></a> для метода последовательных подстановок. Однако поскольку метод Ньютона является алгоритмом второго порядка, то <a class="reference external" href="https://en.wikipedia.org/wiki/Fixed-point_iteration#Iterative_methods">обычно является менее стабильным</a> по сравнению с алгоритмами первого порядка для не полностью выпуклых функций. В связи с этим начальные приближения вектора основных переменных для метода Ньютона, рассчитанные с использованием корреляции Уилсона или другим способом, могут быть уточнены в ходе нескольких итераций метода последовательных подстановок. При этом, например, в работе [<a class="reference external" href="https://doi.org/10.1002/aic.10908">Hoteit and Firoozabadi, 2006</a>] количество итераций метода последовательных подстановок перед переключением на метод Ньютона для анализа стабильности определялось следующим условием:</p>
+<p>Начальные значения вектора <span class="math notranslate nohighlight">\(\alpha_i, \, i = 1 \, \ldots \, N_c,\)</span> при использовании метода Ньютона для минимизации функции TPD могут быть получены аналогично способу, рассмотренному <a class="reference internal" href="#pvt-sec-stability-pt-ss-init"><span class="std std-ref">ранее</span></a> для метода последовательных подстановок. Однако поскольку метод Ньютона является алгоритмом второго порядка, то <a class="reference external" href="https://en.wikipedia.org/wiki/Fixed-point_iteration#Iterative_methods">обычно является менее стабильным</a> по сравнению с алгоритмами первого порядка для не полностью выпуклых функций. В связи с этим начальные приближения вектора основных переменных для метода Ньютона, рассчитанные с использованием корреляции Уилсона или другим способом, могут быть уточнены в ходе нескольких итераций метода последовательных подстановок. При этом, например, в работе [<a class="reference external" href="https://doi.org/10.1002/aic.10908">Hoteit and Firoozabadi, 2006</a>] количество итераций метода последовательных подстановок перед переключением на метод Ньютона для анализа стабильности определяется нарушением следующего условия:</p>
 <div class="math notranslate nohighlight">
 \[ \lVert \mathbf{g} \rVert_2 &gt; \epsilon_{ssi}, \]</div>
 <p>где <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2\)</span> – длина вектора невязки, а <span class="math notranslate nohighlight">\(\epsilon_{ssi} = 10^{-2}\)</span>. Несколько отличное значение параметра <span class="math notranslate nohighlight">\(\epsilon_{ssi} = 10^{-1}\)</span> было получено авторами работы [<a class="reference external" href="https://doi.org/10.1021/acs.iecr.8b05229">Pan et al, 2019</a>] при сравнении среднего времени работы алгоритма проверки стабильности на исследуемой выборке термодинамических систем.</p>
@@ -1486,8 +1486,8 @@ H_{ij}
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">17e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">17e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7167</span><span class="p">,</span> <span class="mf">0.0895</span><span class="p">,</span> <span class="mf">0.0917</span><span class="p">,</span> <span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.0573</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -1502,8 +1502,8 @@ H_{ij}
 </div>
 <p class="sd-card-text">Зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon_1\)</span>, численную погрешность расчета <span class="math notranslate nohighlight">\(\epsilon_2\)</span>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">maxiter</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># Maximum number of iterations</span>
-<span class="n">eps1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
-<span class="n">eps2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">eps1</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="c1"># Tolerance</span>
+<span class="n">eps2</span> <span class="o">=</span> <span class="mf">1e-4</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:</p>
@@ -1522,8 +1522,9 @@ H_{ij}
     <span class="n">n</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">xi</span> <span class="o">=</span> <span class="n">ni</span> <span class="o">/</span> <span class="n">n</span>
     <span class="n">lnphixi</span><span class="p">,</span> <span class="n">Zx</span><span class="p">,</span> <span class="n">dlnphixidnj</span> <span class="o">=</span> <span class="n">plnphi</span><span class="p">(</span><span class="n">yi</span><span class="o">=</span><span class="n">xi</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-    <span class="n">gi_kp1</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphixi</span> <span class="o">-</span> <span class="n">hi</span><span class="p">)</span>
-    <span class="n">H_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">gi_kp1</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sqrtni</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">sqrtni</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlnphixidnj</span>
+    <span class="n">gpi_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphixi</span> <span class="o">-</span> <span class="n">hi</span>
+    <span class="n">gi_kp1</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="n">gpi_kp1</span>
+    <span class="n">H_kp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">gpi_kp1</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sqrtni</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">sqrtni</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlnphixidnj</span>
     <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">alphai_kp1</span><span class="p">,</span> <span class="n">gi_kp1</span><span class="p">,</span> <span class="n">H_kp1</span>
 </pre></div>
 </div>
@@ -1540,8 +1541,9 @@ H_{ij}
     <span class="n">n</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">xi</span> <span class="o">=</span> <span class="n">ni</span> <span class="o">/</span> <span class="n">n</span>
     <span class="n">lnphixi</span><span class="p">,</span> <span class="n">Zx</span><span class="p">,</span> <span class="n">dlnphixidnj</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphii_Z_dnj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-    <span class="n">gi</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphixi</span> <span class="o">-</span> <span class="n">hi</span><span class="p">)</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">gi</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sqrtni</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">sqrtni</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlnphixidnj</span>
+    <span class="n">gpi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnphixi</span> <span class="o">-</span> <span class="n">hi</span>
+    <span class="n">gi</span> <span class="o">=</span> <span class="n">sqrtni</span> <span class="o">*</span> <span class="n">gpi</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">gpi</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sqrtni</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">sqrtni</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlnphixidnj</span>
     <span class="n">carry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">alphai</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pcondit</span><span class="p">(</span><span class="n">carry</span><span class="p">):</span>
         <span class="n">carry</span> <span class="o">=</span> <span class="n">pupdate</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
@@ -1553,7 +1555,7 @@ H_{ij}
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">tolerance of equations: </span><span class="si">{</span><span class="n">gnorm</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ni</span><span class="o">/</span><span class="n">yi</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+          <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
@@ -1564,7 +1566,7 @@ H_{ij}
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 5.5417348647642805e-08<br>	number of iterations: 10<br>	k-values: [1.00000053 0.99999975 0.99999916 0.99999856 0.99999652]<br>	TPD: -1.615439879917523e-08<br>For the initial guess #1:<br>	tolerance of equations: 1.7727191726099974e-10<br>	number of iterations: 14<br>	k-values: [0.79433382 1.03491309 1.25365184 1.51437505 2.73405577]<br>	TPD: -0.0013880767813186329<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 8.488722468293537e-07<br>	number of iterations: 9<br>	k-values: [1.10718863e+00 8.91753271e-01 7.54370076e-01 6.39326084e-01<br> 1.31261854e-14]<br>	TPD: 0.029272744999992766<br>For the initial guess #1:<br>	tolerance of equations: 1.6855656326846273e-08<br>	number of iterations: 9<br>	k-values: [0.79433376 1.03491309 1.2536519  1.5143752  2.7340564 ]<br>	TPD: -0.0013880823086961688<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>

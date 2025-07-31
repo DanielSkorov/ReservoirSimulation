@@ -528,14 +528,14 @@ document.write(`
 </div>
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">6e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<span class="n">P</span> <span class="o">=</span> <span class="mf">6e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Также зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon\)</span>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">maxiter</span> <span class="o">=</span> <span class="mi">50</span> <span class="c1"># Maximum number of iterations</span>
-<span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
+<span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="c1"># Tolerance</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.</p>
@@ -712,8 +712,8 @@ document.write(`
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">101325.</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">20.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">101325.</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">20.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.6</span><span class="p">,</span> <span class="mf">.3</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -939,8 +939,8 @@ document.write(`
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">17e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">17e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7167</span><span class="p">,</span> <span class="mf">0.0895</span><span class="p">,</span> <span class="mf">0.0917</span><span class="p">,</span> <span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.0573</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -1252,8 +1252,8 @@ J_{jikl} = &amp; \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Решение</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Зададим исходные термобарические условия и компонентный состав.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">17e6</span><span class="p">)</span> <span class="c1"># Pressure [Pa]</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span><span class="p">)</span> <span class="c1"># Temperature [K]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="mf">17e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">68.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
 <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7167</span><span class="p">,</span> <span class="mf">0.0895</span><span class="p">,</span> <span class="mf">0.0917</span><span class="p">,</span> <span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.0573</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
 </pre></div>
 </div>
@@ -1301,7 +1301,7 @@ J_{jikl} = &amp; \, \frac{\partial g_{ji}}{\partial \ln K_{kl}} = \sum_{r=1}^{N_
 </div>
 <p class="sd-card-text">Также зададим максимальное число итераций <span class="math notranslate nohighlight">\(N_{iter}\)</span>, точность решения системы нелинейных уравнений <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">maxiter</span> <span class="o">=</span> <span class="mi">50</span> <span class="c1"># Maximum number of iterations</span>
-<span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span> <span class="c1"># Tolerance</span>
+<span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="c1"># Tolerance</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла локальной минимизации функции энергии Гиббса. Проиницилизируем данную функцию.</p>

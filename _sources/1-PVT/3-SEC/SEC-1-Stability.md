@@ -347,8 +347,8 @@ from eos import pr78
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 ```
 
@@ -440,8 +440,8 @@ import sys
 sys.path.append('../../_src/')
 from eos import pr78
 
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
@@ -493,8 +493,8 @@ glue('glued_fig2', fig2)
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
@@ -559,8 +559,8 @@ plt.show()
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 
 lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
@@ -649,7 +649,7 @@ $$ \sum_{i=1}^{N_c} y_i \frac{\partial \mu_i \left( \mathbf{y} \right)}{\partial
 
 Кроме того, частная производная $\frac{\partial y_i}{\partial y_j}$ принимает следующие значения:
 
-$$ \frac{\partial y_i}{\partial y_j} = \begin{cases} 1, & i=j, \, i = 1 \, \ldots \, N_c -1; \\ -1, & i=j, \, i = N_c; \\ 0, & i \neq j. \end{cases} $$
+$$ \frac{\partial y_i}{\partial y_j} = \begin{cases} 1, & i=j, \, i = 1 \, \ldots \, N_c -1; \\ -1, & i \neq j, \, i = N_c; \\ 0, & i \neq j. \end{cases} $$
 
 Следовательно,
 
@@ -724,7 +724,7 @@ $$ \ln \sum_{i=1}^{N_c} Y_i \leq 0 \Leftrightarrow \sum_{i=1}^{N_c} Y_i \leq 1. 
 
 Стоит отметить, что значение $Y_i, \, i = 1 \, \ldots \, N_c,$ можно условно интерпретировать как количество вещества $i$-го компонента, действительно:
 
-$$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c,. $$
+$$ \frac{Y_i}{\sum_{i=1}^{N_c} Y_i} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\sum_{i=1}^{N_c} y_i \mathrm{e}^{-\bar{K}}} = \frac{y_i \mathrm{e}^{-\bar{K}}}{\mathrm{e}^{-\bar{K}} \sum_{i=1}^{N_c} y_i} = y_i, \; i = 1 \, \ldots \, N_c. $$
 
 Таким образом, система нелинейных уравнений, определяющая условие стационарности функции TPD, записывается следующим образом:
 
@@ -849,7 +849,7 @@ $$ k_i^{go} = \frac{{P_c}_i}{P} \cdot \exp \left( 5.3727 \left(1 + \omega_i \rig
 
 То есть в качестве начальных приближений $k_i, \, i = 1 \, \ldots \, N_c,$ в работе \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] применялся набор из следующих векторов:
 
-$$ k_i = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; i = 1 \, \ldots \, N_c. $$
+$$ k_{ji} = \left\{ k_i^{go}, \; \frac{1}{k_i^{go}} \right\}, \; j = \left\{ 1, \, 2 \right\}, \; i = 1 \, \ldots \, N_c. $$
 
 Автором отмечается, что если рассматривать системы, состоящие из углеводородных компонентов, то при использовании одного из данных векторов в качестве начального приближения алгоритм сходится к тривиальному решению, а при использовании другого – к искомому решению системы нелинейных уравнений. Следовательно, для многих углеводородных смесей необходим только один из данных векторов: если заданный компонентный состав рассматриваемой системы больше походит на жидкость, то в качестве начального приближения подходит вектор $k_i^{go}, \, i = 1 \, \ldots \, N_c,$ иначе: $1 \, / \, k_i^{go}, \, i = 1 \, \ldots \, N_c$. Однако для систем, находящихся вблизи критической точки, необходимо использование обоих начальных приближений, поскольку значения плотностей фаз становятся близкими друг к другу, и заранее неизвестно, к какому фазовому состоянию (жидкому или газообразному) ближе исходный компонентный состав рассматриваемой системы.
 
@@ -884,8 +884,8 @@ $$ k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, & i = \mathrm{sp
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 ```
 
@@ -893,8 +893,8 @@ yi = np.array([.15, .85]) # Mole fractions [fr.]
 
 ``` python
 maxiter = 50 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 ```
 
 Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений $\mathbf{K}$. Для данного примера нам будет достаточно два приближения, рассчитанных по уравнению Уилсона:
@@ -929,7 +929,7 @@ def update_ss(carry, hi, yi, plnphi):
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 ```
 
-Проинициализируем функции `condit` и `update`:
+Проинициализируем функции `condit_ss` и `update_ss`:
 
 ``` python
 from functools import partial
@@ -955,7 +955,7 @@ for i, ki in enumerate(K):
           f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
-          f'\tTPD: {TPD}\n')
+          f'\tTPD: {TPD}')
     if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
@@ -974,8 +974,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(2e6) # Pressure [Pa]
-T = np.float64(40. + 273.15) # Temperature [K]
+P = 2e6 # Pressure [Pa]
+T = 40. + 273.15 # Temperature [K]
 yi = np.array([.15, .85]) # Mole fractions [fr.]
 
 maxiter = 50 # Maximum number of iterations
@@ -1062,8 +1062,8 @@ glue('glued_out1', MultilineText(out1))
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
@@ -1080,7 +1080,7 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 ```
 
-Проинициализируем функции `condit` и `update`:
+Проинициализируем функции `condit_ss` и `update_ss`:
 
 ``` python
 pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
@@ -1104,7 +1104,7 @@ for i, ki in enumerate(K):
           f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
-          f'\tTPD: {TPD}\n')
+          f'\tTPD: {TPD}')
     if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
@@ -1123,8 +1123,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -1189,8 +1189,8 @@ glue('glued_out2', MultilineText(out2))
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
@@ -1228,8 +1228,8 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 ``` python
 maxiter = 200 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 ```
 
 Проинициализируем функции `condit` и `update`:
@@ -1275,8 +1275,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
 Pci = np.array([4.599, 4.872, 4.248, 3.796, 2.398]) * 1e6 # Critical pressures [Pa]
@@ -1298,8 +1298,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 maxiter = 200 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 
 pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
@@ -1386,7 +1386,7 @@ $$ \begin{align}
 & j = 1 \, \ldots \, N_c.
 \end{align} $$
 
-Далее воспользуемся соотношением между частными производными логарифма летучести и логарифма коэффициента летучести, полученным [ранее](../2-EOS/EOS/Appendix-A-PD.md):
+Далее воспользуемся соотношением между частными производными логарифма летучести и логарифма коэффициента летучести, полученным [ранее](../2-EOS/Appendix-A-PD.md):
 
 $$ \frac{\partial \ln f_i}{\partial n_j}  = \frac{\partial \ln \phi_i}{\partial n_j} + \frac{\delta_{ij}}{n_i} - \frac{1}{n}. $$
 
@@ -1439,7 +1439,7 @@ H_{ij}
 &= \frac{\delta_{ij}}{Y_i} + \frac{\partial \ln \phi_i}{\partial Y_j}, \; i = 1 \, \ldots \, N_c, \; j = 1 \, \ldots \, N_c.
 \end{align} $$
 
-Аналитические выражения частных производных логарифма коэффициента летучести с использованием уравнений состояния были получены [ранее](../2-EOS/EOS/Appendix-A-PD.md).
+Аналитические выражения частных производных логарифма коэффициента летучести с использованием уравнений состояния были получены [ранее](../2-EOS/Appendix-A-PD.md).
 
 При этом задача минимизации модифицированной функции $\bar{D}^* \left( \mathbf{Y} \right)$ по-прежнему является условной, поскольку должны рассматриваться значения вектора $\mathbf{Y}$ имеющие физический смысл, то есть $Y_i > 0, \, i = 1 \, \ldots \, N_c$. Для исключения данного условия автором работы \[[Michelsen, 1982](https://doi.org/10.1016/0378-3812(82)85001-2)\] было предложено ввести следующую замену основных переменных:
 
@@ -1459,11 +1459,11 @@ $$ \begin{align}
 
 $$ \begin{align}
 \frac{\partial^2 \bar{D}^*}{\partial \alpha_j \partial \alpha_k}
-&= \frac{\partial \bar{D}^*}{\partial \alpha_k} \left( \frac{\partial \bar{D}^*}{\partial \alpha_j} \right) \\
-&= \frac{\partial \bar{D}^*}{\partial \alpha_k} \left( \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j - h_j \right) \right) \\
+&= \frac{\partial}{\partial \alpha_k} \left( \frac{\partial \bar{D}^*}{\partial \alpha_j} \right) \\
+&= \frac{\partial}{\partial \alpha_k} \left( \sqrt{Y_j} \left( \ln Y_j + \ln \phi_j - h_j \right) \right) \\
 &= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial \sqrt{Y_j}}{\partial \alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial \alpha_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \\
-&= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{1}{2 Y_j} \frac{\partial Y_j}{\alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial Y_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial Y_k}{\partial \alpha_k} \\
-&= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \sqrt{Y_j} \left( \frac{\delta_{jk}}{Y_j} + \frac{\partial \ln \phi_j}{\partial Y_k} \right) \\
+&= \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{1}{2 Y_j} \frac{\partial Y_j}{\partial \alpha_k} + \sqrt{Y_j} \frac{\partial}{\partial Y_k} \left( \ln Y_j + \ln \phi_j - h_j \right) \frac{\partial Y_k}{\partial \alpha_k} \\
+&= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \sqrt{Y_j} \left( \frac{\delta_{jk}}{Y_j} + \frac{\partial \ln \phi_j}{\partial Y_k} \right) \sqrt{Y_k} \\
 &= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \frac{\sqrt{Y_j Y_k} \delta_{jk}}{Y_j} + \sqrt{Y_j Y_k} \frac{\partial \ln \phi_j}{\partial Y_k} \\
 &= \frac{1}{2} \delta_{jk} \left( \ln Y_j + \ln \phi_j - h_j \right) + \delta_{jk} + \sqrt{Y_j Y_k} \frac{\partial \ln \phi_j}{\partial Y_k}, \; j = 1 \, \ldots \, N_c, \; k = 1 \, \ldots \, N_c.
 \end{align} $$
@@ -1505,7 +1505,7 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$
 &emsp;$\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)$ {comment}`# Вектор невязок`  
 &emsp;$c := 1$  
 &emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do**  
-&emsp;&emsp;$\mathbf{H} := \mathrm{diag} \left( {\frac{1}{2} \mathbf{g} }\right) + \mathbf{I} + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}$ {comment}`# Гессиан`  
+&emsp;&emsp;$\mathbf{H} := \mathrm{diag} \left( \frac{1}{2} \left( \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right) + 1 \right) + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}$ {comment}`# Гессиан`  
 &emsp;&emsp;$\Delta \boldsymbol{\alpha} := -\mathbf{H}^{-1} \mathbf{g}$ {comment}`# Вектор изменения основных переменных`  
 &emsp;&emsp;$\boldsymbol{\alpha} := \boldsymbol{\alpha} + \Delta \boldsymbol{\alpha}$ {comment}`# Обновление вектора основных переменных`  
 &emsp;&emsp;$\mathbf{n} := \boldsymbol{\alpha} \cdot \boldsymbol{\alpha} \, / \, 4$  
@@ -1529,7 +1529,7 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$
 (pvt-sec-stability-pt-newton-init)=
 #### Начальные приближения
 
-Начальные значения вектора $\alpha_i, \, i = 1 \, \ldots \, N_c,$ при использовании метода Ньютона для минимизации функции TPD могут быть получены аналогично способу, рассмотренному [ранее](pvt-sec-stability-pt-ss-init) для метода последовательных подстановок. Однако поскольку метод Ньютона является алгоритмом второго порядка, то [обычно является менее стабильным](https://en.wikipedia.org/wiki/Fixed-point_iteration#Iterative_methods) по сравнению с алгоритмами первого порядка для не полностью выпуклых функций. В связи с этим начальные приближения вектора основных переменных для метода Ньютона, рассчитанные с использованием корреляции Уилсона или другим способом, могут быть уточнены в ходе нескольких итераций метода последовательных подстановок. При этом, например, в работе \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908)\] количество итераций метода последовательных подстановок перед переключением на метод Ньютона для анализа стабильности определялось следующим условием:
+Начальные значения вектора $\alpha_i, \, i = 1 \, \ldots \, N_c,$ при использовании метода Ньютона для минимизации функции TPD могут быть получены аналогично способу, рассмотренному [ранее](pvt-sec-stability-pt-ss-init) для метода последовательных подстановок. Однако поскольку метод Ньютона является алгоритмом второго порядка, то [обычно является менее стабильным](https://en.wikipedia.org/wiki/Fixed-point_iteration#Iterative_methods) по сравнению с алгоритмами первого порядка для не полностью выпуклых функций. В связи с этим начальные приближения вектора основных переменных для метода Ньютона, рассчитанные с использованием корреляции Уилсона или другим способом, могут быть уточнены в ходе нескольких итераций метода последовательных подстановок. При этом, например, в работе \[[Hoteit and Firoozabadi, 2006](https://doi.org/10.1002/aic.10908)\] количество итераций метода последовательных подстановок перед переключением на метод Ньютона для анализа стабильности определяется нарушением следующего условия:
 
 $$ \lVert \mathbf{g} \rVert_2 > \epsilon_{ssi}, $$
 
@@ -1563,8 +1563,8 @@ $$ \lVert \mathbf{g} \rVert_2 > \epsilon_{ssi}, $$
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
@@ -1585,8 +1585,8 @@ hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 ``` python
 maxiter = 20 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 ```
 
 Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:
@@ -1609,8 +1609,9 @@ def update_newt(carry, hi, yi, plnphi):
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj = plnphi(yi=xi, n=n)
-    gi_kp1 = sqrtni * (np.log(ni) + lnphixi - hi)
-    H_kp1 = np.diagflat(0.5 * gi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    gpi_kp1 = np.log(ni) + lnphixi - hi
+    gi_kp1 = sqrtni * gpi_kp1
+    H_kp1 = np.diagflat(0.5 * gpi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     return k + 1, alphai_kp1, gi_kp1, H_kp1
 ```
 
@@ -1631,8 +1632,9 @@ for i, ki in enumerate(K):
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj = pr.getPT_lnphii_Z_dnj(P, T, xi, n)
-    gi = sqrtni * (np.log(ni) + lnphixi - hi)
-    H = np.diagflat(0.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    gpi = np.log(ni) + lnphixi - hi
+    gi = sqrtni * gpi
+    H = np.diagflat(0.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     carry = (1, alphai, gi, H)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -1644,7 +1646,7 @@ for i, ki in enumerate(K):
           f'\ttolerance of equations: {gnorm}\n'
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ni/yi}\n'
-          f'\tTPD: {TPD}\n')
+          f'\tTPD: {TPD}')
     if (gnorm < eps1) & (TPD < -eps2):
         is_stable = False
         break
@@ -1663,8 +1665,8 @@ print(f'The system is stable: {is_stable}')
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
@@ -1673,8 +1675,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
 
 maxiter = 20 # Maximum number of iterations
-eps1 = np.float64(1e-6) # Tolerance
-eps2 = np.float64(1e-4)
+eps1 = 1e-6 # Tolerance
+eps2 = 1e-4
 
 def condit_newt(carry, tol, maxiter):
     k, alphai, gi, H = carry
@@ -1689,8 +1691,9 @@ def update_newt(carry, hi, plnphi):
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj = plnphi(yi=xi, n=n)
-    gi_kp1 = sqrtni * (np.log(ni) + lnphixi - hi)
-    H_kp1 = np.diagflat(0.5 * gi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    gpi_kp1 = np.log(ni) + lnphixi - hi
+    gi_kp1 = sqrtni * gpi_kp1
+    H_kp1 = np.diagflat(0.5 * gpi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     return k + 1, alphai_kp1, gi_kp1, H_kp1
 
 pcondit = partial(condit_newt, tol=eps1, maxiter=maxiter)
@@ -1705,8 +1708,9 @@ for i, ki in enumerate(K):
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj = pr.getPT_lnphii_Z_dnj(P, T, xi, n)
-    gi = sqrtni * (np.log(ni) + lnphixi - hi)
-    H = np.diagflat(0.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+    gpi = np.log(ni) + lnphixi - hi
+    gi = sqrtni * gpi
+    H = np.diagflat(0.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     carry = (1, alphai, gi, H)
     while pcondit(carry):
         carry = pupdate(carry)

@@ -162,8 +162,8 @@ from rr import solve2p_FGH, solveNp
 
 ``` python
 import numpy as np
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 ```
 
@@ -171,7 +171,7 @@ yi = np.array([.9, .1]) # Mole fractions [fr.]
 
 ``` python
 maxiter = 50 # Maximum number of iterations
-eps = np.float64(1e-6) # Tolerance
+eps = 1e-6 # Tolerance
 ```
 
 Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.
@@ -341,12 +341,12 @@ from stability import stabilityPT
 from rr import solve2p_FGH, solveNp
 
 import numpy as np
-P = np.float64(6e6) # Pressure [Pa]
-T = np.float64(10. + 273.15) # Temperature [K]
+P = 6e6 # Pressure [Pa]
+T = 10. + 273.15 # Temperature [K]
 yi = np.array([.9, .1]) # Mole fractions [fr.]
 
 maxiter = 50 # Number of iterations
-eps = np.float64(1e-6) # Tolerance
+eps = 1e-6 # Tolerance
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
@@ -482,8 +482,8 @@ glue('glued_fig1', fig1)
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(101325.) # Pressure [Pa]
-T = np.float64(20. + 273.15) # Temperature [K]
+P = 101325. # Pressure [Pa]
+T = 20. + 273.15 # Temperature [K]
 yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
 ```
 
@@ -652,8 +652,8 @@ print(stab.run(P, T, yji[1]))
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(101325.) # Pressure [Pa]
-T = np.float64(20. + 273.15) # Temperature [K]
+P = 101325. # Pressure [Pa]
+T = 20. + 273.15 # Temperature [K]
 yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
 
 Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6 # Critical pressures [Pa]
@@ -770,8 +770,8 @@ glue('glued_out11', MultilineText(out11))
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
@@ -860,8 +860,8 @@ print(stabres)
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
 Pci = np.array([4.599, 4.872, 4.248, 3.796, 2.398]) * 1e6 # Critical pressures [Pa]
@@ -1156,8 +1156,8 @@ $$ \begin{cases}
 Зададим исходные термобарические условия и компонентный состав.
 
 ``` python
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ```
 
@@ -1204,7 +1204,7 @@ pupdate_newton_2p = partial(
 
 ``` python
 maxiter = 50 # Maximum number of iterations
-eps = np.float64(1e-6) # Tolerance
+eps = 1e-6 # Tolerance
 ```
 
 Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла локальной минимизации функции энергии Гиббса. Проиницилизируем данную функцию.
@@ -1268,8 +1268,8 @@ print(stabres)
 ```{code-cell} python
 :tags: [remove-cell]
 
-P = np.float64(17e6) # Pressure [Pa]
-T = np.float64(68. + 273.15) # Temperature [K]
+P = 17e6 # Pressure [Pa]
+T = 68. + 273.15 # Temperature [K]
 yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 
 stabres = stab.run(P, T, yi)
@@ -1299,7 +1299,7 @@ pupdate_newton_2p = partial(
 )
 
 maxiter = 50 # Maximum number of iterations
-eps = np.float64(1e-6) # Tolerance
+eps = 1e-6 # Tolerance
 
 def condit_newton(carry, tol, maxiter):
     k, lnkvi, _, _, _, gi = carry

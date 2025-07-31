@@ -77,11 +77,7 @@ $$ \left( \frac{\partial q}{\partial T} \right)_{P, n_i} = \left( \frac{\partial
 
 $$ q \left( Z, P, T, n_i \right) = 0.$$
 
-Тогда левая часть производной уравнения состояния:
-
-$$ \left( \frac{\partial q}{\partial T} \right)_{P, n_i} = 0.$$
-
-Следовательно,
+С учетом [правила нахождения неявной функции](https://en.wikipedia.org/wiki/Implicit_function#General_formula_for_derivative_of_implicit_function):
 
 $$ \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} = - \left( \frac{\partial q}{\partial T} \right)_{Z, P, n_i}\left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1}.$$
 
@@ -224,10 +220,10 @@ $$ \left( \frac{\partial g_{\phi_i}}{\partial n_k} \right)_{P,T} = \frac{\partia
 
 $$\begin{align}
 \frac{\partial}{\partial n_k} \left( \frac{1}{b_m} \sum_{j=1}^{N_c} x_j \alpha_{ij} \right)_{P,T} 
-&= \frac{b_m \frac{\partial}{\partial n_k} \left( \sum_{j=1}^{N_c} \frac{n_j}{n} \alpha_{ij} \right)_{P,T} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} }{b_m^2} \\
-&= \frac{1}{b_m} \sum_{j=1}^{N_c} \alpha_{ij} \frac{\partial}{\partial n_k} \left( \frac{n_j}{n} \right)_{P,T} - \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \\
-&= \frac{1}{n b_m} \sum_{j=1}^{N_c} \alpha_{ij} \left( E_{jk} - x_j \right) - \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \\
-&= \frac{\alpha_{ik} - \sum_{j=1}^{N_c} x_j a_{ij}}{n b_m} - \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T}.
+&= \frac{b_m \frac{\partial}{\partial n_k} \left( \sum_{j=1}^{N_c} \frac{n_j}{n} \alpha_{ij} \right)_{P,T} - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \sum_{j=1}^{N_c} x_j \alpha_{ij} }{b_m^2} \\
+&= \frac{1}{b_m} \sum_{j=1}^{N_c} \alpha_{ij} \frac{\partial}{\partial n_k} \left( \frac{n_j}{n} \right)_{P,T} - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \\
+&= \frac{1}{n b_m} \sum_{j=1}^{N_c} \alpha_{ij} \left( E_{jk} - x_j \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \\
+&= \frac{\alpha_{ik} - \sum_{j=1}^{N_c} x_j a_{ij}}{n b_m} - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2}.
 \end{align}$$
 
 Второе слагаемое выражения частной производной $g_{\phi_i}$ по количеству вещества $k$-го компонента можно преобразовать:

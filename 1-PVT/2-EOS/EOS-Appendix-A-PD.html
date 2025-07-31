@@ -452,10 +452,7 @@ document.write(`
 <p>При известном коэффициенте сверхсжимаемости:</p>
 <div class="math notranslate nohighlight">
 \[ q \left( Z, P, T, n_i \right) = 0.\]</div>
-<p>Тогда левая часть производной уравнения состояния:</p>
-<div class="math notranslate nohighlight">
-\[ \left( \frac{\partial q}{\partial T} \right)_{P, n_i} = 0.\]</div>
-<p>Следовательно,</p>
+<p>С учетом <a class="reference external" href="https://en.wikipedia.org/wiki/Implicit_function#General_formula_for_derivative_of_implicit_function">правила нахождения неявной функции</a>:</p>
 <div class="math notranslate nohighlight">
 \[ \left( \frac{\partial Z}{\partial T} \right)_{P, n_i} = - \left( \frac{\partial q}{\partial T} \right)_{Z, P, n_i}\left( \frac{\partial q}{\partial Z} \right)_{P, T, n_i}^{-1}.\]</div>
 <p>Аналогично можно получить частные производные коэффициента сверхсжимаемости по давлению и количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента:</p>
@@ -577,10 +574,10 @@ d_0 &amp;= - \left( A B - c \left( B^2 + B^3 \right) \right).
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
 \frac{\partial}{\partial n_k} \left( \frac{1}{b_m} \sum_{j=1}^{N_c} x_j \alpha_{ij} \right)_{P,T} 
-&amp;= \frac{b_m \frac{\partial}{\partial n_k} \left( \sum_{j=1}^{N_c} \frac{n_j}{n} \alpha_{ij} \right)_{P,T} - \sum_{j=1}^{N_c} x_j \alpha_{ij} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} }{b_m^2} \\
-&amp;= \frac{1}{b_m} \sum_{j=1}^{N_c} \alpha_{ij} \frac{\partial}{\partial n_k} \left( \frac{n_j}{n} \right)_{P,T} - \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \\
-&amp;= \frac{1}{n b_m} \sum_{j=1}^{N_c} \alpha_{ij} \left( E_{jk} - x_j \right) - \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \\
-&amp;= \frac{\alpha_{ik} - \sum_{j=1}^{N_c} x_j a_{ij}}{n b_m} - \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T}.
+&amp;= \frac{b_m \frac{\partial}{\partial n_k} \left( \sum_{j=1}^{N_c} \frac{n_j}{n} \alpha_{ij} \right)_{P,T} - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \sum_{j=1}^{N_c} x_j \alpha_{ij} }{b_m^2} \\
+&amp;= \frac{1}{b_m} \sum_{j=1}^{N_c} \alpha_{ij} \frac{\partial}{\partial n_k} \left( \frac{n_j}{n} \right)_{P,T} - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \\
+&amp;= \frac{1}{n b_m} \sum_{j=1}^{N_c} \alpha_{ij} \left( E_{jk} - x_j \right) - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2} \\
+&amp;= \frac{\alpha_{ik} - \sum_{j=1}^{N_c} x_j a_{ij}}{n b_m} - \left( \frac{\partial b_m}{\partial n_k} \right)_{P,T} \frac{\sum_{j=1}^{N_c} x_j \alpha_{ij}}{b_m^2}.
 \end{align}\end{split}\]</div>
 <p>Второе слагаемое выражения частной производной <span class="math notranslate nohighlight">\(g_{\phi_i}\)</span> по количеству вещества <span class="math notranslate nohighlight">\(k\)</span>-го компонента можно преобразовать:</p>
 <div class="math notranslate nohighlight">
