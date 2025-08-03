@@ -863,8 +863,8 @@ class pr78(object):
     ZpB = Z + B * 2.414213562373095
     fZ = np.log(ZmB / ZpB)
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])[:,None]
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])[:,None]
+    ddmdA = np.array([0., 1., -B])
+    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
     dgZdZ = 1. / (Z - B)
     dgZdB = -dgZdZ
@@ -875,8 +875,8 @@ class pr78(object):
     dbmdnj = (self.bi - bm) / n
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj + ddmdB * dBdnj
-    dqdnj = np.power(Z, np.array([2, 1, 0])).dot(ddmdnj)
+    ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
+    dqdnj = ddmdnj.dot(np.power(Z, np.array([2, 1, 0])))
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
@@ -1036,8 +1036,8 @@ class pr78(object):
     dbmdnj = (self.bi - bm) / n
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA[:,None] * dAdnj + ddmdB[:,None] * dBdnj
-    dqdnj = np.power(Z, np.array([2, 1, 0])).dot(ddmdnj)
+    ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
+    dqdnj = ddmdnj.dot(np.power(Z, np.array([2, 1, 0])))
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
@@ -1127,8 +1127,8 @@ class pr78(object):
     dbmdnj = (self.bi - bm) / n
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA[:,None] * dAdnj + ddmdB[:,None] * dBdnj
-    dqdnj = np.power(Z, np.array([2, 1, 0])).dot(ddmdnj)
+    ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
+    dqdnj = ddmdnj.dot(np.power(Z, np.array([2, 1, 0])))
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
