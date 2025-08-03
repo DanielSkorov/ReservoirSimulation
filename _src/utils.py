@@ -17,9 +17,9 @@ def dgem(A: Matrix, b: Vector, inplace: bool = False) -> Vector:
   fA = np.asfortranarray(A)
   fb = np.asfortranarray(b)
   if inplace:
-    x, singular = fla.dgem_(fA, fb)
-  else:
     x, singular = fla.dgem(fA, fb)
+  else:
+    x, singular = fla.dgem(fA.copy(), fb.copy())
   if singular:
     raise LinAlgError('Singular matrix.')
   return x
@@ -45,7 +45,7 @@ def drqi(
     lmbd = np.atleast_1d(lmbd0)
   with np.testing.suppress_warnings() as sup:
     sup.filter(DeprecationWarning)
-    singular = fla.drqi(fQ, maxiter, tol, x, lmbd)
+    singular = fla.drqi(fQ, x, lmbd, maxiter, tol)
   if singular:
     raise LinAlgError('Singular matrix.')
   return x, lmbd[0]
@@ -55,7 +55,7 @@ def pyrqi(
   Q: Matrix,
   x0: Vector | None = None,
   lmbd0: Scalar | None = None,
-  tol: Scalar = 1e-8,
+  tol: Scalar = 1e-14,
   maxiter: int = 20,
 ) -> tuple[Vector, Scalar]:
   if x0 is None:

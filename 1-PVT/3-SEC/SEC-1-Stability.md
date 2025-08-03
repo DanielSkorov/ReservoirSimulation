@@ -1499,19 +1499,23 @@ $\mathbf{h} := \ln \phi \left( \mathbf{z} \right) + \ln \mathbf{z}$
 **for** $i := 1$ **to** $N$ **do**  
 &emsp;$\mathbf{k} := \mathbf{K}\left[ i \right]$  
 &emsp;$\mathbf{n} := \mathbf{k} \cdot \mathbf{z}$  
-&emsp;$\boldsymbol{\alpha} := 2 \sqrt{\mathbf{n}}$ {comment}`# Вектор основных переменных`  
+&emsp;$\mathbf{t} := \sqrt{\mathbf{n}}$  
+&emsp;$\boldsymbol{\alpha} := 2 \cdot \mathbf{t} $ {comment}`# Вектор основных переменных`  
 &emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
 &emsp;$\boldsymbol{\varphi}, \, \mathbf{\Phi} := \phi \left( \mathbf{y} \right)$ {comment}`# Расчет вектора коэффициентов летучести и матрицы их частных производных`  
-&emsp;$\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)$ {comment}`# Вектор невязок`  
+&emsp;$\mathbf{g}' := \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h}$ {comment}`# Вектор невязок`  
+&emsp;$\mathbf{g} := \mathbf{t} \cdot \mathbf{g}'$ {comment}`# Градиент модифицированной функции TPD по основным переменным`  
 &emsp;$c := 1$  
 &emsp;**while** $\lVert \mathbf{g} \rVert_2 > \epsilon_1$ **and** $c < N_{iter}$ **do**  
-&emsp;&emsp;$\mathbf{H} := \mathrm{diag} \left( \frac{1}{2} \left( \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right) + 1 \right) + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}$ {comment}`# Гессиан`  
+&emsp;&emsp;$\mathbf{H} := \mathrm{diag} \left( \frac{1}{2} \mathbf{g}' + 1 \right) + \mathbf{t} \mathbf{t}^\top \cdot \mathbf{\Phi}$ {comment}`# Гессиан`  
 &emsp;&emsp;$\Delta \boldsymbol{\alpha} := -\mathbf{H}^{-1} \mathbf{g}$ {comment}`# Вектор изменения основных переменных`  
 &emsp;&emsp;$\boldsymbol{\alpha} := \boldsymbol{\alpha} + \Delta \boldsymbol{\alpha}$ {comment}`# Обновление вектора основных переменных`  
-&emsp;&emsp;$\mathbf{n} := \boldsymbol{\alpha} \cdot \boldsymbol{\alpha} \, / \, 4$  
+&emsp;&emsp;$\mathbf{t} := \frac{1}{2} \boldsymbol{\alpha}$  
+&emsp;&emsp;$\mathbf{n} := \mathbf{t} \cdot \mathbf{t}$  
 &emsp;&emsp;$\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i$  
 &emsp;&emsp;$\boldsymbol{\varphi}, \, \mathbf{\Phi} := \phi \left( \mathbf{y} \right)$ {comment}`# Вектор коэффициентов летучести и матрица их частных производных`  
-&emsp;&emsp;$\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)$ {comment}`# Вектор невязок`  
+&emsp;&emsp;$\mathbf{g}' := \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h}$ {comment}`# Вектор невязок`  
+&emsp;&emsp;$\mathbf{g} := \mathbf{t} \cdot \mathbf{g}'$ {comment}`# Градиент модифицированной функции TPD по основным переменным`  
 &emsp;&emsp;$c := c + 1$  
 &emsp;**end while**  
 &emsp;$TPD := - \ln \sum_{i=1}^{N_c} n_i$  

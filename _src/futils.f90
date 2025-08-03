@@ -11,69 +11,7 @@ module linalg
 
   contains
 
-  subroutine dgem(n, Q, r, x, singular)
-    ! ------------------------------------------------------------------------ !
-    ! Naive implementation of the Gaussian Elimination Method with partial
-    ! pivoting to solve a system of linear equations Qx = r. Copies of Q and
-    ! r are made internally to avoid overriding the original input matrix and
-    ! vector.
-    !
-    ! Parameters
-    ! ----------
-    ! n        : Size of input arrays.
-    ! Q        : Rank-two array of double precision items with shape (n, n).
-    ! r        : Rank-one array of double precision items with shape (n,).
-    !
-    ! Updates
-    ! -------
-    ! x        : Rank-one array of double precision items with shape (n,).
-    ! singular : A boolean flag indicating if the input matrix Q is
-    !            singular.
-    ! ------------------------------------------------------------------------ !
-    ! f2py integer, intent(hide) :: n
-    ! f2py real(8), intent(in) :: Q(n, n), r(n)
-    ! f2py real(8), intent(out) :: x(n)
-    ! f2py logical, intent(out) :: singular
-    ! ------------------------------------------------------------------------ !
-    integer, intent(in) :: n
-    real(kind=dp), intent(in) :: Q(n, n), r(n)
-    real(kind=dp), intent(out) :: x(n)
-    logical, intent(out) :: singular
-    integer :: j, k, prow
-    real(kind=dp) :: buf, A(n, n), b(n)
-    real(kind=dp), parameter :: eps = 1.e-13_dp
-    singular = .false.
-    A = Q
-    b = r
-    do k = 1, n - 1
-      prow = maxloc(abs(A(k:n, k)), 1) + k - 1
-      if (abs(A(prow, k)) <= eps) then
-        singular = .true.
-        return
-      end if
-      if (prow .ne. k) then
-        do j = k, n
-          buf = A(prow, j)
-          A(prow, j) = A(k, j)
-          A(k, j) = buf
-        end do
-        buf = b(prow)
-        b(prow) = b(k)
-        b(k) = buf
-      end if
-      A(k+1:n, k) = A(k+1:n, k) / A(k, k)
-      do j = k + 1, n
-        A(k+1:n, j) = A(k+1:n, j) - A(k, j) * A(k+1:n, k)
-      end do
-      ! A(k+1:n, k) = 0._dp
-      b(k+1:n) = b(k+1:n) - A(k+1:n, k) * b(k)
-    end do
-    do k = n, 1, -1
-      x(k) = (b(k) - dot_product(A(k, k+1:n), x(k+1:n))) / A(k, k)
-    end do
-  end subroutine dgem
-
-  subroutine dgem_(n, A, b, x, singular)
+  subroutine dgem(n, A, b, x, singular)
     ! ------------------------------------------------------------------------ !
     ! Naive implementation of the Gaussian Elimination Method with partial
     ! pivoting to solve a system of linear equations Ax = b. No copies are
@@ -130,9 +68,9 @@ module linalg
     do k = n, 1, -1
       x(k) = (b(k) - dot_product(A(k, k+1:n), x(k+1:n))) / A(k, k)
     end do
-  end subroutine dgem_
+  end subroutine dgem
 
-  subroutine drqi(n, Q, maxiter, tol, x, lmbd, singular)
+  subroutine drqi(n, Q, x, lmbd, singular, maxiter, tol)
     ! ------------------------------------------------------------------------ !
     ! Rayleigh quotient iteration algorithm to find an eigenvalue and
     ! corresponding eigenvector close to given initial guesses.
@@ -160,44 +98,49 @@ module linalg
     ! f2py real(8), intent(in, out) :: x(n), lmbd
     ! f2py logical, intent(out) :: singular
     ! ------------------------------------------------------------------------ !
+    logical, intent(in) :: logging
     integer, intent(in) :: n, maxiter
     real(kind=dp), intent(in) :: tol, Q(n, n)
     real(kind=dp), intent(inout) :: x(n)
     real(kind=dp), intent(inout) :: lmbd
     logical, intent(out) :: singular
     integer :: i, k
-    real(kind=dp) :: mu, ynorm, err, M(n, n), y(n), errvec(n)
+    real(kind=dp) :: lmbdkp1, dlmbd, M(n, n), xkp1(n)
     k = 0
-    M = Q
+    xkp1 = matmul(Q, x) - lmbd * x
+    if (sqrt(dot_product(xkp1, xkp1)) < tol) then
+      return
+    end if
     singular = .false.
+    M = Q
     do i = 1, n
       M(i, i) = Q(i, i) - lmbd
     end do
-    call dgem(n, M, x, y, singular)
+    call dgem(n, M, x, xkp1, singular)
     if (singular) then
       return
     end if
-    ynorm = sqrt(dot_product(y, y))
-    mu = dot_product(y, x)
-    lmbd = lmbd + 1._dp / mu
-    errvec = y - mu * x
-    err = sqrt(dot_product(errvec, errvec)) / ynorm
-    do while ((err > tol) .and. (k < maxiter))
-      x = y / ynorm
+    xkp1 = xkp1 / sqrt(dot_product(xkp1, xkp1))
+    lmbdkp1 = dot_product(matmul(Q, xkp1), xkp1)
+    dlmbd = abs((lmbdkp1 - lmbd) / lmbd)
+    do while ((dlmbd > tol) .and. (k < maxiter))
+      x = xkp1
+      lmbd = lmbdkp1
+      M = Q
       do i = 1, n
         M(i, i) = Q(i, i) - lmbd
       end do
-      call dgem(n, M, x, y, singular)
+      call dgem(n, M, x, xkp1, singular)
       if (singular) then
         return
       end if
-      ynorm = sqrt(dot_product(y, y))
-      mu = dot_product(y, x)
-      lmbd = lmbd + 1._dp / mu
-      errvec = y - mu * x
-      err = sqrt(dot_product(errvec, errvec)) / ynorm
+      xkp1 = xkp1 / sqrt(dot_product(xkp1, xkp1))
+      lmbdkp1 = dot_product(matmul(Q, xkp1), xkp1)
+      dlmbd = abs((lmbdkp1 - lmbd) / lmbd)
       k = k + 1
     end do
+    lmbd = lmbdkp1
+    x = xkp1
   end subroutine drqi
 
   ! subroutine dchol()
