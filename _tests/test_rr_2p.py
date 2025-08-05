@@ -44,7 +44,7 @@ class rr_fgh(unittest.TestCase):
   def test_01(self):
     yi = np.array([0.770, 0.200, 0.010, 0.010, 0.005, 0.005])
     kvi = np.array([1.00003, 1.00002, 1.00001, 0.99999, 0.99998, 0.99997])
-    tol = np.float64(1e-10)
+    tol = 1e-10
     maxiter = 2
     F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
@@ -53,7 +53,7 @@ class rr_fgh(unittest.TestCase):
   def test_02(self):
     yi = np.array([0.44, 0.55, 3.88E-03, 2.99E-03, 2.36E-03, 1.95E-03])
     kvi = np.array([161.59, 6.90, 0.15, 1.28E-03, 5.86E-06, 2.32E-08])
-    tol = np.float64(1e-10)
+    tol = 1e-10
     maxiter = 3
     F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
@@ -63,7 +63,7 @@ class rr_fgh(unittest.TestCase):
     eps = 1e-9
     kvi = 1. + np.array([2.*eps, 1.5*eps, eps, -eps, -1.5*eps, -2.*eps])
     yi = np.full_like(kvi, 1. / 6.)
-    tol = np.float64(1e-10)
+    tol = 1e-10
     maxiter = 1
     F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
@@ -86,7 +86,7 @@ class rr_fgh(unittest.TestCase):
       0.999490,
       0.999282,
     ])
-    tol = np.float64(1e-10)
+    tol = 1e-10
     maxiter = 5
     F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))
@@ -109,7 +109,7 @@ class rr_fgh(unittest.TestCase):
       29.7661058122,
       0.00596602417,
     ])
-    tol = np.float64(1e-8)
+    tol = 1e-8
     maxiter = 1
     F = solve2p_FGH(kvi, yi, tol, maxiter)
     self.assertTrue(self.check_solution(F, kvi, yi, tol))

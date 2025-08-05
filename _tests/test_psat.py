@@ -29,8 +29,8 @@ from boundary import (
 class psat(unittest.TestCase):
 
   def test_01(self):
-    P0 = np.float64(15e6)
-    T = np.float64(68. + 273.15)
+    P0 = 15e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -52,8 +52,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_02(self):
-    P0 = np.float64(20e6)
-    T = np.float64(68. + 273.15)
+    P0 = 20e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -75,8 +75,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_03(self):
-    P0 = np.float64(1e6)
-    T = np.float64(68. + 273.15)
+    P0 = 1e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -98,8 +98,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_04(self):
-    P0 = np.float64(1e5)
-    T = np.float64(68. + 273.15)
+    P0 = 1e5
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -121,8 +121,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_05(self):
-    P0 = np.float64(15e6)
-    T = np.float64(68. + 273.15)
+    P0 = 15e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -144,8 +144,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_06(self):
-    P0 = np.float64(20e6)
-    T = np.float64(68. + 273.15)
+    P0 = 20e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -167,8 +167,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_07(self):
-    P0 = np.float64(1e6)
-    T = np.float64(68. + 273.15)
+    P0 = 1e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -190,8 +190,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_08(self):
-    P0 = np.float64(1e5)
-    T = np.float64(68. + 273.15)
+    P0 = 1e5
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -213,8 +213,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_09(self):
-    P0 = np.float64(15e6)
-    T = np.float64(68. + 273.15)
+    P0 = 15e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -236,8 +236,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_10(self):
-    P0 = np.float64(20e6)
-    T = np.float64(68. + 273.15)
+    P0 = 20e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -259,8 +259,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_11(self):
-    P0 = np.float64(1e6)
-    T = np.float64(68. + 273.15)
+    P0 = 1e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -282,8 +282,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_12(self):
-    P0 = np.float64(1e5)
-    T = np.float64(68. + 273.15)
+    P0 = 1e5
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -305,8 +305,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_13(self):
-    P0 = np.float64(15e6)
-    T = np.float64(68. + 273.15)
+    P0 = 15e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -328,8 +328,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_14(self):
-    P0 = np.float64(20e6)
-    T = np.float64(68. + 273.15)
+    P0 = 20e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -351,8 +351,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_15(self):
-    P0 = np.float64(1e6)
-    T = np.float64(68. + 273.15)
+    P0 = 1e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -374,8 +374,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_16(self):
-    P0 = np.float64(1e5)
-    T = np.float64(68. + 273.15)
+    P0 = 1e5
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -397,8 +397,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_17(self):
-    P0 = np.float64(15e6)
-    T = np.float64(68. + 273.15)
+    P0 = 15e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -420,8 +420,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_18(self):
-    P0 = np.float64(20e6)
-    T = np.float64(68. + 273.15)
+    P0 = 20e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -443,8 +443,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_19(self):
-    P0 = np.float64(1e6)
-    T = np.float64(68. + 273.15)
+    P0 = 1e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
@@ -466,8 +466,8 @@ class psat(unittest.TestCase):
     pass
 
   def test_20(self):
-    P0 = np.float64(1e5)
-    T = np.float64(68. + 273.15)
+    P0 = 1e5
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])

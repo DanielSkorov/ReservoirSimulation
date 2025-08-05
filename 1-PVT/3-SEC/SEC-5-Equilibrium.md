@@ -213,7 +213,7 @@ from functools import partial
 
 def condit_ssi(carry, tol, maxiter):
     k, kvi, _, gi = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 
 pcondit_ssi = partial(condit_ssi, tol=eps, maxiter=maxiter)
 ```
@@ -366,7 +366,7 @@ from functools import partial
 
 def condit_ssi(carry, tol, maxiter):
     k, kvi, _, gi = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 
 pcondit_ssi = partial(condit_ssi, tol=eps, maxiter=maxiter)
 
@@ -1212,7 +1212,7 @@ eps = 1e-6 # Tolerance
 ``` python
 def condit_newton(carry, tol, maxiter):
     k, lnkvi, _, _, _, gi = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 
 pcondit_newton = partial(condit_newton, tol=eps, maxiter=maxiter)
 ```
@@ -1303,7 +1303,7 @@ eps = 1e-6 # Tolerance
 
 def condit_newton(carry, tol, maxiter):
     k, lnkvi, _, _, _, gi = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 
 pcondit_newton = partial(condit_newton, tol=eps, maxiter=maxiter)
 

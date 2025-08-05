@@ -167,7 +167,7 @@ def Psat(T, a, b, tol=1e-5, maxiter=50):
     g = lnphiv - lnphil
     k = 0
     # print(f'Iteration #{k}:\n{Pk = }\n{g = }\n')
-    while (np.abs(g) > tol) & (k < maxiter):
+    while np.abs(g) > tol and k < maxiter:
         Pkp1 = Pk * np.exp(-g)
         if Pkp1 > Pmax:
             Pk = (Pk + Pmax) / 2.
@@ -555,7 +555,7 @@ k = 1
 Решим первое условие критического состояния с использованием чиленного подхода. Значения производных минимального собственного значения по температуре будем определять с использованием предложенного выше квазиньютоновского подхода.
 
 ```{code-cell} python
-while (np.abs(lmbdk) > 1e-5) & (k < 25):
+while np.abs(lmbdk) > 1e-5 and k < 25:
     Tkp1 = Tk + dT
     Q = pr.getVT_lnfi_dnj(V, Tkp1, yi)[1]
     zetai, lmbdkp1 = pyrqi(Q, zetai)
@@ -656,7 +656,7 @@ j += 1
 Решим уравнение с использованием представленного выше численного алгоритма:
 
 ```{code-cell} python
-while (np.abs(dkappa) > 1e-6) & (j < 20):
+while np.abs(dkappa) > 1e-6 and j < 20:
     kappajp1 = kappaj + dkappa
     V = bm * kappajp1 * n
     T, zetaijp1 = getVT_Tspinodal(V, yi, pr, T, zetaij)

@@ -29,8 +29,8 @@ from flash import (
 class flash(unittest.TestCase):
 
   def test_01(self):
-    P = np.float64(6e6)
-    T = np.float64(10. + 273.15)
+    P = 6e6
+    T = 10. + 273.15
     yi = np.array([.9, .1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
@@ -47,8 +47,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_02(self):
-    P = np.float64(6e6)
-    T = np.float64(10. + 273.15)
+    P = 6e6
+    T = 10. + 273.15
     yi = np.array([.9, .1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
@@ -65,8 +65,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_03(self):
-    P = np.float64(6e6)
-    T = np.float64(10. + 273.15)
+    P = 6e6
+    T = 10. + 273.15
     yi = np.array([.9, .1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
@@ -83,8 +83,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_04(self):
-    P = np.float64(6e6)
-    T = np.float64(10. + 273.15)
+    P = 6e6
+    T = 10. + 273.15
     yi = np.array([.9, .1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
@@ -101,8 +101,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_05(self):
-    P = np.float64(17e6)
-    T = np.float64(68. + 273.15)
+    P = 17e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
@@ -124,8 +124,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_06(self):
-    P = np.float64(17e6)
-    T = np.float64(68. + 273.15)
+    P = 17e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
@@ -147,8 +147,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_07(self):
-    P = np.float64(17e6)
-    T = np.float64(68. + 273.15)
+    P = 17e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
@@ -170,8 +170,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_08(self):
-    P = np.float64(17e6)
-    T = np.float64(68. + 273.15)
+    P = 17e6
+    T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
@@ -193,8 +193,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_09(self):
-    P = np.float64(1e6)
-    T = np.float64(160.)
+    P = 1e6
+    T = 160.
     yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
     Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
@@ -218,8 +218,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_10(self):
-    P = np.float64(1e6)
-    T = np.float64(160.)
+    P = 1e6
+    T = 160.
     yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
     Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
@@ -243,8 +243,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_11(self):
-    P = np.float64(1e6)
-    T = np.float64(160.)
+    P = 1e6
+    T = 160.
     yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
     Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
@@ -268,8 +268,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_12(self):
-    P = np.float64(1e6)
-    T = np.float64(160.)
+    P = 1e6
+    T = 160.
     yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
     Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
     Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
@@ -293,8 +293,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_13(self):
-    P = np.float64(8.7625e6)
-    T = np.float64(316.48)
+    P = 8.7625e6
+    T = 316.48
     yi = np.array([
       0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
     ])
@@ -320,8 +320,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_14(self):
-    P = np.float64(8.7625e6)
-    T = np.float64(316.48)
+    P = 8.7625e6
+    T = 316.48
     yi = np.array([
       0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
     ])
@@ -347,8 +347,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_15(self):
-    P = np.float64(8.7625e6)
-    T = np.float64(316.48)
+    P = 8.7625e6
+    T = 316.48
     yi = np.array([
       0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
     ])
@@ -374,8 +374,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_16(self):
-    P = np.float64(8.7625e6)
-    T = np.float64(316.48)
+    P = 8.7625e6
+    T = 316.48
     yi = np.array([
       0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
     ])
@@ -402,8 +402,8 @@ class flash(unittest.TestCase):
     pass
 
   def test_17(self):
-    P = np.float64(8.7625e6)
-    T = np.float64(316.48)
+    P = 8.7625e6
+    T = 316.48
     yi = np.array([
       0.590516, 0.028933, 0.072729, 0.081162, 0.131012, 0.064671, 0.030979,
     ])

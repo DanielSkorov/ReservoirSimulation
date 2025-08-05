@@ -263,7 +263,7 @@ pG = partial(G_val_grad, yi=yi, di=di)
 ```{code-cell} python
 def condit(carry, tol, maxiter):
     i, a, _, eq = carry
-    return (i < maxiter) & (np.abs(eq) > tol)
+    return i < maxiter and np.abs(eq) > tol
 
 pcondit = partial(condit, tol=1e-8, maxiter=50)
 ```
@@ -797,7 +797,7 @@ pD = partial(fD, yi=yi, di=di)
 ``` python
 def condit(carry, tol, maxiter):
     i, a, _, D = carry
-    return (i < maxiter) & (np.abs(D) > tol)
+    return i < maxiter and np.abs(D) > tol
 
 pcondit = partial(condit, tol=1e-10, maxiter=50)
 ```
@@ -876,7 +876,7 @@ pD = partial(fD, yi=yi, di=di)
 
 def condit(carry, tol, maxiter):
     i, a, _, D = carry
-    return (i < maxiter) & (np.abs(D) > tol)
+    return i < maxiter and np.abs(D) > tol
 
 pcondit = partial(condit, tol=1e-10, maxiter=50)
 

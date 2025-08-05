@@ -98,7 +98,6 @@ module linalg
     ! f2py real(8), intent(in, out) :: x(n), lmbd
     ! f2py logical, intent(out) :: singular
     ! ------------------------------------------------------------------------ !
-    logical, intent(in) :: logging
     integer, intent(in) :: n, maxiter
     real(kind=dp), intent(in) :: tol, Q(n, n)
     real(kind=dp), intent(inout) :: x(n)
@@ -142,6 +141,53 @@ module linalg
     lmbd = lmbdkp1
     x = xkp1
   end subroutine drqi
+
+  subroutine dplu(n, A, L, U, p, singular)
+    ! f2py integer, intent(hide) :: n
+    ! f2py real(8), intent(in) :: A(n, n)
+    ! f2py integer, intent(out) :: p(n)
+    ! f2py real(8), intent(out) :: L(n, n), U(n, n)
+    ! f2py logical, intent(out) :: singular
+    integer, intent(in) :: n
+    real(kind=dp), intent(in) :: A(n, n)
+    integer, intent(out) :: p(n)
+    real(kind=dp), intent(out) :: L(n, n), U(n, n)
+    logical, intent(out) :: singular
+    integer :: j, k, prow, pbuf
+    real(kind=dp) :: M(n, n), mbuf
+    real(kind=dp), parameter :: eps = 1.e-13_dp
+    singular = .false.
+    M = A
+    U = 0._dp
+    L = 0._dp
+    do j = 1, n
+      L(j, j) = 1._dp
+      p(j) = j
+    end do
+    do k = 1, n - 1
+      ! prow = maxloc(abs(M(k:n, k)), 1) + k - 1
+      ! if (abs(M(prow, k)) <= eps) then
+      !   singular = .true.
+      !   return
+      ! end if
+      ! if (prow .ne. k) then
+      !   do j = 1, n
+      !     mbuf = M(prow, j)
+      !     M(prow, j) = M(k, j)
+      !     M(k, j) = mbuf
+      !   end do
+      !   pbuf = p(prow)
+      !   p(prow) = p(k)
+      !   p(k) = pbuf
+      ! end if
+      U(k, k:n) = M(k, k:n)
+      L(k+1:n, k) = M(k+1:n, k) / U(k, k)
+      do j = k + 1, n
+        M(k+1:n, j) = M(k+1:n, j) - U(k, j) * L(k+1:n, k)
+      end do
+    end do
+    U(n, n) = M(n, n)
+  end subroutine dplu
 
   ! subroutine dchol()
 

@@ -909,7 +909,7 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 ``` python
 def condit_ss(carry, tol, maxiter):
     k, ki, gi = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 ```
 
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации:
@@ -956,7 +956,7 @@ for i, ki in enumerate(K):
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -987,7 +987,7 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
 def condit_ss(carry, tol, maxiter):
     k, ki, gi = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 
 def update_ss(carry, hi, yi, plnphi):
     k, ki_k, gi_k = carry
@@ -1020,7 +1020,7 @@ for i, ki in enumerate(K):
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -1105,7 +1105,7 @@ for i, ki in enumerate(K):
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -1152,7 +1152,7 @@ for i, ki in enumerate(K):
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -1257,7 +1257,7 @@ for i, ki in enumerate(K):
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ki}\n'
           f'\tTPD: {TPD}\n')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -1321,7 +1321,7 @@ for i, ki in enumerate(K):
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ki}\n'
              f'\tTPD: {TPD}\n')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -1598,7 +1598,7 @@ eps2 = 1e-4
 ``` python
 def condit_newt(carry, tol, maxiter):
     k, alphai, gi, H = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 ```
 
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Вектор изменения основных переменных будет определяться путем решения системы линейных уравнений с использованием [`numpy.linalg.solve`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html).
@@ -1651,7 +1651,7 @@ for i, ki in enumerate(K):
           f'\tnumber of iterations: {c}\n'
           f'\tk-values: {ni/yi}\n'
           f'\tTPD: {TPD}')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:
@@ -1684,7 +1684,7 @@ eps2 = 1e-4
 
 def condit_newt(carry, tol, maxiter):
     k, alphai, gi, H = carry
-    return (k < maxiter) & (np.linalg.norm(gi) > tol)
+    return k < maxiter and np.linalg.norm(gi) > tol
 
 def update_newt(carry, hi, plnphi):
     k, alphai_k, gi_k, H_k = carry
@@ -1727,7 +1727,7 @@ for i, ki in enumerate(K):
              f'\tnumber of iterations: {c}\n'
              f'\tk-values: {ni/yi}\n'
              f'\tTPD: {TPD}\n')
-    if (gnorm < eps1) & (TPD < -eps2):
+    if gnorm < eps1 and TPD < -eps2:
         is_stable = False
         break
 else:

@@ -643,7 +643,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
         return fjk
     print(f'Iteration #0:\n\t{fjk = }\n\t{gnorm = }')
     k: int = 1
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
         Pji = np.sqrt(yi) / ti * Aji
         Hjl = Pji.dot(Pji.T)
         dfj = -np.linalg.inv(Hjl).dot(gj)
@@ -661,7 +661,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
             dFdlmbd = dfj.dot(gj)
             n: int = 1
             print(f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }')
-            while (np.abs(dFdlmbd) > tol_ls) & (n < maxiter_ls):
+            while np.abs(dFdlmbd) > tol_ls and n < maxiter_ls:
                 Pji = np.sqrt(yi) / ti * Aji
                 Hjl = Pji.dot(Pji.T)
                 d2Flmbd2 = dfj.dot(Hjl).dot(dfj)
@@ -780,7 +780,7 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
         return fjk
     out += f'Iteration #0:\n\t{fjk = }\n\t{gnorm = }\n'
     k: int = 1
-    while (gnorm > tol) & (k < maxiter):
+    while gnorm > tol and k < maxiter:
         Pji = np.sqrt(yi) / ti * Aji
         Hjl = Pji.dot(Pji.T)
         dfj = -np.linalg.inv(Hjl).dot(gj)
@@ -798,7 +798,7 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
             dFdlmbd = dfj.dot(gj)
             n: int = 1
             out += f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }\n'
-            while (np.abs(dFdlmbd) > tol_ls) & (n < maxiter_ls):
+            while np.abs(dFdlmbd) > tol_ls and n < maxiter_ls:
                 Pji = np.sqrt(yi) / ti * Aji
                 Hjl = Pji.dot(Pji.T)
                 d2Flmbd2 = dfj.dot(Hjl).dot(dfj)

@@ -25,8 +25,8 @@ from eos import (
 class pr(unittest.TestCase):
 
   def test_01(self):
-    P = np.float64(2e6)
-    T = np.float64(40. + 273.15)
+    P = 2e6
+    T = 40. + 273.15
     yi = np.array([0.15, 0.85])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
@@ -36,7 +36,7 @@ class pr(unittest.TestCase):
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     lnfi, Z = pr.getPT_lnfi_Z(P, T, yi)
-    Z_ = np.float64(0.95664027)
+    Z_ = 0.95664027
     lnfi_ = np.array([12.52680951, 14.30933176])
     self.assertTrue(np.isclose(Z, Z_) & np.allclose(lnfi, lnfi_))
     pass
