@@ -40,7 +40,6 @@ kvi = np.array([5., 1.2, 0.8, 0.2])
 ```
 
 Необходимо найти мольную долю нереференсной фазы для заданной системы.
-
 ````
 
 ```{code-cell} python
@@ -51,19 +50,23 @@ yi = np.array([0.2, 0.4, 0.3, 0.1])
 kvi = np.array([5., 1.2, 0.8, 0.2])
 ```
 
-Построим график функции Речфорда-Райса.
+Получим абсциссы полюсов функции Речфорда-Райса.
 
 ```{code-cell} python
 poles = -1. / (kvi - 1.)
-print(f'{poles = }')
-segments = np.sort(np.append(poles, [-7., 6.]))
+poles
+```
 
+Построим график функции Речфорда-Райса. Из-за наличий полюсов график функции будем строить сегментно.
+
+```{code-cell} python
 from matplotlib import pyplot as plt
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 eps = 1e-3
+segments = np.sort(np.append(poles, [-7., 6.]))
 for i in range(segments.shape[0] - 1):
-    f = np.linspace(segments[i]+eps, segments[i+1]-eps, 100, endpoint=True)
-    R = np.sum(yi * (kvi - 1.) / (f[:,None] * (kvi - 1.) + 1), axis=1)
+    f = np.linspace(segments[i] + eps, segments[i+1] - eps, 100, endpoint=True)
+    R = ((kvi - 1.) / (f[:, None] * (kvi - 1.) + 1)).dot(yi)
     p1, = ax1.plot(f, R, lw=2., c='b', zorder=4)
 for pole in poles:
     p2, = ax1.plot([pole, pole], [-1., 1.], lw=2., ls='--', c='r', zorder=4)
@@ -77,14 +80,14 @@ ax1.legend(
     [p1, p2, p3],
     ['Уравнение Речфорда-Райса', 'Полюс', 'Физичные значения'],
     loc=2,
-    fontsize=8
+    fontsize=8,
 )
 ax1.grid(zorder=1)
 ```
 
 Анализируя полученные результаты, можно отметить, что помимо корня, находящегося в области физичных значений мольной доли фазы, то есть на отрезке $\left[0, \, 1 \right]$, существуют также и другие корни. Естественно, численные методы решения нелинейных уравнений, применяемые для такого вида функций, не могут гарантировать быстрый и надежный поиск нужного корня, поэтому прежде чем переходить к рассмотрению алгоритмов решения уравнения Речфорда-Райса для двухфазных систем, необходимо выполнить ряд преобразований, позволяющих видоизменить функцию для получения выпуклого вида, чтобы гарантированно находить корень на нужном отрезке.
 
-Прежде всего, необходимо отметить, что у задачи решения уравнения Речфорда-Райса есть несколько подходов. Одним из таких является выбор в качестве основной переменной мольной доли компонента в некоторой фазе, а не мольной доли фазы. Согласно \[[Wang and Orr, 1997](https://doi.org/10.1016/S0378-3812(97)00179-9)\], мольная доля фазы может принимать различные значения при решении уравнения Речфорда-Райса (что продемонстрировано на рисунке выше), в то время как мольные доли компонентов в фазах ограничены отрезком от нуля до единицы. Другой подход, изложенный в работе \[[Leibovici and Neoschil, 1992](https://doi.org/10.1016/0378-3812(92)85069-K)\], основан на преобразовании уравнения Речфорда-Райса, позволяющему сделать функцию более линейной в определенном интервале, содержащем корень. Третий подход может быть основан на сочетании методов Ньютона и бисекции для гарантированного нахождения корня уравнения на заданном интервале. Четвертый подход предполагает выбор других основных переменных (количества вещества компонентов в фазах) для нахождения равновесного состония, позволяющий вообще убрать необходимость решения уравнения Речфорда-Райса, однако об этом речь пойдет в [разделе](SEC-5-Equilibrium.md), посвященном  определению равновесного состояния. Подход к решению уравнения Речфорда-Райса, представленный далее, основан на работах \[[Nichita and Leibovici, 2013](https://doi.org/10.1016/j.fluid.2013.05.030)\], \[[Nichita and Leibovici, 2017](https://doi.org/10.1016/j.fluid.2017.08.020)\]. Стоит отметить, что существуют и другие научные публикации, посвященные исследованию численных методов решения уравнения Речфорда-Райса в двухфазной постановке, например, \[[Mikyska, 2023](https://doi.org/10.1016/j.fluid.2023.113803); [Li and Johns, 2007](https://doi.org/10.2118/106080-MS); [Juanes, 2008](https://doi.org/10.1016/j.fluid.2008.02.009); [Gaganis et al, 2012](https://doi.org/10.1016/j.fluid.2012.03.001)\] и *многие* другие.
+Прежде всего, необходимо отметить, что у задачи решения уравнения Речфорда-Райса есть несколько подходов. Одним из таких, согласно \[[Wang and Orr, 1997](https://doi.org/10.1016/S0378-3812(97)00179-9)\], является выбор в качестве основной переменной мольной доли компонента в некоторой фазе, а не мольной доли фазы. Другой подход, изложенный в работе \[[Leibovici and Neoschil, 1992](https://doi.org/10.1016/0378-3812(92)85069-K)\], основан на преобразовании уравнения Речфорда-Райса, позволяющему сделать функцию более линейной в определенном интервале, содержащем корень. Третий подход может быть основан на сочетании методов Ньютона и бисекции для гарантированного нахождения корня уравнения на заданном интервале. Четвертый подход предполагает выбор других основных переменных (количества вещества компонентов в фазах) для нахождения равновесного состония, позволяющий вообще убрать необходимость решения уравнения Речфорда-Райса, однако об этом речь пойдет в [разделе](SEC-5-Equilibrium.md), посвященном  определению равновесного состояния. Подход к решению уравнения Речфорда-Райса, представленный далее, основан на работах \[[Nichita and Leibovici, 2013](https://doi.org/10.1016/j.fluid.2013.05.030)\], \[[Nichita and Leibovici, 2017](https://doi.org/10.1016/j.fluid.2017.08.020)\]. Стоит отметить, что существуют и другие научные публикации, посвященные исследованию численных методов решения уравнения Речфорда-Райса в двухфазной постановке, например, \[[Mikyska, 2023](https://doi.org/10.1016/j.fluid.2023.113803); [Li and Johns, 2007](https://doi.org/10.2118/106080-MS); [Juanes, 2008](https://doi.org/10.1016/j.fluid.2008.02.009); [Gaganis et al, 2012](https://doi.org/10.1016/j.fluid.2012.03.001)\] и *многие* другие.
 
 Для начала необходимо описать тот результат, который необходимо получить. Поскольку численные методы решения нелинейных уравнений, в том числе метод Ньютона, показывают свою эффективность для выпуклых функций, а уравнение Речфорда-Райса не является таковым, то необходимо путем замены переменных преобразовать рассматриваемую функцию в выпуклую на интервале, содержащем искомый корень.
 
@@ -180,7 +183,7 @@ $$ G \left( a \right) = \left( a + 1 \right) \sum_{i=1}^{N_c} \frac{y_i}{\left( 
 
 $$ \begin{align}
 \frac{\partial G}{\partial a}
-&= \sum_{i=1}^{N_c} \frac{y_i}{\left( 1 + d_i \right) a + d_i} + \left( a + 1 \right) \sum_{i=1}^{N_c} \frac{y_i \left( d_i + 1 \right)}{\left( \left( 1 + d_i \right) a + d_i \right)^2} \\
+&= \sum_{i=1}^{N_c} \frac{y_i}{\left( 1 + d_i \right) a + d_i} - \left( a + 1 \right) \sum_{i=1}^{N_c} \frac{y_i \left( d_i + 1 \right)}{\left( \left( 1 + d_i \right) a + d_i \right)^2} \\
 &= \sum_{i=1}^{N_c} \frac{y_i \left( \left( 1 + d_i \right) a + d_i - \left( a + 1 \right) \left( d_i + 1 \right) \right)}{\left( \left( 1 + d_i \right) a + d_i \right)^2} \\
 &= - \sum_{i=1}^{N_c} \frac{y_i}{\left( \left( 1 + d_i \right) a + d_i \right)^2}.
 \end{align} $$
@@ -218,7 +221,7 @@ ci
 ```
 
 ```{code-cell} python
-di = np.hstack([0., (ci[0] - ci[1:-1]) / (ci[-1] - ci[0]), -1.])
+di = (ci[0] - ci) / (ci[-1] - ci[0])
 di
 ```
 
@@ -226,15 +229,16 @@ di
 
 ```{code-cell} python
 a = np.linspace(1e-3, 10., 1000, endpoint=True)
-G = (a + 1.) * np.sum(yi / (a[:,None] * (di + 1) + di), axis=1)
+G = (a + 1.) * (1. / (a[:, None] * (di + 1) + di)).dot(yi)
 fig2, ax2 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax2.plot(a, G, lw=2., c='b', zorder=4, label='G(a)')
 ax2.plot([0., 0.], [-1., 1.], lw=2., c='r', ls='--', label='Полюс', zorder=4)
 ax2.fill_betweenx(
     [-1., 1.],
-    -ci[0]/ci[-1],
-    (1.-ci[0])/(ci[-1]-1.),
-    color='g', alpha=0.2, zorder=3, label='Физичные значения')
+    -ci[0] / ci[-1],
+    (1. - ci[0]) / (ci[-1] - 1.),
+    color='g', alpha=0.2, zorder=3, label='Физичные значения',
+)
 ax2.plot([0., 10.], [0., 0.], lw=0.5, c='k', zorder=2)
 ax2.set_xlim(0., 10.)
 ax2.set_xlabel('a')
@@ -262,8 +266,8 @@ pG = partial(G_val_grad, yi=yi, di=di)
 
 ```{code-cell} python
 def condit(carry, tol, maxiter):
-    i, a, _, eq = carry
-    return i < maxiter and np.abs(eq) > tol
+    k, ak, _, eqk = carry
+    return k < maxiter and np.abs(eqk) > tol
 
 pcondit = partial(condit, tol=1e-8, maxiter=50)
 ```
@@ -271,51 +275,61 @@ pcondit = partial(condit, tol=1e-8, maxiter=50)
 Далее создадим функцию, которая принимает на вход кортеж с результатами предыдущей итерации и обновляет их значениями для новой итерации:
 
 ```{code-cell} python
-def update(carry, pF):
-    i, a_, da_, _ = carry
-    a = a_ - da_
-    eq, grad = pF(a)
-    da = eq / grad
-    print(f'Iteration {i = }:\n\t{a = }\n\t{eq = }\n')
-    return i + 1, a, da, eq
+def update(carry, pF, tmpl):
+    k, ak, dak, _ = carry
+    akp1 = ak - dak
+    eqkp1, gradkp1 = pF(akp1)
+    dakp1 = eqkp1 / gradkp1
+    print(tmpl % (k + 1, akp1, eqkp1))
+    return k + 1, akp1, dakp1, eqkp1
 
-pupdate = partial(update, pF=pG)
+pupdate = partial(update, pF=pG, tmpl='%3s %11.2e %11.2e')
 ```
 
 Решим уравнение Речфорда-Райса с использованием метода Ньютона:
 
 ```{code-cell} python
-a = 4. # Initial estimate
+print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
 
-eq, grad = pG(a)
-da = eq / grad
-carry = (1, a, da, eq)
-print(f'Iteration i = 0:\n\t{a = }\n\t{eq = }\n')
+k = 0 # Iteration number
+ak = 4. # Initial estimate
+eqk, gradk = pG(ak) # Equation and derivative of G(a)
+dak = eqk / gradk # Basic variable update
+
+print('%3s %11.2e %11.2e' % (k, ak, eqk))
+
+carry = (k, ak, dak, eqk)
 
 while pcondit(carry):
     carry = pupdate(carry)
 
-i, a, _, eq = carry
+k, a, _, eq = carry
 f = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {f = }')
+
+print('f = %.3f' % f)
 ```
 
-Анализируя результаты, можно отметить, что метод Ньютона успешно нашел решение за пять итераций. Кроме того, можно отметить, что метод Ньютона [сходится немонотонно](https://en.wikipedia.org/wiki/Newton%27s_method#Fourier_conditions), то есть, если обозначить $a^*$ как решение уравнения, то на нулевой итерации $a_0 > a^*, \; G \left( a_0 \right) < 0$, а на первой итерации $a_1 < a^*, \; G \left( a_1 \right) > 0$. В этом случае значение на первой итерации, по сути, является перелетом *(overshoot)*. Такое поведение иногда может приводить к колебаниям вокруг решения уравнения или выходу за границы рассматриваемого интервала (NF-window). Появление перелета на первой итерации обуславливается двумя факторами: начальным приближением и видом (формулировкой) решаемого уравнения. Рассмотрим путь сходимости метода Ньютона для другого начального приближения:
+Метод Ньютона успешно нашел решение за пять итераций. Кроме того, анализируя изменение знака функции $G \left( a \right)$, можно отметить, что метод Ньютона [сходится немонотонно](https://en.wikipedia.org/wiki/Newton%27s_method#Fourier_conditions), то есть, если обозначить $a^*$ как решение уравнения, то на нулевой итерации $a_0 > a^*, \; G \left( a_0 \right) < 0$, а на первой итерации $a_1 < a^*, \; G \left( a_1 \right) > 0$. В этом случае значение на первой итерации, по сути, является перелетом *(overshoot)*. Такое поведение иногда может приводить к колебаниям вокруг решения уравнения или выходу за границы рассматриваемого интервала (NF-window). Появление перелета на первой итерации обуславливается двумя факторами: начальным приближением и видом (формулировкой) решаемого уравнения. Рассмотрим путь сходимости метода Ньютона для другого начального приближения:
 
 ```{code-cell} python
-a = 1. # Initial estimate
+print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
 
-eq, grad = pG(a)
-da = eq / grad
-carry = (1, a, da, eq)
-print(f'Iteration i = 0:\n\t{a = }\n\t{eq = }\n')
+k = 0 # Iteration number
+ak = 1. # Initial estimate
+eqk, gradk = pG(ak) # Equation and derivative of G(a)
+dak = eqk / gradk # Basic variable update
+
+print('%3s %11.2e %11.2e' % (k, ak, eqk))
+
+carry = (k, ak, dak, eqk)
 
 while pcondit(carry):
     carry = pupdate(carry)
 
-i, a, _, eq = carry
+k, a, _, eq = carry
 f = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {f = }')
+
+print('f = %.3f' % f)
 ```
 
 Видно, что для данного начального приближения метод Ньютона сошелся к решению без перелетов. Таким образом, выбор начального приближения и вида (формулировки) решаемого уравнения может непосредственно влиять на устойчивость *(robustness)* численного метода. Для наглядности рассмотрим следующий пример.
@@ -331,7 +345,6 @@ yi = np.full_like(kvi, 1. / 6.)
 ```
 
 Необходимо найти решение уравнения Речфорда-Райса, соответствующее NF-window.
-
 ````
 
 ```{code-cell} python
@@ -350,7 +363,7 @@ ci
 ```
 
 ```{code-cell} python
-di = np.hstack([0., (ci[0] - ci[1:-1]) / (ci[-1] - ci[0]), -1.])
+di = (ci[0] - ci) / (ci[-1] - ci[0])
 di
 ```
 
@@ -358,7 +371,7 @@ di
 
 ```{code-cell} python
 a = np.linspace(1e-3, 10., 1000, endpoint=True)
-G = (a + 1.) * np.sum(yi / (a[:,None] * (di + 1) + di), axis=1)
+G = (a + 1.) * (1. / (a[:, None] * (di + 1) + di)).dot(yi)
 fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax3.plot(a, G, lw=2., c='b', zorder=3)
 ax3.plot([0., 10.], [0., 0.], lw=0.5, c='k', zorder=2)
@@ -374,21 +387,26 @@ ax3.grid(zorder=1)
 ```{code-cell} python
 pG = partial(G_val_grad, yi=yi, di=di)
 pcondit = partial(condit, tol=1e-8, maxiter=50)
-pupdate = partial(update, pF=pG)
+pupdate = partial(update, pF=pG, tmpl='%3s %11.2e %11.2e')
 
-a = 4. # Initial estimate
+print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
 
-eq, grad = pG(a)
-da = eq / grad
-carry = (1, a, da, eq)
-print(f'Iteration i = 0:\n\t{a = }\n\t{eq = }\n')
+k = 0 # Iteration number
+ak = 4. # Initial estimate
+eqk, gradk = pG(ak) # Equation and derivative of G(a)
+dak = eqk / gradk # Basic variable update
+
+print('%3s %11.2e %11.2e' % (k, ak, eqk))
+
+carry = (k, ak, dak, eqk)
 
 while pcondit(carry):
     carry = pupdate(carry)
 
-i, a, _, eq = carry
+k, a, _, eq = carry
 f = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {f = }')
+
+print('f = %.3f' % f)
 ```
 
 Метод Ньютона сошелся к решению, находящемуся за пределами NF-window. Причина – перелет на первой итерации. Таким образом, необходимо доработать представленный алгоритм для повышения его устойчивости. Рассмотрим [теорему Дарбу](http://www.numdam.org/article/NAM_1869_2_8__17_0.pdf), позволяющую определить наличие и отсутствие перелета на итерации:
@@ -534,14 +552,13 @@ $$ \begin{align}
 $$ \frac{d_i}{d_i + 1} > 0, \; i = 2 \, \ldots \, N_c - 1, $$
 
 вторая частная производная функции $H \left( a \right) > 0$ для $a \in \left(0, \, +\infty \right)$.
-
 ```
 
 Таким образом, функция $H \left( a \right)$ является выпуклой на интервале $a \in \left(0, \, +\infty \right)$. Построим график функции $H \left( a \right)$ для рассматриваемого примера.
 
 ```{code-cell} python
 a = np.linspace(1e-3, 10., 1000, endpoint=True)
-G = (a + 1.) * np.sum(yi / (a[:,None] * (di + 1) + di), axis=1)
+G = (a + 1.) * (1. / (a[:, None] * (di + 1) + di)).dot(yi)
 H = -a * G
 fig4, ax4 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax4.plot(a, G, lw=2., c='b', zorder=3, label='G(a)')
@@ -572,28 +589,85 @@ pH = partial(H_val_grad, yi=yi, di=di)
 Проинициализируем функцию `update`:
 
 ```{code-cell} python
-pupdate = partial(update, pF=pH)
+pupdate = partial(update, pF=pH, tmpl='%3s %11.2e %11.2e')
 ```
 
 Решим уравнение Речфорда-Райса, используя формулировку в виде $H \left( a \right) = 0$:
 
 ```{code-cell} python
-a = 4. # Initial estimate
+print('%3s %11s %11s' % ('Nit', 'a', 'H(a)'))
 
-eq, grad = pH(a)
-da = eq / grad
-carry = (1, a, da, eq)
-print(f'Iteration i = 0:\n\t{a = }\n\t{eq = }\n')
+k = 0 # Iteration number
+ak = 4. # Initial estimate
+eqk, gradk = pH(ak) # Equation and derivative of H(a)
+dak = eqk / gradk # Basic variable update
+
+print('%3s %11.2e %11.2e' % (k, ak, eqk))
+
+carry = (k, ak, dak, eqk)
 
 while pcondit(carry):
     carry = pupdate(carry)
 
-i, a, _, eq = carry
+k, a, _, eq = carry
 f = (a * ci[-1] + ci[0]) / (a + 1.)
-print(f'Solution of the Rachford-Rice equation: {f = }')
+
+print('f = %.3f' % f)
 ```
 
-Таким образом, метод Ньютона сошелся на корне, находящимся в нужном диапазоне. Следовательно, для повышения устойчивости численного метода решения уравнения Речфорда-Райса необходимо проверять условие $G \left( a_0 \right) \, ? \, 0$. Если $G \left( a_0 \right) < 0$, то выбирается формулировка $H \left( a \right)$, иначе – формулировка $G \left( a \right)$. Проверка данного условия для начального приближения $a_0$ позволяет повысить устойчивость численного алгоритма решения уравнения Речфорда-Райса. Однако, с точки зрения практической значимости, хороший численный метод отличает не только его устойчивость, но и его эффективность *(rapidness)* – количество затрачиваемых итераций на поиск решения заданной точности. Зачастую повышение эффективности численного метода связывают с поиском наиболее точного начального приближения, для определения которого необходимо минимум вычислений, а также с *линеаризацией* функции, то есть с ее преобразованием к виду, максимально приближенному к линейной зависимости, поскольку для решения линейного уравнения необходима ровно одна ньютоновская итерация.
+Метод Ньютона сошелся на корне, находящемся в нужном диапазоне.
+
+Таким образом, для повышения устойчивости численного метода решения уравнения Речфорда-Райса необходимо проверять условие $G \left( a_0 \right) \, ? \, 0$. Если $G \left( a_0 \right) < 0$, то выбирается формулировка $H \left( a \right)$, иначе – формулировка $G \left( a \right)$. Проверка данного условия для начального приближения $a_0$ позволяет повысить устойчивость численного алгоритма решения уравнения Речфорда-Райса. Следовательно, метод решения уравнения Речфорда-Райса, основанный на переключении между функциями $G \left( a \right)$ и $H \left( a \right)$ с учетом их значений для начального приближения $a_0$, получивший название GH-метод \[[Nichita and Leibovici, 2017](https://doi.org/10.1016/j.fluid.2017.08.020)\], является устойчивым и гарантирует нахождение корня для нужного интервала *NF-window*.
+
+```{eval-rst}
+.. role:: comment
+    :class: comment
+```
+
+```{admonition} Алгоритм. Решение уравнения Речфорда-Райса для двухфазной системы (GH-метод)
+:class: algorithm
+
+**Дано:** Отсортированный по убыванию вектор констант фазового равновесия $\mathbf{k}$; вектор компонентного состава системы $\mathbf{y}$, соответствующий вектору констант фазового равновесия; максимальное число итераций $N_{iter}$; точность решения уравнения $\epsilon$.
+
+**Определить:** Корень уравнения Речфорда-Райса, соответствующий NF-window.
+
+**Псевдокод:**  
+**def**$\; G \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Функция G(a)`  
+&emsp;$g := \left( a + 1 \right) \left( y_1 \, / \, a + \sum_{i=2}^{N_c-1} y_i \, / \left( d_i + a \left( d_i + 1 \right) \right) - y_{N_c} \right)$ {comment}`# Значение функции в точке a`  
+&emsp;$g' := - y_1 \, / \, a^2 - \sum_{i=2}^{N_c-1} y_i \, / \left( d_i + a \left( d_i + 1 \right) \right)^2 - y_{N_c}$  {comment}`# Значение производной функции в точке a`  
+&emsp;**return** $g, \; g'$  
+**def**$\; H \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Функция H(a)`  
+&emsp;$\left( g, \; g' \right) := G \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Значение функции G(a) и ее производной в точке a`  
+&emsp;$h := -a g$ {comment}`# Значение функции H(a) в точке a`  
+&emsp;$h' := -g - a g'$  {comment}`# Значение производной функции H(a) в точке a`  
+&emsp;**return** $h, \; h'$  
+$\mathbf{c} := 1 \, / \left( 1 - \mathbf{k} \right)$  
+$\mathbf{d} := \left( c_1 - \mathbf{c} \right) \, / \left( c_{N_c} - c_1 \right)$  
+$a := y_1 \, / \, y_{N_c}$ {comment}`# Начальное приближение`  
+$\left( g, \; g' \right) := G \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции G(a) и ее производной для начального приближения`  
+**if** $g > 0$ **then**  
+&emsp;$U \leftarrow G$ {comment}`# Выбор функции G(a) для нахождения корня`  
+&emsp;$u := g$ {comment}`# Значение функции для начального приближения`  
+&emsp;$u' := g'$ {comment}`# Значение производной функции для начального приближения`  
+**else**  
+&emsp;$U \leftarrow H$ {comment}`# Выбор функции H(a) для нахождения корня`  
+&emsp;$u := -a g$ {comment}`# Значение функции для начального приближения`  
+&emsp;$u' := -g - a g'$ {comment}`# Значение производной функции для начального приближения`  
+**end if**  
+$s := u \, / \, u'$ {comment}`# Длина шага итерации`  
+$k := 0$ {comment}`# Номер итерации`  
+**while** $\left| u \right| > \epsilon$ **and** $k < N_{iter}$ **do**  
+&emsp;$a := u - s$ {comment}`# Расчет нового приближения для (k+1)-й итерации`  
+&emsp;$\left( u, \; u' \right) := U \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции и ее производной для нового приближения`  
+&emsp;$s := u / u'$ {comment}`# Обновление длины шага итерации`  
+&emsp;$k := k + 1$ {comment}`# Обновление номера итерации`  
+**end while**  
+$f := \left( a c_{N_c} + c_1 \right) \, / \left( a + 1 \right)$ {comment}`# Расчет мольной доли фазы`  
+```
+
+Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py).
+
+Однако при рассмотрении практической значимости, хороший численный метод отличает не только его устойчивость, но и его эффективность *(rapidness)* – количество затрачиваемых итераций на поиск решения заданной точности. Зачастую повышение эффективности численного метода связывают с поиском наиболее точного начального приближения, для определения которого необходимо минимум вычислений, а также с *линеаризацией* функции, то есть с ее преобразованием к виду, максимально приближенному к линейной зависимости, поскольку для решения линейного уравнения необходима ровно одна ньютоновская итерация.
 
 Для получения выражения для начального приближения рассмотрим следующий вид уравнения Речфорда-Райса, полученный авторами работы \[[Leibovici and Neoschil, 1992](https://doi.org/10.1016/0378-3812(92)85069-K)\]:
 
@@ -603,7 +677,7 @@ $$ L \left( f \right) = \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{
 
 ```{code-cell} python
 f = np.linspace(ci[0] + 1e-3, ci[-1] - 1e-3, 1000, endpoint=True)
-L = (f - ci[0]) * (ci[-1] - f) * np.sum(yi / (f[:,None] - ci), axis=1)
+L = (f - ci[0]) * (ci[-1] - f) * (1. / (f[:, None] - ci)).dot(yi)
 fig5, ax5 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
 ax5.plot(f, L, lw=2., c='m', zorder=3)
 ax5.plot([ci[0], ci[-1]], [0., 0.], lw=0.5, c='k', zorder=2)
@@ -611,6 +685,18 @@ ax5.set_xlabel('f')
 ax5.set_ylabel('L(f)')
 ax5.set_xlim(ci[0], ci[-1])
 ax5.grid(zorder=1)
+
+ax5ins = ax5.inset_axes(
+    [0.57, 0.575, 0.4, 0.4],
+    xlim=(-15., 0.), ylim=(-5., 5.),
+    xticks=[-15., -10., -5., 0.], yticks=[-5., 0., 5.],
+)
+ax5ins.plot(f, L, lw=2., c='m', zorder=3)
+ax5ins.plot([-15., 0.], [0., 0.], lw=0.5, c='k', zorder=2)
+ax5ins.set_xlabel('f', fontsize=9, labelpad=-5)
+ax5ins.set_ylabel('L(f)', fontsize=9, labelpad=-5)
+ax5ins.tick_params(axis='both', labelsize=8)
+ax5ins.grid(zorder=1)
 ```
 
 Преобразуем выражение для функции $L \left( f \right)$ к следующему виду:
@@ -649,7 +735,7 @@ $$ D \left( a \right) = \frac{a}{a + 1} G \left( a \right) = - \frac{1}{a + 1} H
 
 ```{code-cell} python
 a = np.linspace(1e-3, 10., 1000, endpoint=True)
-G = (a + 1.) * np.sum(yi / (a[:,None] * (di + 1) + di), axis=1)
+G = (a + 1.) * (1. / (a[:, None] * (di + 1) + di)).dot(yi)
 H = -a * G
 D = a / (a + 1.) * G
 fig6, ax6 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
@@ -716,12 +802,7 @@ $$ a_{k+1}^H = a_{k+1}^D + \frac{h^2}{h + a_k + 1}. $$
 
 Итак, можно сформулировать численный алгоритм решения уравнения Речфорда-Райса \[[Nichita and Leibovici, 2014](https://doi.org/10.1016/j.compchemeng.2014.10.006)\], гарантирующий сходимость к корню в нужном интервале и являющийся эффективным (использующий преимущество линеаризации):
 
-```{eval-rst}
-.. role:: comment
-    :class: comment
-```
-
-```{admonition} Алгоритм. Решение уравнения Речфорда-Райса для двухфазной системы
+```{admonition} Алгоритм. Решение уравнения Речфорда-Райса для двухфазной системы (FGH-метод)
 :class: algorithm
 
 **Дано:** Отсортированный по убыванию вектор констант фазового равновесия $\mathbf{k}$; вектор компонентного состава системы $\mathbf{y}$, соответствующий вектору констант фазового равновесия; максимальное число итераций $N_{iter}$; точность решения уравнения $\epsilon$.
@@ -729,32 +810,36 @@ $$ a_{k+1}^H = a_{k+1}^D + \frac{h^2}{h + a_k + 1}. $$
 **Определить:** Корень уравнения Речфорда-Райса, соответствующий NF-window.
 
 **Псевдокод:**  
-$c_i := 1 \, / \left( 1 - k_i \right), \; i = 1 \, \ldots \, N_c$  
-$d_i := \left( c_1 - c_i \right) \, / \left( c_{N_c} - c_1 \right), \; i = 2 \, \ldots \, N_c - 1$  
-$a := y_1 \, / \, y_{N_c}$ {comment}`# Начальное приближение`  
-**def**$\; fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Функция D(a)`  
-&emsp;$D := y_1 + a \sum_{i=2}^{N_c-1} y_i \, / \left( d_i + a \left( d_i + 1 \right) \right) - y_{N_c} a$ {comment}`# Значение функции в точке a`  
-&emsp;$D' := \sum_{i=2}^{N_c-1} y_i d_i \, / \left( d_i + a \left( d_i + 1 \right) \right)^2 - y_{N_c}$  {comment}`# Значение производной функции в точке a`  
-&emsp;**return** $D, \; D'$  
-$\left( D, \; D' \right) := fD \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции D(a) и ее градиента для начального приближения`  
-$h := D \, / \, D'$ {comment}`# Длина шага`  
-$i := 1$ {comment}`# Номер итерации`  
-**while** $\left| D \right| > \epsilon$ **and** $i < N_{iter}$ **do**  
-&emsp;$a_{i+1} := a - h$ {comment}`# Расчет нового приближения для (i+1)-й итерации`  
-&emsp;**if** $a_{i+1} < 0$ **then** {comment}`# Если новое приближение находится вне NF-window...`  
-&emsp;&emsp;**if** $D > 0$ **then**  {comment}`# Выбор между переключением на функции G(a) или H(a)`  
-&emsp;&emsp;&emsp;$a_{i+1} := a_{i+1} + h^2 / \left( h - a \left( a + 1 \right) \right)$  {comment}`# Итерация в формулировке G(a)`  
+**def**$\; D \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Функция D(a)`  
+&emsp;$d := y_1 + a \sum_{i=2}^{N_c-1} y_i \, / \left( d_i + a \left( d_i + 1 \right) \right) - y_{N_c} a$ {comment}`# Значение функции в точке a`  
+&emsp;$d' := \sum_{i=2}^{N_c-1} y_i d_i \, / \left( d_i + a \left( d_i + 1 \right) \right)^2 - y_{N_c}$  {comment}`# Значение производной функции в точке a`  
+&emsp;**return** $d, \; d'$  
+$\mathbf{c} := 1 \, / \left( 1 - \mathbf{k} \right)$  
+$\mathbf{d} := \left( c_1 - \mathbf{c} \right) \, / \left( c_{N_c} - c_1 \right)$  
+$k := 0$ {comment}`# Номер итерации`  
+$a_k := y_1 \, / \, y_{N_c}$ {comment}`# Начальное приближение (значение a на k-й итерации)`  
+$\left( d, \; d' \right) := D \left( a_k, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции D(a) и ее производной для начального приближения`  
+$s := d \, / \, d'$ {comment}`# Длина шага итерации`  
+**while** $\left| d \right| > \epsilon$ **and** $k < N_{iter}$ **do**  
+&emsp;$a_{k+1} := a_k - s$ {comment}`# Расчет нового приближения для (k+1)-й итерации`  
+&emsp;**if** $a_{k+1} < 0$ **then** {comment}`# Если новое приближение находится вне NF-window...`  
+&emsp;&emsp;**if** $d > 0$ **then**  {comment}`# Выбор между переключением на функции G(a) или H(a)`  
+&emsp;&emsp;&emsp;$a_{k+1} := a_{k+1} + s^2 / \left( s - a \left( a + 1 \right) \right)$  {comment}`# Итерация в формулировке G(a)`  
 &emsp;&emsp;**else**  
-&emsp;&emsp;&emsp;$a_{i+1} := a_{i+1} + h^2 / \left( h + a + 1 \right)$ {comment}`# Итерация в формулировке H(a)`  
+&emsp;&emsp;&emsp;$a_{k+1} := a_{k+1} + s^2 / \left( s + a + 1 \right)$ {comment}`# Итерация в формулировке H(a)`  
 &emsp;&emsp;**end if**  
 &emsp;**end if**  
-&emsp;$\left( D, \; D' \right) := fD \left( a_{i+1}, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции D(a) и ее градиента для нового приближения`  
-&emsp;$h := D / D'$ {comment}`# Обновление шага итерации`  
-&emsp;$i := i + 1$ {comment}`# Обновление номера итерации`  
+&emsp;$\left( d, \; d' \right) := D \left( a_{k+1}, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции D(a) и ее производной для нового приближения`  
+&emsp;$s := d \, / \, d'$ {comment}`# Обновление длины шага итерации`  
+&emsp;$k := k + 1$ {comment}`# Обновление номера итерации`  
+&emsp;$a_k := a_{k+1}$ {comment}`# Сохранение значения основной переменной на данной итерации для проведения следующей`  
 **end while**  
+$f := \left( a_k c_{N_c} + c_1 \right) \, / \left( a_k + 1 \right)$ {comment}`# Расчет мольной доли фазы`  
 ```
 
-Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py). Рассмотрим несколько примеров решения уравнения Речфорда-Райса для различных исходных компонентных составов и констант фазового равновесия. Более детальный разбор этих примеров представлен в работе \[[Nichita and Leibovici, 2013](https://doi.org/10.1016/j.fluid.2013.05.030)\].
+Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py).
+
+Рассмотрим несколько примеров решения уравнения Речфорда-Райса для различных исходных компонентных составов и констант фазового равновесия. Более детальный разбор этих примеров представлен в работе \[[Nichita and Leibovici, 2013](https://doi.org/10.1016/j.fluid.2013.05.030)\].
 
 ````{admonition} Пример
 :class: exercise
@@ -767,11 +852,9 @@ kvi = np.array([1.00003, 1.00002, 1.00001, 0.99999, 0.99998, 0.99997])
 ```
 
 Необходимо найти корень уравнения Речфорда-Райса, соответствующий NF-window.
-
 ````
 
 ````{dropdown} Решение
-
 Сначала рассчитаем значения $c_i, \; i = 1 \, \ldots \, N_c,$ и $d_i, \; i = 2 \, \ldots \, N_c - 1$:
 
 ``` python
@@ -779,7 +862,7 @@ ci = 1. / (1. - kvi)
 di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 ```
 
-Создадим функцию, позволяющую рассчитать значение и производную функции $D \left( a \right)$ и проинициализируем ее исходными данными:
+Данную задачу будем решать методом FGH. Для этого создадим функцию, позволяющую рассчитать значение и производную функции $D \left( a \right)$ и проинициализируем ее исходными данными:
 
 ``` python
 def fD(a, yi, di):
@@ -792,12 +875,12 @@ def fD(a, yi, di):
 pD = partial(fD, yi=yi, di=di)
 ```
 
-Затем создадим функцию, которая принимает на вход кортеж из номера итерации `i`, переменной `a`, шага итерации `h` и значения функции $D \left( a \right)$ `D`, а также точность решения уравнения `tol` и максимальное количество итераций `maxiter`, и возвращает необходимость выполнения следующей итерации:
+Затем создадим функцию, которая принимает на вход кортеж из номера итерации `k`, переменной `a`, шага итерации `s` и значения функции $D \left( a \right)$ `D`, а также точность решения уравнения `tol` и максимальное количество итераций `maxiter`, и возвращает необходимость выполнения следующей итерации:
 
 ``` python
 def condit(carry, tol, maxiter):
-    i, a, _, D = carry
-    return i < maxiter and np.abs(D) > tol
+    k, ak, _, Dk = carry
+    return k < maxiter and np.abs(Dk) > tol
 
 pcondit = partial(condit, tol=1e-10, maxiter=50)
 ```
@@ -805,37 +888,40 @@ pcondit = partial(condit, tol=1e-10, maxiter=50)
 Далее создадим функцию, которая принимает на вход кортеж с результатами предыдущей итерации и обновляет их значениями для новой итерации:
 
 ``` python
-def update(carry, pD):
-    i, a_, h_, D_ = carry
-    print(f'\nIteration #{i}:')
-    a = a_ - h_
-    if a < 0.:
-        print(f'\tThe value of a becomes less than zero ({a = })')
-        if D_ > 0.:
-            print('\tUse G(a) formulation to correct step size')
-            a += h_ * h_ / (h_ - a_ * (a_ + 1.))
+def update(carry, pD, tmpl):
+    k, ak, sk, Dk = carry
+    akp1 = ak - sk
+    form = 'D'
+    if akp1 < 0.:
+        if Dk > 0.:
+            form = 'G'
+            akp1 += sk * sk / (sk - ak * (ak + 1.))
         else:
-            print('\tUse H(a) formulation to correct step size')
-            a += h_ * h_ / (h_ + a_ + 1.)
-    D, dDda = pD(a)
-    print(f'\t{a = }\n\t{D = }')
-    return i + 1, a, D / dDda, D
+            form = 'H'
+            akp1 += sk * sk / (sk + ak + 1.)
+    Dkp1, dDkp1da = pD(akp1)
+    print(tmpl % (k + 1, akp1, Dkp1, form))
+    return k + 1, akp1, Dkp1 / dDkp1da, Dkp1
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 ```
 
-Зададим начальное приближение и рассчитаем значения функции $D \left( a \right)$ и ее производной в точке с начальным приближением:
+Зададим номер итерации, начальное приближение и рассчитаем значения функции $D \left( a \right)$ и ее производной в точке с начальным приближением:
 
 ``` python
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 ```
 
 Решим уравнение Речфорда-Райса методом Ньютона:
 
 ``` python
-print(f'Iteration #0:\n\t{a = }\n\t{D = }')
-carry = (1, a, D / dDda, D)
+print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry = pupdate(carry)
 ```
@@ -846,14 +932,13 @@ while pcondit(carry):
 Тогда мольная доля нереференсной фазы:
 
 ``` python
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{f = }')
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+print('a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1))
 ```
 
 ```{glue:} glued_out2
 ```
-
 ````
 
 ```{code-cell} python
@@ -875,43 +960,47 @@ def fD(a, yi, di):
 pD = partial(fD, yi=yi, di=di)
 
 def condit(carry, tol, maxiter):
-    i, a, _, D = carry
-    return i < maxiter and np.abs(D) > tol
+    k, ak, _, Dk = carry
+    return k < maxiter and np.abs(Dk) > tol
 
 pcondit = partial(condit, tol=1e-10, maxiter=50)
 
-def update(carry, pD):
-    i, a_, h_, D_ = carry
-    out = f'\n\nIteration #{i}:'
-    a = a_ - h_
-    if a < 0.:
-        out += f'\n\tThe value of a becomes less than zero ({a = })'
-        if D_ > 0.:
-            out += '\n\tUse G(a) formulation to correct step size'
-            a += h_ * h_ / (h_ - a_ * (a_ + 1.))
+def update(carry, pD, tmpl):
+    k, ak, sk, Dk = carry
+    akp1 = ak - sk
+    form = 'D'
+    if akp1 < 0.:
+        if Dk > 0.:
+            form = 'G'
+            akp1 += sk * sk / (sk - ak * (ak + 1.))
         else:
-            out += '\n\tUse H(a) formulation to correct step size'
-            a += h_ * h_ / (h_ + a_ + 1.)
-    D, dDda = pD(a)
-    out += f'\n\t{a = }\n\t{D = }'
-    return (i + 1, a, D / dDda, D), out
+            form = 'H'
+            akp1 += sk * sk / (sk + ak + 1.)
+    Dkp1, dDkp1da = pD(akp1)
+    return (k + 1, akp1, Dkp1 / dDkp1da, Dkp1), tmpl % (k + 1, akp1, Dkp1, form)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 
-out1 = f'Iteration #0:\n\t{a = }\n\t{D = }'
+out1 = ''
+out1 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out1 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
 
-carry = (1, a, D / dDda, D)
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry, out = pupdate(carry)
     out1 += out
 
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
+out1 = out1[:-1]
 
-out2 = f'{f = }'
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+
+out2 = 'a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1)
 
 class MultilineText(object):
     def __init__(self, text):
@@ -933,7 +1022,6 @@ class MultilineText(object):
 
 glue('glued_out1', MultilineText(out1))
 glue('glued_out2', MultilineText(out2))
-
 ```
 
 ````{admonition} Пример
@@ -947,12 +1035,10 @@ kvi = np.array([161.59, 6.90, 0.15, 1.28E-03, 5.86E-06, 2.32E-08])
 ```
 
 Необходимо найти корень уравнения Речфорда-Райса, соответствующий NF-window.
-
 ````
 
 ````{dropdown} Решение
-
-Рассчитаем значения $c_i, \; i = 1 \, \ldots \, N_c,$ и $d_i, \; i = 2 \, \ldots \, N_c - 1$:
+Задачу будем решать методом FGH. Рассчитаем значения $c_i, \; i = 1 \, \ldots \, N_c,$ и $d_i, \; i = 2 \, \ldots \, N_c - 1$:
 
 ``` python
 ci = 1. / (1. - kvi)
@@ -965,24 +1051,27 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 pD = partial(fD, yi=yi, di=di)
 ```
 
-Проинициализируем функцию `update`:
+Проинициализируем функцию `update`, созданную при рассмотрении предыдущего примера:
 
 ``` python
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 ```
 
-Зададим начальное приближение и рассчитаем значения функции $D \left( a \right)$ и ее производной в точке с начальным приближением:
+Зададим номер итерации, начальное приближение и рассчитаем значения функции $D \left( a \right)$ и ее производной в точке с начальным приближением:
 
 ``` python
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 ```
 
 Решим уравнение Речфорда-Райса методом Ньютона:
 
 ``` python
-print(f'Iteration #0:\n\t{a = }\n\t{D = }')
-carry = (1, a, D / dDda, D)
+print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+
+carry = (k, ak, Dk / dDkda, Dk)
 while pcondit(carry):
     carry = pupdate(carry)
 ```
@@ -993,14 +1082,13 @@ while pcondit(carry):
 Тогда мольная доля нереференсной фазы:
 
 ``` python
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{f = }')
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+print('a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1))
 ```
 
 ```{glue:} glued_out4
 ```
-
 ````
 
 ```{code-cell} python
@@ -1014,26 +1102,31 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 
-out3 = f'Iteration #0:\n\t{a = }\n\t{D = }'
+out3 = ''
+out3 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out3 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
 
-carry = (1, a, D / dDda, D)
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry, out = pupdate(carry)
     out3 += out
 
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
+out3 = out3[:-1]
 
-out4 = f'{f = }'
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+
+out4 = 'a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1)
 
 glue('glued_out3', MultilineText(out3))
 glue('glued_out4', MultilineText(out4))
-
 ```
 
 ````{admonition} Пример
@@ -1048,12 +1141,10 @@ yi = np.full_like(kvi, 1. / 6.)
 ```
 
 Необходимо найти корень уравнения Речфорда-Райса, соответствующий NF-window.
-
 ````
 
 ````{dropdown} Решение
-
-Данный пример подробно разбирался выше, однако покажем, как изменилось количество итераций для этого примера при использовнии линеаризованной функции $D \left( a \right)$. Рассчитаем значения $c_i, \; i = 1 \, \ldots \, N_c,$ и $d_i, \; i = 2 \, \ldots \, N_c - 1$:
+Данный пример подробно разбирался выше, однако покажем, как изменилось количество итераций для этого примера при использовнии метода FGH:
 
 ``` python
 ci = 1. / (1. - kvi)
@@ -1061,15 +1152,20 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 
 pcondit = partial(condit, tol=1e-12, maxiter=50)
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
 
-print(f'Iteration #0:\n\t{a = }\n\t{D = }')
-carry = (1, a, D / dDda, D)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
+
+print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry = pupdate(carry)
 ```
@@ -1080,14 +1176,13 @@ while pcondit(carry):
 Мольная доля нереференсной фазы:
 
 ``` python
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{f = }')
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+print('a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1))
 ```
 
 ```{glue:} glued_out6
 ```
-
 ````
 
 ```{code-cell} python
@@ -1102,28 +1197,33 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
 pcondit = partial(condit, tol=1e-12, maxiter=50)
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 
-out5 = f'Iteration #0:\n\t{a = }\n\t{D = }'
+out5 = ''
+out5 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out5 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
 
-carry = (1, a, D / dDda, D)
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry, out = pupdate(carry)
     out5 += out
 
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
+out5 = out5[:-1]
 
-out6 = f'{f = }'
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+
+out6 = 'a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1)
 
 glue('glued_out5', MultilineText(out5))
 glue('glued_out6', MultilineText(out6))
-
 ```
 
 ````{admonition} Пример
@@ -1137,10 +1237,10 @@ kvi = np.array([1.000065, 0.999922, 0.999828, 0.999650, 0.999490, 0.999282])
 ```
 
 Необходимо найти корень уравнения Речфорда-Райса, соответствующий NF-window.
-
 ````
 
 ````{dropdown} Решение
+Данную задачу также решим методом FGH.
 
 ``` python
 ci = 1. / (1. - kvi)
@@ -1148,15 +1248,20 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 
 pcondit = partial(condit, tol=1e-10, maxiter=50)
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
 
-print(f'Iteration #0:\n\t{a = }\n\t{D = }')
-carry = (1, a, D / dDda, D)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
+
+print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry = pupdate(carry)
 ```
@@ -1167,14 +1272,13 @@ while pcondit(carry):
 Мольная доля нереференсной фазы:
 
 ``` python
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{f = }')
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+print('a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1))
 ```
 
 ```{glue:} glued_out8
 ```
-
 ````
 
 ```{code-cell} python
@@ -1188,28 +1292,33 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
 pcondit = partial(condit, tol=1e-10, maxiter=50)
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 
-out7 = f'Iteration #0:\n\t{a = }\n\t{D = }'
+out7 = ''
+out7 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out7 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
 
-carry = (1, a, D / dDda, D)
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry, out = pupdate(carry)
     out7 += out
 
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
+out7 = out7[:-1]
 
-out8 = f'{f = }'
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+
+out8 = 'a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1)
 
 glue('glued_out7', MultilineText(out7))
 glue('glued_out8', MultilineText(out8))
-
 ```
 
 ````{admonition} Пример
@@ -1237,10 +1346,10 @@ kvi = np.array([
 ```
 
 Необходимо найти корень уравнения Речфорда-Райса, соответствующий NF-window.
-
 ````
 
 ````{dropdown} Решение
+Решим данную задачу методом FGH.
 
 ``` python
 ci = 1. / (1. - kvi)
@@ -1248,13 +1357,18 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+pcondit = partial(condit, tol=1e-10, maxiter=50)
 
-print(f'Iteration #0:\n\t{a = }\n\t{D = }')
-carry = (1, a, D / dDda, D)
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
+
+print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry = pupdate(carry)
 ```
@@ -1265,9 +1379,9 @@ while pcondit(carry):
 Мольная доля нереференсной фазы:
 
 ``` python
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
-print(f'{f = }')
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+print('a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1))
 ```
 
 ```{glue:} glued_out10
@@ -1286,22 +1400,30 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD)
+pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
-a = yi[0] / yi[-1]
-D, dDda = pD(a)
+pcondit = partial(condit, tol=1e-10, maxiter=50)
 
-out9 = f'Iteration #0:\n\t{a = }\n\t{D = }'
+k = 0
+ak = yi[0] / yi[-1]
+Dk, dDkda = pD(ak)
 
-carry = (1, a, D / dDda, D)
+out9 = ''
+out9 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out9 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
+
+carry = (k, ak, Dk / dDkda, Dk)
+
 while pcondit(carry):
     carry, out = pupdate(carry)
     out9 += out
 
-a = carry[1]
-f = (ci[0] + a * ci[-1]) / (1. + a)
+out9 = out9[:-1]
 
-out10 = f'{f = }'
+k, ak, _, Dk = carry
+f = (ci[0] + ak * ci[-1]) / (1. + ak)
+
+out10 = 'a = %.3f\nf = %.3f\nD = %.3e\nNiter = %s' % (ak, f, Dk, k+1)
 
 glue('glued_out9', MultilineText(out9))
 glue('glued_out10', MultilineText(out10))
