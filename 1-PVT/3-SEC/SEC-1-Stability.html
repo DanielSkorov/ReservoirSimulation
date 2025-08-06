@@ -1047,7 +1047,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
 <p class="sd-card-text">Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла решения системы нелинейных уравнений:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">condit_ss</span><span class="p">(</span><span class="n">carry</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">):</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">gi</span> <span class="o">=</span> <span class="n">carry</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="n">maxiter</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">maxiter</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации:</p>
@@ -1086,7 +1086,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span> <span class="ow">and</span> <span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">:</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
 <span class="k">else</span><span class="p">:</span>
@@ -1152,7 +1152,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span> <span class="ow">and</span> <span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">:</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
 <span class="k">else</span><span class="p">:</span>
@@ -1263,7 +1263,7 @@ k_i^{k+1} &amp;= k_i^{k} \cdot \exp \left(- g_i^{k} \right), \; i = 1 \, \ldots 
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ki</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span> <span class="ow">and</span> <span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">:</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
 <span class="k">else</span><span class="p">:</span>
@@ -1418,19 +1418,23 @@ H_{ij}
 <strong>for</strong> <span class="math notranslate nohighlight">\(i := 1\)</span> <strong>to</strong> <span class="math notranslate nohighlight">\(N\)</span> <strong>do</strong><br />
  <span class="math notranslate nohighlight">\(\mathbf{k} := \mathbf{K}\left[ i \right]\)</span><br />
  <span class="math notranslate nohighlight">\(\mathbf{n} := \mathbf{k} \cdot \mathbf{z}\)</span><br />
- <span class="math notranslate nohighlight">\(\boldsymbol{\alpha} := 2 \sqrt{\mathbf{n}}\)</span> <span class="comment"># Вектор основных переменных</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{t} := \sqrt{\mathbf{n}}\)</span><br />
+ <span class="math notranslate nohighlight">\(\boldsymbol{\alpha} := 2 \cdot \mathbf{t} \)</span> <span class="comment"># Вектор основных переменных</span><br />
  <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i\)</span><br />
  <span class="math notranslate nohighlight">\(\boldsymbol{\varphi}, \, \mathbf{\Phi} := \phi \left( \mathbf{y} \right)\)</span> <span class="comment"># Расчет вектора коэффициентов летучести и матрицы их частных производных</span><br />
- <span class="math notranslate nohighlight">\(\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)\)</span> <span class="comment"># Вектор невязок</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{g}' := \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h}\)</span> <span class="comment"># Вектор невязок</span><br />
+ <span class="math notranslate nohighlight">\(\mathbf{g} := \mathbf{t} \cdot \mathbf{g}'\)</span> <span class="comment"># Градиент модифицированной функции TPD по основным переменным</span><br />
  <span class="math notranslate nohighlight">\(c := 1\)</span><br />
  <strong>while</strong> <span class="math notranslate nohighlight">\(\lVert \mathbf{g} \rVert_2 &gt; \epsilon_1\)</span> <strong>and</strong> <span class="math notranslate nohighlight">\(c &lt; N_{iter}\)</span> <strong>do</strong><br />
-  <span class="math notranslate nohighlight">\(\mathbf{H} := \mathrm{diag} \left( \frac{1}{2} \left( \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right) + 1 \right) + \sqrt{\mathbf{n} \mathbf{n}^\top} \cdot \mathbf{\Phi}\)</span> <span class="comment"># Гессиан</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{H} := \mathrm{diag} \left( \frac{1}{2} \mathbf{g}' + 1 \right) + \mathbf{t} \mathbf{t}^\top \cdot \mathbf{\Phi}\)</span> <span class="comment"># Гессиан</span><br />
   <span class="math notranslate nohighlight">\(\Delta \boldsymbol{\alpha} := -\mathbf{H}^{-1} \mathbf{g}\)</span> <span class="comment"># Вектор изменения основных переменных</span><br />
   <span class="math notranslate nohighlight">\(\boldsymbol{\alpha} := \boldsymbol{\alpha} + \Delta \boldsymbol{\alpha}\)</span> <span class="comment"># Обновление вектора основных переменных</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{n} := \boldsymbol{\alpha} \cdot \boldsymbol{\alpha} \, / \, 4\)</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{t} := \frac{1}{2} \boldsymbol{\alpha}\)</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{n} := \mathbf{t} \cdot \mathbf{t}\)</span><br />
   <span class="math notranslate nohighlight">\(\mathbf{y} := \mathbf{n} \, / \, \sum_{i=1}^{N_c} n_i\)</span><br />
   <span class="math notranslate nohighlight">\(\boldsymbol{\varphi}, \, \mathbf{\Phi} := \phi \left( \mathbf{y} \right)\)</span> <span class="comment"># Вектор коэффициентов летучести и матрица их частных производных</span><br />
-  <span class="math notranslate nohighlight">\(\mathbf{g} := \sqrt{\mathbf{n}} \cdot \left(\ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h} \right)\)</span> <span class="comment"># Вектор невязок</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{g}' := \ln \mathbf{n} + \ln \boldsymbol{\varphi} - \mathbf{h}\)</span> <span class="comment"># Вектор невязок</span><br />
+  <span class="math notranslate nohighlight">\(\mathbf{g} := \mathbf{t} \cdot \mathbf{g}'\)</span> <span class="comment"># Градиент модифицированной функции TPD по основным переменным</span><br />
   <span class="math notranslate nohighlight">\(c := c + 1\)</span><br />
  <strong>end while</strong><br />
  <span class="math notranslate nohighlight">\(TPD := - \ln \sum_{i=1}^{N_c} n_i\)</span><br />
@@ -1509,7 +1513,7 @@ H_{ij}
 <p class="sd-card-text">Создадим функцию, которая будет принимать на вход кортеж из результатов предыдущей итерации, точность и максимальное число итераций, и возвращать необходимость расчета следующей итерации цикла минимизации:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">condit_newt</span><span class="p">(</span><span class="n">carry</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">):</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">alphai</span><span class="p">,</span> <span class="n">gi</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">carry</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="n">maxiter</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">maxiter</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span>
 </pre></div>
 </div>
 <p class="sd-card-text">Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Вектор изменения основных переменных будет определяться путем решения системы линейных уравнений с использованием <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html"><code class="docutils literal notranslate"><span class="pre">numpy.linalg.solve</span></code></a>.</p>
@@ -1556,7 +1560,7 @@ H_{ij}
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">number of iterations: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k-values: </span><span class="si">{</span><span class="n">ni</span><span class="o">/</span><span class="n">yi</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">TPD: </span><span class="si">{</span><span class="n">TPD</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">eps1</span> <span class="ow">and</span> <span class="n">TPD</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eps2</span><span class="p">:</span>
         <span class="n">is_stable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">break</span>
 <span class="k">else</span><span class="p">:</span>
@@ -1566,7 +1570,7 @@ H_{ij}
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 8.488722468293537e-07<br>	number of iterations: 9<br>	k-values: [1.10718863e+00 8.91753271e-01 7.54370076e-01 6.39326084e-01<br> 1.31261854e-14]<br>	TPD: 0.029272744999992766<br>For the initial guess #1:<br>	tolerance of equations: 1.6855656326846273e-08<br>	number of iterations: 9<br>	k-values: [0.79433376 1.03491309 1.2536519  1.5143752  2.7340564 ]<br>	TPD: -0.0013880823086961688<br>The system is stable: False
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>For the initial guess #0:<br>	tolerance of equations: 8.488722468293537e-07<br>	number of iterations: 9<br>	k-values: [1.10718863e+00 8.91753271e-01 7.54370076e-01 6.39326084e-01<br> 1.31261854e-14]<br>	TPD: 0.029272744999992766<br>For the initial guess #1:<br>	tolerance of equations: 1.685565754024371e-08<br>	number of iterations: 9<br>	k-values: [0.79433376 1.03491309 1.2536519  1.5143752  2.7340564 ]<br>	TPD: -0.0013880823086966122<br>The system is stable: False
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>

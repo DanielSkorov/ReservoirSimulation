@@ -786,7 +786,7 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rayleigh quotient iteration:
-	lmbdk = np.float64(0.6398571436700975)
+	lmbdk = np.float64(0.6398571436700974)
 </pre></div>
 </div>
 </div>
@@ -806,8 +806,8 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
 	Tk = np.float64(255.33072500000003)
-	lmbdk = np.float64(0.6398571436700975)
-	dT = np.float64(-65.1196965454747)
+	lmbdk = np.float64(0.6398571436700974)
+	dT = np.float64(-65.11969654518651)
 </pre></div>
 </div>
 </div>
@@ -815,7 +815,7 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 <p>Решим первое условие критического состояния с использованием чиленного подхода. Значения производных минимального собственного значения по температуре будем определять с использованием предложенного выше квазиньютоновского подхода.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">:</span>
     <span class="n">Tkp1</span> <span class="o">=</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span>
     <span class="n">Q</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tkp1</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdkp1</span> <span class="o">=</span> <span class="n">pyrqi</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
@@ -830,34 +830,34 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #1:
-	Tk = np.float64(190.21102845452532)
-	lmbdk = np.float64(-0.4481487892909994)
-	dT = np.float64(26.82275186351879)
+	Tk = np.float64(190.21102845481352)
+	lmbdk = np.float64(-0.44814878928288915)
+	dT = np.float64(26.822751863114615)
 
 Iteration #2:
-	Tk = np.float64(217.0337803180441)
-	lmbdk = np.float64(0.1419076840413174)
-	dT = np.float64(-6.4508310112601075)
+	Tk = np.float64(217.03378031792812)
+	lmbdk = np.float64(0.14190768403932816)
+	dT = np.float64(-6.45083101118289)
 
 Iteration #3:
-	Tk = np.float64(210.582949306784)
-	lmbdk = np.float64(0.024987106839912423)
-	dT = np.float64(-1.3786076629344566)
+	Tk = np.float64(210.58294930674523)
+	lmbdk = np.float64(0.02498710683917039)
+	dT = np.float64(-1.3786076628917203)
 
 Iteration #4:
-	Tk = np.float64(209.20434164384955)
-	lmbdk = np.float64(-0.0017225441075198946)
-	dT = np.float64(0.0889084065921801)
+	Tk = np.float64(209.20434164385352)
+	lmbdk = np.float64(-0.0017225441074411926)
+	dT = np.float64(0.08890840658809379)
 
 Iteration #5:
-	Tk = np.float64(209.2932500504417)
-	lmbdk = np.float64(1.950104296875906e-05)
-	dT = np.float64(-0.000995270792350969)
+	Tk = np.float64(209.29325005044163)
+	lmbdk = np.float64(1.950104296757985e-05)
+	dT = np.float64(-0.0009952707922906805)
 
 Iteration #6:
-	Tk = np.float64(209.29225477964937)
-	lmbdk = np.float64(1.5043411187523803e-08)
-	dT = np.float64(-7.683602644058657e-07)
+	Tk = np.float64(209.29225477964934)
+	lmbdk = np.float64(1.5043411175023768e-08)
+	dT = np.float64(-7.683602637668729e-07)
 </pre></div>
 </div>
 </div>
@@ -883,7 +883,7 @@ Iteration #6:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(1.5043411166950975e-08)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(1.504341112355518e-08)
 </pre></div>
 </div>
 </div>
@@ -928,9 +928,9 @@ Iteration #6:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(209.29225477964937),
- array([-0.00418311, -0.99716538, -0.06485697, -0.02543874, -0.02179882,
-        -0.00548063, -0.01687987]))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(209.29225477964934),
+ array([0.00418311, 0.99716538, 0.06485697, 0.02543874, 0.02179882,
+        0.00548063, 0.01687987]))
 </pre></div>
 </div>
 </div>
@@ -944,7 +944,7 @@ Iteration #6:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(8285.011103015979)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(-8285.011103015984)
 </pre></div>
 </div>
 </div>
@@ -976,10 +976,10 @@ Iteration #6:
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
-	Cj = np.float64(8285.011103015979)
+	Cj = np.float64(-8285.011103015984)
 	kappaj = 3.5
-	dkappa = np.float64(-0.4177134755062982)
-	T = np.float64(209.29225477964937)
+	dkappa = np.float64(-0.4177134755062985)
+	T = np.float64(209.29225477964934)
 </pre></div>
 </div>
 </div>
@@ -987,7 +987,7 @@ Iteration #6:
 <p>Решим уравнение с использованием представленного выше численного алгоритма:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dkappa</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">j</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dkappa</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
     <span class="n">kappajp1</span> <span class="o">=</span> <span class="n">kappaj</span> <span class="o">+</span> <span class="n">dkappa</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">bm</span> <span class="o">*</span> <span class="n">kappajp1</span> <span class="o">*</span> <span class="n">n</span>
     <span class="n">T</span><span class="p">,</span> <span class="n">zetaijp1</span> <span class="o">=</span> <span class="n">getVT_Tspinodal</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">zetaij</span><span class="p">)</span>
@@ -1006,40 +1006,40 @@ Iteration #6:
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #1:
-	Cj = np.float64(2628.64020144009)
+	Cj = np.float64(-2628.640201440035)
 	kappaj = np.float64(3.0822865244937017)
-	dkappa = np.float64(-0.19412065677892576)
-	T = np.float64(205.91596808232202)
+	dkappa = np.float64(-0.19412065677891976)
+	T = np.float64(205.91596808232205)
 
 Iteration #2:
-	Cj = np.float64(269.97201405059354)
-	kappaj = np.float64(2.888165867714776)
-	dkappa = np.float64(-0.022218956002214643)
-	T = np.float64(203.03407896473138)
+	Cj = np.float64(-269.97201405067307)
+	kappaj = np.float64(2.8881658677147817)
+	dkappa = np.float64(-0.02221895600222177)
+	T = np.float64(203.03407896473146)
 
 Iteration #3:
-	Cj = np.float64(10.472875462076482)
-	kappaj = np.float64(2.865946911712561)
-	dkappa = np.float64(-0.0008967134163691117)
-	T = np.float64(202.6356664387732)
+	Cj = np.float64(-10.472875462204716)
+	kappaj = np.float64(2.8659469117125598)
+	dkappa = np.float64(-0.0008967134163805474)
+	T = np.float64(202.6356664387729)
 
 Iteration #4:
-	Cj = np.float64(0.04815858028076837)
-	kappaj = np.float64(2.865050198296192)
-	dkappa = np.float64(-4.142505311244019e-06)
-	T = np.float64(202.61925363599738)
+	Cj = np.float64(-0.04815856894876145)
+	kappaj = np.float64(2.865050198296179)
+	dkappa = np.float64(-4.142504331986153e-06)
+	T = np.float64(202.6192536360225)
 
 Iteration #5:
-	Cj = np.float64(-0.03341734555626872)
-	kappaj = np.float64(2.865046055790881)
-	dkappa = np.float64(1.6969654960590005e-06)
-	T = np.float64(202.61925363599738)
+	Cj = np.float64(0.03341733762361785)
+	kappaj = np.float64(2.865046055791847)
+	dkappa = np.float64(1.696965092829899e-06)
+	T = np.float64(202.6192536360225)
 
 Iteration #6:
-	Cj = np.float64(-5.995001549778639e-09)
-	kappaj = np.float64(2.865047752756377)
-	dkappa = np.float64(3.044320975984007e-13)
-	T = np.float64(202.61925363599738)
+	Cj = np.float64(5.9776018091364525e-09)
+	kappaj = np.float64(2.86504775275694)
+	dkappa = np.float64(3.035485213598955e-13)
+	T = np.float64(202.6192536360225)
 </pre></div>
 </div>
 </div>
