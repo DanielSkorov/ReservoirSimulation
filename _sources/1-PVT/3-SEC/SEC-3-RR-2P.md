@@ -255,14 +255,14 @@ ax2.grid(zorder=1)
 ```{code-cell} python
 from functools import partial
 
-def G_val_grad(a, yi, di):
+def G_val_der(a, yi, di):
     denom = 1. / (di + a * (1. + di))
     return (1. + a) * yi.dot(denom), -1. * yi.dot(denom * denom)
 
-pG = partial(G_val_grad, yi=yi, di=di)
+pG = partial(G_val_der, yi=yi, di=di)
 ```
 
-Затем создадим функцию, которая принимает на вход кортеж из номера итерации `i`, переменной `a`, ее изменения `da` и значения уравнения `eq`, а также точность решения уравнения `tol` и максимальное количество итераций `maxiter`, и возвращает необходимость выполнения следующей итерации:
+Затем создадим функцию, которая принимает на вход кортеж из номера итерации `k`, значения переменной на этой итерации `ak`, ее изменения `dak` и значения уравнения `eqk`, а также точность решения уравнения `tol` и максимальное количество итераций `maxiter`, и возвращает необходимость выполнения следующей итерации:
 
 ```{code-cell} python
 def condit(carry, tol, maxiter):
@@ -293,7 +293,7 @@ print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
 
 k = 0 # Iteration number
 ak = 4. # Initial estimate
-eqk, gradk = pG(ak) # Equation and derivative of G(a)
+eqk, gradk = pG(ak) # Function G(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
 print('%3s %11.2e %11.2e' % (k, ak, eqk))
@@ -316,7 +316,7 @@ print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
 
 k = 0 # Iteration number
 ak = 1. # Initial estimate
-eqk, gradk = pG(ak) # Equation and derivative of G(a)
+eqk, gradk = pG(ak) # Function G(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
 print('%3s %11.2e %11.2e' % (k, ak, eqk))
@@ -385,7 +385,7 @@ ax3.grid(zorder=1)
 Из данного графика видно, что рассматриваемое уравнение имеет корень внутри NF-window: $a \approx 1$. Попробуем применить метод Ньютона:
 
 ```{code-cell} python
-pG = partial(G_val_grad, yi=yi, di=di)
+pG = partial(G_val_der, yi=yi, di=di)
 pcondit = partial(condit, tol=1e-8, maxiter=50)
 pupdate = partial(update, pF=pG, tmpl='%3s %11.2e %11.2e')
 
@@ -393,7 +393,7 @@ print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
 
 k = 0 # Iteration number
 ak = 4. # Initial estimate
-eqk, gradk = pG(ak) # Equation and derivative of G(a)
+eqk, gradk = pG(ak) # Function G(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
 print('%3s %11.2e %11.2e' % (k, ak, eqk))
@@ -577,13 +577,13 @@ ax4.grid(zorder=1)
 Создадим функцию, которая рассчитывает значение и первую производную функции $H \left( a \right)$, и проинициализируем ее:
 
 ```{code-cell} python
-def H_val_grad(a, yi, di):
+def H_val_der(a, yi, di):
     denom = 1. / (di + a * (1. + di))
     G = (1. + a) * yi.dot(denom)
     dGda = -1. * yi.dot(denom * denom)
     return -a * G, -G - a * dGda
 
-pH = partial(H_val_grad, yi=yi, di=di)
+pH = partial(H_val_der, yi=yi, di=di)
 ```
 
 Проинициализируем функцию `update`:
@@ -599,7 +599,7 @@ print('%3s %11s %11s' % ('Nit', 'a', 'H(a)'))
 
 k = 0 # Iteration number
 ak = 4. # Initial estimate
-eqk, gradk = pH(ak) # Equation and derivative of H(a)
+eqk, gradk = pH(ak) # Function H(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
 print('%3s %11.2e %11.2e' % (k, ak, eqk))
@@ -875,7 +875,7 @@ def fD(a, yi, di):
 pD = partial(fD, yi=yi, di=di)
 ```
 
-Затем создадим функцию, которая принимает на вход кортеж из номера итерации `k`, переменной `a`, шага итерации `s` и значения функции $D \left( a \right)$ `D`, а также точность решения уравнения `tol` и максимальное количество итераций `maxiter`, и возвращает необходимость выполнения следующей итерации:
+Затем создадим функцию, которая принимает на вход кортеж из номера итерации `k`, значения переменной на этой итерации `ak`, шага итерации `sk` и значения функции $D \left( a \right)$ `Dk`, а также точность решения уравнения `tol` и максимальное количество итераций `maxiter`, и возвращает необходимость выполнения следующей итерации:
 
 ``` python
 def condit(carry, tol, maxiter):

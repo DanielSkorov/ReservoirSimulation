@@ -276,7 +276,7 @@ print(stab.run(P, T, y1i))
 Тест стабильности показал, что найденное решение соответствует равновесному состоянию. Проиллюстрируем данный пример графически. Для этого построим зависимость функции приведенной добавочной энергии Гиббса для первой фазы от компонентного состава и проведем касательную в точке с найденным равновесным составом этой фазы. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `getPT_lnphiji_Zj`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий соответствующие коэффициенты летучести компонентов в виде двумерного массива такой же размерности и коэффициенты сверхсжимаемости в виде одномерного массива для каждого компонентного состава.
 
 ``` python
-yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
+yj1 = np.linspace(1e-4, 0.9999, 1000, endpoint=True)
 yji = np.vstack([yj1, 1. - yj1]).T
 lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
 lnfji = lnphiji + np.log(P * yji)
@@ -303,21 +303,21 @@ ax1.set_xlabel('Количество вещества диоксида угле�
 ax1.set_ylabel('Приведенная добавочная энергия Гиббса')
 ax1.grid(zorder=1)
 
-axins1 = ax1.inset_axes([0.04, 0.05, 0.5, 0.89], xlim=(0.65, 0.975), ylim=(14.5, 15.1),
+ax1ins = ax1.inset_axes([0.04, 0.05, 0.5, 0.89], xlim=(0.65, 0.975), ylim=(14.5, 15.1),
                         xticklabels=[], yticklabels=[])
-ax1.indicate_inset_zoom(axins1, edgecolor='black')
-axins1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная\nэнергия Гиббса')
-axins1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
-axins1.plot(y1i[0], y1i.dot(lnfi), 'o', lw=0., mfc='blue', mec='blue', ms=5., zorder=3)
-axins1.plot(y2i[0], y2i.dot(lnfi), 'o', lw=0., mfc='green', mec='green', ms=5., zorder=3)
-axins1.plot([y1i[0], y1i[0]], [0., y1i.dot(lnfi)], '--', lw=1., c='blue', zorder=2)
-axins1.plot([y2i[0], y2i[0]], [0., y2i.dot(lnfi)], '--', lw=1., c='green', zorder=2)
-axins1.text(0.8, 14.55, '$y_{CO_2} = 0.818$', fontsize=8, color='blue', rotation='vertical')
-axins1.text(0.9, 14.55, '$x_{CO_2} = 0.918$', fontsize=8, color='green', rotation='vertical')
-axins1.set_xticks([0.8])
-axins1.set_yticks([14.6, 14.8, 15.0])
-axins1.legend(loc=2, fontsize=8)
-axins1.grid(zorder=1)
+ax1.indicate_inset_zoom(ax1ins, edgecolor='black')
+ax1ins.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная\nэнергия Гиббса')
+ax1ins.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
+ax1ins.plot(y1i[0], y1i.dot(lnfi), 'o', lw=0., mfc='blue', mec='blue', ms=5., zorder=3)
+ax1ins.plot(y2i[0], y2i.dot(lnfi), 'o', lw=0., mfc='green', mec='green', ms=5., zorder=3)
+ax1ins.plot([y1i[0], y1i[0]], [0., y1i.dot(lnfi)], '--', lw=1., c='blue', zorder=2)
+ax1ins.plot([y2i[0], y2i[0]], [0., y2i.dot(lnfi)], '--', lw=1., c='green', zorder=2)
+ax1ins.text(0.8, 14.55, '$y_{CO_2} = 0.818$', fontsize=8, color='blue', rotation='vertical')
+ax1ins.text(0.9, 14.55, '$x_{CO_2} = 0.918$', fontsize=8, color='green', rotation='vertical')
+ax1ins.set_xticks([0.8])
+ax1ins.set_yticks([14.6, 14.8, 15.0])
+ax1ins.legend(loc=2, fontsize=8)
+ax1ins.grid(zorder=1)
 
 plt.show()
 ```
@@ -329,6 +329,43 @@ plt.show()
 <br>
 
 Из данного графика следует, что касательная, проведенная к функции энергии Гиббса в точке с компонентным составом первой фазы, не имеет пересечений с самой функцией, что подтверждает сделанный вывод о равновесности найденного состояния. Кроме того, можно отметить, что касательная имеет две точки касания, абсциссы которых соответствуют равновесным компонентным составам фаз, то есть функция энергии Гиббса имеет одинаковую касательную для каждого из компонентных составов, определяющих стационарное состояние. Это следует из равенства летучестей соответствующих компонентов в фазах, а полное доказательство данного утверждения было рассмотрено [ранее](SEC-1-Stability.md). Стоит также отметить, что две точки, показанные на графике, соответствующие двухфазному равновесному состоянию, называются ***бинодальными точками***.
+
+Рассчитаем значения и построим график функции TPD для рассматриваемого компонентного состава.
+
+``` python
+Dj = Gj - Lj
+
+fig2, ax2 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
+ax2.plot(yj1, Dj, lw=2., c='lime', zorder=2)
+ax2.grid(zorder=1)
+ax2.set_xlim(0., 1.)
+ax2.set_ylim(0., 1.)
+ax2.set_xlabel('Количество вещества диоксида углерода в первой фазе, моль')
+ax2.set_ylabel('Tangent plane distance (TPD)')
+
+ax2ins = ax2.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(0., .04))
+ax2ins.plot(yj1, Dj, lw=2., c='m', zorder=2)
+ax2ins.text(0.8, 0.02, '$y_{CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
+ax2ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=3)
+ax2ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=3)
+ax2ins.text(0.9, 0.02, '$x_{CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
+ax2ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=3)
+ax2ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=3)
+ax2ins.set_xlabel('Количество вещества диоксида\nуглерода в первой фазе, моль', fontsize=9)
+ax2ins.set_ylabel('Tangent plane distance (TPD)', fontsize=9)
+ax2ins.tick_params(axis='both', labelsize=8)
+ax2ins.grid(zorder=1)
+
+plt.show()
+```
+
+```{glue:} glued_fig2
+```
+
+<br>
+<br>
+
+Равенство касательных, проведенных к функции энергии Гиббса в точках с компонентными составами фаз, обуславливает равенство функции TPD нулю в этих точках.
 ````
 
 ```{code-cell} python
@@ -409,7 +446,7 @@ for i, kvi in enumerate(stabres.kvji):
 
 out4 = str(stab.run(P, T, y1i))
 
-yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
+yj1 = np.linspace(1e-4, 0.9999, 1000, endpoint=True)
 yji = np.vstack([yj1, 1. - yj1]).T
 lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
 lnfji = lnphiji + np.log(P * yji)
@@ -428,21 +465,44 @@ ax1.set_xlabel('Количество вещества диоксида угле�
 ax1.set_ylabel('Приведенная добавочная энергия Гиббса')
 ax1.grid(zorder=1)
 
-axins1 = ax1.inset_axes([0.04, 0.05, 0.5, 0.89], xlim=(0.65, 0.975), ylim=(14.5, 15.1),
+ax1ins = ax1.inset_axes([0.04, 0.05, 0.5, 0.89], xlim=(0.65, 0.975), ylim=(14.5, 15.1),
                         xticklabels=[], yticklabels=[])
-ax1.indicate_inset_zoom(axins1, edgecolor='black')
-axins1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная\nэнергия Гиббса')
-axins1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
-axins1.plot(y1i[0], y1i.dot(lnfi), 'o', lw=0., mfc='blue', mec='blue', ms=5., zorder=3)
-axins1.plot(y2i[0], y2i.dot(lnfi), 'o', lw=0., mfc='green', mec='green', ms=5., zorder=3)
-axins1.plot([y1i[0], y1i[0]], [0., y1i.dot(lnfi)], '--', lw=1., c='blue', zorder=2)
-axins1.plot([y2i[0], y2i[0]], [0., y2i.dot(lnfi)], '--', lw=1., c='green', zorder=2)
-axins1.text(0.8, 14.55, '$y_{CO_2} = 0.818$', fontsize=8, color='blue', rotation='vertical')
-axins1.text(0.9, 14.55, '$x_{CO_2} = 0.918$', fontsize=8, color='green', rotation='vertical')
-axins1.set_xticks([0.8])
-axins1.set_yticks([14.6, 14.8, 15.0])
-axins1.legend(loc=2, fontsize=8)
-axins1.grid(zorder=1)
+ax1.indicate_inset_zoom(ax1ins, edgecolor='black')
+ax1ins.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная\nэнергия Гиббса')
+ax1ins.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
+ax1ins.plot(y1i[0], y1i.dot(lnfi), 'o', lw=0., mfc='blue', mec='blue', ms=5., zorder=3)
+ax1ins.plot(y2i[0], y2i.dot(lnfi), 'o', lw=0., mfc='green', mec='green', ms=5., zorder=3)
+ax1ins.plot([y1i[0], y1i[0]], [0., y1i.dot(lnfi)], '--', lw=1., c='blue', zorder=2)
+ax1ins.plot([y2i[0], y2i[0]], [0., y2i.dot(lnfi)], '--', lw=1., c='green', zorder=2)
+ax1ins.text(0.8, 14.55, '$y_{CO_2} = 0.818$', fontsize=8, color='blue', rotation='vertical')
+ax1ins.text(0.9, 14.55, '$x_{CO_2} = 0.918$', fontsize=8, color='green', rotation='vertical')
+ax1ins.set_xticks([0.8])
+ax1ins.set_yticks([14.6, 14.8, 15.0])
+ax1ins.legend(loc=2, fontsize=8)
+ax1ins.grid(zorder=1)
+
+Dj = Gj - Lj
+
+fig2, ax2 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
+ax2.plot(yj1, Dj, lw=2., c='lime', zorder=2)
+ax2.grid(zorder=1)
+ax2.set_xlim(0., 1.)
+ax2.set_ylim(0., 1.)
+ax2.set_xlabel('Количество вещества диоксида углерода в первой фазе, моль')
+ax2.set_ylabel('Tangent plane distance (TPD)')
+
+ax2ins = ax2.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(0., .04))
+ax2ins.plot(yj1, Dj, lw=2., c='m', zorder=2)
+ax2ins.text(0.8, 0.02, '$y_{CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
+ax2ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=3)
+ax2ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=3)
+ax2ins.text(0.9, 0.02, '$x_{CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
+ax2ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=3)
+ax2ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=3)
+ax2ins.set_xlabel('Количество вещества диоксида\nуглерода в первой фазе, моль', fontsize=9)
+ax2ins.set_ylabel('Tangent plane distance (TPD)', fontsize=9)
+ax2ins.tick_params(axis='both', labelsize=8)
+ax2ins.grid(zorder=1)
 
 class MultilineText(object):
     def __init__(self, text):
@@ -469,6 +529,7 @@ glue('glued_out2', MultilineText(out2))
 glue('glued_out3', MultilineText(out3))
 glue('glued_out4', MultilineText(out4))
 glue('glued_fig1', fig1)
+glue('glued_fig2', fig2)
 ```
 
 Представленным выше примером было проиллюстрировано применение метода последовательных подстановок для расчета двухфазного равновесного состояния. Однако данный метод может применяться и для расчета многофазной системы. Рассмотрим следующий пример.
