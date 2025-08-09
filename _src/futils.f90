@@ -62,7 +62,6 @@ module linalg
       do j = k + 1, n
         A(k+1:n, j) = A(k+1:n, j) - A(k, j) * A(k+1:n, k)
       end do
-      ! A(k+1:n, k) = 0._dp
       b(k+1:n) = b(k+1:n) - A(k+1:n, k) * b(k)
     end do
     do k = n, 1, -1
@@ -198,6 +197,50 @@ module linalg
       end do
     end do
   end subroutine dplu
+
+  subroutine dplubksb(n, p, A, b, x)
+    ! ------------------------------------------------------------------------ !
+    ! Implements back substitution to solve Ax = b using the results of the
+    ! LU decomposition obtained from the routine dplu.
+    !
+    ! Parameters
+    ! ----------
+    ! n : Size of input arrays.
+    ! p : Rank-one array of integer items with shape (n,). It represents the
+    !     permuted rows of the matrix A and can be obtained from the routine
+    !     dplu.
+    ! A : Rank-two array of double precision items with shape (n, n). It must
+    !     contain results of the LU decomposition, determined by the routine
+    !     dplu.
+    !
+    ! Updates
+    ! -------
+    ! b : Rank-one array of double precision items with shape (n,). It is the
+    !     right hand side of the system of linear equations. It will be
+    !     permuted.
+    ! x : Rank-one array of double precision items with shape (n,). It
+    !     represents the solution of the system of linear equations.
+    ! ------------------------------------------------------------------------ !
+    ! f2py integer, intent(hide) :: n
+    ! f2py integer, intent(in) :: p(n)
+    ! f2py real(8), intent(in) :: A(n, n)
+    ! f2py real(8), intent(in, out) :: b(n)
+    ! f2py real(8), intent(out) :: x(n)
+    ! ------------------------------------------------------------------------ !
+    integer, intent(in) :: n
+    integer, intent(in) :: p(n)
+    real(kind=dp), intent(in) :: A(n, n)
+    real(kind=dp), intent(inout) :: b(n)
+    real(kind=dp), intent(out) :: x(n)
+    integer :: i
+    b = b(p)
+    do i = 1, n
+      x(i) = b(i) - dot_product(A(i, 1:i-1), x(1:i-1))
+    end do
+    do i = n, 1, -1
+      x(i) = (x(i) - dot_product(A(i, i+1:n), x(i+1:n))) / A(i, i)
+    end do
+  end subroutine dplubksb
 
   ! subroutine dchol()
 
