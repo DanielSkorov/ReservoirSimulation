@@ -192,7 +192,7 @@ def solveNp(
   Kji: Matrix,
   yi: Vector,
   fj0: Vector,
-  tol: Scalar = 1e-6,
+  tol: Scalar = 1e-8,
   maxiter: int = 30,
   beta: Scalar = 0.8,
   c: Scalar = 0.3,

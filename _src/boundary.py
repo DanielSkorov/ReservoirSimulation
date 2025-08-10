@@ -6785,7 +6785,8 @@ def _env2pPT(
     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
     dx = np.linalg.solve(J, -g)
     dx2 = dx.dot(dx)
-    proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
+    proceed = (np.isfinite(dx2) and
+               (dx2 > tolvar and gnorm > tolres or k < miniter))
     logger.debug(tmpl, k, *xk, gnorm, dx2)
   succeed = (gnorm < tolres or dx2 < tolvar) and np.isfinite(dx2)
   return xk, np.array([Zv, Zl]), J, k, succeed
