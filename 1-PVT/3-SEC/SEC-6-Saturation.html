@@ -414,11 +414,181 @@ document.write(`
 <p>Данный раздел посвящен рассмотрению численных алгоритмов построения границы двухфазной области, являющейся одной из наиболее распространенных задач в PVT-моделировании пластовых углеводородных систем. Важно отметить, что для многокомпонентных термодинамических систем могут быть определены границы трехфазной области, подходы к построению которых не будут рассматриваться в рамках данного раздела. Достаточно подробно они рассмотрены авторами работы [<a class="reference external" href="https://doi.org/10.2118/85971-PA">Lindeloff and Michelsen, 2003</a>]. Также в данном разделе не будет уделено внимание алгоритмам построения фазовых диаграмм для бинарных систем, для изучения которых рекомендуется обратиться к работам [<a class="reference external" href="https://doi.org/10.1016/j.supflu.2006.03.011">Cismondi and Michelsen, 2007</a>; <a class="reference external" href="https://doi.org/10.1016/j.fluid.2007.07.019">Cismondi and Michelsen, 2007</a>; <a class="reference external" href="https://doi.org/10.1021/ie8002914">Cismondi et al, 2008</a>].</p>
 </div>
 </aside>
+<p>В предыдущих разделах были подробно рассмотрены условия <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">стабильности</span></a> и <a class="reference internal" href="SEC-5-Equilibrium.html"><span class="std std-doc">равновесности</span></a> фазового состояния многокомпонентной системы. Данный раздел будет посвящен определению <em>насыщенного</em> состояния.</p>
+<div class="tip admonition">
+<p class="admonition-title">Определение</p>
+<p><em><strong>Насыщенным</strong></em> состоянием системы будем называть такое состояние, в котором начинается или заканчивается процесс изменения ее фазового состояния.</p>
+</div>
+<p>Например, <em>давлением насыщения нефти</em> принято считать такое давление, которое соответствует переходу нефти из однофазного состояния в двухфазное. Иными словами, добавление небольшого количества энергии нефти, находящейся на <em>линии насыщения</em>, будет приводить к переходу небольшого количества ее вещества в газовую фазу. Аналогично формулируется определение для газа, находящегося на <em>линии конденсации</em>.</p>
 <p><a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">Ранее</span></a> было показано, что однофазное состояние многокомпонентной системы (<span class="math notranslate nohighlight">\(N_c\)</span> – количество компонентов) известного компонентного состава <span class="math notranslate nohighlight">\(\mathbf{z} \in {\rm I\!R}^{N_c}\)</span> является стабильным при фиксированных и известных давлении и температуре, если касательная, проведенная к функции энергии Гиббса в точке с заданным компонентным составом, не пересекает ее в любых других точках. Данный критерий эквивалентен условию неотрицательности функции TPD (<em>tangent plane distance</em>), определяемой расстоянием от гиперповерхности энергии Гиббса до касательной гиперплоскости, проведенной в точке с заданным компонентным составом:</p>
 <div class="math notranslate nohighlight">
 \[ \bar{D} \left( \mathbf{y} \right) = \sum_{i=1}^{N_c} y_i \left( \ln y_i + \ln \varphi_i \left( \mathbf{y} \right) - \ln \varphi_i \left( \mathbf{z} \right) - \ln z_i \right), \]</div>
 <p>где <span class="math notranslate nohighlight">\(\bar{D} \left( \mathbf{y} \right)\)</span> – приведенная функция TPD, <span class="math notranslate nohighlight">\(\mathbf{y} \in {\rm I\!R}^{N_c}\)</span> – мольные доли компонентов в мнимой фазе, <span class="math notranslate nohighlight">\(\varphi_i \left( \mathbf{y} \right)\)</span> – коэффициент летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента в мнимой фазе, <span class="math notranslate nohighlight">\(\varphi_i \left( \mathbf{z} \right)\)</span> – коэффициент летучести <span class="math notranslate nohighlight">\(i\)</span>-го компонента в исходной рассматриваемой теродинамической системе.</p>
-<p>При этом нет необходимости проверять значения функции TPD во всех точках – достаточно проверить ее значение в глобальном минимуме или во всех локальных минимумах, задаваясь различными начальными приближениями. То есть если для рассматриваемой термодинамической системы функция TPD характеризуется отрицательным значением в ее глобальном минимуме, то однофазное состояние не является стабильным. И наоборот: если положительным, то однофазное состояние системы стабильно. Следовательно, граница двухфазной области, характеризующаяся пренебрежимо малым количеством другой, мнимой фазы (<em>trial phase</em>), находящейся в термодинамическом равновесии с исходным компонентным составом, определяется условием равенства нулю функции TPD в ее глобальном минимуме.</p>
+<p>При этом нет необходимости проверять значения функции TPD во всех точках – достаточно проверить ее значение в глобальном минимуме или во всех локальных минимумах, задаваясь различными начальными приближениями. То есть если для рассматриваемой термодинамической системы функция TPD характеризуется отрицательным значением в ее нетривиальном минимуме (то есть не соответствующим решению <span class="math notranslate nohighlight">\(\mathbf{y} = \mathbf{z}\)</span>), то однофазное состояние не является стабильным. И наоборот: если положительным, то однофазное состояние системы стабильно. Следовательно, граница двухфазной области, характеризующаяся пренебрежимо малым количеством другой, мнимой фазы (<em>trial phase</em>), находящейся в термодинамическом равновесии с исходным компонентным составом, определяется условием равенства нулю функции TPD в ее нетривиальном минимуме.</p>
+<p>Для иллюстрации данного условия обратимся к примеру, рассмотренному <a class="reference internal" href="SEC-5-Equilibrium.html#pvt-sec-equilibrium-pt-ss-examples"><span class="std std-ref">ранее</span></a>.</p>
+<div class="exercise admonition">
+<p class="admonition-title">Пример</p>
+<p>Пусть имеется <span class="math notranslate nohighlight">\(1 \; моль\)</span> смеси из метана и диоксида углерода при температуре <span class="math notranslate nohighlight">\(10 \; ^{\circ} C\)</span> и давлении <span class="math notranslate nohighlight">\(6 \; МПа\)</span> с мольной долей метана <span class="math notranslate nohighlight">\(0.1\)</span>. Необходимо определить равновесное состояние системы.</p>
+</div>
+<p>Для решения данной и последующих задач будем использовать <a class="reference internal" href="../2-EOS/EOS-2-SRK-PR.html"><span class="std std-doc">уравнение состояние Пенга-Робинсона</span></a> и его <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/eos.py">реализацию</a>. Кроме того, для проверки <a class="reference internal" href="SEC-1-Stability.html"><span class="std std-doc">стабильности</span></a> системы будет применяться подход, основанный на примениии метода последовательных подстановок и метода Ньютона, алгоритм которого реализован <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/stability.py">здесь</a>. Для расчета стационарного состояния системы будем также использовать комбинацию метода последовательных подстановок и метода Ньютона, с реализацией можно ознакомиться <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py">здесь</a>.</p>
+<p>Импортируем необходимые классы и функции.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../../_src/&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">eos</span> <span class="kn">import</span> <span class="n">pr78</span>
+<span class="kn">from</span> <span class="nn">stability</span> <span class="kn">import</span> <span class="n">stabilityPT</span>
+<span class="kn">from</span> <span class="nn">flash</span> <span class="kn">import</span> <span class="n">flash2pPT</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Зададим исходные термобарические условия и компонентный состав.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">P</span> <span class="o">=</span> <span class="mf">6e6</span> <span class="c1"># Pressure [Pa]</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">10.</span> <span class="o">+</span> <span class="mf">273.15</span> <span class="c1"># Temperature [K]</span>
+<span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">.1</span><span class="p">])</span> <span class="c1"># Mole fractions [fr.]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Pci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">7.37646</span><span class="p">,</span> <span class="mf">4.600155</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="c1"># Critical pressures [Pa]</span>
+<span class="n">Tci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">304.2</span><span class="p">,</span> <span class="mf">190.6</span><span class="p">])</span> <span class="c1"># Critical temperatures [K]</span>
+<span class="n">wi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.225</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">])</span> <span class="c1"># Acentric factors</span>
+<span class="n">mwi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.04401</span><span class="p">,</span> <span class="mf">0.016043</span><span class="p">])</span> <span class="c1"># Molar mass [kg/gmole]</span>
+<span class="n">vsi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span> <span class="c1"># Volume shift parameters</span>
+<span class="n">dij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.025</span><span class="p">])</span> <span class="c1"># Binary interaction parameters</span>
+<span class="n">pr</span> <span class="o">=</span> <span class="n">pr78</span><span class="p">(</span><span class="n">Pci</span><span class="p">,</span> <span class="n">Tci</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">mwi</span><span class="p">,</span> <span class="n">vsi</span><span class="p">,</span> <span class="n">dij</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stab</span> <span class="o">=</span> <span class="n">stabilityPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss-newton&#39;</span><span class="p">,</span> <span class="n">checktrivial</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">stabres</span> <span class="o">=</span> <span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stabres</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+False
+Tangent-plane distance:
+-0.016542616809289187
+</pre></div>
+</div>
+</div>
+</div>
+<p>В результате проверки стабильности однофазное состояние системы оказалось нестабильным. Определим компонентные составы фаз для двухфазного состояния.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flash</span> <span class="o">=</span> <span class="n">flash2pPT</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ss-newton&#39;</span><span class="p">)</span>
+<span class="n">flashres</span> <span class="o">=</span> <span class="n">flash</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">flashres</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase composition:
+[[0.81827115 0.18172885]
+ [0.91760694 0.08239306]]
+Phase mole fractions:
+[0.17724668 0.82275332]
+Phase compressibility factors:
+[0.54467207 0.15029861]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Проверим, является ли найденное стационарное состояние равновесным:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">stab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">flashres</span><span class="o">.</span><span class="n">yji</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
+True
+Tangent-plane distance:
+-1e-08
+</pre></div>
+</div>
+</div>
+</div>
+<p>Рассчитаем значения функции TPD для компонентного состава первой фазы и трех температур: <span class="math notranslate nohighlight">\(9 \; ^{\circ} \mathrm{C}\)</span>, <span class="math notranslate nohighlight">\(10 \; ^{\circ} \mathrm{C}\)</span> и <span class="math notranslate nohighlight">\(11 \; ^{\circ} \mathrm{C}\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yj1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">yji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">yj1</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yj1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+<span class="n">lnfji</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yji</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vecdot</span><span class="p">(</span><span class="n">yji</span><span class="p">,</span> <span class="n">lnfji</span><span class="p">)</span>
+<span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">flashres</span><span class="o">.</span><span class="n">yji</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)</span>
+<span class="n">Dj_10</span> <span class="o">=</span> <span class="n">Gj</span> <span class="o">-</span> <span class="n">Lj</span>
+
+<span class="n">lnfji</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">yji</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vecdot</span><span class="p">(</span><span class="n">yji</span><span class="p">,</span> <span class="n">lnfji</span><span class="p">)</span>
+<span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">flashres</span><span class="o">.</span><span class="n">yji</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)</span>
+<span class="n">Dj_9</span> <span class="o">=</span> <span class="n">Gj</span> <span class="o">-</span> <span class="n">Lj</span>
+
+<span class="n">lnfji</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnphiji_Zj</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">+</span><span class="mf">1.</span><span class="p">,</span> <span class="n">yji</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">yji</span><span class="p">)</span>
+<span class="n">Gj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vecdot</span><span class="p">(</span><span class="n">yji</span><span class="p">,</span> <span class="n">lnfji</span><span class="p">)</span>
+<span class="n">lnfi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getPT_lnfi</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="o">+</span><span class="mf">1.</span><span class="p">,</span> <span class="n">flashres</span><span class="o">.</span><span class="n">yji</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">Lj</span> <span class="o">=</span> <span class="n">yji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lnfi</span><span class="p">)</span>
+<span class="n">Dj_11</span> <span class="o">=</span> <span class="n">Gj</span> <span class="o">-</span> <span class="n">Lj</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Построим графики функций.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Dj_9</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;t = 9 °C&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Dj_10</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;t = 10 °C&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Dj_11</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;t = 11 °C&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="c1"># ax1.set_ylim(0., 1.)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Количество вещества диоксида углерода в первой фазе, моль&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Tangent plane distance (TPD)&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">ax1ins</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">([</span><span class="mf">.55</span><span class="p">,</span> <span class="mf">.4</span><span class="p">,</span> <span class="mf">.42</span><span class="p">,</span> <span class="mf">.55</span><span class="p">],</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">.7</span><span class="p">,</span> <span class="mf">1.</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">.04</span><span class="p">))</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Dj_9</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Dj_10</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yj1</span><span class="p">,</span> <span class="n">Dj_11</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="s1">&#39;$y_</span><span class="si">{CO_2}</span><span class="s1"> = 0.818$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.818</span><span class="p">,</span> <span class="mf">0.818</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">.035</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.818</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-3</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="s1">&#39;$x_</span><span class="si">{CO_2}</span><span class="s1"> = 0.918$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.918</span><span class="p">,</span> <span class="mf">0.918</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">.035</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.918</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-3</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Количество вещества диоксида</span><span class="se">\n</span><span class="s1">углерода в первой фазе, моль&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Tangent plane distance (TPD)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ax1ins</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/01b7835d198aa5c4377f6ae51a8c5c4a998840634a778bd174a9777e2c537f57.png" src="../../_images/01b7835d198aa5c4377f6ae51a8c5c4a998840634a778bd174a9777e2c537f57.png" />
+</div>
+</div>
+<p>Таким образом, по данным, представленным на графике выше, видно, что состояние фазы многофазной системы, находящейся в равновесном состоянии, является для этой фазы <em>насыщенным состоянием</em> при равновесных давлении, температуре и компонентном составе. Действительно, увеличение температуры на <span class="math notranslate nohighlight">\(1 \; ^{\circ} \mathrm{C}\)</span> нарушит равновесное состояние системы и приведет к изменению компонентных составов фаз, то есть к протеканию фазового перехода, что подтверждается отрицательностью функции TPD в нетривиальном минимуме. Аналогичный результат может быть получен для изменения давления и компонентного состава фазы, находящейся в насыщенном состоянии.</p>
 <section id="pvt-esc-saturation-psat">
 <span id="id2"></span><h2>Определение давления насыщения<a class="headerlink" href="#pvt-esc-saturation-psat" title="Link to this heading">#</a></h2>
 </section>

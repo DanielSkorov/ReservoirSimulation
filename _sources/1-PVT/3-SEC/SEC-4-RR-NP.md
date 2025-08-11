@@ -633,16 +633,22 @@ $k := 1$ {comment}`# Счетчик итерации`
 
 ```{code-cell} python
 def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
+    Npm1 = Kji.shape[0]
+    head = map(lambda s: 'f' + s, map(str, range(Npm1)))
+    print(('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s')
+          % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
+    tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e'
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
+    k = 0
+    n = 0
     fjk = fj0
     ti = 1. - fjk.dot(Aji)
     gj = Aji.dot(yi / ti)
     gnorm = np.linalg.norm(gj)
+    print(tmpl % (k, n, *fjk, gnorm, 1., -1))
     if gnorm < tol:
         return fjk
-    print(f'Iteration #0:\n\t{fjk = }\n\t{gnorm = }')
-    k: int = 1
     while gnorm > tol and k < maxiter:
         Pji = np.sqrt(yi) / ti * Aji
         Hjl = Pji.dot(Pji.T)
@@ -658,9 +664,10 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
             fjkp1 = fjk + lmbdn * dfj
             ti = 1. - fjkp1.dot(Aji)
             gj = Aji.dot(yi / ti)
+            gnorm = np.linalg.norm(gj)
             dFdlmbd = dfj.dot(gj)
-            n: int = 1
-            print(f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }')
+            n = 1
+            print(tmpl % (k, n, *fjkp1, gnorm, lmbdn, dFdlmbd))
             while np.abs(dFdlmbd) > tol_ls and n < maxiter_ls:
                 Pji = np.sqrt(yi) / ti * Aji
                 Hjl = Pji.dot(Pji.T)
@@ -668,27 +675,28 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
                 dlmbd = -dFdlmbd / d2Flmbd2
                 lmbdnp1 = lmbdn + dlmbd
                 if lmbdnp1 > plmbdmax:
-                    print(f'\t\tPerform the bisection step:\n\t\t{lmbdnp1 = } > {plmbdmax = }')
                     lmbdnp1 = (lmbdn + plmbdmax) / 2.
                 elif lmbdnp1 < 0:
-                    print(f'\t\tPerform the bisection step:\n\t\t{lmbdnp1 = } < 0')
                     lmbdnp1 = lmbdn / 2.
                 n += 1
                 lmbdn = lmbdnp1
                 fjkp1 = fjk + lmbdnp1 * dfj
                 ti = 1. - fjkp1.dot(Aji)
                 gj = Aji.dot(yi / ti)
+                gnorm = np.linalg.norm(gj)
                 dFdlmbd = dfj.dot(gj)
-                print(f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }')
-            gnorm = np.linalg.norm(gj)
+                print(tmpl % (k, n, *fjkp1, gnorm, lmbdn, dFdlmbd))
             fjk = fjkp1
+            n = 0
         else:
             fjk += dfj
             ti = 1. - fjk.dot(Aji)
             gj = Aji.dot(yi / ti)
             gnorm = np.linalg.norm(gj)
-        print(f'\nIteration #{k}:\n\t{fjk = }\n\t{gnorm = }')
+            lmbdn = 1.
+            dFdlmbd = dfj.dot(gj)
         k += 1
+        print(tmpl % (k, n, *fjk, gnorm, lmbdn, dFdlmbd))
     return fjk
 ```
 
@@ -770,16 +778,22 @@ fj0 = np.array([0.3333, 0.3333]) # Initial estimate
 
 def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     out = ''
+    Npm1 = Kji.shape[0]
+    head = map(lambda s: 'f' + s, map(str, range(Npm1)))
+    out = (('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s\n')
+           % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
+    tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e\n'
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
+    k = 0
+    n = 0
     fjk = fj0
     ti = 1. - fjk.dot(Aji)
     gj = Aji.dot(yi / ti)
     gnorm = np.linalg.norm(gj)
+    out += tmpl % (k, n, *fjk, gnorm, 1., -1.)
     if gnorm < tol:
         return fjk
-    out += f'Iteration #0:\n\t{fjk = }\n\t{gnorm = }\n'
-    k: int = 1
     while gnorm > tol and k < maxiter:
         Pji = np.sqrt(yi) / ti * Aji
         Hjl = Pji.dot(Pji.T)
@@ -795,9 +809,10 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
             fjkp1 = fjk + lmbdn * dfj
             ti = 1. - fjkp1.dot(Aji)
             gj = Aji.dot(yi / ti)
+            gnorm = np.linalg.norm(gj)
             dFdlmbd = dfj.dot(gj)
-            n: int = 1
-            out += f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }\n'
+            n = 1
+            out += tmpl % (k, n, *fjkp1, gnorm, lmbdn, dFdlmbd)
             while np.abs(dFdlmbd) > tol_ls and n < maxiter_ls:
                 Pji = np.sqrt(yi) / ti * Aji
                 Hjl = Pji.dot(Pji.T)
@@ -805,28 +820,29 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
                 dlmbd = -dFdlmbd / d2Flmbd2
                 lmbdnp1 = lmbdn + dlmbd
                 if lmbdnp1 > plmbdmax:
-                    out += f'\t\tPerform the bisection step:\n\t\t{lmbdnp1 = } > {plmbdmax = }\n'
                     lmbdnp1 = (lmbdn + plmbdmax) / 2.
                 elif lmbdnp1 < 0:
-                    out += f'\t\tPerform the bisection step:\n\t\t{lmbdnp1 = } < 0\n'
                     lmbdnp1 = lmbdn / 2.
                 n += 1
                 lmbdn = lmbdnp1
                 fjkp1 = fjk + lmbdnp1 * dfj
                 ti = 1. - fjkp1.dot(Aji)
                 gj = Aji.dot(yi / ti)
+                gnorm = np.linalg.norm(gj)
                 dFdlmbd = dfj.dot(gj)
-                out += f'\tLS-Iteration #{n}:\n\t\t{lmbdn = }\n\t\t{dFdlmbd = }\n'
-            gnorm = np.linalg.norm(gj)
+                out += tmpl % (k, n, *fjkp1, gnorm, lmbdn, dFdlmbd)
             fjk = fjkp1
+            n = 0
         else:
             fjk += dfj
             ti = 1. - fjk.dot(Aji)
             gj = Aji.dot(yi / ti)
             gnorm = np.linalg.norm(gj)
-        out += f'\nIteration #{k}:\n\t{fjk = }\n\t{gnorm = }\n'
+            lmbdn = 1.
+            dFdlmbd = dfj.dot(gj)
         k += 1
-    return fjk, out
+        out += tmpl % (k, n, *fjk, gnorm, lmbdn, dFdlmbd)
+    return fjk, out[:-1]
 
 fj, out1 = solveNp_out(Kji, yi, fj0)
 

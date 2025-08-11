@@ -646,20 +646,20 @@ $\mathbf{d} := \left( c_1 - \mathbf{c} \right) \, / \left( c_{N_c} - c_1 \right)
 $a := y_1 \, / \, y_{N_c}$ {comment}`# Начальное приближение`  
 $\left( g, \; g' \right) := G \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции G(a) и ее производной для начального приближения`  
 **if** $g > 0$ **then**  
-&emsp;$U \leftarrow G$ {comment}`# Выбор функции G(a) для нахождения корня`  
+&emsp;$U \rightarrow G$ {comment}`# Выбор функции G(a) для нахождения корня`  
 &emsp;$u := g$ {comment}`# Значение функции для начального приближения`  
 &emsp;$u' := g'$ {comment}`# Значение производной функции для начального приближения`  
 **else**  
-&emsp;$U \leftarrow H$ {comment}`# Выбор функции H(a) для нахождения корня`  
+&emsp;$U \rightarrow H$ {comment}`# Выбор функции H(a) для нахождения корня`  
 &emsp;$u := -a g$ {comment}`# Значение функции для начального приближения`  
 &emsp;$u' := -g - a g'$ {comment}`# Значение производной функции для начального приближения`  
 **end if**  
 $s := u \, / \, u'$ {comment}`# Длина шага итерации`  
 $k := 0$ {comment}`# Номер итерации`  
 **while** $\left| u \right| > \epsilon$ **and** $k < N_{iter}$ **do**  
-&emsp;$a := u - s$ {comment}`# Расчет нового приближения для (k+1)-й итерации`  
+&emsp;$a := a - s$ {comment}`# Расчет нового приближения для (k+1)-й итерации`  
 &emsp;$\left( u, \; u' \right) := U \left( a, \, \mathbf{y}, \, \mathbf{d} \right)$ {comment}`# Расчет значения функции и ее производной для нового приближения`  
-&emsp;$s := u / u'$ {comment}`# Обновление длины шага итерации`  
+&emsp;$s := u \, / \, u'$ {comment}`# Обновление длины шага итерации`  
 &emsp;$k := k + 1$ {comment}`# Обновление номера итерации`  
 **end while**  
 $f := \left( a c_{N_c} + c_1 \right) \, / \left( a + 1 \right)$ {comment}`# Расчет мольной доли фазы`  
@@ -667,9 +667,9 @@ $f := \left( a c_{N_c} + c_1 \right) \, / \left( a + 1 \right)$ {comment}`# Ра
 
 Пример реализации данного алгоритма представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/rr.py).
 
-Однако при рассмотрении практической значимости, хороший численный метод отличает не только его устойчивость, но и его эффективность *(rapidness)* – количество затрачиваемых итераций на поиск решения заданной точности. Зачастую повышение эффективности численного метода связывают с поиском наиболее точного начального приближения, для определения которого необходимо минимум вычислений, а также с *линеаризацией* функции, то есть с ее преобразованием к виду, максимально приближенному к линейной зависимости, поскольку для решения линейного уравнения необходима ровно одна ньютоновская итерация.
+Однако при рассмотрении практической значимости хороший численный метод отличает не только его устойчивость, но и его эффективность *(rapidness)* – количество затрачиваемых итераций на поиск решения заданной точности. Зачастую повышение эффективности численного метода связывают с поиском наиболее точного начального приближения, для определения которого необходимо минимум вычислений, а также с *линеаризацией* функции, то есть с ее преобразованием к виду, максимально приближенному к линейной зависимости, поскольку для решения линейного уравнения необходима ровно одна ньютоновская итерация.
 
-Для получения выражения для начального приближения рассмотрим следующий вид уравнения Речфорда-Райса, полученный авторами работы \[[Leibovici and Neoschil, 1992](https://doi.org/10.1016/0378-3812(92)85069-K)\]:
+Для получения выражения для начального приближения рассмотрим следующий вид уравнения Речфорда-Райса, предложенный авторами работы \[[Leibovici and Neoschil, 1992](https://doi.org/10.1016/0378-3812(92)85069-K)\]:
 
 $$ L \left( f \right) = \left( f - c_1 \right) \left( c_{N_c} - f \right) \sum_{i=1}^{N_c} \frac{y_i}{f - c_i} = 0. $$
 
@@ -918,7 +918,7 @@ Dk, dDkda = pD(ak)
 
 ``` python
 print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
-print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -987,7 +987,7 @@ Dk, dDkda = pD(ak)
 
 out1 = ''
 out1 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out1 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
+out1 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1069,7 +1069,7 @@ Dk, dDkda = pD(ak)
 
 ``` python
 print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
-print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 while pcondit(carry):
@@ -1110,7 +1110,7 @@ Dk, dDkda = pD(ak)
 
 out3 = ''
 out3 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out3 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
+out3 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1154,15 +1154,13 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 
-pcondit = partial(condit, tol=1e-12, maxiter=50)
-
 print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
-print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1199,15 +1197,13 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
-pcondit = partial(condit, tol=1e-12, maxiter=50)
-
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out5 = ''
 out5 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out5 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
+out5 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1250,15 +1246,13 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 
-pcondit = partial(condit, tol=1e-10, maxiter=50)
-
 print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
-print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1294,15 +1288,13 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
-pcondit = partial(condit, tol=1e-10, maxiter=50)
-
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out7 = ''
 out7 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out7 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
+out7 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1359,13 +1351,11 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
 
-pcondit = partial(condit, tol=1e-10, maxiter=50)
-
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
-print('%3s %11.2e %11.2e %8s' % (k, ak, eqk, 'D'))
+print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1402,15 +1392,13 @@ pD = partial(fD, yi=yi, di=di)
 
 pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
 
-pcondit = partial(condit, tol=1e-10, maxiter=50)
-
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out9 = ''
 out9 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out9 += '%3s %11.2e %11.2e %8s\n' % (k, ak, eqk, 'D')
+out9 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 

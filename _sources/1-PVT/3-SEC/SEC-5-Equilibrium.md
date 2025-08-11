@@ -179,10 +179,10 @@ eps = 1e-6 # Tolerance
 ``` python
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
-wi = np.array([.225, .008]) # Acentric factors
+wi = np.array([0.225, 0.008]) # Acentric factors
 mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
-dij = np.array([.025]) # Binary interaction parameters
+dij = np.array([0.025]) # Binary interaction parameters
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 
@@ -553,10 +553,10 @@ yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
 ``` python
 Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([190.6, 507.5, 647.3]) # Critical temperatures [K]
-wi = np.array([.008, .27504, .344]) # Acentric factors
+wi = np.array([0.008, 0.27504, 0.344]) # Acentric factors
 mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0., 0.]) # Volume shift parameters
-dij = np.array([.0253, 0.4907, 0.48]) # Binary interaction parameters
+dij = np.array([0.0253, 0.4907, 0.48]) # Binary interaction parameters
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 

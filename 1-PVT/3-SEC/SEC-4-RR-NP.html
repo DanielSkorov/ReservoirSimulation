@@ -1050,16 +1050,22 @@ F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">solveNp</span><span class="p">(</span><span class="n">Kji</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">fj0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">tol_ls</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">maxiter_ls</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">Npm1</span> <span class="o">=</span> <span class="n">Kji</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">head</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="s1">&#39;f&#39;</span> <span class="o">+</span> <span class="n">s</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">Npm1</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">((</span><span class="s1">&#39;</span><span class="si">%3s%5s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">Npm1</span> <span class="o">*</span> <span class="s1">&#39;</span><span class="si">%10s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="si">%12s%10s%12s</span><span class="s1">&#39;</span><span class="p">)</span>
+          <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;Nit&#39;</span><span class="p">,</span> <span class="s1">&#39;Nls&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">head</span><span class="p">,</span> <span class="s1">&#39;gnorm&#39;</span><span class="p">,</span> <span class="s1">&#39;lmbd&#39;</span><span class="p">,</span> <span class="s1">&#39;dFdlmbd&#39;</span><span class="p">))</span>
+    <span class="n">tmpl</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%3s%5s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">Npm1</span> <span class="o">*</span> <span class="s1">&#39; </span><span class="si">%9.4f</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39; </span><span class="si">%11.2e</span><span class="s1"> </span><span class="si">%9.4f</span><span class="s1"> </span><span class="si">%11.2e</span><span class="s1">&#39;</span>
     <span class="n">Aji</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">Kji</span>
     <span class="n">bi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">Kji</span> <span class="o">*</span> <span class="n">yi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yi</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">fjk</span> <span class="o">=</span> <span class="n">fj0</span>
     <span class="n">ti</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fjk</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
     <span class="n">gj</span> <span class="o">=</span> <span class="n">Aji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="n">ti</span><span class="p">)</span>
     <span class="n">gnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">fjk</span><span class="p">,</span> <span class="n">gnorm</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">gnorm</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">fjk</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #0:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">fjk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">gnorm</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">while</span> <span class="n">gnorm</span> <span class="o">&gt;</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">maxiter</span><span class="p">:</span>
         <span class="n">Pji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span> <span class="o">/</span> <span class="n">ti</span> <span class="o">*</span> <span class="n">Aji</span>
         <span class="n">Hjl</span> <span class="o">=</span> <span class="n">Pji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Pji</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -1075,9 +1081,10 @@ F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}
             <span class="n">fjkp1</span> <span class="o">=</span> <span class="n">fjk</span> <span class="o">+</span> <span class="n">lmbdn</span> <span class="o">*</span> <span class="n">dfj</span>
             <span class="n">ti</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fjkp1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
             <span class="n">gj</span> <span class="o">=</span> <span class="n">Aji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="n">ti</span><span class="p">)</span>
+            <span class="n">gnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
             <span class="n">dFdlmbd</span> <span class="o">=</span> <span class="n">dfj</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
-            <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">LS-Iteration #</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">lmbdn</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">dFdlmbd</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">fjkp1</span><span class="p">,</span> <span class="n">gnorm</span><span class="p">,</span> <span class="n">lmbdn</span><span class="p">,</span> <span class="n">dFdlmbd</span><span class="p">))</span>
             <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dFdlmbd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol_ls</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">maxiter_ls</span><span class="p">:</span>
                 <span class="n">Pji</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span> <span class="o">/</span> <span class="n">ti</span> <span class="o">*</span> <span class="n">Aji</span>
                 <span class="n">Hjl</span> <span class="o">=</span> <span class="n">Pji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Pji</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -1085,27 +1092,28 @@ F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}
                 <span class="n">dlmbd</span> <span class="o">=</span> <span class="o">-</span><span class="n">dFdlmbd</span> <span class="o">/</span> <span class="n">d2Flmbd2</span>
                 <span class="n">lmbdnp1</span> <span class="o">=</span> <span class="n">lmbdn</span> <span class="o">+</span> <span class="n">dlmbd</span>
                 <span class="k">if</span> <span class="n">lmbdnp1</span> <span class="o">&gt;</span> <span class="n">plmbdmax</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">Perform the bisection step:</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">lmbdnp1</span><span class="w"> </span><span class="si">= }</span><span class="s1"> &gt; </span><span class="si">{</span><span class="n">plmbdmax</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="n">lmbdnp1</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdn</span> <span class="o">+</span> <span class="n">plmbdmax</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
                 <span class="k">elif</span> <span class="n">lmbdnp1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">Perform the bisection step:</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">lmbdnp1</span><span class="w"> </span><span class="si">= }</span><span class="s1"> &lt; 0&#39;</span><span class="p">)</span>
                     <span class="n">lmbdnp1</span> <span class="o">=</span> <span class="n">lmbdn</span> <span class="o">/</span> <span class="mf">2.</span>
                 <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">lmbdn</span> <span class="o">=</span> <span class="n">lmbdnp1</span>
                 <span class="n">fjkp1</span> <span class="o">=</span> <span class="n">fjk</span> <span class="o">+</span> <span class="n">lmbdnp1</span> <span class="o">*</span> <span class="n">dfj</span>
                 <span class="n">ti</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fjkp1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
                 <span class="n">gj</span> <span class="o">=</span> <span class="n">Aji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="n">ti</span><span class="p">)</span>
+                <span class="n">gnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
                 <span class="n">dFdlmbd</span> <span class="o">=</span> <span class="n">dfj</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">LS-Iteration #</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">lmbdn</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t\t</span><span class="si">{</span><span class="n">dFdlmbd</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="n">gnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">fjkp1</span><span class="p">,</span> <span class="n">gnorm</span><span class="p">,</span> <span class="n">lmbdn</span><span class="p">,</span> <span class="n">dFdlmbd</span><span class="p">))</span>
             <span class="n">fjk</span> <span class="o">=</span> <span class="n">fjkp1</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fjk</span> <span class="o">+=</span> <span class="n">dfj</span>
             <span class="n">ti</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">fjk</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aji</span><span class="p">)</span>
             <span class="n">gj</span> <span class="o">=</span> <span class="n">Aji</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">yi</span> <span class="o">/</span> <span class="n">ti</span><span class="p">)</span>
             <span class="n">gnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Iteration #</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">fjk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">gnorm</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">lmbdn</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="n">dFdlmbd</span> <span class="o">=</span> <span class="n">dfj</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gj</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">fjk</span><span class="p">,</span> <span class="n">gnorm</span><span class="p">,</span> <span class="n">lmbdn</span><span class="p">,</span> <span class="n">dFdlmbd</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">fjk</span>
 </pre></div>
 </div>
@@ -1120,39 +1128,17 @@ F''_{\lambda \lambda} &amp;= \Delta \mathbf{f}^\top \mathbf{H} \Delta \mathbf{f}
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
-	fjk = array([0.33699, 0.4512 ])
-	gnorm = np.float64(0.19408039220047113)
-	LS-Iteration #1:
-		lmbdn = np.float64(0.46101013856245593)
-		dFdlmbd = np.float64(-0.06177657667502082)
-	LS-Iteration #2:
-		lmbdn = np.float64(0.8267125822830498)
-		dFdlmbd = np.float64(0.09548643806395093)
-	LS-Iteration #3:
-		lmbdn = np.float64(0.7540037525545551)
-		dFdlmbd = np.float64(0.02911155521169148)
-	LS-Iteration #4:
-		lmbdn = np.float64(0.708454487364057)
-		dFdlmbd = np.float64(0.0044517655962531)
-	LS-Iteration #5:
-		lmbdn = np.float64(0.6987746484028807)
-		dFdlmbd = np.float64(0.00013492167323323357)
-	LS-Iteration #6:
-		lmbdn = np.float64(0.6984626920805465)
-		dFdlmbd = np.float64(1.3054034066640324e-07)
-
-Iteration #1:
-	fjk = array([0.6752047 , 0.06015174])
-	gnorm = np.float64(0.017766631026478037)
-
-Iteration #2:
-	fjk = array([0.6871686 , 0.06020594])
-	gnorm = np.float64(0.0005526711839387938)
-
-Iteration #3:
-	fjk = array([0.6868332 , 0.06019425])
-	gnorm = np.float64(4.943518503361828e-07)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd
+  0    0    0.3370    0.4512    1.94e-01    1.0000   -1.00e+00
+  0    1    0.5602    0.1931    9.72e-02    0.4610   -6.18e-02
+  0    2    0.7373   -0.0117    1.84e-01    0.8267    9.55e-02
+  0    3    0.7021    0.0291    6.51e-02    0.7540    2.91e-02
+  0    4    0.6800    0.0546    2.37e-02    0.7085    4.45e-03
+  0    5    0.6754    0.0600    1.79e-02    0.6988    1.35e-04
+  0    6    0.6752    0.0602    1.78e-02    0.6985    1.31e-07
+  1    0    0.6752    0.0602    1.78e-02    0.6985    1.31e-07
+  2    0    0.6872    0.0602    5.53e-04    1.0000    4.93e-06
+  3    0    0.6868    0.0602    4.94e-07    1.0000   -1.28e-10
 </pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0.6868332 , 0.06019425])
@@ -1181,29 +1167,13 @@ Iteration #3:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
-	fjk = array([0.3333, 0.3333])
-	gnorm = np.float64(0.7806731340071325)
-
-Iteration #1:
-	fjk = array([0.12243472, 0.34854292])
-	gnorm = np.float64(0.2537564542101454)
-
-Iteration #2:
-	fjk = array([0.16733921, 0.15613338])
-	gnorm = np.float64(0.04325594386562271)
-
-Iteration #3:
-	fjk = array([0.16232478, 0.12697157])
-	gnorm = np.float64(0.0012054818461856736)
-
-Iteration #4:
-	fjk = array([0.1625713 , 0.12566965])
-	gnorm = np.float64(1.0623260404684668e-06)
-
-Iteration #5:
-	fjk = array([0.16257105, 0.12566903])
-	gnorm = np.float64(6.612383131997196e-13)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd
+  0    0    0.3333    0.3333    7.81e-01    1.0000   -1.00e+00
+  1    0    0.1224    0.3485    2.54e-01    1.0000   -3.47e-02
+  2    0    0.1673    0.1561    4.33e-02    1.0000   -4.36e-03
+  3    0    0.1623    0.1270    1.21e-03    1.0000   -2.95e-05
+  4    0    0.1626    0.1257    1.06e-06    1.0000   -7.49e-10
+  5    0    0.1626    0.1257    6.61e-13    1.0000   -4.16e-19
 </pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0.16257105, 0.12566903])
@@ -1239,7 +1209,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.652469050924431)<br>	LS-Iteration #1:<br>		lmbdn = np.float64(0.4524992918083489)<br>		dFdlmbd = np.float64(-0.08796797107899278)<br>	LS-Iteration #2:<br>		lmbdn = np.float64(0.8071210911871727)<br>		dFdlmbd = np.float64(0.07948710729559692)<br>	LS-Iteration #3:<br>		lmbdn = np.float64(0.7347145824712713)<br>		dFdlmbd = np.float64(0.018922283749097265)<br>	LS-Iteration #4:<br>		lmbdn = np.float64(0.7054030051094734)<br>		dFdlmbd = np.float64(0.0014945193483764793)<br>	LS-Iteration #5:<br>		lmbdn = np.float64(0.7026785653730827)<br>		dFdlmbd = np.float64(1.042008679224475e-05)<br>	LS-Iteration #6:<br>		lmbdn = np.float64(0.7026593026341289)<br>		dFdlmbd = np.float64(5.115589956847244e-10)<br><br>Iteration #1:<br>	fjk = array([0.52524526, 0.40895211])<br>	gnorm = np.float64(0.010958606422254916)<br><br>Iteration #2:<br>	fjk = array([0.47104534, 0.4683272 ])<br>	gnorm = np.float64(0.0009526088179719733)<br><br>Iteration #3:<br>	fjk = array([0.46945499, 0.47024253])<br>	gnorm = np.float64(3.234905523441442e-07)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    6.52e-01    1.0000   -1.00e+00<br>  0    1    0.4569    0.3820    3.25e-01    0.4525   -8.80e-02<br>  0    2    0.5538    0.4202    2.86e-01    0.8071    7.95e-02<br>  0    3    0.5340    0.4124    6.59e-02    0.7347    1.89e-02<br>  0    4    0.5260    0.4092    1.04e-02    0.7054    1.49e-03<br>  0    5    0.5253    0.4090    1.09e-02    0.7027    1.04e-05<br>  0    6    0.5252    0.4090    1.10e-02    0.7027    5.12e-10<br>  1    0    0.5252    0.4090    1.10e-02    0.7027    5.12e-10<br>  2    0    0.4710    0.4683    9.53e-04    1.0000   -2.43e-05<br>  3    0    0.4695    0.4702    3.23e-07    1.0000   -8.00e-10
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1274,7 +1244,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.37671212360506806)<br>	LS-Iteration #1:<br>		lmbdn = np.float64(0.388908767989263)<br>		dFdlmbd = np.float64(-0.04210717338810481)<br>	LS-Iteration #2:<br>		lmbdn = np.float64(0.5421559266810267)<br>		dFdlmbd = np.float64(0.018247430722685004)<br>	LS-Iteration #3:<br>		lmbdn = np.float64(0.5102507737787378)<br>		dFdlmbd = np.float64(0.0016042529762835124)<br>	LS-Iteration #4:<br>		lmbdn = np.float64(0.5068810520032299)<br>		dFdlmbd = np.float64(1.455336806959525e-05)<br>	LS-Iteration #5:<br>		lmbdn = np.float64(0.5068499206944858)<br>		dFdlmbd = np.float64(1.2178173489172522e-09)<br><br>Iteration #1:<br>	fjk = array([0.71119266, 0.15789987])<br>	gnorm = np.float64(0.002680483992238792)<br><br>Iteration #2:<br>	fjk = array([ 0.87883889, -0.00859586])<br>	gnorm = np.float64(8.029544267278953e-05)<br><br>Iteration #3:<br>	fjk = array([ 8.70189681e-01, -2.39217707e-05])<br>	gnorm = np.float64(2.855130061812269e-07)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    3.77e-01    1.0000   -1.00e+00<br>  0    1    0.6233    0.1987    1.48e-01    0.3889   -4.21e-02<br>  0    2    0.7375    0.1457    6.77e-02    0.5422    1.82e-02<br>  0    3    0.7137    0.1567    8.30e-03    0.5103    1.60e-03<br>  0    4    0.7112    0.1579    2.73e-03    0.5069    1.46e-05<br>  0    5    0.7112    0.1579    2.68e-03    0.5068    1.22e-09<br>  1    0    0.7112    0.1579    2.68e-03    0.5068    1.22e-09<br>  2    0    0.8788   -0.0086    8.03e-05    1.0000    1.24e-05<br>  3    0    0.8702   -0.0000    2.86e-07    1.0000   -1.93e-09
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1307,7 +1277,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(2.002237855489411)<br><br>Iteration #1:<br>	fjk = array([ 0.71139276, -2.56952107])<br>	gnorm = np.float64(0.8695798529840463)<br>	LS-Iteration #1:<br>		lmbdn = np.float64(0.3667829154092574)<br>		dFdlmbd = np.float64(-0.2644413070352992)<br>	LS-Iteration #2:<br>		lmbdn = np.float64(0.9709948815629628)<br>		dFdlmbd = np.float64(3.183306359629607)<br>	LS-Iteration #3:<br>		lmbdn = np.float64(0.9478515533086341)<br>		dFdlmbd = np.float64(1.5165105117013125)<br>	LS-Iteration #4:<br>		lmbdn = np.float64(0.9076684595647967)<br>		dFdlmbd = np.float64(0.6844618291330662)<br>	LS-Iteration #5:<br>		lmbdn = np.float64(0.8475691169358897)<br>		dFdlmbd = np.float64(0.27301706628946687)<br>	LS-Iteration #6:<br>		lmbdn = np.float64(0.7816113141594996)<br>		dFdlmbd = np.float64(0.08078472630059315)<br>	LS-Iteration #7:<br>		lmbdn = np.float64(0.7425299450451479)<br>		dFdlmbd = np.float64(0.011461671820372832)<br>	LS-Iteration #8:<br>		lmbdn = np.float64(0.7350195105662438)<br>		dFdlmbd = np.float64(0.000293089921455332)<br>	LS-Iteration #9:<br>		lmbdn = np.float64(0.7348172662978265)<br>		dFdlmbd = np.float64(2.0016961719410142e-07)<br><br>Iteration #2:<br>	fjk = array([1.08996512, 5.04327552])<br>	gnorm = np.float64(0.09873271341630137)<br><br>Iteration #3:<br>	fjk = array([ 1.25933329, 19.64110121])<br>	gnorm = np.float64(0.08589133959367884)<br><br>Iteration #4:<br>	fjk = array([ 1.22115672, 16.46405636])<br>	gnorm = np.float64(0.024859240751694742)<br><br>Iteration #5:<br>	fjk = array([ 1.20268928, 14.88885867])<br>	gnorm = np.float64(0.00276594206231452)<br><br>Iteration #6:<br>	fjk = array([ 1.2000421 , 14.66358424])<br>	gnorm = np.float64(4.2785855419691256e-05)<br><br>Iteration #7:<br>	fjk = array([ 1.20000001, 14.66000078])<br>	gnorm = np.float64(1.0444402421903754e-08)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    2.00e+00    1.0000   -1.00e+00<br>  1    0    0.7114   -2.5695    8.70e-01    1.0000   -3.39e-01<br>  1    1    0.9004    1.2304    5.45e-01    0.3668   -2.64e-01<br>  1    2    1.2116    7.4901    8.37e+00    0.9710    3.18e+00<br>  1    3    1.1997    7.2503    4.03e+00    0.9479    1.52e+00<br>  1    4    1.1790    6.8340    1.86e+00    0.9077    6.84e-01<br>  1    5    1.1481    6.2114    7.98e-01    0.8476    2.73e-01<br>  1    6    1.1141    5.5281    3.04e-01    0.7816    8.08e-02<br>  1    7    1.0939    5.1232    1.28e-01    0.7425    1.15e-02<br>  1    8    1.0901    5.0454    9.95e-02    0.7350    2.93e-04<br>  1    9    1.0900    5.0433    9.87e-02    0.7348    2.00e-07<br>  2    0    1.0900    5.0433    9.87e-02    0.7348    2.00e-07<br>  3    0    1.2593   19.6411    8.59e-02    1.0000    6.97e-02<br>  4    0    1.2212   16.4641    2.49e-02    1.0000   -4.04e-03<br>  5    0    1.2027   14.8889    2.77e-03    1.0000   -2.27e-04<br>  6    0    1.2000   14.6636    4.28e-05    1.0000   -5.01e-07<br>  7    0    1.2000   14.6600    1.04e-08    1.0000   -1.95e-12
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1342,7 +1312,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.06917958028941822)<br><br>Iteration #1:<br>	fjk = array([0.09750481, 0.61231056])<br>	gnorm = np.float64(0.009829097301519563)<br><br>Iteration #2:<br>	fjk = array([0.11169756, 0.59256435])<br>	gnorm = np.float64(0.00016416933065846736)<br><br>Iteration #3:<br>	fjk = array([0.11170798, 0.59243985])<br>	gnorm = np.float64(4.969735791652309e-08)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    6.92e-02    1.0000   -1.00e+00<br>  1    0    0.0975    0.6123    9.83e-03    1.0000    4.80e-04<br>  2    0    0.1117    0.5926    1.64e-04    1.0000   -8.11e-07<br>  3    0    0.1117    0.5924    4.97e-08    1.0000   -4.16e-12
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1377,7 +1347,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.4887173172839886)<br>	LS-Iteration #1:<br>		lmbdn = np.float64(0.13761794744247086)<br>		dFdlmbd = np.float64(-0.325049086145958)<br>		Perform the bisection step:<br>		lmbdnp1 = np.float64(0.5710050086590367) > plmbdmax = np.float64(0.27677664237849536)<br>	LS-Iteration #2:<br>		lmbdn = np.float64(0.2071972949104831)<br>		dFdlmbd = np.float64(-0.2448398963775778)<br>		Perform the bisection step:<br>		lmbdnp1 = np.float64(0.3367405895476236) > plmbdmax = np.float64(0.27677664237849536)<br>	LS-Iteration #3:<br>		lmbdn = np.float64(0.24198696864448924)<br>		dFdlmbd = np.float64(-0.13648482939969483)<br>	LS-Iteration #4:<br>		lmbdn = np.float64(0.2674898399733239)<br>		dFdlmbd = np.float64(0.2362049411105136)<br>	LS-Iteration #5:<br>		lmbdn = np.float64(0.2622046140996482)<br>		dFdlmbd = np.float64(0.07401937780756149)<br>	LS-Iteration #6:<br>		lmbdn = np.float64(0.2587349069593498)<br>		dFdlmbd = np.float64(0.011829426822366634)<br>	LS-Iteration #7:<br>		lmbdn = np.float64(0.25795168515201755)<br>		dFdlmbd = np.float64(0.00039773761871814486)<br>	LS-Iteration #8:<br>		lmbdn = np.float64(0.2579234901207746)<br>		dFdlmbd = np.float64(4.774574725550929e-07)<br><br>Iteration #1:<br>	fjk = array([-0.06526275,  1.04257682])<br>	gnorm = np.float64(0.007662534104162038)<br><br>Iteration #2:<br>	fjk = array([0.43963708, 0.53320709])<br>	gnorm = np.float64(0.015306268207092556)<br><br>Iteration #3:<br>	fjk = array([0.43088866, 0.54089969])<br>	gnorm = np.float64(0.0004682258332734572)<br><br>Iteration #4:<br>	fjk = array([0.43105455, 0.54069251])<br>	gnorm = np.float64(5.392991268394144e-07)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    4.89e-01    1.0000   -1.00e+00<br>  0    1    0.1206    0.7117    4.01e-01    0.1376   -3.25e-01<br>  0    2    0.0131    0.9031    3.02e-01    0.2072   -2.45e-01<br>  0    3   -0.0406    0.9988    1.71e-01    0.2420   -1.36e-01<br>  0    4   -0.0800    1.0689    2.73e-01    0.2675    2.36e-01<br>  0    5   -0.0719    1.0543    8.08e-02    0.2622    7.40e-02<br>  0    6   -0.0665    1.0448    7.02e-03    0.2587    1.18e-02<br>  0    7   -0.0653    1.0427    7.21e-03    0.2580    3.98e-04<br>  0    8   -0.0653    1.0426    7.66e-03    0.2579    4.77e-07<br>  1    0   -0.0653    1.0426    7.66e-03    0.2579    4.77e-07<br>  2    0    0.4396    0.5332    1.53e-02    1.0000    5.89e-05<br>  3    0    0.4309    0.5409    4.68e-04    1.0000   -3.82e-07<br>  4    0    0.4311    0.5407    5.39e-07    1.0000   -1.53e-11
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1412,7 +1382,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.06429523122359908)<br><br>Iteration #1:<br>	fjk = array([0.08247567, 0.48333686])<br>	gnorm = np.float64(0.010550099916499429)<br><br>Iteration #2:<br>	fjk = array([0.0142648 , 0.52655931])<br>	gnorm = np.float64(0.00038022592770864703)<br><br>Iteration #3:<br>	fjk = array([0.01138762, 0.52843165])<br>	gnorm = np.float64(5.397568889781686e-07)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    6.43e-02    1.0000   -1.00e+00<br>  1    0    0.0825    0.4833    1.06e-02    1.0000   -6.54e-04<br>  2    0    0.0143    0.5266    3.80e-04    1.0000   -5.88e-06<br>  3    0    0.0114    0.5284    5.40e-07    1.0000   -3.40e-10
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1445,7 +1415,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.7007156512214616)<br><br>Iteration #1:<br>	fjk = array([0.26060057, 0.28383275])<br>	gnorm = np.float64(0.09568331400643973)<br><br>Iteration #2:<br>	fjk = array([0.14335674, 0.36428971])<br>	gnorm = np.float64(0.004024139719665685)<br><br>Iteration #3:<br>	fjk = array([0.13590396, 0.36972943])<br>	gnorm = np.float64(1.2021559774332893e-05)<br><br>Iteration #4:<br>	fjk = array([0.13588832, 0.3697401 ])<br>	gnorm = np.float64(5.7313438245417555e-11)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    7.01e-01    1.0000   -1.00e+00<br>  1    0    0.2606    0.2838    9.57e-02    1.0000   -8.24e-03<br>  2    0    0.1434    0.3643    4.02e-03    1.0000   -1.12e-04<br>  3    0    0.1359    0.3697    1.20e-05    1.0000   -1.50e-08<br>  4    0    0.1359    0.3697    5.73e-11    1.0000   -2.25e-16
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1478,7 +1448,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.7067170011560204)<br><br>Iteration #1:<br>	fjk = array([0.09419122, 0.42853469])<br>	gnorm = np.float64(0.12621692122675576)<br><br>Iteration #2:<br>	fjk = array([-0.129504  ,  0.58878336])<br>	gnorm = np.float64(0.011991920827891692)<br><br>Iteration #3:<br>	fjk = array([-0.14882123,  0.60198211])<br>	gnorm = np.float64(6.90581772870241e-05)<br><br>Iteration #4:<br>	fjk = array([-0.14897162,  0.60208975])<br>	gnorm = np.float64(4.061306809245418e-09)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    7.07e-01    1.0000   -1.00e+00<br>  1    0    0.0942    0.4285    1.26e-01    1.0000   -1.32e-02<br>  2    0   -0.1295    0.5888    1.20e-02    1.0000   -4.88e-04<br>  3    0   -0.1488    0.6020    6.91e-05    1.0000   -3.24e-07<br>  4    0   -0.1490    0.6021    4.06e-09    1.0000   -1.07e-13
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1511,7 +1481,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.3333, 0.3333])<br>	gnorm = np.float64(0.44060621749889556)<br><br>Iteration #1:<br>	fjk = array([0.18426444, 0.39268575])<br>	gnorm = np.float64(0.0668177385301343)<br><br>Iteration #2:<br>	fjk = array([0.20235382, 0.36228066])<br>	gnorm = np.float64(0.002527766330390733)<br><br>Iteration #3:<br>	fjk = array([0.20358899, 0.36156528])<br>	gnorm = np.float64(6.6560884453230524e-06)<br><br>Iteration #4:<br>	fjk = array([0.20359293, 0.36156215])<br>	gnorm = np.float64(7.981049842522322e-11)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1       gnorm      lmbd     dFdlmbd<br>  0    0    0.3333    0.3333    4.41e-01    1.0000   -1.00e+00<br>  1    0    0.1843    0.3927    6.68e-02    1.0000    3.85e-03<br>  2    0    0.2024    0.3623    2.53e-03    1.0000   -4.11e-05<br>  3    0    0.2036    0.3616    6.66e-06    1.0000   -9.40e-09<br>  4    0    0.2036    0.3616    7.98e-11    1.0000   -3.49e-16
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1547,7 +1517,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.25, 0.25, 0.25])<br>	gnorm = np.float64(0.9564473485782539)<br>	LS-Iteration #1:<br>		lmbdn = np.float64(0.24934701411771526)<br>		dFdlmbd = np.float64(-0.2850834996224363)<br>		Perform the bisection step:<br>		lmbdnp1 = np.float64(0.751577155847124) > plmbdmax = np.float64(0.6541223435312181)<br>	LS-Iteration #2:<br>		lmbdn = np.float64(0.4517346788244667)<br>		dFdlmbd = np.float64(-0.09961123832949349)<br>	LS-Iteration #3:<br>		lmbdn = np.float64(0.5127364608803678)<br>		dFdlmbd = np.float64(0.03829310729573489)<br>	LS-Iteration #4:<br>		lmbdn = np.float64(0.5006229467853965)<br>		dFdlmbd = np.float64(0.0028594837077511245)<br>	LS-Iteration #5:<br>		lmbdn = np.float64(0.49956691811134324)<br>		dFdlmbd = np.float64(1.8298820986910325e-05)<br>	LS-Iteration #6:<br>		lmbdn = np.float64(0.4995600729112148)<br>		dFdlmbd = np.float64(7.583037080205468e-10)<br><br>Iteration #1:<br>	fjk = array([0.2558536 , 0.3878576 , 0.05656469])<br>	gnorm = np.float64(0.11107895236649526)<br><br>Iteration #2:<br>	fjk = array([0.01677851, 0.68054044, 0.05760902])<br>	gnorm = np.float64(0.029288965236743823)<br><br>Iteration #3:<br>	fjk = array([0.04251633, 0.64595615, 0.05720471])<br>	gnorm = np.float64(0.0010361232502144842)<br><br>Iteration #4:<br>	fjk = array([0.04317451, 0.64490056, 0.05719405])<br>	gnorm = np.float64(1.5344479126595289e-06)<br><br>Iteration #5:<br>	fjk = array([0.0431746 , 0.64489979, 0.05719403])<br>	gnorm = np.float64(3.4228972517446014e-12)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1        f2       gnorm      lmbd     dFdlmbd<br>  0    0    0.2500    0.2500    0.2500    9.56e-01    1.0000   -1.00e+00<br>  0    1    0.2529    0.3188    0.1535    6.80e-01    0.2493   -2.85e-01<br>  0    2    0.2553    0.3747    0.0751    2.24e-01    0.4517   -9.96e-02<br>  0    3    0.2560    0.3915    0.0515    1.81e-01    0.5127    3.83e-02<br>  0    4    0.2559    0.3882    0.0562    1.15e-01    0.5006    2.86e-03<br>  0    5    0.2559    0.3879    0.0566    1.11e-01    0.4996    1.83e-05<br>  0    6    0.2559    0.3879    0.0566    1.11e-01    0.4996    7.58e-10<br>  1    0    0.2559    0.3879    0.0566    1.11e-01    0.4996    7.58e-10<br>  2    0    0.0168    0.6805    0.0576    2.93e-02    1.0000    1.46e-03<br>  3    0    0.0425    0.6460    0.0572    1.04e-03    1.0000   -7.75e-06<br>  4    0    0.0432    0.6449    0.0572    1.53e-06    1.0000   -4.35e-10<br>  5    0    0.0432    0.6449    0.0572    3.42e-12    1.0000   -1.42e-18
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
@@ -1583,7 +1553,7 @@ Iteration #5:
 </pre></div>
 </div>
 <div class="output text_html">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Iteration #0:<br>	fjk = array([0.25, 0.25, 0.25])<br>	gnorm = np.float64(0.8528735390123274)<br>	LS-Iteration #1:<br>		lmbdn = np.float64(0.2786523190107046)<br>		dFdlmbd = np.float64(-0.18657931978948583)<br>	LS-Iteration #2:<br>		lmbdn = np.float64(0.7486556380474682)<br>		dFdlmbd = np.float64(0.7353236226628682)<br>	LS-Iteration #3:<br>		lmbdn = np.float64(0.6909583436485037)<br>		dFdlmbd = np.float64(0.30418480261712955)<br>	LS-Iteration #4:<br>		lmbdn = np.float64(0.6217985695991795)<br>		dFdlmbd = np.float64(0.09902558811427428)<br>	LS-Iteration #5:<br>		lmbdn = np.float64(0.5725903674360475)<br>		dFdlmbd = np.float64(0.017969125547200895)<br>	LS-Iteration #6:<br>		lmbdn = np.float64(0.5593031208687226)<br>		dFdlmbd = np.float64(0.0008116162707490632)<br>	LS-Iteration #7:<br>		lmbdn = np.float64(0.5586449950511185)<br>		dFdlmbd = np.float64(1.7940659907695472e-06)<br><br>Iteration #1:<br>	fjk = array([0.22694031, 0.41783885, 0.08012853])<br>	gnorm = np.float64(0.06962126156598315)<br><br>Iteration #2:<br>	fjk = array([0.0388212 , 0.67838752, 0.08048708])<br>	gnorm = np.float64(0.016469412457387755)<br><br>Iteration #3:<br>	fjk = array([0.0616764 , 0.64558165, 0.08029557])<br>	gnorm = np.float64(0.0005251658811846073)<br><br>Iteration #4:<br>	fjk = array([0.06238289, 0.64453468, 0.08029053])<br>	gnorm = np.float64(5.765026128740707e-07)<br>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre id="codecell20" tabindex="0"><span></span>Nit  Nls        f0        f1        f2       gnorm      lmbd     dFdlmbd<br>  0    0    0.2500    0.2500    0.2500    8.53e-01    1.0000   -1.00e+00<br>  0    1    0.2385    0.3337    0.1653    5.73e-01    0.2787   -1.87e-01<br>  0    2    0.2191    0.4749    0.0224    2.45e+00    0.7487    7.35e-01<br>  0    3    0.2215    0.4576    0.0399    1.04e+00    0.6910    3.04e-01<br>  0    4    0.2243    0.4368    0.0609    3.64e-01    0.6218    9.90e-02<br>  0    5    0.2264    0.4220    0.0759    1.11e-01    0.5726    1.80e-02<br>  0    6    0.2269    0.4180    0.0799    7.10e-02    0.5593    8.12e-04<br>  0    7    0.2269    0.4178    0.0801    6.96e-02    0.5586    1.79e-06<br>  1    0    0.2269    0.4178    0.0801    6.96e-02    0.5586    1.79e-06<br>  2    0    0.0388    0.6784    0.0805    1.65e-02    1.0000    6.22e-04<br>  3    0    0.0617    0.6456    0.0803    5.25e-04    1.0000   -2.80e-06<br>  4    0    0.0624    0.6445    0.0803    5.77e-07    1.0000   -1.04e-10
 </pre><button class="copybtn o-tooltip--left" data-tooltip="Copy" data-clipboard-target="#codecell20">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Copy to clipboard</title>
