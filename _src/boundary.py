@@ -6489,7 +6489,7 @@ class env2pPT(object):
             skp1_val = sk_val + step * np.sign(sk_val - skm1_val)
             xi = xk + (xk - xkm1) / (sk_val - skm1_val) * (skp1_val - sk_val)
           else:
-            skp1_val = sk_val + s_dir * step0
+            skp1_val = sk_val + k_dir * step0
             xi = xk + dxkds * (skp1_val - sk_val)
           r += 1
       bounds.append(k)

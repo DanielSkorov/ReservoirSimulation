@@ -628,6 +628,30 @@ class env2p(unittest.TestCase):
     self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 
+  def test_17(self):
+    print('=== test_17 ===')
+    P0 = 4351324.8
+    T0 = -10. + 273.15
+    yi = np.array([.9, .1])
+    Pci = np.array([7.37646, 4.600155]) * 1e6
+    Tci = np.array([304.2, 190.6])
+    wi = np.array([.225, .008])
+    mwi = np.array([0.04401, 0.016043])
+    vsi = np.array([0., 0.])
+    dij = np.array([.025])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=120., Tmax=300., Pmax=10e6,
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    maxpoints = 91
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, sidx0=1)
+    if plotting:
+      self.plot(res, -200., 50., 0., 10.)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
+    pass
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=0)
