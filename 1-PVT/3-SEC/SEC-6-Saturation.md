@@ -160,6 +160,111 @@ ax1ins.grid(zorder=1)
 
 Таким образом, по данным, представленным на графике выше, видно, что состояние фазы многофазной системы, находящейся в равновесном состоянии, является для этой фазы *насыщенным состоянием* при равновесных давлении, температуре и компонентном составе. Действительно, увеличение температуры на $1 \; ^{\circ} \mathrm{C}$ нарушит равновесное состояние системы и приведет к изменению компонентных составов фаз, то есть к протеканию фазового перехода, что подтверждается отрицательностью функции TPD в нетривиальном минимуме. Аналогичный результат может быть получен для изменения давления и компонентного состава фазы, находящейся в насыщенном состоянии.
 
+Данный вывод может быть проиллюстрирован следующим графиком.
+
+```{code-cell} python
+:tags: [remove-input]
+
+fig2 = plt.figure(figsize=(6., 4.), tight_layout=True)
+
+def _plot(fig):
+  from matplotlib.colors import Normalize
+  from matplotlib.gridspec import GridSpec
+
+  from boundary import env2pPT
+
+  yi = np.array([.9, .1])
+
+  Pci = np.array([7.37646, 4.600155]) * 1e6
+  Tci = np.array([304.2, 190.6])
+  wi = np.array([.225, .008])
+  mwi = np.array([0.04401, 0.016043])
+  vsi = np.array([0., 0.])
+  dij = np.array([.025])
+  pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+
+  stab_ = stabilityPT(pr, method='qnss', tol=1e-8)
+
+  gs = GridSpec(nrows=1, ncols=2, width_ratios=(25, 1))
+  ax = fig.add_subplot(gs[0, 0])
+  ax_cm = fig.add_subplot(gs[0, 1])
+
+  gradient = np.linspace(0, 1, 256)
+  gradient = np.vstack((gradient, gradient))
+
+  ax_cm.imshow(gradient.T[::-1], aspect='auto', cmap='viridis')
+  ax_cm.set_xticks([])
+  ax_cm.yaxis.tick_right()
+  ax_cm.yaxis.set_label_position("right")
+  ax_cm.set_yticks(np.linspace(0, 255, 10, endpoint=True))
+  ax_cm.set_yticklabels(['$-10^{%s}$'%s for s in range(1, -9, -1)])
+  ax_cm.set_ylabel('Глобальный минимум функции TPD')
+
+  class neglognorm(Normalize):
+    def __init__(self, vmin=None, vmax=None, clip=False):
+      super().__init__(vmin, vmax, clip)
+
+    def __call__(self, value):
+      return (np.log10(-value) - self.vmin) / (self.vmax - self.vmin)
+
+  norm = neglognorm(vmin=np.log10(1e-8), vmax=np.log10(10.))
+
+  ax.pcolormesh([-150., 50], [0., 10.], [[-1e-8, -1e-8], [-1e-8, -1e-8]],
+                norm=norm, cmap='viridis')
+
+  lims = [
+    [0., 25., 6e6, 8e6],
+    [0., 25., 4e6, 6e6],
+    [-25., 0., 4e6, 6e6],
+    [-25., 0., 2e6, 4e6],
+    [-50., -25., 2e6, 4e6],
+    [-50., -25., 1e4, 2e6],
+    [-75., -50., 1e4, 2e6],
+    [-100., -75., 1e4, 2e6],
+    [-125., -100., 1e4, 2e6],
+    [-150., -125., 1e4, 2e6],
+  ]
+
+  for lim in lims:
+    Ps = np.linspace(lim[2], lim[3], 50, endpoint=True)
+    Ts = np.linspace(lim[0]+273.15, lim[1]+273.15, 50, endpoint=True)
+    TPDs = []
+    for P in Ps:
+      TPDs.append([])
+      for T in Ts:
+        stabres = stab_.run(P, T, yi)
+        TPDs[-1].append(stabres.TPD)
+    TPDs = np.array(TPDs)
+    ax.pcolormesh(Ts - 273.15, Ps / 1e6, TPDs, norm=norm, cmap='viridis')
+
+  env = env2pPT(pr, Tmin=120., Tmax=300., Pmax=10e6,
+                psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                stabkwargs=dict(method='qnss-newton')),
+                flashkwargs=dict(method='qnss-newton', runstab=False,
+                                 useprev=True, tol=1e-8))
+
+  P0 = 4351324.8
+  T0 = -10. + 273.15
+  res = env.run(P0, T0, yi, 0., maxpoints=91, sidx0=1)
+
+  ax.plot(res.Tk-273.15, res.Pk/1e6, lw=2., c='teal', zorder=4,
+           label='Граница двухфазной области')
+  if res.Pc is not None:
+    ax.plot(res.Tc-273.15, res.Pc/1e6, 'o', lw=0., c='r', zorder=5,
+             label='Критическая точка')
+  ax.set_xlim(-150., 50.)
+  ax.set_ylim(0., 10.)
+  ax.set_xlabel('Температура, °C')
+  ax.set_ylabel('Давление, МПа')
+  ax.legend(loc=2, fontsize=9)
+  ax.grid()
+  pass
+
+_plot(fig2)
+```
+
+Данный рисунок иллюстрирует значения глобального минимума функции TPD для рассматриваемой системы при различных давлениях и температурах. Внутри двухфазной области значения функции TPD отрицательны, что свидетельствует о нестабильности однофазового состояния. Таким образом, целью данного раздела будет исследование алгоритмов определения границ двухфазной области (линий *насыщения*, *точек росы*) и особых точек, таких как *криконденбара*, *крикондентерма*, *критическая точка*.
+
 (pvt-esc-saturation-psat)=
 ## Определение давления насыщения
 
