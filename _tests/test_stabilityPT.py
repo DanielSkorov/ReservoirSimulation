@@ -711,6 +711,23 @@ class stab(unittest.TestCase):
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
 
+  def test_31(self):
+    P = 3034482.7586206896
+    T = 225.7362068965517
+    yi = np.array([0.9, 0.1])
+    Pci = np.array([7.37646e6, 4.600155e6])
+    Tci = np.array([304.2, 190.6])
+    wi = np.array([0.225, 0.008])
+    mwi = np.array([0.04401, 0.016043])
+    vsi = np.array([0., 0.])
+    dij = np.array([0.025])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-8
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=6)
+    res = stab.run(P, T, yi)
+    self.assertTrue((res.stable) & (res.gnorm < tol))
+    pass
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=0)
