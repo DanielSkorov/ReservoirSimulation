@@ -352,8 +352,7 @@ def _stabPT_ss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'TPD*', 'r', 'gnorm',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'TPD*', 'r', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
@@ -495,8 +494,7 @@ def _stabPT_qnss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'TPD*', 'r', 'gnorm',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'TPD*', 'r', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
@@ -676,7 +674,7 @@ def _stabPT_newt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
-    'Nkv', 'Nit', *map(lambda s: 'alpha' + s, map(str, range(Nc))),
+    'Nkv', 'Nit', *map(lambda s: 'alpha%s' % s, range(Nc)),
     'TPD*', 'r', 'gnorm', 'method',
   )
   tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
@@ -875,9 +873,9 @@ def _stabPT_ssnewt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   tmpl_ss = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
   tmpl_nt = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
-  strNc = tuple(map(str, range(Nc)))
-  lbls_lnkv = tuple(map(lambda s: 'lnkv' + s, strNc))
-  lbls_alpha = tuple(map(lambda s: 'alpha' + s, strNc))
+  rangeNc = range(Nc)
+  lbls_lnkv = tuple(map(lambda s: 'lnkv%s' % s, rangeNc))
+  lbls_alpha = tuple(map(lambda s: 'alpha%s' % s, rangeNc))
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z
@@ -1112,9 +1110,9 @@ def _stabPT_qnssnewt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   tmpl_ss = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
   tmpl_nt = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
-  strNc = tuple(map(str, range(Nc)))
-  lbls_lnkv = tuple(map(lambda s: 'lnkv' + s, strNc))
-  lbls_alpha = tuple(map(lambda s: 'alpha' + s, strNc))
+  rangeNc = range(Nc)
+  lbls_lnkv = tuple(map(lambda s: 'lnkv%s' % s, rangeNc))
+  lbls_alpha = tuple(map(lambda s: 'alpha%s' % s, rangeNc))
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z

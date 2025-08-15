@@ -266,8 +266,7 @@ def getVT_Tspinodal(
   Nc = eos.Nc
   logger.debug(
     '%3s%9s' + Nc * '%9s' + '%9s%11s',
-    'Nit', 'eigval', *map(lambda s: 'zeta' + s, map(str, range(Nc))),
-    'T, K', 'dT, K',
+    'Nit', 'eigval', *map(lambda s: 'zeta%s' % s, range(Nc)), 'T, K', 'dT, K',
   )
   tmpl = '%3s %8.4f' + Nc * ' %8.4f' + ' %8.2f %10.2e'
   k = 0
@@ -1158,8 +1157,7 @@ def _PsatPT_ss(
   logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Psat, Pa', 'gnorm', 'TPD',
+    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -1329,8 +1327,7 @@ def _PsatPT_qnss(
   logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Psat, Pa', 'gnorm', 'TPD',
+    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -1656,8 +1653,8 @@ def _PsatPT_newtA(
   Nc = eos.Nc
   logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
-    '%3s' + Nc * '%9s' + '%12s%10s', 'Nit',
-    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Psat, Pa', 'gnorm',
+    '%3s' + Nc * '%9s' + '%12s%10s',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Psat, Pa', 'gnorm',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
@@ -1879,8 +1876,8 @@ def _PsatPT_newtB(
   Nc = eos.Nc
   logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
-    '%3s' + Nc * '%9s' + '%12s%10s', 'Nit',
-    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Psat, Pa', 'gnorm',
+    '%3s' + Nc * '%9s' + '%12s%10s',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Psat, Pa', 'gnorm',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -2097,8 +2094,7 @@ def _PsatPT_newtC(
   logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Psat, Pa', 'gnorm', 'TPD',
+    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -2808,8 +2804,7 @@ def _TsatPT_ss(
   logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Tsat, K', 'gnorm', 'TPD',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e %10.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -2980,8 +2975,7 @@ def _TsatPT_qnss(
   logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Tsat, K', 'gnorm', 'TPD',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e %10.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -3308,8 +3302,8 @@ def _TsatPT_newtA(
   Nc = eos.Nc
   logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
-    '%3s' + Nc * '%9s' + '%9s%10s', 'Nit',
-    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Tsat, K', 'gnorm',
+    '%3s' + Nc * '%9s' + '%9s%10s',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
@@ -3532,8 +3526,8 @@ def _TsatPT_newtB(
   Nc = eos.Nc
   logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
-    '%3s' + Nc * '%9s' + '%9s%10s', 'Nit',
-    *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'Tsat, K', 'gnorm',
+    '%3s' + Nc * '%9s' + '%9s%10s',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -3751,8 +3745,7 @@ def _TsatPT_newtC(
   logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Tsat, K', 'gnorm', 'TPD',
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e %10.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -4331,7 +4324,7 @@ def _PmaxPT_ss(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
@@ -4529,7 +4522,7 @@ def _PmaxPT_qnss(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
@@ -4752,7 +4745,7 @@ def _PmaxPT_newtC(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
@@ -5328,7 +5321,7 @@ def _TmaxPT_ss(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
@@ -5528,7 +5521,7 @@ def _TmaxPT_qnss(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
@@ -5755,7 +5748,7 @@ def _TmaxPT_newtC(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
+    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
@@ -6359,7 +6352,7 @@ class env2pPT(object):
     logger.info(
       '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s',
       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
-      *map(lambda s: 'lnkv' + s, map(str, range(Nc))), 'lnP', 'lnT',
+      *map(lambda s: 'lnkv%s' % s, range(Nc)), 'lnP', 'lnT',
     )
     tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
 
@@ -6710,9 +6703,9 @@ def _env2pPT(
     'Fv = %.3f, sidx = %s, sval = %.4f', Fv, sidx, sval,
   )
   logger.debug(
-    '%3s' + Nc * '%9s' + '%9s%8s%10s%10s', 'Nit',
-    *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'lnP', 'lnT', 'gnorm', 'dx2',
+    '%3s' + Nc * '%9s' + '%9s%8s%10s%10s',
+    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'lnP', 'lnT',
+    'gnorm', 'dx2',
   )
   tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
   J = np.zeros(shape=(Nc + 2, Nc + 2))

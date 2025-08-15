@@ -417,8 +417,7 @@ def _flash2pPT_ss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Fv', 'gnorm',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e'
   for j, kvi0 in enumerate(kvji0):
@@ -561,8 +560,7 @@ def _flash2pPT_qnss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Fv', 'gnorm',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e'
   for j, kvi0 in enumerate(kvji0):
@@ -732,8 +730,8 @@ def _flash2pPT_newt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Fv', 'gnorm', 'method',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'method',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
   U = np.full(shape=(Nc, Nc), fill_value=-1.)
@@ -935,8 +933,8 @@ def _flash2pPT_ssnewt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Fv', 'gnorm', 'method',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'method',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
   for i, kvi0 in enumerate(kvji0):
@@ -1170,8 +1168,8 @@ def _flash2pPT_qnssnewt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv' + s, map(str, range(Nc))),
-    'Fv', 'gnorm', 'method',
+    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'method',
   )
   tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
   for i, kvi0 in enumerate(kvji0):

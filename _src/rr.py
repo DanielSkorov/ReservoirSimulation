@@ -246,8 +246,7 @@ def solveNp(
   assert Npm1 > 1
   logger.debug(
     '%3s%5s' + Npm1 * '%10s' + '%10s%11s',
-    'Nit', 'Nls', *map(lambda s: 'f' + s, map(str, range(Npm1))),
-    'F', 'gnorm',
+    'Nit', 'Nls', *map(lambda s: 'f%s' % s, range(Npm1)), 'F', 'gnorm',
   )
   tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %9.4f %10.2e'
   Aji = 1. - Kji

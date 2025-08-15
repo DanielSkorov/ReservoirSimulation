@@ -634,7 +634,7 @@ $k := 1$ {comment}`# Счетчик итерации`
 ```{code-cell} python
 def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     Npm1 = Kji.shape[0]
-    head = map(lambda s: 'f' + s, map(str, range(Npm1)))
+    head = map(lambda s: 'f%s' % s, range(Npm1))
     print(('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s')
           % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
     tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e'
@@ -646,7 +646,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     ti = 1. - fjk.dot(Aji)
     gj = Aji.dot(yi / ti)
     gnorm = np.linalg.norm(gj)
-    print(tmpl % (k, n, *fjk, gnorm, 1., -1))
+    print(tmpl % (k, n, *fjk, gnorm, 1., -9999))
     if gnorm < tol:
         return fjk
     while gnorm > tol and k < maxiter:
@@ -779,7 +779,7 @@ fj0 = np.array([0.3333, 0.3333]) # Initial estimate
 def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     out = ''
     Npm1 = Kji.shape[0]
-    head = map(lambda s: 'f' + s, map(str, range(Npm1)))
+    head = map(lambda s: 'f%s' % s, range(Npm1))
     out = (('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s\n')
            % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
     tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e\n'
