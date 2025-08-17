@@ -69,7 +69,7 @@ class psat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Psat = PsatPT(pr, method='ss', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=118, tol=tol)
+                  maxiter=119, tol=tol)
     res = Psat.run(P0, T, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
     pass

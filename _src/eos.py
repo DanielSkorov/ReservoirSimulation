@@ -522,6 +522,7 @@ class pr78(object):
     D[np.tril_indices(self.Nc, -1)] = dij
     self.D = 1. - (D + D.T)
     self.vsi_bi = vsi * self.bi
+    self.m = np.array([2, 1, 0])
     pass
 
   def getPT_Z(self, P: Scalar, T: Scalar, yi: Vector) -> Scalar:
@@ -734,7 +735,7 @@ class pr78(object):
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = np.power(Z, np.array([2, 1, 0])).dot(ddmdP)
+    dqdP = np.power(Z, self.m).dot(ddmdP)
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
@@ -804,7 +805,7 @@ class pr78(object):
     dAdT = PRT / RT * dalphamdT - 2. * A / T
     dBdT = -bm * PRT / T
     ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = np.power(Z, np.array([2, 1, 0])).dot(ddmdT)
+    dqdT = np.power(Z, self.m).dot(ddmdT)
     dZdT = -dqdT / dqdZ
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
@@ -876,7 +877,7 @@ class pr78(object):
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
-    dqdnj = ddmdnj.dot(np.power(Z, np.array([2, 1, 0])))
+    dqdnj = ddmdnj.dot(np.power(Z, self.m))
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
@@ -938,7 +939,7 @@ class pr78(object):
     ZpB = Z + B * 2.414213562373095
     fZ = np.log(ZmB / ZpB)
     lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    Zpm = np.power(Z, np.array([2, 1, 0]))
+    Zpm = np.power(Z, self.m)
     ddmdA = np.array([0., 1., -B])
     ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
@@ -967,7 +968,7 @@ class pr78(object):
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
     dgphiidT = ((2. * dSidT - dalphamdT / bm * self.bi)
-                / (2.82842712474619* RT * bm) - gphii / T)
+                / (2.82842712474619 * RT * bm) - gphii / T)
     dlnphiidT = (dfZdT * gphii + fZ * dgphiidT - dgZdT + dZdT / bm * self.bi
                  + PRT / T * self.vsi_bi)
     return lnphii, Z - PRT * yi.dot(self.vsi_bi), dlnphiidP, dlnphiidT
@@ -1037,7 +1038,8 @@ class pr78(object):
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
-    dqdnj = ddmdnj.dot(np.power(Z, np.array([2, 1, 0])))
+    Zpm = np.power(Z, self.m)
+    dqdnj = ddmdnj.dot(Zpm)
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
@@ -1051,7 +1053,7 @@ class pr78(object):
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = np.power(Z, np.array([2, 1, 0])).dot(ddmdP)
+    dqdP = Zpm.dot(ddmdP)
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
@@ -1128,7 +1130,8 @@ class pr78(object):
     dAdnj = dalphamdnj * PRT / RT
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
-    dqdnj = ddmdnj.dot(np.power(Z, np.array([2, 1, 0])))
+    Zpm = np.power(Z, self.m)
+    dqdnj = ddmdnj.dot(Zpm)
     dZdnj = -dqdnj / dqdZ
     dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
@@ -1146,7 +1149,7 @@ class pr78(object):
     dAdT = PRT / RT * dalphamdT - 2. * A / T
     dBdT = -bm * PRT / T
     ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = np.power(Z, np.array([2, 1, 0])).dot(ddmdT)
+    dqdT = Zpm.dot(ddmdT)
     dZdT = -dqdT / dqdZ
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
@@ -1320,9 +1323,8 @@ class pr78(object):
     dAdP = alpham / (RT * RT)
     dBdP = bm / RT
     ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    m = np.array([2, 1, 0])
-    Zpowm = np.power(Z, m)
-    dqdP = Zpowm.dot(ddmdP)
+    Zpm = np.power(Z, self.m)
+    dqdP = Zpm.dot(ddmdP)
     dZdP = -dqdP / dqdZ
     dgZdP = dgZdZ * dZdP + dgZdB * dBdP
     dfZdP = dfZdZ * dZdP + dfZdB * dBdP
@@ -1332,7 +1334,7 @@ class pr78(object):
     d2dmdAdB = np.array([0., 0., -1.])
     d2dmdP2 = dBdP * dBdP * d2dmdB2 + 2. * dAdP * dBdP * d2dmdAdB
     d2qdZ2 = 6. * Z + 2. * (B - 1.)
-    d2qdP2 = Zpowm.dot(d2dmdP2)
+    d2qdP2 = Zpm.dot(d2dmdP2)
     d2qdZdP = 2. * ddmdP[0] * Z + ddmdP[1]
     d2ZdP2 = - (d2qdP2 + 2. * dZdP * d2qdZdP + dZdP * dZdP * d2qdZ2) / dqdZ
     d2gZdZ2 = -dgZdZ * dgZdZ
@@ -1414,9 +1416,8 @@ class pr78(object):
     dAdT = PRT / RT * dalphamdT - 2. * A / T
     dBdT = -bm * PRT / T
     ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    m = np.array([2, 1, 0])
-    Zpowm = np.power(Z, m)
-    dqdT = Zpowm.dot(ddmdT)
+    Zpm = np.power(Z, self.m)
+    dqdT = Zpm.dot(ddmdT)
     dZdT = -dqdT / dqdZ
     dgZdT = dgZdZ * dZdT + dgZdB * dBdT
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
@@ -1431,9 +1432,9 @@ class pr78(object):
     d2alphamdT2 = yi.dot(d2SidT2)
     d2AdT2 = PRT / RT * (d2alphamdT2 - dalphamdT / T) - 3. * dAdT / T
     d2BdT2 = 2. * bm * PRT / (T * T)
-    d2dmdT2 = (ddmdA * d2AdT2 + d2dmdB2 * dBdT * dBdT + ddmdB * d2BdT2
-               + 2. * d2dmdAdB * dAdT * dBdT)
-    d2qdT2 = Zpowm.dot(d2dmdT2)
+    d2dmdT2 = (ddmdA * d2AdT2 + dBdT * dBdT * d2dmdB2 + ddmdB * d2BdT2
+               + 2. * dAdT * dBdT * d2dmdAdB)
+    d2qdT2 = Zpm.dot(d2dmdT2)
     d2qdZdT = 2. * ddmdT[0] * Z + ddmdT[1]
     d2qdZ2 = 6. * Z + 2. * (B - 1.)
     d2ZdT2 = - (d2qdT2 + 2. * dZdT * d2qdZdT + dZdT * dZdT * d2qdZ2) / dqdZ
@@ -1490,80 +1491,100 @@ class pr78(object):
     """
     lnphii, Z, dlnphiidnj = self.getPT_lnphii_Z_dnj(P, T, yi, n)
     lnfi = lnphii + np.log(yi * P)
-    dlnfidnj = dlnphiidnj + np.diagflat(1. / n / yi) - 1. / n
+    dlnfidnj = dlnphiidnj + np.diagflat(1. / (n * yi)) - 1. / n
     return lnfi, Z, dlnfidnj
 
-  def getPT_Zj(self, P: Scalar, T: Scalar, yji: Matrix) -> Vector:
-    """Computes the compressibility factor for each composition
-    of `Np` phases.
+  def getPT_Zj(
+    self,
+    Pj: Scalar | Vector,
+    Tj: Scalar | Vector,
+    yji: Vector | Matrix,
+  ) -> Vector:
+    """Computes compressibility factors for each mixture.
 
     Parameters
     ----------
-    P: Scalar
-      Pressure of the mixture [Pa].
+    Pj: Scalar | Vector, shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
 
-    T: Scalar
-      Temperature of the mixture [K].
+    Tj: Scalar | Vector, shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
 
-    yji: Matrix, shape (Np, Nc)
-      Mole fractions matrix, where `Np` is the number of phases and
-      `Nc` is the number of components.
+    yji: Vector, shape (Nc,) | Matrix, shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
 
     Returns
     -------
-    Compressibility factors for each phase as a `Vector` of shape
+    Compressibility factors for each mixture as a `Vector` of shape
     `(Np,)`.
     """
-    RT = R * T
-    PRT = P / RT
-    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
-    sqrtalphai = self.sqrtai * multi
-    Sji = sqrtalphai * (yji * sqrtalphai).dot(self.D)
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    multji = 1. + self.kappai * (1. - np.sqrt(Tj)[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji = sqrtalphaji * (yji * sqrtalphaji).dot(self.D)
     alphamj = np.vecdot(yji, Sji)
     bmj = yji.dot(self.bi)
-    Aj = alphamj * PRT / RT
-    Bj = bmj * PRT
-    Zj = np.vectorize(self.solve_eos)(Aj, Bj) - yji.dot(self.vsi_bi) * PRT
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    Zj = np.vectorize(self.solve_eos)(Aj, Bj) - yji.dot(self.vsi_bi) * PRTj
     return Zj
 
   def getPT_lnphiji_Zj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yji: Matrix,
+    Pj: Scalar | Vector,
+    Tj: Scalar | Vector,
+    yji: Vector | Matrix,
   ) -> tuple[Matrix, Vector]:
-    """Computes fugacity coefficients of components and
-    the compressibility factor for each composition of `Np` phases.
+    """Computes fugacity coefficients of components and compressibility
+    factors for each mixture.
 
     Parameters
     ----------
-    P: Scalar
-      Pressure of the mixture [Pa].
+    Pj: Scalar | Vector, shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
 
-    T: Scalar
-      Temperature of the mixture [K].
+    Tj: Scalar | Vector, shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
 
-    yji: Matrix, shape (Np, Nc)
-      Mole fractions matrix, where `Np` is the number of phases and
-      `Nc` is the number of components.
+    yji: Vector, shape (Nc,) | Matrix, shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
 
     Returns
     -------
     A tuple of:
-    - logarithms of fugacity coefficients of components in phases as
+    - logarithms of fugacity coefficients of components in mixtures as
       a `Matrix` of shape `(Np, Nc)`,
-    - compressibility factors for each phase as a `Vector` of shape
+    - compressibility factors for each mixture as a `Vector` of shape
       `(Np,)`.
     """
-    RT = R * T
-    PRT = P / RT
-    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
-    sqrtalphai = self.sqrtai * multi
-    Sji = sqrtalphai * (yji * sqrtalphai).dot(self.D)
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    multji = 1. + self.kappai * (1. - np.sqrt(Tj)[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji = sqrtalphaji * (yji * sqrtalphaji).dot(self.D)
     alphamj = np.vecdot(yji, Sji)
     bmj = yji.dot(self.bi)
-    Aj = alphamj * PRT / RT
-    Bj = bmj * PRT
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
     Zj = np.vectorize(self.solve_eos)(Aj, Bj)
     gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
               * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
@@ -1572,8 +1593,8 @@ class pr78(object):
     lnphiji = (self.bi * ((Zj - 1.) / bmj)[:,None]
                + gphiji * fZj[:,None]
                - np.log(Zj - Bj)[:,None]
-               - PRT * self.vsi_bi)
-    return lnphiji, Zj - yji.dot(self.vsi_bi) * PRT
+               - PRTj[:,None] * self.vsi_bi)
+    return lnphiji, Zj - yji.dot(self.vsi_bi) * PRTj
 
   def getPT_kvguess(
     self,

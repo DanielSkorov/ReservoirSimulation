@@ -45,7 +45,7 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Pmax = PmaxPT(pr, method='ss', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=317, tol=tol)
+                  maxiter=383, tol=tol)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
     pass
@@ -68,7 +68,7 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Pmax = PmaxPT(pr, method='ss', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=299, tol=tol)
+                  maxiter=385, tol=tol)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
     pass
@@ -91,7 +91,7 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Pmax = PmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=25, tol=tol)
+                  maxiter=29, tol=tol)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
     pass
@@ -114,7 +114,7 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Pmax = PmaxPT(pr, method='qnss', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=25, tol=tol)
+                  maxiter=29, tol=tol)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
     pass
@@ -137,7 +137,7 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Pmax = PmaxPT(pr, method='newton', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=10, tol=tol)
+                  maxiter=12, tol=tol)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
     pass
@@ -160,7 +160,7 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     Pmax = PmaxPT(pr, method='newton', stabkwargs=dict(method='qnss-newton'),
-                  maxiter=10, tol=tol)
+                  maxiter=12, tol=tol)
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
     pass

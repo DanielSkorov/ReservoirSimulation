@@ -414,12 +414,12 @@ def _flash2pPT_ss(
   """
   logger.info("Two-phase flash calculation (SS method).")
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
   )
-  tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e'
+  tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e'
   for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
@@ -459,18 +459,17 @@ def _flash2pPT_ss(
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
                          gnorm=gnorm, Niter=k)
-  else:
-    logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n"
-      "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
-      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'The flash calculation procedure\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  logger.warning(
+    "Two-phase flash calculation terminates unsuccessfully.\n"
+    "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+    eos.name, P, T, yi, *kvji0,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
 
 
 def _flash2pPT_qnss(
@@ -557,12 +556,12 @@ def _flash2pPT_qnss(
   """
   logger.info("Two-phase flash calculation (QNSS method).")
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
   )
-  tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e'
+  tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e'
   for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
@@ -615,18 +614,17 @@ def _flash2pPT_qnss(
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
                          gnorm=gnorm, Niter=k)
-  else:
-    logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n"
-      "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
-      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'The flash calculation procedure\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  logger.warning(
+    "Two-phase flash calculation terminates unsuccessfully.\n"
+    "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+    eos.name, P, T, yi, *kvji0,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
 
 
 def _flash2pPT_newt(
@@ -727,13 +725,13 @@ def _flash2pPT_newt(
   """
   logger.info("Two-phase flash calculation (Newton's method).")
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
     'method',
   )
-  tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
+  tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
   U = np.full(shape=(Nc, Nc), fill_value=-1.)
   for j, kvi0 in enumerate(kvji0):
     k = 0
@@ -797,18 +795,17 @@ def _flash2pPT_newt(
       logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
       return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
                          gnorm=gnorm, Niter=k)
-  else:
-    logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n"
-      "The solution method was Newton, EOS: %s.\nParameters:\nP = %s Pa"
-      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'The flash calculation procedure\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  logger.warning(
+    "Two-phase flash calculation terminates unsuccessfully.\n"
+    "The solution method was Newton, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+    eos.name, P, T, yi, *kvji0,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
 
 
 def _flash2pPT_ssnewt(
@@ -930,13 +927,13 @@ def _flash2pPT_ssnewt(
   """
   logger.info('Two-phase flash calculation (SS-Newton method).')
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
     'method',
   )
-  tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
+  tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
   for i, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
@@ -1029,18 +1026,17 @@ def _flash2pPT_ssnewt(
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
           return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
                              gnorm=gnorm, Niter=k)
-  else:
-    logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n"
-      "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
-      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'The flash calculation procedure\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  logger.warning(
+    "Two-phase flash calculation terminates unsuccessfully.\n"
+    "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+    eos.name, P, T, yi, *kvji0,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
 
 
 def _flash2pPT_qnssnewt(
@@ -1165,13 +1161,13 @@ def _flash2pPT_qnssnewt(
   """
   logger.info('Two-phase flash calculation (QNSS-Newton method).')
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
     'method',
   )
-  tmpl = '%3s%5s' + Nc * ' %9.4f' + ' %8.4f %10.2e %7s'
+  tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
   for i, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
@@ -1277,16 +1273,15 @@ def _flash2pPT_qnssnewt(
           logger.info('Vapour mole fraction: Fv = %.4f.', Fj[0])
           return FlashResult(yji=yji, Fj=Fj, Zj=Zj, kvji=kvji,
                              gnorm=gnorm, Niter=k)
-  else:
-    logger.warning(
-      "Two-phase flash calculation terminates unsuccessfully.\n"
-      "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
-      "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
-      eos.name, P, T, yi, *kvji0,
-    )
-    raise SolutionNotFoundError(
-      'The flash calculation procedure\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations. It also may be '
-      'advisable to improve the initial\nguesses of k-values.'
-    )
+  logger.warning(
+    "Two-phase flash calculation terminates unsuccessfully.\n"
+    "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
+    eos.name, P, T, yi, *kvji0,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
 

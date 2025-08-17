@@ -268,7 +268,7 @@ def getVT_Tspinodal(
     '%3s%9s' + Nc * '%9s' + '%9s%11s',
     'Nit', 'eigval', *map(lambda s: 'zeta%s' % s, range(Nc)), 'T, K', 'dT, K',
   )
-  tmpl = '%3s %8.4f' + Nc * ' %8.4f' + ' %8.2f %10.2e'
+  tmpl = '%3s%9.4f' + Nc * '%9.4f' + '%9.2f%11.2e'
   k = 0
   if T0 is None:
     Tk = 1.3 * yi.dot(eos.Tci)
@@ -283,8 +283,9 @@ def getVT_Tspinodal(
   lmbdkdT = np.linalg.eigvals(QdT).min()
   dlmbddT = (lmbdkdT - lmbdk) / dT
   dT = -lmbdk / dlmbddT
+  repeat = lmbdk < -tol or lmbdk > tol
   logger.debug(tmpl, k, lmbdk, *zetai, Tk, dT)
-  while np.abs(lmbdk) > tol and k < maxiter:
+  while repeat and k < maxiter:
     Tkp1 = Tk + dT
     Q = eos.getVT_lnfi_dnj(V, Tkp1, yi)[1]
     zetai, lmbdkp1 = pyrqi(Q, zetai)
@@ -293,8 +294,9 @@ def getVT_Tspinodal(
     k += 1
     Tk = Tkp1
     lmbdk = lmbdkp1
+    repeat = lmbdk < -tol or lmbdk > tol
     logger.debug(tmpl, k, lmbdk, *zetai, Tk, dT)
-  if np.abs(lmbdk) < tol:
+  if not repeat:
     return Tk, zetai
   logger.warning(
     "The spinodal temperature was not found. The EOS was: %s.\nParameters:\n"
@@ -404,7 +406,7 @@ def getVT_PcTc(
   logger.info('Calculating the critical point.')
   Nc = eos.Nc
   logger.debug('%3s%9s%9s%9s%11s', 'Nit', 'kappa', 'T, K', 'C', 'dkappa')
-  tmpl = '%3s %8.4f %8.2f %8.2f %10.2e'
+  tmpl = '%3s%9.4f%9.2f%9.2f%11.2e'
   k = 0
   if T0 is None:
     T = 1.3 * yi.dot(eos.Tci)
@@ -430,9 +432,10 @@ def getVT_PcTc(
   Cks = (kappaks - 1.)**2 * eos.getVT_d3F(vks, T, yi, zetaik)
   dCdkappa = (Cks - Ck) / (kappaks - kappak)
   dkappa = -Ck / dCdkappa
+  repeat = dkappa < -tol or dkappa > tol
   logger.debug(tmpl, k, kappak, T, Ck, dkappa)
   k += 1
-  while np.abs(dkappa) > tol and k < maxiter:
+  while repeat and k < maxiter:
     kappakp1 = kappak + dkappa
     vkp1 = kappakp1 * vmin
     if vkp1 < vmin:
@@ -450,9 +453,10 @@ def getVT_PcTc(
     kappak = kappakp1
     Ck = Ckp1
     zetaik = zetaikp1
+    repeat = dkappa < -tol or dkappa > tol
     logger.debug(tmpl, k, kappak, T, Ck, dkappa)
     k += 1
-  if np.abs(dkappa) < tol:
+  if not repeat:
     Pc = eos.getVT_P(vk, T, yi)
     logger.info('Critical point is: Pc = %.1f Pa, Tc = %.2f K', Pc, T)
     return Pc, T
@@ -939,8 +943,8 @@ def _PsatPT_solve_TPDeq_P(
   yi: Vector,
   xi: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
   Plow0: Scalar = 1.,
   Pupp0: Scalar = 1e8,
   increasing: bool = True,
@@ -982,11 +986,11 @@ def _PsatPT_solve_TPDeq_P(
         `(Nc,)`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   Plow0: Scalar
     The initial lower bound of the saturation pressure [Pa]. If the
@@ -1025,7 +1029,7 @@ def _PsatPT_solve_TPDeq_P(
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
-  while k < maxiter and np.abs(TPD) > tol:
+  while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Plow = Pk
     else:
@@ -1036,7 +1040,7 @@ def _PsatPT_solve_TPDeq_P(
     if Pkp1 > Pupp or Pkp1 < Plow:
       Pkp1 = .5 * (Plow + Pupp)
       dP = Pkp1 - Pk
-    if np.abs(dP) < 1e-8:
+    if dP > -1e-8 and dP < 1e-8:
       break
     Pk = Pkp1
     k += 1
@@ -1053,10 +1057,10 @@ def _PsatPT_ss(
   yi: Vector,
   kvi0: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 200,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   upper: bool = True,
@@ -1109,22 +1113,22 @@ def _PsatPT_ss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
+    Default is `200`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol_tpd`. Default is `1e-6`.
+    value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
     tangent-plane distance, which determines the second phase
     appearance or disappearance.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
-    Default is `8`.
+    Default is `10`.
 
   Plow: Scalar
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
@@ -1154,12 +1158,12 @@ def _PsatPT_ss(
   """
   logger.info('Saturation pressure calculation using the SS-method.')
   Nc = eos.Nc
-  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
+  logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -1173,8 +1177,9 @@ def _PsatPT_ss(
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   TPD = xi.dot(gi - np.log(n))
+  repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
-  while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+  while repeat and k < maxiter:
     lnkik -= gi
     k += 1
     kik = np.exp(lnkik)
@@ -1183,9 +1188,9 @@ def _PsatPT_ss(
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
+    repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk)):
+  if not repeat and np.isfinite(gnorm) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -1199,17 +1204,16 @@ def _PsatPT_ss(
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, Niter=k)
-  else:
-    logger.warning(
-      "The SS-method for saturation pressure calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation pressure calculation\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "The SS-method for saturation pressure calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation pressure calculation\nterminates unsuccessfully. Try '
+    'to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _PsatPT_qnss(
@@ -1218,10 +1222,10 @@ def _PsatPT_qnss(
   yi: Vector,
   kvi0: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   upper: bool = True,
@@ -1279,7 +1283,7 @@ def _PsatPT_qnss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
@@ -1287,14 +1291,14 @@ def _PsatPT_qnss(
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol_tpd`. Default is `1e-6`.
+    value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
     tangent-plane distance, which determines the second phase
     appearance or disappearance.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
-    Default is `8`.
+    Default is `10`.
 
   Plow: Scalar
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
@@ -1324,12 +1328,12 @@ def _PsatPT_qnss(
   """
   logger.info('Saturation pressure calculation using the QNSS-method.')
   Nc = eos.Nc
-  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
+  logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%11.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -1344,8 +1348,9 @@ def _PsatPT_qnss(
   gnorm = np.linalg.norm(gi)
   TPD = xi.dot(gi - np.log(n))
   lmbd = 1.
+  repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
-  while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+  while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
     if max_dlnki > 6.:
@@ -1364,9 +1369,9 @@ def _PsatPT_qnss(
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
+    repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk)):
+  if not repeat and np.isfinite(gnorm) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -1380,17 +1385,16 @@ def _PsatPT_qnss(
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, Niter=k)
-  else:
-    logger.warning(
-      "The QNSS-method for saturation pressure calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation pressure calculation\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "The QNSS-method for saturation pressure calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation pressure calculation\nterminates unsuccessfully. Try '
+    'to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _PsatPT_newt_improveP0(
@@ -1399,8 +1403,8 @@ def _PsatPT_newt_improveP0(
   yi: Vector,
   xi: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
   Plow0: Scalar = 1.,
   Pupp0: Scalar = 1e8,
   increasing: bool = True,
@@ -1445,11 +1449,11 @@ def _PsatPT_newt_improveP0(
         `(Nc,)`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   Plow0: Scalar
     The initial lower bound of the saturation pressure [Pa]. If the
@@ -1488,7 +1492,7 @@ def _PsatPT_newt_improveP0(
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
-  while k < maxiter and np.abs(TPD) > tol:
+  while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Plow = Pk
     else:
@@ -1499,7 +1503,7 @@ def _PsatPT_newt_improveP0(
     if Pkp1 > Pupp or Pkp1 < Plow:
       Pkp1 = .5 * (Plow + Pupp)
       dP = Pkp1 - Pk
-    if np.abs(dP) < 1e-8:
+    if dP > -1e-8 and dP < 1e-8:
       break
     Pk = Pkp1
     k += 1
@@ -1516,13 +1520,13 @@ def _PsatPT_newtA(
   yi: Vector,
   kvi0: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 20,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   upper: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
@@ -1595,7 +1599,7 @@ def _PsatPT_newtA(
 
   tol: Scalar
     Terminate the solver successfully if the norm of an array of
-    nonlinear equations is less than `tol`. Default is `1e-5`.
+    nonlinear equations is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
@@ -1618,12 +1622,12 @@ def _PsatPT_newtA(
     the equation of equality to zero of the tangent-plane distance,
     which determines the second phase appearance or disappearance.
     This parameter is used by the algorithm of the saturation pressure
-    initial guess improvement. Default is `1e-6`.
+    initial guess improvement. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations. This parameter
     is used by the algorithm of the saturation pressure initial guess
-    improvement. Default is `8`.
+    improvement. Default is `10`.
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -1651,12 +1655,12 @@ def _PsatPT_newtA(
     "Saturation pressure calculation using Newton's method (A-form)."
   )
   Nc = eos.Nc
-  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
+  logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Psat, Pa', 'gnorm',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
@@ -1667,8 +1671,7 @@ def _PsatPT_newtA(
   n = ni.sum()
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(
-    P0, T, yi, xi, eos,
-    tol_tpd, maxiter_tpd, Plow, Pupp, upper,
+    P0, T, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, upper,
   )
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(
     Pk, T, xi, n,
@@ -1720,17 +1723,16 @@ def _PsatPT_newtA(
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
                      TPD=xi.dot(gi[:Nc] - np.log(n)), Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (A-form) for saturation pressure calculation termin"
-      "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation pressure calculation\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "Newton's method (A-form) for saturation pressure calculation termin"
+    "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation pressure calculation\nterminates unsuccessfully. Try '
+    'to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _PsatPT_newtB(
@@ -1739,13 +1741,13 @@ def _PsatPT_newtB(
   yi: Vector,
   kvi0: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 20,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   upper: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
@@ -1818,7 +1820,7 @@ def _PsatPT_newtB(
 
   tol: Scalar
     Terminate the solver successfully if the norm of an array of
-    nonlinear equations is less than `tol`. Default is `1e-5`.
+    nonlinear equations is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
@@ -1841,12 +1843,12 @@ def _PsatPT_newtB(
     the equation of equality to zero of the tangent-plane distance,
     which determines the second phase appearance or disappearance.
     This parameter is used by the algorithm of the saturation pressure
-    initial guess improvement. Default is `1e-6`.
+    initial guess improvement. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations. This parameter
     is used by the algorithm of the saturation pressure initial guess
-    improvement. Default is `8`.
+    improvement. Default is `10`.
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -1874,12 +1876,12 @@ def _PsatPT_newtB(
     "Saturation pressure calculation using Newton's method (B-form)."
   )
   Nc = eos.Nc
-  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
+  logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Psat, Pa', 'gnorm',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
@@ -1890,8 +1892,7 @@ def _PsatPT_newtB(
   n = ni.sum()
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(
-    P0, T, yi, xi, eos,
-    tol_tpd, maxiter_tpd, Plow, Pupp, upper,
+    P0, T, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, upper,
   )
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(
     Pk, T, xi, n,
@@ -1946,17 +1947,16 @@ def _PsatPT_newtB(
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=gi[-1], Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (B-form) for saturation pressure calculation termin"
-      "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation pressure calculation\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "Newton's method (B-form) for saturation pressure calculation termin"
+    "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation pressure calculation\nterminates unsuccessfully. Try '
+    'to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _PsatPT_newtC(
@@ -1965,10 +1965,10 @@ def _PsatPT_newtC(
   yi: Vector,
   kvi0: Vector,
   eos: PsatEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 20,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 30,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
@@ -2042,18 +2042,18 @@ def _PsatPT_newtC(
 
   tol: Scalar
     Terminate the solver successfully if the norm of an array of
-    nonlinear equations is less than `tol`. Default is `1e-5`.
+    nonlinear equations is less than `tol`. Default is `1e-8`.
 
   maxiter: int
-    The maximum number of solver iterations. Default is `20`.
+    The maximum number of solver iterations. Default is `30`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol_tpd`. Default is `1e-6`.
+    value of the equation is less than `tol_tpd`. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
-    Default is `8`.
+    Default is `10`.
 
   Plow: Scalar
     The pressure lower bound. Default is `1.0` [Pa].
@@ -2091,12 +2091,12 @@ def _PsatPT_newtC(
     "Saturation pressure calculation using Newton's method (C-form)."
   )
   Nc = eos.Nc
-  logger.info('T = %.2f K, yi =' + Nc * ' %6.4f', T, *yi)
+  logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %9.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -2111,8 +2111,9 @@ def _PsatPT_newtC(
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   TPD = ni.dot(gi)
+  repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
-  while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+  while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
@@ -2128,9 +2129,9 @@ def _PsatPT_newtC(
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
+    repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnkik, Pk, gnorm, TPD)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk)):
+  if not repeat and np.isfinite(gnorm) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -2144,17 +2145,16 @@ def _PsatPT_newtC(
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(P=Pk, T=T, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (C-form) for saturation pressure calculation termin"
-      "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation pressure calculation\nterminates unsuccessfully. Try '
-      'to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "Newton's method (C-form) for saturation pressure calculation termin"
+    "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation pressure calculation\nterminates unsuccessfully. Try '
+    'to increase the maximum number of\nsolver iterations.'
+  )
 
 
 class TsatPT(object):
@@ -2585,8 +2585,8 @@ def _TsatPT_solve_TPDeq_T(
   yi: Vector,
   xi: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
   Tlow0: Scalar = 173.15,
   Tupp0: Scalar = 973.15,
   increasing: bool = True,
@@ -2628,11 +2628,11 @@ def _TsatPT_solve_TPDeq_T(
         shape `(Nc,)`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   Tlow0: Scalar
     The initial lower bound of the saturation temperature [K]. If the
@@ -2670,7 +2670,7 @@ def _TsatPT_solve_TPDeq_T(
   lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
-  while k < maxiter and np.abs(TPD) > tol:
+  while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Tlow = Tk
     else:
@@ -2681,7 +2681,7 @@ def _TsatPT_solve_TPDeq_T(
     if Tkp1 > Tupp or Tkp1 < Tlow:
       Tkp1 = .5 * (Tlow + Tupp)
       dT = Tkp1 - Tk
-    if np.abs(dT) < 1e-8:
+    if dT > -1e-8 and dT < 1e-8:
       break
     Tk = Tkp1
     k += 1
@@ -2698,10 +2698,10 @@ def _TsatPT_ss(
   yi: Vector,
   kvi0: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 200,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
   upper: bool = True,
@@ -2754,22 +2754,22 @@ def _TsatPT_ss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
+    Default is `200`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol_tpd`. Default is `1e-6`.
+    value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
     tangent-plane distance, which determines the second phase
     appearance or disappearance.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
-    Default is `8`.
+    Default is `10`.
 
   Tlow: Scalar
     The lower bound for the TPD-equation solver.
@@ -2801,12 +2801,12 @@ def _TsatPT_ss(
   """
   logger.info("Saturation temperature calculation using the SS-method.")
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
+  logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
@@ -2818,8 +2818,9 @@ def _TsatPT_ss(
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnkik, Tk, gnorm, TPD)
-  while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+  while repeat and k < maxiter:
     lnkik -= gi
     k += 1
     kik = np.exp(lnkik)
@@ -2828,9 +2829,9 @@ def _TsatPT_ss(
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
+    repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnkik, Tk, gnorm, TPD)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Tk)):
+  if not repeat and np.isfinite(gnorm) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -2844,17 +2845,16 @@ def _TsatPT_ss(
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, Niter=k)
-  else:
-    logger.warning(
-      "The SS-method for saturation temperature calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation temperature calculation\nterminates unsuccessfully. '
-      'Try to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "The SS-method for saturation temperature calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation temperature calculation\nterminates unsuccessfully. '
+    'Try to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _TsatPT_qnss(
@@ -2863,10 +2863,10 @@ def _TsatPT_qnss(
   yi: Vector,
   kvi0: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
   upper: bool = True,
@@ -2925,7 +2925,7 @@ def _TsatPT_qnss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
@@ -2933,14 +2933,14 @@ def _TsatPT_qnss(
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol_tpd`. Default is `1e-6`.
+    value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
     tangent-plane distance, which determines the second phase
     appearance or disappearance.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
-    Default is `8`.
+    Default is `10`.
 
   Tlow: Scalar
     The lower bound for the TPD-equation solver.
@@ -2972,12 +2972,12 @@ def _TsatPT_qnss(
   """
   logger.info("Saturation temperature calculation using the QNSS-method.")
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
+  logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
@@ -2991,8 +2991,9 @@ def _TsatPT_qnss(
   gnorm = np.linalg.norm(gi)
   TPD = ni.dot(gi)
   lmbd = 1.
+  repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnkik, Tk, gnorm, TPD)
-  while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+  while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
     if max_dlnki > 6.:
@@ -3011,9 +3012,9 @@ def _TsatPT_qnss(
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
+    repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnkik, Tk, gnorm, TPD)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Tk)):
+  if not repeat and np.isfinite(gnorm) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -3027,17 +3028,16 @@ def _TsatPT_qnss(
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, Niter=k)
-  else:
-    logger.warning(
-      "The QNSS-method for saturation temperature calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation temperature calculation\nterminates unsuccessfully. '
-      'Try to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "The QNSS-method for saturation temperature calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation temperature calculation\nterminates unsuccessfully. '
+    'Try to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _TsatPT_newt_improveT0(
@@ -3046,8 +3046,8 @@ def _TsatPT_newt_improveT0(
   yi: Vector,
   xi: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
   Tlow0: Scalar = 173.15,
   Tupp0: Scalar = 973.15,
   increasing: bool = True,
@@ -3092,11 +3092,11 @@ def _TsatPT_newt_improveT0(
         shape `(Nc,)`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   Tlow0: Scalar
     The initial lower bound of the saturation temperature [K]. If the
@@ -3135,7 +3135,7 @@ def _TsatPT_newt_improveT0(
   lnphixi, Zt, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
-  while k < maxiter and np.abs(TPD) > tol:
+  while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Tlow = Tk
     else:
@@ -3146,7 +3146,7 @@ def _TsatPT_newt_improveT0(
     if Tkp1 > Tupp or Tkp1 < Tlow:
       Tkp1 = .5 * (Tlow + Tupp)
       dT = Tkp1 - Tk
-    if np.abs(dT) < 1e-8:
+    if dT > -1e-8 and dT < 1e-8:
       break
     Tk = Tkp1
     k += 1
@@ -3163,13 +3163,13 @@ def _TsatPT_newtA(
   yi: Vector,
   kvi0: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 20,
   Tlow: Scalar = 1.,
   Tupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   upper: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
@@ -3242,7 +3242,7 @@ def _TsatPT_newtA(
 
   tol: Scalar
     Terminate the solver successfully if the norm of an array of
-    nonlinear equations is less than `tol`. Default is `1e-5`.
+    nonlinear equations is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
@@ -3267,12 +3267,12 @@ def _TsatPT_newtA(
     the equation of equality to zero of the tangent-plane distance,
     which determines the second phase appearance or disappearance.
     This parameter is used by the algorithm of the saturation
-    temperature initial guess improvement. Default is `1e-6`.
+    temperature initial guess improvement. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations. This parameter
     is used by the algorithm of the saturation temperature initial guess
-    improvement. Default is `8`.
+    improvement. Default is `10`.
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -3300,12 +3300,12 @@ def _TsatPT_newtA(
     "Saturation temperature calculation using Newton's method (A-form)."
   )
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
+  logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
@@ -3368,17 +3368,16 @@ def _TsatPT_newtA(
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji, gnorm=gnorm,
                      TPD=xi.dot(gi[:Nc] - np.log(n)), Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (A-form) for saturation temperature calculation termin"
-      "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation temperature calculation\nterminates unsuccessfully. '
-      'Try to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "Newton's method (A-form) for saturation temperature calculation termin"
+    "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation temperature calculation\nterminates unsuccessfully. '
+    'Try to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _TsatPT_newtB(
@@ -3387,13 +3386,13 @@ def _TsatPT_newtB(
   yi: Vector,
   kvi0: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 20,
   Tlow: Scalar = 1.,
   Tupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   upper: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
@@ -3466,7 +3465,7 @@ def _TsatPT_newtB(
 
   tol: Scalar
     Terminate the solver successfully if the norm of an array of
-    nonlinear equations is less than `tol`. Default is `1e-5`.
+    nonlinear equations is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
@@ -3491,12 +3490,12 @@ def _TsatPT_newtB(
     the equation of equality to zero of the tangent-plane distance,
     which determines the second phase appearance or disappearance.
     This parameter is used by the algorithm of the saturation
-    temperature initial guess improvement. Default is `1e-6`.
+    temperature initial guess improvement. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations. This parameter
     is used by the algorithm of the saturation temperature initial guess
-    improvement. Default is `8`.
+    improvement. Default is `10`.
 
   upper: bool
     A boolean flag that indicates whether the desired value is located
@@ -3524,12 +3523,12 @@ def _TsatPT_newtB(
     "Saturation temperature calculation using Newton's method (B-form)."
   )
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
+  logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
@@ -3595,17 +3594,16 @@ def _TsatPT_newtB(
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=gi[-1], Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (B-form) for saturation temperature calculation termin"
-      "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation temperature calculation\nterminates unsuccessfully. '
-      'Try to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "Newton's method (B-form) for saturation temperature calculation termin"
+    "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation temperature calculation\nterminates unsuccessfully. '
+    'Try to increase the maximum number of\nsolver iterations.'
+  )
 
 
 def _TsatPT_newtC(
@@ -3614,10 +3612,10 @@ def _TsatPT_newtC(
   yi: Vector,
   kvi0: Vector,
   eos: TsatEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 20,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 30,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Tlow: Scalar = 1.,
   Tupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
@@ -3691,18 +3689,18 @@ def _TsatPT_newtC(
 
   tol: Scalar
     Terminate the solver successfully if the norm of an array of
-    nonlinear equations is less than `tol`. Default is `1e-5`.
+    nonlinear equations is less than `tol`. Default is `1e-8`.
 
   maxiter: int
-    The maximum number of solver iterations. Default is `20`.
+    The maximum number of solver iterations. Default is `30`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
-    value of the equation is less than `tol_tpd`. Default is `1e-6`.
+    value of the equation is less than `tol_tpd`. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
-    Default is `8`.
+    Default is `10`.
 
   Tlow: Scalar
     The lower bound for the TPD-equation solver.
@@ -3742,12 +3740,12 @@ def _TsatPT_newtC(
     "Saturation temperature calculation using Newton's method (C-form)."
   )
   Nc = eos.Nc
-  logger.info('P = %.1f Pa, yi =' + Nc * ' %6.4f', P, *yi)
+  logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.2f %9.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
@@ -3761,8 +3759,9 @@ def _TsatPT_newtC(
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnkik, Tk, gnorm, TPD)
-  while (gnorm > tol or np.abs(TPD) > tol_tpd) and k < maxiter:
+  while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
@@ -3778,9 +3777,9 @@ def _TsatPT_newtC(
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
+    repeat = gnorm > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnkik, Tk, gnorm, TPD)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Tk)):
+  if not repeat and np.isfinite(gnorm) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -3794,17 +3793,16 @@ def _TsatPT_newtC(
     logger.info('Saturation temperature for P = %.1f Pa is: %.2f K.', P, Tk)
     return SatResult(P=P, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (C-form) for saturation temperature calculation termin"
-      "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The saturation temperature calculation\nterminates unsuccessfully. '
-      'Try to increase the maximum number of\nsolver iterations.'
-    )
+  logger.warning(
+    "Newton's method (C-form) for saturation temperature calculation termin"
+    "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The saturation temperature calculation\nterminates unsuccessfully. '
+    'Try to increase the maximum number of\nsolver iterations.'
+  )
 
 
 class PmaxPT(PsatPT):
@@ -4037,8 +4035,8 @@ def _PmaxPT_solve_TPDeq_P(
   yi: Vector,
   xi: Vector,
   eos: PmaxEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
 ) -> Scalar:
   """Solves the TPD-equation using the PT-based equations of state for
   pressure at a constant temperature. The TPD-equation is the equation
@@ -4077,10 +4075,10 @@ def _PmaxPT_solve_TPDeq_P(
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   Returns
   -------
@@ -4093,7 +4091,7 @@ def _PmaxPT_solve_TPDeq_P(
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {TPD = }')
-  while k < maxiter and np.abs(TPD) > tol:
+  while (TPD < -tol or TPD > tol) and k < maxiter:
     # dTPDdP = xi.dot(dlnphixidP - dlnphiyidP)
     dTPDdlnP = Pk * xi.dot(dlnphixidP - dlnphiyidP)
     k += 1
@@ -4112,8 +4110,8 @@ def _PmaxPT_solve_dTPDdTeq_T(
   yi: Vector,
   xi: Vector,
   eos: PmaxEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
 ) -> tuple[Scalar, Vector, Vector, Scalar, Scalar]:
   """Solves the cricondenbar equation using the PT-based equations of
   state for temperature at a constant pressure. The cricondenbar equation
@@ -4156,10 +4154,10 @@ def _PmaxPT_solve_dTPDdTeq_T(
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   Returns
   -------
@@ -4178,7 +4176,7 @@ def _PmaxPT_solve_dTPDdTeq_T(
   lnphixi, Zx, dlnphixidT, d2lnphixidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, xi)
   eq = xi.dot(dlnphixidT - dlnphiyidT)
   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }')
-  while np.abs(eq) > tol and k < maxiter:
+  while (eq < -tol or eq > tol) and k < maxiter:
     deqdT = xi.dot(d2lnphixidT2 - d2lnphiyidT2)
     k += 1
     Tk -= eq / deqdT
@@ -4199,10 +4197,10 @@ def _PmaxPT_ss(
   yi: Vector,
   kvi0: Vector,
   eos: PmaxEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 200,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
 ) -> SatResult:
@@ -4282,20 +4280,20 @@ def _PmaxPT_ss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
+    Default is `200`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation and the cricondenbar equation solvers
     successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
+    `tol_tpd`. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
-    cricondenbar equation solvers. Default is `8`.
+    cricondenbar equation solvers. Default is `10`.
 
   Plow: Scalar
     The lower bound for the TPD-equation solver. This parameter is used
@@ -4327,7 +4325,7 @@ def _PmaxPT_ss(
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
@@ -4338,15 +4336,16 @@ def _PmaxPT_ss(
   ni = kik * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    P0, T0, yi, xi, eos,
-    tol_tpd, maxiter_tpd, Plow, Pupp, True,
+    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, True,
   )
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  repeat = (gnorm > tol or
+            TPD < -tol_tpd or TPD > tol_tpd or
+            dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
   logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdT)
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd or
-                         np.abs(dTPDdT) > tol_tpd):
+  while repeat and k < maxiter:
     lnkik -= gi
     k += 1
     kik = np.exp(lnkik)
@@ -4358,9 +4357,12 @@ def _PmaxPT_ss(
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     TPD = xi.dot(gi - np.log(n))
+    repeat = (gnorm > tol or
+              TPD < -tol_tpd or TPD > tol_tpd or
+              dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdT)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdT) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk) and np.isfinite(Tk)):
+  if (not repeat and np.isfinite(gnorm) and np.isfinite(Pk) and
+      np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -4374,18 +4376,17 @@ def _PmaxPT_ss(
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, dTPDdT=dTPDdT, Niter=k)
-  else:
-    logger.warning(
-      "The SS-method for cricondenbar calculation terminates unsuccessfully. "
-      "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nPlow = %s Pa\n"
-      "Pupp = %s Pa",
-      eos.name, P0, T0, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The cricondenbar calculation\nterminates unsuccessfully. Try to '
-      'increase the maximum number of\nsolver iterations and/or improve the '
-      'initial guess.'
-    )
+  logger.warning(
+    "The SS-method for cricondenbar calculation terminates unsuccessfully. "
+    "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nPlow = %s Pa\n"
+    "Pupp = %s Pa",
+    eos.name, P0, T0, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The cricondenbar calculation\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations and/or improve the '
+    'initial guess.'
+  )
 
 
 def _PmaxPT_qnss(
@@ -4394,10 +4395,10 @@ def _PmaxPT_qnss(
   yi: Vector,
   kvi0: Vector,
   eos: PmaxEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
 ) -> SatResult:
@@ -4480,7 +4481,7 @@ def _PmaxPT_qnss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
@@ -4489,11 +4490,11 @@ def _PmaxPT_qnss(
   tol_tpd: Scalar
     Terminate the TPD-equation and the cricondenbar equation solvers
     successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
+    `tol_tpd`. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
-    cricondenbar equation solvers. Default is `8`.
+    cricondenbar equation solvers. Default is `10`.
 
   Plow: Scalar
     The lower bound for the TPD-equation solver. This parameter is used
@@ -4519,13 +4520,13 @@ def _PmaxPT_qnss(
   """
   logger.info('Cricondenbar calculation using the QNSS-method.')
   Nc = eos.Nc
-  logger.info('yi =' + Nc * ' %6.4f', *yi)
+  logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
@@ -4541,9 +4542,11 @@ def _PmaxPT_qnss(
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   lmbd = 1.
+  repeat = (gnorm > tol or
+            TPD < -tol_tpd or TPD > tol_tpd or
+            dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
   logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdT)
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd or
-                         np.abs(dTPDdT) > tol_tpd):
+  while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
     if max_dlnki > 6.:
@@ -4565,9 +4568,12 @@ def _PmaxPT_qnss(
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
+    repeat = (gnorm > tol or
+              TPD < -tol_tpd or TPD > tol_tpd or
+              dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdT)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdT) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk) and np.isfinite(Tk)):
+  if (not repeat and np.isfinite(gnorm) and np.isfinite(Pk) and
+      np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -4581,18 +4587,17 @@ def _PmaxPT_qnss(
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, dTPDdT=dTPDdT, Niter=k)
-  else:
-    logger.warning(
-      "The QNSS-method for cricondenbar calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T0, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The cricondenbar calculation\nterminates unsuccessfully. Try to '
-      'increase the maximum number of\nsolver iterations and/or improve the '
-      'initial guess.'
-    )
+  logger.warning(
+    "The QNSS-method for cricondenbar calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T0, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The cricondenbar calculation\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations and/or improve the '
+    'initial guess.'
+  )
 
 
 def _PmaxPT_newtC(
@@ -4601,10 +4606,10 @@ def _PmaxPT_newtC(
   yi: Vector,
   kvi0: Vector,
   eos: PmaxEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 30,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
@@ -4697,20 +4702,20 @@ def _PmaxPT_newtC(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
+    Default is `30`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation and the cricondenbar equation solvers
     successfully if the absolute value of the equation is less than
-    `tol_tpd`. Default is `1e-6`.
+    `tol_tpd`. Default is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
-    cricondenbar equation solvers. Default is `8`.
+    cricondenbar equation solvers. Default is `10`.
 
   Plow: Scalar
     The lower bound for the TPD-equation solver. This parameter is used
@@ -4742,13 +4747,13 @@ def _PmaxPT_newtC(
   """
   logger.info("Cricondenbar calculation using Newton's method (C-form).")
   Nc = eos.Nc
-  logger.info('yi =' + Nc * ' %6.4f', *yi)
+  logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
@@ -4767,9 +4772,11 @@ def _PmaxPT_newtC(
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  repeat = (gnorm > tol or
+            TPD < -tol_tpd or TPD > tol_tpd or
+            dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
   logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdT)
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd or
-                         np.abs(dTPDdT) > tol_tpd):
+  while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
@@ -4787,9 +4794,12 @@ def _PmaxPT_newtC(
     gi = lnkik + lnphixi - lnphiyi
     TPD = xi.dot(gi - np.log(n))
     gnorm = np.linalg.norm(gi)
+    repeat = (gnorm > tol or
+              TPD < -tol_tpd or TPD > tol_tpd or
+              dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdT)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdT) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk) and np.isfinite(Tk)):
+  if (not repeat and np.isfinite(gnorm) and np.isfinite(Pk) and
+      np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -4803,18 +4813,17 @@ def _PmaxPT_newtC(
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, dTPDdT=dTPDdT, Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (C-form) for cricondenbar calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-      "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-      eos.name, P0, T0, yi, Plow, Pupp,
-    )
-    raise SolutionNotFoundError(
-      'The cricondenbar calculation\nterminates unsuccessfully. Try to '
-      'increase the maximum number of\nsolver iterations and/or improve the '
-      'initial guess.'
-    )
+  logger.warning(
+    "Newton's method (C-form) for cricondenbar calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T0, yi, Plow, Pupp,
+  )
+  raise SolutionNotFoundError(
+    'The cricondenbar calculation\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations and/or improve the '
+    'initial guess.'
+  )
 
 
 class TmaxPT(TsatPT):
@@ -5030,8 +5039,8 @@ def _TmaxPT_solve_TPDeq_T(
   yi: Vector,
   xi: Vector,
   eos: TmaxEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
 ) -> Scalar:
   """Solves the TPD-equation using the PT-based equations of state for
   temperature at a constant pressure. The TPD-equation is the equation
@@ -5070,10 +5079,10 @@ def _TmaxPT_solve_TPDeq_T(
 
   tol: Scalar
     Terminate successfully if the absolute value of the equation is less
-    than `tol`. Default is `1e-6`.
+    than `tol`. Default is `1e-8`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   Returns
   -------
@@ -5086,7 +5095,7 @@ def _TmaxPT_solve_TPDeq_T(
   lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
-  while k < maxiter and np.abs(TPD) > tol:
+  while (TPD < -tol or TPD > tol) and k < maxiter:
     # dTPDdT = xi.dot(dlnphixidT - dlnphiyidT)
     dTPDdlnT = Tk * xi.dot(dlnphixidT - dlnphiyidT)
     k += 1
@@ -5105,8 +5114,8 @@ def _TmaxPT_solve_dTPDdPeq_P(
   yi: Vector,
   xi: Vector,
   eos: TmaxEosPT,
-  tol: Scalar = 1e-6,
-  maxiter: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 10,
 ) -> tuple[Scalar, Vector, Vector, Scalar, Scalar]:
   """Solves the cricondentherm equation using the PT-based equations of
   state for pressure at a constant temperature. The cricondentherm
@@ -5148,11 +5157,11 @@ def _TmaxPT_solve_dTPDdPeq_P(
         `Vector` of shape `(Nc,)`.
 
   maxiter: int
-    The maximum number of iterations. Default is `8`.
+    The maximum number of iterations. Default is `10`.
 
   tol: Scalar
     Terminate successfully if the absolute value of the relative
-    pressure change is less than `tol`. Default is `1e-6`.
+    pressure change is less than `tol`. Default is `1e-8`.
 
   Returns
   -------
@@ -5194,10 +5203,10 @@ def _TmaxPT_ss(
   yi: Vector,
   kvi0: Vector,
   eos: TmaxEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 200,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
 ) -> SatResult:
@@ -5277,22 +5286,22 @@ def _TmaxPT_ss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
+    Default is `200`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Terminate the
     cricondentherm equation solver successfully if the absolute value
     of the relative pressure change is less than `tol_tpd`. Default
-    is `1e-6`.
+    is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
-    cricondentherm equation solvers. Default is `8`.
+    cricondentherm equation solvers. Default is `10`.
 
   Tlow: Scalar
     The lower bound for the TPD-equation solver. This parameter is used
@@ -5318,13 +5327,13 @@ def _TmaxPT_ss(
   """
   logger.info("Cricondentherm calculation using the SS-method.")
   Nc = eos.Nc
-  logger.info('yi =' + Nc * ' %6.4f', *yi)
+  logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
@@ -5335,15 +5344,16 @@ def _TmaxPT_ss(
   ni = kik * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    P0, T0, yi, xi, eos,
-    tol_tpd, maxiter_tpd, Tlow, Tupp, True,
+    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
   )
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  repeat = (gnorm > tol or
+            TPD < -tol_tpd or TPD > tol_tpd or
+            dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
   logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdP)
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd or
-                         np.abs(dTPDdP) > tol_tpd):
+  while repeat and k < maxiter:
     lnkik -= gi
     k += 1
     kik = np.exp(lnkik)
@@ -5355,9 +5365,12 @@ def _TmaxPT_ss(
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     TPD = xi.dot(gi - np.log(n))
+    repeat = (gnorm > tol or
+              TPD < -tol_tpd or TPD > tol_tpd or
+              dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdP)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk) and np.isfinite(Tk)):
+  if (not repeat and np.isfinite(gnorm) and np.isfinite(Pk) and
+      np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -5371,18 +5384,17 @@ def _TmaxPT_ss(
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, dTPDdP=dTPDdP, Niter=k)
-  else:
-    logger.warning(
-      "The SS-method for cricondentherm calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P0, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The cricondentherm calculation\nterminates unsuccessfully. Try to '
-      'increase the maximum number of\nsolver iterations and/or improve the '
-      'initial guess.'
-    )
+  logger.warning(
+    "The SS-method for cricondentherm calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P0, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The cricondentherm calculation\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations and/or improve the '
+    'initial guess.'
+  )
 
 
 def _TmaxPT_qnss(
@@ -5391,10 +5403,10 @@ def _TmaxPT_qnss(
   yi: Vector,
   kvi0: Vector,
   eos: TmaxEosPT,
-  tol: Scalar = 1e-5,
+  tol: Scalar = 1e-8,
   maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
 ) -> SatResult:
@@ -5477,7 +5489,7 @@ def _TmaxPT_qnss(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
@@ -5488,11 +5500,11 @@ def _TmaxPT_qnss(
     value of the equation is less than `tol_tpd`. Terminate the
     cricondentherm equation solver successfully if the absolute value
     of the relative pressure change is less than `tol_tpd`. Default
-    is `1e-6`.
+    is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
-    cricondentherm equation solvers. Default is `8`.
+    cricondentherm equation solvers. Default is `10`.
 
   Tlow: Scalar
     The lower bound for the TPD-equation solver. This parameter is used
@@ -5518,13 +5530,13 @@ def _TmaxPT_qnss(
   """
   logger.info("Cricondentherm calculation using the QNSS-method.")
   Nc = eos.Nc
-  logger.info('yi =' + Nc * ' %6.4f', *yi)
+  logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd)
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
@@ -5535,16 +5547,17 @@ def _TmaxPT_qnss(
   ni = kik * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    P0, T0, yi, xi, eos,
-    tol_tpd, maxiter_tpd, Tlow, Tupp, True,
+    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
   )
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
   lmbd = 1.
+  repeat = (gnorm > tol or
+            TPD < -tol_tpd or TPD > tol_tpd or
+            dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
   logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdP)
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd or
-                         np.abs(dTPDdP) > tol_tpd):
+  while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
     if max_dlnki > 6.:
@@ -5566,9 +5579,12 @@ def _TmaxPT_qnss(
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
+    repeat = (gnorm > tol or
+              TPD < -tol_tpd or TPD > tol_tpd or
+              dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdP)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk) and np.isfinite(Tk)):
+  if (not repeat and np.isfinite(gnorm) and np.isfinite(Pk) and
+      np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -5582,18 +5598,17 @@ def _TmaxPT_qnss(
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, dTPDdP=dTPDdP, Niter=k)
-  else:
-    logger.warning(
-      "The QNSS-method for cricondentherm calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P0, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The cricondentherm calculation\nterminates unsuccessfully. Try to '
-      'increase the maximum number of\nsolver iterations and/or improve the '
-      'initial guess.'
-    )
+  logger.warning(
+    "The QNSS-method for cricondentherm calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P0, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The cricondentherm calculation\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations and/or improve the '
+    'initial guess.'
+  )
 
 
 def _TmaxPT_newtC(
@@ -5602,10 +5617,10 @@ def _TmaxPT_newtC(
   yi: Vector,
   kvi0: Vector,
   eos: TmaxEosPT,
-  tol: Scalar = 1e-5,
-  maxiter: int = 50,
-  tol_tpd: Scalar = 1e-6,
-  maxiter_tpd: int = 8,
+  tol: Scalar = 1e-8,
+  maxiter: int = 30,
+  tol_tpd: Scalar = 1e-8,
+  maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
@@ -5698,22 +5713,22 @@ def _TmaxPT_newtC(
 
   tol: Scalar
     Terminate equilibrium equation solver successfully if the norm of
-    the equation vector is less than `tol`. Default is `1e-5`.
+    the equation vector is less than `tol`. Default is `1e-8`.
 
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
-    Default is `50`.
+    Default is `30`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Terminate the
     cricondentherm equation solver successfully if the absolute value
     of the relative pressure change is less than `tol_tpd`. Default
-    is `1e-6`.
+    is `1e-8`.
 
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
-    cricondentherm equation solvers. Default is `8`.
+    cricondentherm equation solvers. Default is `10`.
 
   Tlow: Scalar
     The lower bound for the TPD-equation solver. This parameter is used
@@ -5745,13 +5760,13 @@ def _TmaxPT_newtC(
   """
   logger.info("Cricondentherm calculation using Newton's method (C-form).")
   Nc = eos.Nc
-  logger.info('yi =' + Nc * ' %6.4f', *yi)
+  logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
     'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
     'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %11.1f %8.2f %9.2e %10.2e %10.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos,tol=tol_tpd,
                         maxiter=maxiter_tpd)
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
@@ -5764,15 +5779,16 @@ def _TmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    P0, T0, yi, xi, eos,
-    tol_tpd, maxiter_tpd, Tlow, Tupp, True,
+    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
   )
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnkik + lnphixi - lnphiyi
   gnorm = np.linalg.norm(gi)
+  repeat = (gnorm > tol or
+            TPD < -tol_tpd or TPD > tol_tpd or
+            dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
   logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdP)
-  while k < maxiter and (gnorm > tol or np.abs(TPD) > tol_tpd or
-                         np.abs(dTPDdP) > tol_tpd):
+  while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
@@ -5790,9 +5806,12 @@ def _TmaxPT_newtC(
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
     TPD = xi.dot(gi - np.log(n))
+    repeat = (gnorm > tol or
+              TPD < -tol_tpd or TPD > tol_tpd or
+              dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnkik, Pk, Tk, gnorm, TPD, dTPDdP)
-  if (gnorm < tol and np.abs(TPD) < tol_tpd and np.abs(dTPDdP) < tol_tpd and
-      np.isfinite(gnorm) and np.isfinite(Pk) and np.isfinite(Tk)):
+  if (not repeat and np.isfinite(gnorm) and np.isfinite(Pk) and
+      np.isfinite(Tk)):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
     if rhoy < rhox:
@@ -5806,18 +5825,17 @@ def _TmaxPT_newtC(
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(P=Pk, T=Tk, lnphiji=lnphiji, Zj=Zj, yji=yji,
                      gnorm=gnorm, TPD=TPD, dTPDdP=dTPDdP, Niter=k)
-  else:
-    logger.warning(
-      "Newton's method (C-form) for cricondentherm calculation terminates "
-      "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-      "yi = %s\nTlow = %s K\nTupp = %s K",
-      eos.name, P0, T0, yi, Tlow, Tupp,
-    )
-    raise SolutionNotFoundError(
-      'The cricondentherm calculation\nterminates unsuccessfully. Try to '
-      'increase the maximum number of\nsolver iterations and/or improve the '
-      'initial guess.'
-    )
+  logger.warning(
+    "Newton's method (C-form) for cricondentherm calculation terminates "
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
+    "yi = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P0, T0, yi, Tlow, Tupp,
+  )
+  raise SolutionNotFoundError(
+    'The cricondentherm calculation\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations and/or improve the '
+    'initial guess.'
+  )
 
 
 class EnvelopeResult(dict):
@@ -6350,11 +6368,11 @@ class env2pPT(object):
     crctrms = []
 
     logger.info(
-      '%3s %3s %5s %7s %4s %9s' + Nc * ' %8s' + ' %8s %7s',
+      '%4s%5s%6s%8s%5s%10s' + Nc * '%9s' + '%9s%8s',
       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
       *map(lambda s: 'lnkv%s' % s, range(Nc)), 'lnP', 'lnT',
     )
-    tmpl = '%4s %4s %5s %7.4f %4s %9.4f' + Nc * ' %8.4f' + ' %8.4f %7.4f'
+    tmpl = '%4s%5s%6s%8.4f%5s%10.4f' + Nc * '%9.4f' + '%9.4f%8.4f'
 
     c = 0
     cmax = maxpoints - 1
@@ -6707,7 +6725,7 @@ def _env2pPT(
     'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'lnP', 'lnT',
     'gnorm', 'dx2',
   )
-  tmpl = '%3s' + Nc * ' %8.4f' + ' %8.4f %7.4f %9.2e %9.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%9.4f%8.4f%10.2e%10.2e'
   J = np.zeros(shape=(Nc + 2, Nc + 2))
   J[-1, sidx] = 1.
   g = np.empty(shape=(Nc + 2,))
@@ -6739,10 +6757,10 @@ def _env2pPT(
   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
   dx = np.linalg.solve(J, -g)
   dx2 = dx.dot(dx)
-  proceed = (np.isfinite(dx2) and
-             (dx2 > tolvar and gnorm > tolres or k < miniter))
+  repeat = (np.isfinite(dx2) and
+            (dx2 > tolvar and gnorm > tolres or k < miniter))
   logger.debug(tmpl, k, *xk, gnorm, dx2)
-  while proceed and k < maxiter:
+  while repeat and k < maxiter:
     k += 1
     xkp1 = xk + dx
     if xkp1[-2] > lnPmax:
@@ -6778,8 +6796,8 @@ def _env2pPT(
     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
     dx = np.linalg.solve(J, -g)
     dx2 = dx.dot(dx)
-    proceed = (np.isfinite(dx2) and
-               (dx2 > tolvar and gnorm > tolres or k < miniter))
+    repeat = (np.isfinite(dx2) and
+              (dx2 > tolvar and gnorm > tolres or k < miniter))
     logger.debug(tmpl, k, *xk, gnorm, dx2)
   succeed = (gnorm < tolres or dx2 < tolvar) and np.isfinite(dx2)
   return xk, np.array([Zv, Zl]), J, k, succeed

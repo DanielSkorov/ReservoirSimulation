@@ -14,6 +14,7 @@ from custom_types import (
   Scalar,
   Vector,
   Matrix,
+  SolutionNotFoundError,
 )
 
 
@@ -91,7 +92,7 @@ def solve2p_FGH(
   """
   logger.info('Solving the two-phase Rachford-Rice equation (FGH-method).')
   logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
-  tmpl = '%3s %11.3e %10.2e'
+  tmpl = '%3s%12.3e%11.2e'
   idx = kvi.argsort()[::-1]
   ysi = yi[idx]
   kvsi = kvi[idx]
@@ -104,9 +105,10 @@ def solve2p_FGH(
   k = 0
   ak = y0 / yN
   D, dDda = pD(ak)
-  hk = D / dDda
+  repeat = D < -tol or D > tol
   logger.debug(tmpl, k, ak, D)
-  while np.abs(D) > tol and k < maxiter:
+  while repeat and k < maxiter:
+    hk = D / dDda
     akp1 = ak - hk
     if akp1 < 0.:
       if D > 0.:
@@ -116,11 +118,20 @@ def solve2p_FGH(
     k += 1
     ak = akp1
     D, dDda = pD(ak)
+    repeat = D < -tol or D > tol
     logger.debug(tmpl, k, ak, D)
-    hk = D / dDda
-  F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.info('Solution is: F = %.2f.', F)
-  return F
+  if not repeat:
+    F = (ci[0] + ak * ci[-1]) / (1. + ak)
+    logger.info('Solution is: F = %.2f.', F)
+    return F
+  logger.warning(
+    'FGH-method for solving the RR-equation terminates unsuccessfully.\n'
+    'kvi = %s\nyi = %s', kvi, yi,
+  )
+  raise SolutionNotFoundError(
+    'FGH-method for solving the RR-equation terminates unsuccessfully.\n'
+    'Try to increase the maximum number of iterations or check your data.'
+  )
 
 
 def solve2p_GH(
@@ -155,7 +166,7 @@ def solve2p_GH(
   """
   logger.info('Solving the two-phase Rachford-Rice equation (GH-method).')
   logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
-  tmpl = '%3s %11.3e %10.2e'
+  tmpl = '%3s%12.3e%11.2e'
   idx = kvi.argsort()[::-1]
   ysi = yi[idx]
   kvsi = kvi[idx]
@@ -175,17 +186,25 @@ def solve2p_GH(
     peq = partial(fH, yi=ysi, di=di, y0=y0, yN=yN)
     deqda = -eq - ak * deqda
     eq *= -ak
-  hk = eq / deqda
   logger.debug(tmpl, k, ak, eq)
   while eq > tol and k < maxiter:
+    hk = eq / deqda
     k +=1
     ak -= hk
     eq, deqda = peq(ak)
     logger.debug(tmpl, k, ak, eq)
-    hk = eq / deqda
-  F = (ci[0] + ak * ci[-1]) / (1. + ak)
-  logger.info('Solution is: F = %.2f.', F)
-  return F
+  if eq < tol:
+    F = (ci[0] + ak * ci[-1]) / (1. + ak)
+    logger.info('Solution is: F = %.2f.', F)
+    return F
+  logger.warning(
+    'GH-method for solving the RR-equation terminates unsuccessfully.\n'
+    'kvi = %s\nyi = %s', kvi, yi,
+  )
+  raise SolutionNotFoundError(
+    'GH-method for solving the RR-equation terminates unsuccessfully.\n'
+    'Try to increase the maximum number of iterations or check your data.'
+  )
 
 
 def solveNp(
@@ -248,7 +267,7 @@ def solveNp(
     '%3s%5s' + Npm1 * '%10s' + '%10s%11s',
     'Nit', 'Nls', *map(lambda s: 'f%s' % s, range(Npm1)), 'F', 'gnorm',
   )
-  tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %9.4f %10.2e'
+  tmpl = '%3s%5s' + Npm1 * '%10.4f' + '%10.4f%11.2e'
   Aji = 1. - Kji
   Bji = np.sqrt(yi) * Aji
   bi = np.vstack([Kji * yi, yi]).max(axis=0)
@@ -299,5 +318,14 @@ def solveNp(
       gnorm = np.linalg.norm(gj)
     k += 1
     logger.debug(tmpl, k, n, *fjk, F, gnorm)
-  logger.info('Solution is: Fj = [' + Npm1 * ' %.4f' + '].', *fjk)
-  return fjk
+  if gnorm < tol:
+    logger.info('Solution is: Fj = [' + Npm1 * ' %.4f' + '].', *fjk)
+    return fjk
+  logger.warning(
+    'Solving the system of RR-equations was completed unsuccessfully.\n'
+    'kvji:\n%s\nyi = %s', Kji, yi,
+  )
+  raise SolutionNotFoundError(
+    'Solving the system of RR-equations was completed unsuccessfully.\n'
+    'Try to increase the maximum number of iterations or check your data.'
+  )

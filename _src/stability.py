@@ -354,7 +354,7 @@ def _stabPT_ss(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'TPD*', 'r', 'gnorm',
   )
-  tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z
@@ -389,7 +389,7 @@ def _stabPT_ss(
       tpds = 1. + ng - n
       r = 2. * tpds / (ng - yi.dot(gi))
       logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
-      if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
+      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
         trivial = True
         break
     if gnorm < tol and np.isfinite(gnorm) and not trivial:
@@ -496,7 +496,7 @@ def _stabPT_qnss(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
     'Nkv', 'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'TPD*', 'r', 'gnorm',
   )
-  tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z
@@ -541,7 +541,7 @@ def _stabPT_qnss(
       logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
       if gnorm < tol:
         break
-      if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
+      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
         trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
@@ -677,7 +677,7 @@ def _stabPT_newt(
     'Nkv', 'Nit', *map(lambda s: 'alpha%s' % s, range(Nc)),
     'TPD*', 'r', 'gnorm', 'method',
   )
-  tmpl = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   hi = lnphiyi + np.log(yi)
   TPDo = eps
@@ -732,7 +732,7 @@ def _stabPT_newt(
       tpds = 1. + ng - n
       r = 2. * tpds / (ng - yi.dot(gpi))
       logger.debug(tmpl, j, k, *alphaik, tpds, r, gnorm, method)
-      if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
+      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
         break
     if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
@@ -871,8 +871,8 @@ def _stabPT_ssnewt(
   logger.info("Stability Test (SS-Newton method).")
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
-  tmpl_ss = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
-  tmpl_nt = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
+  tmpl_ss = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
+  tmpl_nt = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   rangeNc = range(Nc)
   lbls_lnkv = tuple(map(lambda s: 'lnkv%s' % s, rangeNc))
   lbls_alpha = tuple(map(lambda s: 'alpha%s' % s, rangeNc))
@@ -914,7 +914,7 @@ def _stabPT_ssnewt(
       tpds = 1. + ng - n
       r = 2. * tpds / (ng - yi.dot(gi))
       logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'ss')
-      if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
+      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
         trivial = True
         break
     if np.isfinite(gnorm) and not trivial:
@@ -1108,8 +1108,8 @@ def _stabPT_qnssnewt(
   logger.info("Stability Test (QNSS-Newton method).")
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
-  tmpl_ss = '%3s%5s' + Nc * ' %8.4f' + 3 * ' %10.2e' + ' %8s'
-  tmpl_nt = '%3s%5s' + Nc * ' %8.4f' + ' %10.2e %8s'
+  tmpl_ss = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
+  tmpl_nt = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   rangeNc = range(Nc)
   lbls_lnkv = tuple(map(lambda s: 'lnkv%s' % s, rangeNc))
   lbls_alpha = tuple(map(lambda s: 'alpha%s' % s, rangeNc))
@@ -1161,7 +1161,7 @@ def _stabPT_qnssnewt(
       logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'qnss')
       if gnorm < tol_qnss:
         break
-      if tpds < 1e-3 and np.abs(r - 1.) < 0.2 and checktrivial:
+      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
         trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))

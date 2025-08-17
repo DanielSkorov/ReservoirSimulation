@@ -671,7 +671,7 @@ def update_ssi_Np(carry, yi, plnphi):
     gji_kp1 = np.log(kvji_kp1) + lnphiji[:-1] - lnphiji[-1]
     return k + 1, kvji_kp1, Fj_kp1, gji_kp1
 
-pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, P=P, T=T))
+pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, Pj=P, Tj=T))
 ```
 
 В цикле `while` найдем решение системы нелинейных уравнений, определяющей положение локальных минимумов функции энергии Гиббса, соответствующих трехфазному состоянию системы.
@@ -778,7 +778,7 @@ def update_ssi_Np(carry, yi, plnphi):
     gji_kp1 = np.log(kvji_kp1) + lnphiji[:-1] - lnphiji[-1]
     return k + 1, kvji_kp1, Fj_kp1, gji_kp1
 
-pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, P=P, T=T))
+pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, Pj=P, Tj=T))
 
 carry = (1, kvji, Fj, gji)
 
