@@ -666,10 +666,10 @@ class PsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    upper: bool = True,
-    step: Scalar = 0.1,
     Pmin: Scalar = 1.,
     Pmax: Scalar = 1e8,
+    upper: bool = True,
+    step: Scalar = 0.1,
   ) -> SatResult:
     """Performs the saturation pressure calculation for known
     temperature and composition. To improve an initial guess, the
@@ -686,6 +686,16 @@ class PsatPT(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
+    Pmin: Scalar
+      During the preliminary search, the pressure can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `1.` [Pa].
+
+    Pmax: Scalar
+      During the preliminary search, the pressure can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `1e8` [Pa].
+
     upper: bool
       A boolean flag that indicates whether the desired value is located
       at the upper saturation bound or the lower saturation bound.
@@ -700,16 +710,6 @@ class PsatPT(object):
       interval, then the next value of pressure will be calculated from
       the previous one using the formula: `Pnext = Pprev * (1. + step)`.
       Default is `0.1`.
-
-    Pmin: Scalar
-      During the preliminary search, the pressure can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `1.` [Pa].
-
-    Pmax: Scalar
-      During the preliminary search, the pressure can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `1e8` [Pa].
 
     Returns
     -------
@@ -731,7 +731,7 @@ class PsatPT(object):
       saturation pressure calculation procedure terminates
       unsuccessfully.
     """
-    P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper, step, Pmin, Pmax)
+    P0, kvi0, Plow, Pupp = self.search(P, T, yi, Pmin, Pmax, upper, step)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
 
   def search(
@@ -739,12 +739,12 @@ class PsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    upper: bool = True,
-    step: Scalar = 0.1,
     Pmin: Scalar = 1.,
     Pmax: Scalar = 1e8,
+    upper: bool = True,
+    step: Scalar = 0.1,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
-    """Performs a preliminary search to refine the initial guess of
+    """Performs the preliminary search to refine the initial guess of
     the saturation pressure.
 
     Parameters
@@ -757,6 +757,16 @@ class PsatPT(object):
 
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
+
+    Pmin: Scalar
+      During the preliminary search, the pressure can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `1.` [Pa].
+
+    Pmax: Scalar
+      During the preliminary search, the pressure can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `1e8` [Pa].
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
@@ -772,16 +782,6 @@ class PsatPT(object):
       interval, then the next value of pressure will be calculated from
       the previous one using the formula: `Pnext = Pprev * (1. + step)`.
       Default is `0.1`.
-
-    Pmin: Scalar
-      During the preliminary search, the pressure can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `1.` [Pa].
-
-    Pmax: Scalar
-      During the preliminary search, the pressure can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `1e8` [Pa].
 
     Returns
     -------
@@ -935,6 +935,110 @@ class PsatPT(object):
       else:
         P = Pupp
     return P, stab.kvji[0], Plow, Pupp
+
+  def gridding(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+    Pmin: Scalar = 1.,
+    Pmax: Scalar = 1e8,
+    Nnodes: int = 10,
+    logspace: bool = False,
+  ) -> tuple[Scalar, Vector, Scalar, Scalar]:
+    """Performs the gridding procedure to refine the initial guess of
+    the saturation pressure.
+
+    Parameters
+    ----------
+    P: Scalar
+      The initial guess of the saturation pressure to be improved [Pa].
+
+    T: Scalar
+      Temperature of a mixture [K].
+
+    yi: Vector, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Pmin: Scalar
+      Min pressure for the gridding procedure. Default is `1.` [Pa].
+
+    Pmax: Scalar
+      Max pressure for the gridding procedure. Default is `1e8` [Pa].
+
+    Nnodes: int
+      The number of points to construct a grid. Default is `10`.
+
+    logspace: bool
+      A boolean flag indicating whether the log10 grid should be used
+      instead of linear. Default is `False`.
+
+    Returns
+    -------
+    A tuple of:
+    - the improved initial guess for the saturation pressure [Pa],
+    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the lower bound of the saturation pressure [Pa],
+    - the upper bound of the saturation pressure [Pa].
+
+    Raises
+    ------
+    ValueError
+      The `ValueError` exception may be raised if the one-phase or
+      two-phase region was not found using a preliminary search.
+    """
+    if logspace:
+      PP = np.logspace(np.log10(Pmin), np.log10(Pmax), Nnodes, endpoint=True)
+    else:
+      PP = np.linspace(Pmin, Pmax, Nnodes, endpoint=True)
+    prevP = PP[0]
+    prevresult = self.stabsolver.run(prevP, T, yi)
+    prevstable = prevresult.stable
+    logger.debug(
+      'For P = %.1f Pa, the one-phase state is stable: %s', prevP, prevstable,
+    )
+    found = False
+    for nextP in PP[1:]:
+      result = self.stabsolver.run(nextP, T, yi)
+      stable = result.stable
+      logger.debug(
+        'For P = %.1f Pa, the one-phase state is stable: %s', nextP, stable,
+      )
+      if not stable and prevstable or stable and not prevstable:
+        if not found:
+          Plow = prevP
+          Pupp = nextP
+          Pave = .5 * (Plow + Pupp)
+          found = True
+          if not stable:
+            stabres = result
+            P0 = nextP
+          else:
+            stabres = prevresult
+            P0 = prevP
+        else:
+          Pave_ = .5 * (prevP + nextP)
+          if np.abs(Pave_ - P) < np.abs(Pave - P):
+            Pave = Pave_
+            Plow = prevP
+            Pupp = nextP
+            if not stable:
+              stabres = result
+              P0 = nextP
+            else:
+              stabres = prevresult
+              P0 = prevP
+      prevstable = stable
+      prevresult = result
+      prevP = nextP
+    if found:
+      return P0, stabres.kvji[0], Plow, Pupp
+    raise ValueError(
+      'A boundary of the two-phase region was not identified. It could be\n'
+      'because of its narrowness or absence. Try to change the number of\n'
+      'points for gridding or stability test parameters using the\n'
+      '`stabkwargs` parameter.'
+    )
 
 
 def _PsatPT_solve_TPDeq_P(
@@ -2307,10 +2411,10 @@ class TsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    upper: bool = True,
-    step: Scalar = 0.1,
     Tmin: Scalar = 173.15,
     Tmax: Scalar = 973.15,
+    upper: bool = True,
+    step: Scalar = 0.1,
   ) -> SatResult:
     """Performs the saturation temperature calculation for known
     pressure and composition. To improve an initial guess, the
@@ -2327,6 +2431,16 @@ class TsatPT(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
+    Tmin: Scalar
+      During the preliminary search, the temperature can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `173.15` [K].
+
+    Tmax: Scalar
+      During the preliminary search, the temperature can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `973.15` [K].
+
     upper: bool
       A boolean flag that indicates whether the desired value is located
       at the upper saturation bound or the lower saturation bound.
@@ -2341,16 +2455,6 @@ class TsatPT(object):
       interval, then the next value of temperature will be calculated
       from the previous one using the formula:
       `Tnext = Tprev * (1. + step)`. Default is `0.1`.
-
-    Tmin: Scalar
-      During the preliminary search, the temperature can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `173.15` [K].
-
-    Tmax: Scalar
-      During the preliminary search, the temperature can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `973.15` [K].
 
     Returns
     -------
@@ -2372,7 +2476,7 @@ class TsatPT(object):
       saturation pressure calculation procedure terminates
       unsuccessfully.
     """
-    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper, step, Tmin, Tmax)
+    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, Tmin, Tmax, upper, step)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
 
   def search(
@@ -2380,10 +2484,10 @@ class TsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    upper: bool = True,
-    step: Scalar = 0.1,
     Tmin: Scalar = 173.15,
     Tmax: Scalar = 973.15,
+    upper: bool = True,
+    step: Scalar = 0.1,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
     """Performs a preliminary search to refine the initial guess of
     the saturation temperature.
@@ -2400,6 +2504,16 @@ class TsatPT(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
+    Tmin: Scalar
+      During the preliminary search, the temperature can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `173.15` [K].
+
+    Tmax: Scalar
+      During the preliminary search, the temperature can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `973.15` [K].
+
     upper: bool
       A boolean flag that indicates whether the desired value is located
       at the upper saturation bound or the lower saturation bound.
@@ -2414,16 +2528,6 @@ class TsatPT(object):
       interval, then the next value of temperature will be calculated
       from the previous one using the formula:
       `Tnext = Tprev * (1. + step)`. Default is `0.1`.
-
-    Tmin: Scalar
-      During the preliminary search, the temperature can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `173.15` [K].
-
-    Tmax: Scalar
-      During the preliminary search, the temperature can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `973.15` [K].
 
     Returns
     -------
@@ -3968,9 +4072,9 @@ class PmaxPT(PsatPT):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    step: Scalar = 0.1,
     Pmin: Scalar = 1.,
     Pmax: Scalar = 1e8,
+    step: Scalar = 0.1,
   ) -> SatResult:
     """Performs the cricondenbar point calculation for a mixture. To
     improve the initial guess of pressure, the preliminary search is
@@ -3987,15 +4091,6 @@ class PmaxPT(PsatPT):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    step: Scalar
-      To specify the confidence interval for the cricondenbar pressure
-      calculation, the preliminary search is performed. This parameter
-      regulates the step of this search in fraction units. For example,
-      if it is necessary to find the upper bound of the confidence
-      interval, then the next value of pressure will be calculated from
-      the previous one using the formula: `Pnext = Pprev * (1. + step)`.
-      Default is `0.1`.
-
     Pmin: Scalar
       During the preliminary search, the pressure can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
@@ -4005,6 +4100,15 @@ class PmaxPT(PsatPT):
       During the preliminary search, the pressure can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `1e8` [Pa].
+
+    step: Scalar
+      To specify the confidence interval for the cricondenbar pressure
+      calculation, the preliminary search is performed. This parameter
+      regulates the step of this search in fraction units. For example,
+      if it is necessary to find the upper bound of the confidence
+      interval, then the next value of pressure will be calculated from
+      the previous one using the formula: `Pnext = Pprev * (1. + step)`.
+      Default is `0.1`.
 
     Returns
     -------
@@ -4025,7 +4129,7 @@ class PmaxPT(PsatPT):
       The `SolutionNotFoundError` exception will be raised if the
       cricondenbar calculation procedure terminates unsuccessfully.
     """
-    P0, kvi0, Plow, Pupp = self.search(P, T, yi, True, step, Pmin, Pmax)
+    P0, kvi0, Plow, Pupp = self.search(P, T, yi, Pmin, Pmax, True, step)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp)
 
 
@@ -4971,9 +5075,9 @@ class TmaxPT(TsatPT):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    step: Scalar = 0.1,
     Tmin: Scalar = 173.15,
     Tmax: Scalar = 973.15,
+    step: Scalar = 0.1,
   ) -> SatResult:
     """Performs the cricindentherm point calculation for a mixture. To
     improve an initial guess of temperature, the preliminary search is
@@ -4990,14 +5094,6 @@ class TmaxPT(TsatPT):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    step: Scalar
-      To specify the confidence interval for temperature of the
-      cricondentherm point calculation, the preliminary search is
-      performed. This parameter regulates the step of this search in
-      fraction units. During the preliminary search, the next value of
-      temperature will be calculated from the previous one using the
-      formula: `Tnext = Tprev * (1. + step)`. Default is `0.1`.
-
     Tmin: Scalar
       During the preliminary search, the temperature can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
@@ -5007,6 +5103,14 @@ class TmaxPT(TsatPT):
       During the preliminary search, the temperature can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `973.15` [Pa].
+
+    step: Scalar
+      To specify the confidence interval for temperature of the
+      cricondentherm point calculation, the preliminary search is
+      performed. This parameter regulates the step of this search in
+      fraction units. During the preliminary search, the next value of
+      temperature will be calculated from the previous one using the
+      formula: `Tnext = Tprev * (1. + step)`. Default is `0.1`.
 
     Returns
     -------
@@ -5029,7 +5133,7 @@ class TmaxPT(TsatPT):
       The `SolutionNotFoundError` exception will be raised if the
       cricondentherm calculation procedure terminates unsuccessfully.
     """
-    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, True, step, Tmin, Tmax)
+    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, Tmin, Tmax, True, step)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp)
 
 
