@@ -281,6 +281,7 @@ def _stabPT_ss(
   eps: Scalar = -1e-8,
   maxiter: int = 500,
   checktrivial: bool = True,
+  breakunstab: bool = False,
 ) -> StabResult:
   """Successive Substitution (SS) method to perform the stability test
   using a PT-based equation of state.
@@ -338,6 +339,14 @@ def _stabPT_ss(
     early detection of convergence to the trivial solution. It is based
     on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
     Default is `True`.
+
+  breakunstab: bool
+    A boolean flag indicating whether it is allowed to break a loop
+    of various initial guesses checking if the one-phase state was
+    identified as unstable. This option should be activated to prevent
+    finding the global minimum of the TPD function if a local minimum
+    is characterised with the negative value of the TPD function.
+    Default is `False`.
 
   Returns
   -------
@@ -401,6 +410,13 @@ def _stabPT_ss(
         yti = xi
         lnphiti = lnphixi
         gnormo = gnorm
+        if breakunstab:
+          stable = TPDo >= eps
+          logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+          kvji = yti / yi, yi / yti
+          return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                            TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                            lnphiti=lnphiti)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
@@ -418,6 +434,7 @@ def _stabPT_qnss(
   eps: Scalar = -1e-8,
   maxiter: int = 200,
   checktrivial: bool = False,
+  breakunstab: bool = False,
 ) -> StabResult:
   """QNSS-method to perform the stability test using a PT-based
   equation of state.
@@ -479,6 +496,14 @@ def _stabPT_qnss(
     A flag indicating whether it is necessary to perform a check for
     early detection of convergence to the trivial solution. It is based
     on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
+    Default is `False`.
+
+  breakunstab: bool
+    A boolean flag indicating whether it is allowed to break a loop
+    of various initial guesses checking if the one-phase state was
+    identified as unstable. This option should be activated to prevent
+    finding the global minimum of the TPD function if a local minimum
+    is characterised with the negative value of the TPD function.
     Default is `False`.
 
   Returns
@@ -556,6 +581,13 @@ def _stabPT_qnss(
         yti = xi
         lnphiti = lnphixi
         gnormo = gnorm
+        if breakunstab:
+          stable = TPDo >= eps
+          logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+          kvji = yti / yi, yi / yti
+          return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                            TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                            lnphiti=lnphiti)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
@@ -574,6 +606,7 @@ def _stabPT_newt(
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
   checktrivial: bool = True,
+  breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
@@ -654,6 +687,14 @@ def _stabPT_newt(
     early detection of convergence to the trivial solution. It is based
     on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
     Default is `True`.
+
+  breakunstab: bool
+    A boolean flag indicating whether it is allowed to break a loop
+    of various initial guesses checking if the one-phase state was
+    identified as unstable. This option should be activated to prevent
+    finding the global minimum of the TPD function if a local minimum
+    is characterised with the negative value of the TPD function.
+    Default is `False`.
 
   linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
@@ -743,6 +784,13 @@ def _stabPT_newt(
         yti = xi
         lnphiti = lnphixi
         gnormo = gnorm
+        if breakunstab:
+          stable = TPDo >= eps
+          logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+          kvji = yti / yi, yi / yti
+          return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                            TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                            lnphiti=lnphiti)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
@@ -763,6 +811,7 @@ def _stabPT_ssnewt(
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
   checktrivial: bool = True,
+  breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
@@ -854,6 +903,14 @@ def _stabPT_ssnewt(
     on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
     Default is `True`.
 
+  breakunstab: bool
+    A boolean flag indicating whether it is allowed to break a loop
+    of various initial guesses checking if the one-phase state was
+    identified as unstable. This option should be activated to prevent
+    finding the global minimum of the TPD function if a local minimum
+    is characterised with the negative value of the TPD function.
+    Default is `False`.
+
   linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
@@ -927,6 +984,13 @@ def _stabPT_ssnewt(
           yti = xi
           lnphiti = lnphixi
           gnormo = gnorm
+          if breakunstab:
+            stable = TPDo >= eps
+            logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+            kvji = yti / yi, yi / yti
+            return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                              TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                              lnphiti=lnphiti)
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
@@ -978,6 +1042,15 @@ def _stabPT_ssnewt(
             yti = xi
             lnphiti = lnphixi
             gnormo = gnorm
+            if breakunstab:
+              stable = TPDo >= eps
+              logger.info(
+                'The system is stable: %s. TPD = %.3e.', stable, TPDo,
+              )
+              kvji = yti / yi, yi / yti
+              return StabResult(stable=stable, yti=yti, kvji=kvji, TPD=TPDo,
+                                gnorm=gnormo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                                lnphiti=lnphiti)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
@@ -998,6 +1071,7 @@ def _stabPT_qnssnewt(
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
   checktrivial: bool = False,
+  breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
   """Performs minimization of the Michelsen's modified tangent-plane
@@ -1091,6 +1165,14 @@ def _stabPT_qnssnewt(
     on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
     Default is `False`.
 
+  breakunstab: bool
+    A boolean flag indicating whether it is allowed to break a loop
+    of various initial guesses checking if the one-phase state was
+    identified as unstable. This option should be activated to prevent
+    finding the global minimum of the TPD function if a local minimum
+    is characterised with the negative value of the TPD function.
+    Default is `False`.
+
   linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
@@ -1177,6 +1259,13 @@ def _stabPT_qnssnewt(
           yti = xi
           lnphiti = lnphixi
           gnormo = gnorm
+          if breakunstab:
+            stable = TPDo >= eps
+            logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+            kvji = yti / yi, yi / yti
+            return StabResult(stable=stable, yti=yti, kvji=kvji, gnorm=gnormo,
+                              TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                              lnphiti=lnphiti)
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
@@ -1228,6 +1317,15 @@ def _stabPT_qnssnewt(
             yti = xi
             lnphiti = lnphixi
             gnormo = gnorm
+            if breakunstab:
+              stable = TPDo >= eps
+              logger.info(
+                'The system is stable: %s. TPD = %.3e.', stable, TPDo,
+              )
+              kvji = yti / yi, yi / yti
+              return StabResult(stable=stable, yti=yti, kvji=kvji, TPD=TPDo,
+                                gnorm=gnormo, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                                lnphiti=lnphiti)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti

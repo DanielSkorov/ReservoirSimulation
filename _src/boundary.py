@@ -943,11 +943,14 @@ class PsatPT(object):
     yi: Vector,
     Pmin: Scalar = 1.,
     Pmax: Scalar = 1e8,
+    upper: bool = True,
     Nnodes: int = 10,
     logspace: bool = False,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
     """Performs the gridding procedure to refine the initial guess of
-    the saturation pressure.
+    the saturation pressure. Instead of evaluating all segments, the
+    gridding procedure would terminate as soon as an interval exhibiting
+    a change in stability is identified.
 
     Parameters
     ----------
@@ -965,6 +968,14 @@ class PsatPT(object):
 
     Pmax: Scalar
       Max pressure for the gridding procedure. Default is `1e8` [Pa].
+
+    upper: bool
+      A boolean flag that indicates whether the desired value is located
+      at the upper saturation bound or the lower saturation bound.
+      The cricondentherm serves as the dividing point between upper and
+      lower phase boundaries. This flag controls the start point: if it
+      is set to `True`, then the start point would be `Pmax`; otherwise
+      it would be `Pmin`. Default is `True`.
 
     Nnodes: int
       The number of points to construct a grid. Default is `10`.
@@ -988,16 +999,23 @@ class PsatPT(object):
       two-phase region was not found using a preliminary search.
     """
     if logspace:
-      PP = np.logspace(np.log10(Pmin), np.log10(Pmax), Nnodes, endpoint=True)
+      if upper:
+        PP = np.logspace(np.log10(Pmax), np.log10(Pmin), Nnodes,
+                         endpoint=True)
+      else:
+        PP = np.logspace(np.log10(Pmin), np.log10(Pmax), Nnodes,
+                         endpoint=True)
     else:
-      PP = np.linspace(Pmin, Pmax, Nnodes, endpoint=True)
+      if upper:
+        PP = np.linspace(Pmax, Pmin, Nnodes, endpoint=True)
+      else:
+        PP = np.linspace(Pmin, Pmax, Nnodes, endpoint=True)
     prevP = PP[0]
     prevresult = self.stabsolver.run(prevP, T, yi)
     prevstable = prevresult.stable
     logger.debug(
       'For P = %.1f Pa, the one-phase state is stable: %s', prevP, prevstable,
     )
-    found = False
     for nextP in PP[1:]:
       result = self.stabsolver.run(nextP, T, yi)
       stable = result.stable
@@ -1005,34 +1023,22 @@ class PsatPT(object):
         'For P = %.1f Pa, the one-phase state is stable: %s', nextP, stable,
       )
       if not stable and prevstable or stable and not prevstable:
-        if not found:
+        if upper:
+          Plow = nextP
+          Pupp = prevP
+        else:
           Plow = prevP
           Pupp = nextP
-          Pave = .5 * (Plow + Pupp)
-          found = True
-          if not stable:
-            stabres = result
-            P0 = nextP
-          else:
-            stabres = prevresult
-            P0 = prevP
+        if not stable:
+          stabres = result
+          P0 = nextP
         else:
-          Pave_ = .5 * (prevP + nextP)
-          if np.abs(Pave_ - P) < np.abs(Pave - P):
-            Pave = Pave_
-            Plow = prevP
-            Pupp = nextP
-            if not stable:
-              stabres = result
-              P0 = nextP
-            else:
-              stabres = prevresult
-              P0 = prevP
+          stabres = prevresult
+          P0 = prevP
+        return P0, stabres.kvji[0], Plow, Pupp
       prevstable = stable
       prevresult = result
       prevP = nextP
-    if found:
-      return P0, stabres.kvji[0], Plow, Pupp
     raise ValueError(
       'A boundary of the two-phase region was not identified. It could be\n'
       'because of its narrowness or absence. Try to change the number of\n'

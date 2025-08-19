@@ -791,7 +791,7 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     ti = 1. - fjk.dot(Aji)
     gj = Aji.dot(yi / ti)
     gnorm = np.linalg.norm(gj)
-    out += tmpl % (k, n, *fjk, gnorm, 1., -1.)
+    out += tmpl % (k, n, *fjk, gnorm, 1., -9999)
     if gnorm < tol:
         return fjk
     while gnorm > tol and k < maxiter:

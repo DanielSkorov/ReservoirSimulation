@@ -110,25 +110,25 @@ print(stab.run(P, T, flashres.yji[0]))
 Рассчитаем значения функции TPD для компонентного состава первой фазы и трех температур: $9 \; ^{\circ} \mathrm{C}$, $10 \; ^{\circ} \mathrm{C}$ и $11 \; ^{\circ} \mathrm{C}$.
 
 ```{code-cell} python
-yj1 = np.linspace(1e-4, 0.9999, 1000, endpoint=True)
-yji = np.vstack([yj1, 1. - yj1]).T
+xj1 = np.linspace(1e-4, 0.9999, 1000, endpoint=True)
+xji = np.vstack([xj1, 1. - xj1]).T
 
-lnfji = pr.getPT_lnphiji_Zj(P, T, yji)[0] + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+lnfji = pr.getPT_lnphiji_Zj(P, T, xji)[0] + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 lnfi = pr.getPT_lnfi(P, T, flashres.yji[0])
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 Dj_10 = Gj - Lj
 
-lnfji = pr.getPT_lnphiji_Zj(P, T-1., yji)[0] + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+lnfji = pr.getPT_lnphiji_Zj(P, T-1., xji)[0] + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 lnfi = pr.getPT_lnfi(P, T-1., flashres.yji[0])
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 Dj_9 = Gj - Lj
 
-lnfji = pr.getPT_lnphiji_Zj(P, T+1., yji)[0] + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+lnfji = pr.getPT_lnphiji_Zj(P, T+1., xji)[0] + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 lnfi = pr.getPT_lnfi(P, T+1., flashres.yji[0])
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 Dj_11 = Gj - Lj
 ```
 
@@ -138,9 +138,9 @@ Dj_11 = Gj - Lj
 from matplotlib import pyplot as plt
 
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax1.plot(yj1, Dj_9, lw=2., c='cyan', zorder=2, label='t = 9 °C')
-ax1.plot(yj1, Dj_10, lw=2., c='lime', zorder=2, label='t = 10 °C')
-ax1.plot(yj1, Dj_11, lw=2., c='orange', zorder=2, label='t = 11 °C')
+ax1.plot(xj1, Dj_9, lw=2., c='cyan', zorder=2, label='t = 9 °C')
+ax1.plot(xj1, Dj_10, lw=2., c='lime', zorder=2, label='t = 10 °C')
+ax1.plot(xj1, Dj_11, lw=2., c='orange', zorder=2, label='t = 11 °C')
 ax1.grid(zorder=1)
 ax1.set_xlim(0., 1.)
 # ax1.set_ylim(0., 1.)
@@ -149,13 +149,13 @@ ax1.set_ylabel('Tangent plane distance (TPD)')
 ax1.legend(loc=3)
 
 ax1ins = ax1.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(-0.01, .04))
-ax1ins.plot(yj1, Dj_9, lw=2., c='cyan', zorder=3)
-ax1ins.plot(yj1, Dj_10, lw=2., c='lime', zorder=3)
-ax1ins.plot(yj1, Dj_11, lw=2., c='orange', zorder=3)
-ax1ins.text(0.8, 0.02, '$y_{CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
+ax1ins.plot(xj1, Dj_9, lw=2., c='cyan', zorder=3)
+ax1ins.plot(xj1, Dj_10, lw=2., c='lime', zorder=3)
+ax1ins.plot(xj1, Dj_11, lw=2., c='orange', zorder=3)
+ax1ins.text(0.8, 0.02, '$y_{1,CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
 ax1ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=4)
 ax1ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=4)
-ax1ins.text(0.9, 0.02, '$x_{CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
+ax1ins.text(0.9, 0.02, '$y_{2,CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
 ax1ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=4)
 ax1ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=4)
 ax1ins.plot([0., 1.], [0., 0.], lw=1., ls='-', c='k', zorder=2)
