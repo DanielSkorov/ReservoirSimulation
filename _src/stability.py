@@ -176,7 +176,7 @@ class stabilityPT(object):
     is non-trivial) and to use them as the first initial guess in next
     run. Default is `False`.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for a stability test solver. It may contain such
     arguments as `tol`, `maxiter` and others appropriate for the selected
     stability test solver.

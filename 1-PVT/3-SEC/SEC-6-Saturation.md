@@ -419,7 +419,6 @@ ax3.grid(zorder=1)
 **Определить:** Границы отрезка $P_1$ и $P_2$ с давлением насыщения: $P_{min} < P_1 < P^* < P_2 < P_{max}$, где $P^*$ – давление насыщения.
 
 **Псевдокод:**  
-**def** $\phi \left( P, \, \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow \boldsymbol{\varphi} \in {\rm I\!R}^{N_c}$ {comment}`# Функция для расчета вектора коэффициентов летучести`  
 **def** $fstab \left( P, \, \mathbf{y} \in {\rm I\!R}^{N_c}, \, \ldots \right) \rightarrow stable$ {multilinecomment}`# Функция для определения стабильности компонентного состава при заданном давлении`  
 &emsp;
 ```

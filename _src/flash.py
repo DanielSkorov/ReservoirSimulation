@@ -215,7 +215,7 @@ class flash2pPT(object):
     Dictionary that used to regulate the stability test procedure.
     Default is an empty dictionary.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for a phase split solver. It may contain such
     arguments as `tol`, `maxiter` and others, depending on the selected
     phase split solver.

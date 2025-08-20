@@ -604,7 +604,7 @@ class PsatPT(object):
     specify arguments for the stability test procedure. Default is an
     empty dictionary.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for a Psat-solver. It may contain such arguments
     as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others depending
     on the selected solver.
@@ -621,6 +621,16 @@ class PsatPT(object):
   search(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
                                                     Scalar, Scalar]
     This method performs the preliminary search to refine an initial
+    guess of the saturation pressure and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the saturation pressure [Pa],
+    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the lower bound of the saturation pressure [Pa],
+    - the upper bound of the saturation pressure [Pa].
+
+  gridding(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
+                                                      Scalar, Scalar]
+    This method performs the gridding procedure to refine an initial
     guess of the saturation pressure and find lower and upper bounds.
     It returns a tuple of:
     - the improved initial guess for the saturation pressure [Pa],
@@ -666,10 +676,9 @@ class PsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    Pmin: Scalar = 1.,
-    Pmax: Scalar = 1e8,
     upper: bool = True,
-    step: Scalar = 0.1,
+    search: bool = True,
+    **kwargs,
   ) -> SatResult:
     """Performs the saturation pressure calculation for known
     temperature and composition. To improve an initial guess, the
@@ -686,30 +695,24 @@ class PsatPT(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Pmin: Scalar
-      During the preliminary search, the pressure can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `1.` [Pa].
-
-    Pmax: Scalar
-      During the preliminary search, the pressure can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `1e8` [Pa].
-
     upper: bool
       A boolean flag that indicates whether the desired value is located
       at the upper saturation bound or the lower saturation bound.
       The cricondentherm serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
-    step: Scalar
-      To specify the confidence interval for the saturation pressure
-      calculation, the preliminary search is performed. This parameter
-      regulates the step of this search in fraction units. For example,
-      if it is necessary to find the upper bound of the confidence
-      interval, then the next value of pressure will be calculated from
-      the previous one using the formula: `Pnext = Pprev * (1. + step)`.
-      Default is `0.1`.
+    search: bool
+      A boolean flag that indicates whether the preliminary search or
+      gridding procedure should be used to refine an initial guess of
+      the saturation pressure calculation. It is recommended to use the
+      gridding procedure if the initial guess of the saturation pressure
+      is significantly inaccurate. Default is `True`.
+
+    **kwargs: dict
+      Parameters for the preliminary search or gridding procedure.
+      It may contain key-value pairs to change default values for
+      `Pmin`, `Pmax`, `Nnodes` and other depending on the `search`
+      flag. Default is an empty dictionary.
 
     Returns
     -------
@@ -731,7 +734,10 @@ class PsatPT(object):
       saturation pressure calculation procedure terminates
       unsuccessfully.
     """
-    P0, kvi0, Plow, Pupp = self.search(P, T, yi, Pmin, Pmax, upper, step)
+    if search:
+      P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper=upper, **kwargs)
+    else:
+      P0, kvi0, Plow, Pupp = self.gridding(P, T, yi, upper=upper, **kwargs)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
 
   def search(
@@ -950,7 +956,9 @@ class PsatPT(object):
     """Performs the gridding procedure to refine the initial guess of
     the saturation pressure. Instead of evaluating all segments, the
     gridding procedure would terminate as soon as an interval exhibiting
-    a change in stability is identified.
+    a change in stability is identified. It is recommended to use the
+    gridding procedure if the initial guess of the saturation pressure
+    is significantly inaccurate.
 
     Parameters
     ----------
@@ -982,7 +990,9 @@ class PsatPT(object):
 
     logspace: bool
       A boolean flag indicating whether the log10 grid should be used
-      instead of linear. Default is `False`.
+      instead of linear. It is advisable to use this option only if
+      the saturation pressure is expected to be very small. Default is
+      `False`.
 
     Returns
     -------
@@ -1130,6 +1140,8 @@ def _PsatPT_solve_TPDeq_P(
   - compressibility factors for both mixtures,
   - value of the tangent-plane distance.
   """
+  # print('%3s%10s%10s' % ('Nit', 'P, Pa', 'TPD'))
+  # tmpl = '%3s%10.2e%10.2e'
   k = 0
   Pk = P0
   Plow = Plow0
@@ -1138,7 +1150,7 @@ def _PsatPT_solve_TPDeq_P(
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
+  # print(tmpl % (k, Pk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Plow = Pk
@@ -1157,7 +1169,7 @@ def _PsatPT_solve_TPDeq_P(
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
+    # print(tmpl % (k, Pk, TPD))
   return Pk, lnphixi, lnphiyi, Zx, Zy, TPD
 
 
@@ -1593,6 +1605,8 @@ def _PsatPT_newt_improveP0(
     components in the mixture with respect to pressure as a `Vector`
     of shape `(Nc,)`.
   """
+  # print('%3s%10s%10s' % ('Nit', 'P, Pa', 'TPD'))
+  # tmpl = '%3s%10.2e%10.2e'
   k = 0
   Pk = P0
   Plow = Plow0
@@ -1601,7 +1615,7 @@ def _PsatPT_newt_improveP0(
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
+  # print(tmpl % (k, Pk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Plow = Pk
@@ -1620,7 +1634,7 @@ def _PsatPT_newt_improveP0(
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}: Pk = {Pk / 1e6} MPa, {TPD = }')
+    # print(tmpl % (k, Pk, TPD))
   return Pk, lnphiyi, Zy, dlnphiyidP
 
 
@@ -2355,7 +2369,7 @@ class TsatPT(object):
     specify arguments for the stability test procedure. Default is an
     empty dictionary.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for a Tsat-solver. It may contain such arguments
     as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others depending
     on the selected solver.
@@ -2372,6 +2386,16 @@ class TsatPT(object):
   search(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
                                                     Scalar, Scalar]
     This method performs the preliminary search to refine an initial
+    guess of the saturation temperature and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the saturation temperature [K],
+    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the lower bound of the saturation temperature [K],
+    - the upper bound of the saturation temperature [K].
+
+  gridding(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
+                                                      Scalar, Scalar]
+    This method performs the gridding procedure to refine an initial
     guess of the saturation temperature and find lower and upper bounds.
     It returns a tuple of:
     - the improved initial guess for the saturation temperature [K],
@@ -2417,10 +2441,9 @@ class TsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    Tmin: Scalar = 173.15,
-    Tmax: Scalar = 973.15,
     upper: bool = True,
-    step: Scalar = 0.1,
+    search: bool = True,
+    **kwargs,
   ) -> SatResult:
     """Performs the saturation temperature calculation for known
     pressure and composition. To improve an initial guess, the
@@ -2437,30 +2460,24 @@ class TsatPT(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Tmin: Scalar
-      During the preliminary search, the temperature can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `173.15` [K].
-
-    Tmax: Scalar
-      During the preliminary search, the temperature can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `973.15` [K].
-
     upper: bool
       A boolean flag that indicates whether the desired value is located
       at the upper saturation bound or the lower saturation bound.
       The cricondenbar serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
-    step: Scalar
-      To specify the confidence interval for the saturation temperature
-      calculation, the preliminary search is performed. This parameter
-      regulates the step of this search in fraction units. For example,
-      if it is necessary to find the upper bound of the confidence
-      interval, then the next value of temperature will be calculated
-      from the previous one using the formula:
-      `Tnext = Tprev * (1. + step)`. Default is `0.1`.
+    search: bool
+      A boolean flag that indicates whether the preliminary search or
+      gridding procedure should be used to refine an initial guess of
+      the saturation temperature calculation. It is recommended to use
+      the gridding procedure if the initial guess of the saturation
+      temperature is significantly inaccurate. Default is `True`.
+
+    **kwargs: dict
+      Parameters for the preliminary search or gridding procedure.
+      It may contain key-value pairs to change default values for
+      `Tmin`, `Tmax`, `Nnodes` and other depending on the `search`
+      flag. Default is an empty dictionary.
 
     Returns
     -------
@@ -2482,7 +2499,10 @@ class TsatPT(object):
       saturation pressure calculation procedure terminates
       unsuccessfully.
     """
-    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, Tmin, Tmax, upper, step)
+    if search:
+      T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper=upper, **kwargs)
+    else:
+      T0, kvi0, Tlow, Tupp = self.gridding(P, T, yi, upper=upper, **kwargs)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
 
   def search(
@@ -2688,6 +2708,110 @@ class TsatPT(object):
         T = Tupp
     return T, stab.kvji[0], Tlow, Tupp
 
+  def gridding(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+    Tmin: Scalar = 173.15,
+    Tmax: Scalar = 973.15,
+    upper: bool = True,
+    Nnodes: int = 10,
+  ) -> tuple[Scalar, Vector, Scalar, Scalar]:
+    """Performs the gridding procedure to refine the initial guess of
+    the saturation temperature. Instead of evaluating all segments,
+    the gridding procedure would terminate as soon as an interval
+    exhibiting a change in stability is identified. It is recommended
+    to use the gridding procedure if the initial guess of the saturation
+    temperature is significantly inaccurate.
+
+    Parameters
+    ----------
+    P: Scalar
+      Pressure of a mixture [Pa].
+
+    T: Scalar
+      The initial guess of the saturation temperature to be improved
+      [K].
+
+    yi: Vector, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Tmin: Scalar
+      During the preliminary search, the temperature can not drop below
+      the lower limit. Otherwise, the `ValueError` will be rised.
+      Default is `173.15` [K].
+
+    Tmax: Scalar
+      During the preliminary search, the temperature can not exceed the
+      upper limit. Otherwise, the `ValueError` will be rised.
+      Default is `973.15` [K].
+
+    upper: bool
+      A boolean flag that indicates whether the desired value is located
+      at the upper saturation bound or the lower saturation bound.
+      The cricondenbar serves as the dividing point between upper and
+      lower phase boundaries. This flag controls the start point: if it
+      is set to `True`, then the start point would be `Tmax`; otherwise
+      it would be `Tmin`. Default is `True`.
+
+    Nnodes: int
+      The number of points to construct a grid. Default is `10`.
+
+    Returns
+    -------
+    A tuple of:
+    - the improved initial guess for the saturation temperature [K],
+    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the lower bound of the saturation temperature [K],
+    - the upper bound of the saturation temperature [K].
+
+    Raises
+    ------
+    ValueError
+      The `ValueError` exception may be raised if the one-phase or
+      two-phase region was not found using a preliminary search.
+    """
+    if upper:
+      TT = np.linspace(Tmax, Tmin, Nnodes, endpoint=True)
+    else:
+      TT = np.linspace(Tmin, Tmax, Nnodes, endpoint=True)
+    prevT = TT[0]
+    prevresult = self.stabsolver.run(P, prevT, yi)
+    prevstable = prevresult.stable
+    logger.debug(
+      'For T = %.2f K, the one-phase state is stable: %s', prevT, prevstable,
+    )
+    for nextT in TT[1:]:
+      result = self.stabsolver.run(P, nextT, yi)
+      stable = result.stable
+      logger.debug(
+        'For T = %.2f K, the one-phase state is stable: %s', nextT, stable,
+      )
+      if not stable and prevstable or stable and not prevstable:
+        if upper:
+          Tlow = nextT
+          Tupp = prevT
+        else:
+          Tlow = prevT
+          Tupp = nextT
+        if not stable:
+          stabres = result
+          T0 = nextT
+        else:
+          stabres = prevresult
+          T0 = prevT
+        return T0, stabres.kvji[0], Tlow, Tupp
+      prevstable = stable
+      prevresult = result
+      prevT = nextT
+    raise ValueError(
+      'A boundary of the two-phase region was not identified. It could be\n'
+      'because of its narrowness or absence. Try to change the number of\n'
+      'points for gridding or stability test parameters using the\n'
+      '`stabkwargs` parameter.'
+    )
+
 
 def _TsatPT_solve_TPDeq_T(
   P: Scalar,
@@ -2771,6 +2895,8 @@ def _TsatPT_solve_TPDeq_T(
   - compressibility factors for both mixtures.
   - value of the tangent-plane distance.
   """
+  # print('%3s%9s%10s' % ('Nit', 'T, K', 'TPD'))
+  # tmpl = '%3s%9.2f%10.2e'
   k = 0
   Tlow = Tlow0
   Tupp = Tupp0
@@ -2779,7 +2905,7 @@ def _TsatPT_solve_TPDeq_T(
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
   lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
+  # print(tmpl % (k, Tk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Tlow = Tk
@@ -2798,7 +2924,7 @@ def _TsatPT_solve_TPDeq_T(
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
     lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
+    # print(tmpl % (k, Tk, TPD))
   return Tk, lnphixi, lnphiyi, Zx, Zy, TPD
 
 
@@ -3236,6 +3362,8 @@ def _TsatPT_newt_improveT0(
     components in the mixture with respect to temperature as a `Vector`
     of shape `(Nc,)`.
   """
+  # print('%3s%9s%10s' % ('Nit', 'T, K', 'TPD'))
+  # tmpl = '%3s%9.2f%10.2e'
   k = 0
   Tlow = Tlow0
   Tupp = Tupp0
@@ -3244,7 +3372,7 @@ def _TsatPT_newt_improveT0(
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
   lnphixi, Zt, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
+  # print(tmpl % (k, Tk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
     if TPD < 0. and increasing or TPD > 0. and not increasing:
       Tlow = Tk
@@ -3263,7 +3391,7 @@ def _TsatPT_newt_improveT0(
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
     lnphixi, Zt, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
+    # print(tmpl % (k, Tk, TPD))
   return Tk, lnphiyi, Zy, dlnphiyidT
 
 
@@ -4030,7 +4158,7 @@ class PmaxPT(PsatPT):
     used to specify arguments for the stability test procedure. Default
     is an empty dictionary.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for a cricondebar-solver. It may contain such
     arguments as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others
     depending on the selected solver.
@@ -4047,6 +4175,16 @@ class PmaxPT(PsatPT):
   search(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
                                                     Scalar, Scalar]
     This method performs the preliminary search to refine an initial
+    guess of the cricondenbar and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the cricondenbar pressure [Pa],
+    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the lower bound of the cricondenbar pressure [Pa],
+    - the upper bound of the cricondenbar pressure [Pa].
+
+  gridding(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
+                                                      Scalar, Scalar]
+    This method performs the gridding procedure to refine an initial
     guess of the cricondenbar and find lower and upper bounds.
     It returns a tuple of:
     - the improved initial guess for the cricondenbar pressure [Pa],
@@ -4078,9 +4216,8 @@ class PmaxPT(PsatPT):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    Pmin: Scalar = 1.,
-    Pmax: Scalar = 1e8,
-    step: Scalar = 0.1,
+    search: bool = True,
+    **kwargs,
   ) -> SatResult:
     """Performs the cricondenbar point calculation for a mixture. To
     improve the initial guess of pressure, the preliminary search is
@@ -4097,24 +4234,18 @@ class PmaxPT(PsatPT):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Pmin: Scalar
-      During the preliminary search, the pressure can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `1.` [Pa].
+    search: bool
+      A boolean flag that indicates whether the preliminary search or
+      gridding procedure should be used to refine an initial guess of
+      the cricondenbar calculation. It is advisable to use the gridding
+      procedure if the initial guess of the cricondenbar is vastly
+      inaccurate. Default is `True`.
 
-    Pmax: Scalar
-      During the preliminary search, the pressure can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `1e8` [Pa].
-
-    step: Scalar
-      To specify the confidence interval for the cricondenbar pressure
-      calculation, the preliminary search is performed. This parameter
-      regulates the step of this search in fraction units. For example,
-      if it is necessary to find the upper bound of the confidence
-      interval, then the next value of pressure will be calculated from
-      the previous one using the formula: `Pnext = Pprev * (1. + step)`.
-      Default is `0.1`.
+    **kwargs: dict
+      Parameters for the preliminary search or gridding procedure.
+      It may contain key-value pairs to change default values for
+      `Pmin`, `Pmax`, `Nnodes` and other depending on the `search`
+      flag. Default is an empty dictionary.
 
     Returns
     -------
@@ -4135,7 +4266,10 @@ class PmaxPT(PsatPT):
       The `SolutionNotFoundError` exception will be raised if the
       cricondenbar calculation procedure terminates unsuccessfully.
     """
-    P0, kvi0, Plow, Pupp = self.search(P, T, yi, Pmin, Pmax, True, step)
+    if search:
+      P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper=True, **kwargs)
+    else:
+      P0, kvi0, Plow, Pupp = self.gridding(P, T, yi, upper=True, **kwargs)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp)
 
 
@@ -4194,13 +4328,15 @@ def _PmaxPT_solve_TPDeq_P(
   -------
   The root (pressure) of the TPD-equation.
   """
+  # print('%3s%10s%10s' % ('Nit', 'P, Pa', 'TPD'))
+  # tmpl = '%3s%10.2e%10.2e'
   k = 0
   Pk = P0
   lnkvi = np.log(xi / yi)
   lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
   lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {TPD = }')
+  # print(tmpl % (k, Pk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
     # dTPDdP = xi.dot(dlnphixidP - dlnphiyidP)
     dTPDdlnP = Pk * xi.dot(dlnphixidP - dlnphiyidP)
@@ -4210,7 +4346,7 @@ def _PmaxPT_solve_TPDeq_P(
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
     lnphixi, Zx, dlnphixidP = eos.getPT_lnphii_Z_dP(Pk, T, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {TPD = }')
+    # print(tmpl % (k, Pk, TPD))
   return Pk
 
 
@@ -4280,12 +4416,14 @@ def _PmaxPT_solve_dTPDdTeq_T(
   - compressibility factors for both mixtures.
   - value of the cricondenbar equation.
   """
+  # print('%3s%9s%10s' % ('Nit', 'T, K', 'eq'))
+  # tmpl = '%3s%9.2f%10.2e'
   k = 0
   Tk = T0
   lnphiyi, Zy, dlnphiyidT, d2lnphiyidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, yi)
   lnphixi, Zx, dlnphixidT, d2lnphixidT2 = eos.getPT_lnphii_Z_dT_d2T(P, Tk, xi)
   eq = xi.dot(dlnphixidT - dlnphiyidT)
-  # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }')
+  # print(tmpl % (k, Tk, eq))
   while (eq < -tol or eq > tol) and k < maxiter:
     deqdT = xi.dot(d2lnphixidT2 - d2lnphiyidT2)
     k += 1
@@ -4297,7 +4435,7 @@ def _PmaxPT_solve_dTPDdTeq_T(
       P, Tk, xi,
     )
     eq = xi.dot(dlnphixidT - dlnphiyidT)
-    # print(f'Iter #{k}: Tk = {Tk-273.15} C, {eq = }')
+    # print(tmpl % (k, Tk, eq))
   return Tk, lnphixi, lnphiyi, Zx, Zy, eq
 
 
@@ -5033,7 +5171,7 @@ class TmaxPT(TsatPT):
     dictionary is used to specify arguments for the stability test
     procedure. Default is an empty dictionary.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for a cricondentherm-solver. It may contain such
     arguments as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others
     depending on the selected solver.
@@ -5050,6 +5188,16 @@ class TmaxPT(TsatPT):
   search(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
                                                     Scalar, Scalar]
     This method performs the preliminary search to refine an initial
+    guess of the cricondentherm and find lower and upper bounds.
+    It returns a tuple of:
+    - the improved initial guess for the cricondentherm temperature [K],
+    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the lower bound of the cricondentherm temperature [K],
+    - the upper bound of the cricondentherm temperature [K].
+
+  gridding(P: Scalar, T: Scalar, yi: Vector) -> tuple[Scalar, Vector,
+                                                      Scalar, Scalar]
+    This method performs the gridding procedure to refine an initial
     guess of the cricondentherm and find lower and upper bounds.
     It returns a tuple of:
     - the improved initial guess for the cricondentherm temperature [K],
@@ -5081,9 +5229,8 @@ class TmaxPT(TsatPT):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    Tmin: Scalar = 173.15,
-    Tmax: Scalar = 973.15,
-    step: Scalar = 0.1,
+    search: bool = True,
+    **kwargs,
   ) -> SatResult:
     """Performs the cricindentherm point calculation for a mixture. To
     improve an initial guess of temperature, the preliminary search is
@@ -5100,23 +5247,18 @@ class TmaxPT(TsatPT):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Tmin: Scalar
-      During the preliminary search, the temperature can not drop below
-      the lower limit. Otherwise, the `ValueError` will be rised.
-      Default is `173.15` [Pa].
+    search: bool
+      A boolean flag that indicates whether the preliminary search or
+      gridding procedure should be used to refine an initial guess of
+      the cricondentherm calculation. It is advisable to use the
+      gridding procedure if the initial guess of the cricondenbar is
+      vastly inaccurate. Default is `True`.
 
-    Tmax: Scalar
-      During the preliminary search, the temperature can not exceed the
-      upper limit. Otherwise, the `ValueError` will be rised.
-      Default is `973.15` [Pa].
-
-    step: Scalar
-      To specify the confidence interval for temperature of the
-      cricondentherm point calculation, the preliminary search is
-      performed. This parameter regulates the step of this search in
-      fraction units. During the preliminary search, the next value of
-      temperature will be calculated from the previous one using the
-      formula: `Tnext = Tprev * (1. + step)`. Default is `0.1`.
+    **kwargs: dict
+      Parameters for the preliminary search or gridding procedure.
+      It may contain key-value pairs to change default values for
+      `Tmin`, `Tmax`, `Nnodes` and other depending on the `search`
+      flag. Default is an empty dictionary.
 
     Returns
     -------
@@ -5139,7 +5281,10 @@ class TmaxPT(TsatPT):
       The `SolutionNotFoundError` exception will be raised if the
       cricondentherm calculation procedure terminates unsuccessfully.
     """
-    T0, kvi0, Tlow, Tupp = self.search(P, T, yi, Tmin, Tmax, True, step)
+    if search:
+      T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper=True, **kwargs)
+    else:
+      T0, kvi0, Tlow, Tupp = self.gridding(P, T, yi, upper=True, **kwargs)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp)
 
 
@@ -5198,13 +5343,15 @@ def _TmaxPT_solve_TPDeq_T(
   -------
   The root (temperature) of the TPD-equation.
   """
+  # print('%3s%9s%10s' % ('Nit', 'T, K', 'TPD'))
+  # tmpl = '%3s%9.2f%10.2e'
   k = 0
   Tk = T0
   lnkvi = np.log(xi / yi)
   lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
   lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
+  # print(tmpl % (k, Tk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
     # dTPDdT = xi.dot(dlnphixidT - dlnphiyidT)
     dTPDdlnT = Tk * xi.dot(dlnphixidT - dlnphiyidT)
@@ -5214,7 +5361,7 @@ def _TmaxPT_solve_TPDeq_T(
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
     lnphixi, Zx, dlnphixidT = eos.getPT_lnphii_Z_dT(P, Tk, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(f'Iter #{k}: Tk = {Tk-273.15} C, {TPD = }')
+    # print(tmpl % (k, Tk, TPD))
   return Tk
 
 
@@ -5283,6 +5430,8 @@ def _TmaxPT_solve_dTPDdPeq_P(
   - compressibility factors for both mixtures.
   - value of the cricondentherm equation.
   """
+  # print('%3s%10s%10s' % ('Nit', 'P, Pa', 'eq'))
+  # tmpl = '%3s%10.2e%10.2e'
   k = 0
   Pk = P0
   lnphiyi, Zy, dlnphiyidP, d2lnphiyidP2 = eos.getPT_lnphii_Z_dP_d2P(Pk, T, yi)
@@ -5290,7 +5439,7 @@ def _TmaxPT_solve_dTPDdPeq_P(
   eq = xi.dot(dlnphixidP - dlnphiyidP)
   deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
   dP = -eq / deqdP
-  # print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {dP = } Pa')
+  # print(tmpl % (k, Pk, eq))
   while np.abs(dP) / Pk > tol and k < maxiter:
     k += 1
     Pk += dP
@@ -5303,7 +5452,7 @@ def _TmaxPT_solve_dTPDdPeq_P(
     eq = xi.dot(dlnphixidP - dlnphiyidP)
     deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
     dP = -eq / deqdP
-    # print(f'Iter #{k}: Pk = {Pk/1e6} MPa, {dP = } Pa')
+    # print(tmpl % (k, Pk, eq))
   return Pk, lnphixi, lnphiyi, Zx, Zy, eq
 
 
@@ -6267,7 +6416,7 @@ class env2pPT(object):
     launched by the `flash2pPT` class. This parameter allows to specify
     settings for the flash calculation procedure.
 
-  kwargs: dict
+  **kwargs: dict
     Other arguments for the two-phase envelope solver. It may contain
     such arguments as `tolres`, `tolvar`, `maxiter` and `miniter`.
 
@@ -6433,7 +6582,7 @@ class env2pPT(object):
     searchkwargs: dict
       Advanced parameters for the preliminary search. It can contain
       such keys as `Pmin`, `Pmax and `step`. For the details, see the
-      method `search` of the class `PsatPT`. Default is an empty
+      method `run` of the class `PsatPT`. Default is an empty
       dictionary.
 
     Returns
