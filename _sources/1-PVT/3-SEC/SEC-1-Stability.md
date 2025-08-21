@@ -349,7 +349,7 @@ from eos import pr78
 ``` python
 P = 2e6 # Pressure [Pa]
 T = 40. + 273.15 # Temperature [K]
-yi = np.array([.15, .85]) # Mole fractions [fr.]
+yi = np.array([0.15, 0.85]) # Mole fractions [fr.]
 ```
 
 Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона.
@@ -372,26 +372,26 @@ pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `getPT_lnphiji_Zj`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий соответствующие коэффициенты летучести компонентов в виде двумерного массива такой же размерности и коэффициенты сверхсжимаемости в виде одномерного массива для каждого компонентного состава. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
 
 ``` python
-yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
-yji = np.vstack([yj1, 1. - yj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
-lnfji = lnphiji + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
+xji = np.vstack([xj1, 1. - xj1]).T
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+lnfji = lnphiji + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 ```
 
 Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого будем использовать метод `getPT_lnfi`, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью `(Nc,)`) и возвращающий логарифмы летучести компонентов в виде одномерного массива такой же размерности. Затем вычислим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
 lnfi = pr.getPT_lnfi(P, T, yi)
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 ```
 
 Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.
 
 ``` python
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
-ax1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
+ax1.plot(xj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
+ax1.plot(xj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
 ax1.grid(zorder=1)
 ax1.set_xlim(0., 1.)
 ax1.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -413,7 +413,7 @@ plt.show()
 ``` python
 Dj = Gj - Lj
 fig2, ax2 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax2.plot(yj1, Dj, lw=2., c='lime', zorder=2)
+ax2.plot(xj1, Dj, lw=2., c='lime', zorder=2)
 ax2.grid(zorder=1)
 ax2.set_xlim(0., 1.)
 ax2.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -453,18 +453,18 @@ dij = np.array([.025]) # Binary interaction parameters
 
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
-yj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
-yji = np.vstack([yj1, 1. - yj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
-lnfji = lnphiji + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
+xji = np.vstack([xj1, 1. - xj1]).T
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+lnfji = lnphiji + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 
 lnfi = pr.getPT_lnfi(P, T, yi)
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax1.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
-ax1.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
+ax1.plot(xj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
+ax1.plot(xj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
 ax1.grid(zorder=1)
 ax1.set_xlim(0., 1.)
 ax1.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -473,7 +473,7 @@ ax1.legend(loc=3)
 
 Dj = Gj - Lj
 fig2, ax2 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax2.plot(yj1, Dj, lw=2., c='lime', zorder=2)
+ax2.plot(xj1, Dj, lw=2., c='lime', zorder=2)
 ax2.grid(zorder=1)
 ax2.set_xlim(0., 1.)
 ax2.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -495,30 +495,32 @@ glue('glued_fig2', fig2)
 ``` python
 P = 6e6 # Pressure [Pa]
 T = 10. + 273.15 # Temperature [K]
-yi = np.array([.9, .1]) # Mole fractions [fr.]
+yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 ```
 
 Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Затем определим летучести компонентов и энергии Гиббса для соответствующих компонентных составов. Для выполнения вычислений будем использовать проинициализированный в предыдущем примере класс с уравнением состояния.
 
 ``` python
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
-lnfji = lnphiji + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
+xji = np.vstack([xj1, 1. - xj1]).T
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+lnfji = lnphiji + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 ```
 
 Теперь вычислим летучести компонентов для заданного компонентного состава. Затем определим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
 lnfi = pr.getPT_lnfi(P, T, yi)
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 ```
 
 Построим зависимости энергии Гиббса и касательной к ней от количества вещества диоксида углерода в системе.
 
 ``` python
 fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax3.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
-ax3.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
+ax3.plot(xj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
+ax3.plot(xj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
 ax3.grid(zorder=1)
 ax3.set_xlim(0., 1.)
 ax3.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -538,7 +540,7 @@ plt.show()
 ``` python
 Dj = Gj - Lj
 fig4, ax4 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax4.plot(yj1, Dj, lw=2., c='lime', zorder=2)
+ax4.plot(xj1, Dj, lw=2., c='lime', zorder=2)
 ax4.grid(zorder=1)
 ax4.set_xlim(0., 1.)
 ax4.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -561,18 +563,20 @@ plt.show()
 
 P = 6e6 # Pressure [Pa]
 T = 10. + 273.15 # Temperature [K]
-yi = np.array([.9, .1]) # Mole fractions [fr.]
+yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, yji)
-lnfji = lnphiji + np.log(P * yji)
-Gj = np.vecdot(yji, lnfji)
+xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
+xji = np.vstack([xj1, 1. - xj1]).T
+lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+lnfji = lnphiji + np.log(P * xji)
+Gj = np.vecdot(xji, lnfji)
 
 lnfi = pr.getPT_lnfi(P, T, yi)
-Lj = yji.dot(lnfi)
+Lj = xji.dot(lnfi)
 
 fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax3.plot(yj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
-ax3.plot(yj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
+ax3.plot(xj1, Gj, lw=2., c='teal', zorder=2, label='Приведенная добавочная энергия Гиббса')
+ax3.plot(xj1, Lj, lw=2., c='orchid', zorder=2, label='Касательная')
 ax3.grid(zorder=1)
 ax3.set_xlim(0., 1.)
 ax3.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -581,7 +585,7 @@ ax3.legend(loc=4)
 
 Dj = Gj - Lj
 fig4, ax4 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-ax4.plot(yj1, Dj, lw=2., c='lime', zorder=2)
+ax4.plot(xj1, Dj, lw=2., c='lime', zorder=2)
 ax4.grid(zorder=1)
 ax4.set_xlim(0., 1.)
 ax4.set_xlabel('Количество вещества диоксида углерода в системе, моль')
@@ -886,7 +890,7 @@ $$ k_i^{pure} = \begin{cases} \left(1 - \epsilon \right) / z_i, & i = \mathrm{sp
 ``` python
 P = 2e6 # Pressure [Pa]
 T = 40. + 273.15 # Temperature [K]
-yi = np.array([.15, .85]) # Mole fractions [fr.]
+yi = np.array([0.15, 0.85]) # Mole fractions [fr.]
 ```
 
 Также зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$:
@@ -944,7 +948,7 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
     c, ki, gi = carry
@@ -976,7 +980,7 @@ print(f'The system is stable: {is_stable}')
 
 P = 2e6 # Pressure [Pa]
 T = 40. + 273.15 # Temperature [K]
-yi = np.array([.15, .85]) # Mole fractions [fr.]
+yi = np.array([0.15, 0.85]) # Mole fractions [fr.]
 
 maxiter = 50 # Maximum number of iterations
 eps1 = 1e-6 # Tolerance
@@ -1008,7 +1012,7 @@ out1 = ''
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
     c, ki, gi = carry
@@ -1064,7 +1068,7 @@ glue('glued_out1', MultilineText(out1))
 ``` python
 P = 6e6 # Pressure [Pa]
 T = 10. + 273.15 # Temperature [K]
-yi = np.array([.9, .1]) # Mole fractions [fr.]
+yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 ```
 
 Для выполнения вычислений будем использовать свойства компонентов и класс с уравнением состояния, заданные при рассмотрении предыдущих примеров. Рассчитаем матрицу начальных приближений $\mathbf{K}$:
@@ -1093,7 +1097,7 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
     c, ki, gi = carry
@@ -1125,7 +1129,7 @@ print(f'The system is stable: {is_stable}')
 
 P = 6e6 # Pressure [Pa]
 T = 10. + 273.15 # Temperature [K]
-yi = np.array([.9, .1]) # Mole fractions [fr.]
+yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
@@ -1140,7 +1144,7 @@ out2 = ''
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
     c, ki, gi = carry
@@ -1245,7 +1249,7 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
     c, ki, gi = carry
@@ -1269,7 +1273,7 @@ print(f'The system is stable: {is_stable}')
 ```{glue:} glued_out3
 ```
 
-По результатам расчетов метод последовательных подстановок для первого начального приближения сошелся к тривиальному решению за 186 итераций, а для следующего начального приближения нашел решение, характеризующееся отрицательным значением функции TPD, за 72 итерации. Таким образом, рассматриваемое однофазное состояние не является стабильным.
+По результатам расчетов метод последовательных подстановок для первого начального приближения сошелся к тривиальному решению за 185 итераций, а для следующего начального приближения нашел решение, характеризующееся отрицательным значением функции TPD, за 71 итерацию. Таким образом, рассматриваемое однофазное состояние не является стабильным.
 ````
 
 ```{code-cell} python
@@ -1309,7 +1313,7 @@ out3 = ''
 for i, ki in enumerate(K):
     ni = ki * yi
     gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
-    carry = (1, ki, gi)
+    carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
     c, ki, gi = carry
@@ -1604,7 +1608,7 @@ def condit_newt(carry, tol, maxiter):
 Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Вектор изменения основных переменных будет определяться путем решения системы линейных уравнений с использованием [`numpy.linalg.solve`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html).
 
 ``` python
-def update_newt(carry, hi, yi, plnphi):
+def update_newt(carry, hi, plnphi):
     k, alphai_k, gi_k, H_k = carry
     dalphai_k = np.linalg.solve(H_k, -gi_k)
     alphai_kp1 = alphai_k + dalphai_k
@@ -1623,7 +1627,7 @@ def update_newt(carry, hi, yi, plnphi):
 
 ``` python
 pcondit = partial(condit_newt, tol=eps1, maxiter=maxiter)
-pupdate = partial(update_newt, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
+pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -1639,7 +1643,7 @@ for i, ki in enumerate(K):
     gpi = np.log(ni) + lnphixi - hi
     gi = sqrtni * gpi
     H = np.diagflat(0.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
-    carry = (1, alphai, gi, H)
+    carry = (0, alphai, gi, H)
     while pcondit(carry):
         carry = pupdate(carry)
     c, alphai, gi, H = carry
@@ -1715,7 +1719,7 @@ for i, ki in enumerate(K):
     gpi = np.log(ni) + lnphixi - hi
     gi = sqrtni * gpi
     H = np.diagflat(0.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
-    carry = (1, alphai, gi, H)
+    carry = (0, alphai, gi, H)
     while pcondit(carry):
         carry = pupdate(carry)
     c, alphai, gi, H = carry

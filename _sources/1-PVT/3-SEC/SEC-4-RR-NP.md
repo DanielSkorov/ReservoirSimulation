@@ -167,7 +167,7 @@ $$ \begin{cases}
 \sum_{k=1}^{N_p-1} f_k \left( 1 - K_{ki} \right) \leq 1 - K_{ji} y_i, \; j = 1 \, \ldots \, N_p - 1, \; i = 1 \, \ldots \, N_c.
 \end{cases} $$
 
-Левую часть в данных неравенствах можно представить в виде вектора, $i$-ый элемент которого определяется выражением $\mathbf{f}^\top \mathbf{a}_i$, где $\mathbf{a}_i \in {\rm I\!R}^{\left( N_p - 1 \right)}, \, i = 1 \, \ldots \, N_c,$ представляет собой $i$-ый столбец матрицы $\mathbf{A} = \left( 1 - K_{ji} \right), \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c$. Кроме того, $i$-ыe элементы этого вектора, согласно записанной выше системе неравенств, должны быть меньше (или равны) соответствующих значений $\left( 1 - y_i \right), \, i = 1 \, \ldots \, N_c,$ и меньше (или равны) соотвутствующих значений $\left( 1 - K_{ji} y_i \right), \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c,$ среди всех фаз, за исключением референсной. Поскольку $i$-ыe элементы этого вектора должны быть меньше (или равны) соответствующих значений $\left( 1 - K_{ji} y_i \right)$ среди всех фаз, следовательно, они должны быть меньше или равны минимальных соответствующих значений среди вседи всех фаз, то есть $\min_j \left\{ 1 - K_{ji} y_i \right\}, \, i = 1 \, \ldots \, N_c,$. С учетом этого, систему неравенств можно записать следующим образом:
+Левую часть в данных неравенствах можно представить в виде вектора, $i$-ый элемент которого определяется выражением $\mathbf{f}^\top \mathbf{a}_i$, где $\mathbf{a}_i \in {\rm I\!R}^{\left( N_p - 1 \right)}, \, i = 1 \, \ldots \, N_c,$ представляет собой $i$-ый столбец матрицы $\mathbf{A} = \left( 1 - K_{ji} \right), \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c$. Кроме того, $i$-ыe элементы этого вектора, согласно записанной выше системе неравенств, должны быть меньше (или равны) соответствующих значений $\left( 1 - y_i \right), \, i = 1 \, \ldots \, N_c,$ и меньше (или равны) соответствующих значений $\left( 1 - K_{ji} y_i \right), \, j = 1 \, \ldots \, N_p - 1, \, i = 1 \, \ldots \, N_c,$ среди всех фаз, за исключением референсной. Поскольку $i$-ыe элементы этого вектора должны быть меньше (или равны) соответствующих значений $\left( 1 - K_{ji} y_i \right)$ среди всех фаз, следовательно, они должны быть меньше или равны минимальных соответствующих значений среди вседи всех фаз, то есть $\min_j \left\{ 1 - K_{ji} y_i \right\}, \, i = 1 \, \ldots \, N_c,$. С учетом этого, систему неравенств можно записать следующим образом:
 
 $$ \mathbf{f}^\top \mathbf{a}_i \leq b_i = \min \left\{ 1 - y_i, \, \min_j \left\{ 1 - K_{ji} y_i \right\} \right\}, \; i = 1 \, \ldots \, N_c. $$
 
@@ -404,7 +404,7 @@ $$ \begin{align}
 \lambda \Delta \mathbf{f}^\top \mathbf{a}_i & \leq b_i - \mathbf{f}_k^\top \mathbf{a}_i, \; i = 1 \, \ldots \, N_c. \\
 \end{align} $$
 
-С учетом знака $i$-ого значения $\Delta \mathbf{f}^\top \mathbf{a}_i, \, i = 1 \, \ldots \, N_c,$ данная система неравенств преобразуется к системе двойных неравенств, определяющих допустимые значения длины шага, исходя из условий области допустимых решений. Поскольку величина длины шага должна быть больше всех значений $i$, удовлетворяющих условию $\Delta \mathbf{f}^\top \mathbf{a}_i < 0, \, i = 1 \, \ldots \, N_c,$ то величина длины шага должна быть больше максимального среди всех значений, удовлетворяющих данному условию. Поскольку величина длины шага должна быть меньше всех значений $i$, удовлетворяющих условию $\Delta \mathbf{f}^\top \mathbf{a}_i > 0$, то величина длины шага должна быть меньше минимального среди всех значений, удовлетворяющих данному условию. Иными словами, длина шага итерации находится на следующем отрезке:
+С учетом знака $i$-ого значения $\Delta \mathbf{f}^\top \mathbf{a}_i, \, i = 1 \, \ldots \, N_c,$ данная система неравенств преобразуется к системе двойных неравенств, определяющих допустимые значения длины шага, исходя из условий области допустимых решений. Поскольку величина длины шага должна быть больше всех значений $\left( b_i - \mathbf{f}_k^\top \mathbf{a}_i \right) \, / \, \Delta \mathbf{f}^\top \mathbf{a}_i$, удовлетворяющих условию $\Delta \mathbf{f}^\top \mathbf{a}_i < 0, \, i = 1 \, \ldots \, N_c,$ то величина длины шага должна быть больше максимального среди всех значений, удовлетворяющих данному условию. Поскольку величина длины шага должна быть меньше всех значений $\left( b_i - \mathbf{f}_k^\top \mathbf{a}_i \right) \, / \, \Delta \mathbf{f}^\top \mathbf{a}_i$, удовлетворяющих условию $\Delta \mathbf{f}^\top \mathbf{a}_i > 0$, то величина длины шага должна быть меньше минимального среди всех значений, удовлетворяющих данному условию. Иными словами, длина шага итерации находится на следующем отрезке:
 
 $$ \max_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i < 0 \right\} \leq \lambda \leq \min_i \left\{ \frac{b_i - \mathbf{f}_k^\top \mathbf{a}_i}{\Delta \mathbf{f}^\top \mathbf{a}_i} \, : \, \Delta \mathbf{f}^\top \mathbf{a}_i > 0 \right\}. $$
 
@@ -589,7 +589,7 @@ where = dfj.dot(Aji) > 0.
 np.min(lmbdi[where])
 ```
 
-Следовательно, условием проведения процедуры поиска оптимальной длины шага итерации является $\lambda_{max} \leq 1$.
+Следовательно, необходимым условием проведения процедуры поиска оптимальной длины шага итерации является $\lambda_{max} \leq 1$.
 
 Таким образом, сформулируем алгоритм решения системы уравнений Речфорда-Райса.
 
@@ -634,7 +634,7 @@ $k := 1$ {comment}`# Счетчик итерации`
 ```{code-cell} python
 def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     Npm1 = Kji.shape[0]
-    head = map(lambda s: 'f' + s, map(str, range(Npm1)))
+    head = map(lambda s: 'f%s' % s, range(Npm1))
     print(('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s')
           % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
     tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e'
@@ -646,7 +646,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     ti = 1. - fjk.dot(Aji)
     gj = Aji.dot(yi / ti)
     gnorm = np.linalg.norm(gj)
-    print(tmpl % (k, n, *fjk, gnorm, 1., -1))
+    print(tmpl % (k, n, *fjk, gnorm, 1., -9999))
     if gnorm < tol:
         return fjk
     while gnorm > tol and k < maxiter:
@@ -779,7 +779,7 @@ fj0 = np.array([0.3333, 0.3333]) # Initial estimate
 def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     out = ''
     Npm1 = Kji.shape[0]
-    head = map(lambda s: 'f' + s, map(str, range(Npm1)))
+    head = map(lambda s: 'f%s' % s, range(Npm1))
     out = (('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s\n')
            % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
     tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e\n'
@@ -791,7 +791,7 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     ti = 1. - fjk.dot(Aji)
     gj = Aji.dot(yi / ti)
     gnorm = np.linalg.norm(gj)
-    out += tmpl % (k, n, *fjk, gnorm, 1., -1.)
+    out += tmpl % (k, n, *fjk, gnorm, 1., -9999)
     if gnorm < tol:
         return fjk
     while gnorm > tol and k < maxiter:
