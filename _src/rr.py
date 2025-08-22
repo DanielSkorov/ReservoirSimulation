@@ -279,8 +279,6 @@ def solveNp(
   gj = Aji.dot(yi / ti)
   gnorm = np.linalg.norm(gj)
   logger.debug(tmpl, k, n, *fjk, F, gnorm)
-  if gnorm < tol:
-    return fjk
   while gnorm > tol and k < maxiter:
     Pji = Bji / ti
     Hjl = Pji.dot(Pji.T)
@@ -323,7 +321,7 @@ def solveNp(
     return fjk
   logger.warning(
     'Solving the system of RR-equations was completed unsuccessfully.\n'
-    'kvji:\n%s\nyi = %s', Kji, yi,
+    'kvji:\n%s\nyi = %s\nfj0 = %s', Kji, yi, fj0,
   )
   raise SolutionNotFoundError(
     'Solving the system of RR-equations was completed unsuccessfully.\n'

@@ -588,7 +588,7 @@ for i, kvi in enumerate(stabres.kvji):
     lnphi2i = pr.getPT_lnphii(P, T, y2i)
     lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -607,7 +607,7 @@ for i, kvi in enumerate(stabres.kvji):
 ```{glue:} glued_out6
 ```
 
-Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за пять итераций. Проверим, является ли двухфазное состояние рассматриваемой системы стабильным. Для этого проведем тест стабильности для одной из фаз.
+Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за четыре итерации. Проверим, является ли двухфазное состояние рассматриваемой системы стабильным. Для этого проведем тест стабильности для одной из фаз.
 
 ``` python
 stabres = stab.run(P, T, y2i)
@@ -677,7 +677,7 @@ pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Z
 В цикле `while` найдем решение системы нелинейных уравнений, определяющей положение локальных минимумов функции энергии Гиббса, соответствующих трехфазному состоянию системы.
 
 ``` python
-carry = (1, kvji, Fj, gji)
+carry = (0, kvji, Fj, gji)
 
 while pcondit_ssi(carry):
     carry = pupdate_ssi_Np(carry)
@@ -739,7 +739,7 @@ for i, kvi in enumerate(stabres.kvji):
     lnphi2i = pr.getPT_lnphii(P, T, y2i)
     lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -780,7 +780,7 @@ def update_ssi_Np(carry, yi, plnphi):
 
 pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, Pj=P, Tj=T))
 
-carry = (1, kvji, Fj, gji)
+carry = (0, kvji, Fj, gji)
 
 while pcondit_ssi(carry):
     carry = pupdate_ssi_Np(carry)
@@ -886,7 +886,7 @@ for i, kvi in enumerate(stabres.kvji):
     lnphi2i = pr.getPT_lnphii(P, T, y2i)
     lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -905,7 +905,7 @@ for i, kvi in enumerate(stabres.kvji):
 ```{glue:} glued_out13
 ```
 
-Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за 99 итераций. Проверим, является ли двухфазное состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
+Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за 98 итераций. Проверим, является ли двухфазное состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
 
 ``` python
 stabres = stab.run(P, T, y2i)
@@ -954,7 +954,7 @@ for i, kvi in enumerate(stabres.kvji):
     lnphi2i = pr.getPT_lnphii(P, T, y2i)
     lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -1292,7 +1292,7 @@ for i, kvi in enumerate(stabres.kvji):
     gi = lnkvi + lnphi1i - lnphi2i
     U = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1 * F2)
     H = dlnphi1idn1j + dlnphi2idn2j + U
-    carry = (1, lnkvi, F1, H, U, gi)
+    carry = (0, lnkvi, F1, H, U, gi)
     while pcondit_newton(carry):
         carry = pupdate_newton_2p(carry)
     k, lnkvi, F1, _, _, gi = carry
@@ -1312,7 +1312,7 @@ for i, kvi in enumerate(stabres.kvji):
 ```{glue:} glued_out16
 ```
 
-Метод Ньютона нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, всего за пять итераций. Проверим, является ли это состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
+Метод Ньютона нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, всего за четыре итерации. Проверим, является ли это состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
 
 ``` python
 stabres = stab.run(P, T, y2i)
@@ -1380,7 +1380,7 @@ for i, kvi in enumerate(stabres.kvji):
     gi = lnkvi + lnphi1i - lnphi2i
     U = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1 * F2)
     H = dlnphi1idn1j + dlnphi2idn2j + U
-    carry = (1, lnkvi, F1, H, U, gi)
+    carry = (0, lnkvi, F1, H, U, gi)
     while pcondit_newton(carry):
         carry = pupdate_newton_2p(carry)
     k, lnkvi, F1, _, _, gi = carry

@@ -1294,7 +1294,7 @@ class flashnpPT(object):
     self,
     eos: FlashnpEosPT,
     method: str = 'ss',
-    negflash: bool = True,
+    negflash: bool = False,
     flash2pkwargs: dict = {},
     stabkwargs: dict = {},
     **kwargs,
@@ -1302,10 +1302,11 @@ class flashnpPT(object):
     self.eos = eos
     self.negflash = negflash
     self.stabsolver = stabilityPT(eos, **stabkwargs)
-    self.solver2p = flash2pPT(eos, method=method, negflash=negflash,
-                              stabkwargs=stabkwargs, **flash2pkwargs)
+    self.solver2p = flash2pPT(eos, method=method, stabkwargs=stabkwargs,
+                              negflash=negflash, **flash2pkwargs, **kwargs)
     if method == 'ss':
-      self.solver = partial(_flashnpPT_ss, eos=eos, **kwargs)
+      self.solver = partial(_flashnpPT_ss, eos=eos, negflash=negflash,
+                            **kwargs)
     elif method == 'qnss':
       raise NotImplementedError(
         'QNSS-method for flash calculations is not implemented yet.'
@@ -1342,24 +1343,33 @@ class flashnpPT(object):
     maxNp: int = 3,
     kvji0: tuple[Vector, ...] | None = None,
   ) -> FlashResult:
+    if maxNp < 2:
+      Z = self.eos.getPT_Z(P, T, yi)
+      return FlashResult(yji=np.atleast_2d(yi), Fj=np.array([1.]),
+                         Zj=np.array([Z]), gnorm=0., Niter=0)
     res = self.solver2p.run(P, T, yi, kvji0)
     if res.yji.shape[0] == 1:
       return res
-    else:
-      for _ in range(2, maxnp + 1):
-        stab = self.stabsolver.run(P, T, res.yji[-1])
-        if stab.stable:
-          return res
-        else:
-          self.negflash = False
-        kvsji0 = (np.vstack([res.kvji, stab.kvji[0]]),)
-        fsji0 = (np.hstack([res.Fj[:-1], 0.]),)
-        res = self.solver(P, T, yi, fsji0, kvsji0)
-      logger.warning(
-        'The equilibrium state was not found. Try to increase the maximum '
-        'number of phases.'
-      )
+    logger.debug('Testing two-phase state stability...')
+    stab = self.stabsolver.run(P, T, res.yji[-1])
+    logger.debug('Two-phase state is stable: %s', stab.stable)
+    if stab.stable and not self.negflash:
       return res
+    for k in range(3, maxNp + 1):
+      kvsji0 = (np.vstack([res.kvji, stab.kvji[0]]),)
+      fsji0 = (np.hstack([res.Fj[:-1], 0.]),)
+      logger.debug('Running %sp-flash...', k)
+      res = self.solver(P, T, yi, fsji0, kvsji0)
+      logger.debug('Testing %s-phase state stability...', k)
+      stab = self.stabsolver.run(P, T, res.yji[-1])
+      logger.debug('%s-phase state is stable: %s', stab.stable)
+      if stab.stable and not self.negflash:
+        return res
+    logger.warning(
+      'The equilibrium state was not found. Try to increase the maximum '
+      'number of phases.'
+    )
+    return res
 
 
 def _flashnpPT_ss(
@@ -1375,10 +1385,10 @@ def _flashnpPT_ss(
 ) -> FlashResult:
   logger.info("Multiphase flash calculation (SS method).")
   Nc = eos.Nc
-  Npm1 = kvji0[0].shape[0]
+  Npm1 = kvsji0[0].shape[0]
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
-    '%3s%5s' + Nc * '%10s' + Npm1 * '%9s' + '%11s', 'Nkv', 'Nit',
+    '%3s%5s' + (Npm1 * Nc) * '%10s' + Npm1 * '%9s' + '%11s', 'Nkv', 'Nit',
     *['lnkv%s%s' % (j, i) for j in range(Npm1) for i in range(Nc)],
     *['F%s' % j for j in range(Npm1)], 'gnorm',
   )
@@ -1415,7 +1425,7 @@ def _flashnpPT_ss(
       idx = np.argsort(rhoj)
       yji = yji[idx]
       kvji = yji[:-1] / yji[-1]
-      logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % Fj)
+      logger.info('Phase mole fractions:' + ((Npm1 + 1) * '%7.4f') % Fj)
       return FlashResult(yji=yji, Fj=Fj[idx], Zj=Zj[idx], kvji=kvji,
                          gnorm=gnorm, Niter=k)
   logger.warning(

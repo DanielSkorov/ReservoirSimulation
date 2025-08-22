@@ -338,23 +338,24 @@ class pr78(object):
     initial k-values. Available options are:
 
     - 0: Wilson's and inverse Wilson's equations;
-    - 1: previous + the pure component model;
-    - 2: previous + cube roots of Wilson's and inverse Wilson's
-         equations;
-    - 3: previous + the ideal model (fugacity coefficient).
+    - 1: the pure component model for heaviest and lightest components
+         + Wilson's and inverse Wilson's equations;
+    - 2: the pure component model for heaviest and lightest components
+         + the ideal model + Wilson's and inverse Wilson's equations;
+    - 3: the pure component model for heaviest, next heaviest, lightest
+         and next lightest components + the ideal model + Wilson's and
+         inverse Wilson's equations;
+    - 4: the pure component model for each component + the ideal model
+         + Wilson's and inverse Wilson's equations + cube roots of
+         Wilson's and inverse Wilson's equations.
 
     Default is `0`.
-
-  pureidx: int
-    This parameter governs the pure component model for initial
-    k-values. It is the index of a component that is characterized
-    by a higher concentration in the trial phase. Default is `0`.
 
   purefrc: Scalar
     This parameter governs the pure component model for initial
     k-values. It is the summarized mole fraction of other components
-    in the trial phase except the component with the index `pureidx`.
-    Must be greater than zero and lower than one. Default is `1e-5`.
+    in the trial phase except the specific component. Must be greater
+    than zero and lower than one. Default is `1e-8`.
 
   Methods
   -------
@@ -524,8 +525,7 @@ class pr78(object):
     vsi: Vector,
     dij: Vector,
     kvlevel: int = 0,
-    pureidx: int = 0,
-    purefrc: Scalar = 1e-5,
+    purefrc: Scalar = 1e-8,
   ) -> None:
     self.name = 'Peng-Robinson (1978) EOS'
     self.Nc = Pci.shape[0]
@@ -549,8 +549,23 @@ class pr78(object):
     self.vsi_bi = vsi * self.bi
     self.m = np.array([2, 1, 0])
     self.kvlevel = kvlevel
-    self.pureidx = pureidx
-    self.purefrc = purefrc
+    idxs = np.argsort(self.mwi)
+    h1 = idxs[-1]
+    h2 = idxs[-2]
+    l1 = idxs[0]
+    l2 = idxs[1]
+    upi = np.full(shape=(self.Nc,), fill_value=purefrc)
+    yp = 1. - purefrc * (self.Nc - 1)
+    self.h1i = upi.copy()
+    self.h1i[h1] = yp
+    self.l1i = upi.copy()
+    self.l1i[l1] = yp
+    self.h2i = upi.copy()
+    self.h2i[h2] = yp
+    self.l2i = upi.copy()
+    self.l2i[l2] = yp
+    self.upji = np.full(shape=(self.Nc, self.Nc), fill_value=upi)
+    np.fill_diagonal(self.upji, yp)
     pass
 
   def getPT_Z(self, P: Scalar, T: Scalar, yi: Vector) -> Scalar:
@@ -1652,20 +1667,17 @@ class pr78(object):
     if self.kvlevel == 0:
       return kvi, 1. / kvi
     elif self.kvlevel == 1:
-      upi = self.purefrc / ((self.Nc - 1) * yi)
-      upi[self.pureidx] = (1. - self.purefrc) / yi[self.pureidx]
-      return kvi, 1. / kvi, upi, 1. / upi
+      return self.h1i, self.l1i, kvi, 1. / kvi
     elif self.kvlevel == 2:
-      upi = self.purefrc / ((self.Nc - 1) * yi)
-      upi[self.pureidx] = (1. - self.purefrc) / yi[self.pureidx]
-      cbrtkvi = np.cbrt(kvi)
-      return kvi, 1. / kvi, upi, 1. / upi, cbrtkvi, 1. / cbrtkvi
-    elif self.kvlevel == 3:
-      upi = self.purefrc / ((self.Nc - 1) * yi)
-      upi[self.pureidx] = (1. - self.purefrc) / yi[self.pureidx]
-      cbrtkvi = np.cbrt(kvi)
       uii = np.exp(self.getPT_lnphii(P, T, yi))
-      return kvi, 1. / kvi, upi, 1. / upi, cbrtkvi, 1. / cbrtkvi, uii
+      return self.h1i, self.l1i, uii, kvi, 1. / kvi
+    elif self.kvlevel == 3:
+      uii = np.exp(self.getPT_lnphii(P, T, yi))
+      return self.h1i, self.l1i, self.h2i, self.l2i, uii, kvi, 1. / kvi
+    elif self.kvlevel == 4:
+      uii = np.exp(self.getPT_lnphii(P, T, yi))
+      cbrtkvi = np.cbrt(kvi)
+      return *self.upji, uii, kvi, 1. / kvi, cbrtkvi, 1. / cbrtkvi
     else:
       raise ValueError(f'Unsupported level number: {level}.')
 
