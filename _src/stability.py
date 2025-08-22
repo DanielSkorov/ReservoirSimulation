@@ -28,9 +28,6 @@ class StabEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    level: int,
-    idx: int,
-    eps: Scalar,
   ) -> tuple[Vector, ...]: ...
 
   def getPT_lnphii_Z(
@@ -113,7 +110,7 @@ class stabilityPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -166,11 +163,6 @@ class stabilityPT(object):
 
     Default is `'ss'`.
 
-  level: int
-    Regulates a set of initial k-values obtained by the method
-    `getPT_kvguess` of the initialized instance of an EOS.
-    Default is `0`.
-
   useprev: bool
     Allows to preseve previous calculation results (if the solution
     is non-trivial) and to use them as the first initial guess in next
@@ -193,12 +185,10 @@ class stabilityPT(object):
     self,
     eos: StabEosPT,
     method: str = 'ss',
-    level: int = 0,
     useprev: bool = False,
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.level = level
     self.useprev = useprev
     self.prevkvji: None | tuple[Vector, ...] = None
     self.preserved = False
@@ -261,7 +251,7 @@ class stabilityPT(object):
     energy function was found.
     """
     if kvji0 is None:
-      kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
+      kvji0 = self.eos.getPT_kvguess(P, T, yi)
     if self.useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
     stab = self.solver(P, T, yi, kvji0)
@@ -361,7 +351,7 @@ def _stabPT_ss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'TPD*', 'r', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'TPD*', 'r', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
@@ -519,7 +509,7 @@ def _stabPT_qnss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'TPD*', 'r', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'TPD*', 'r', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
@@ -715,7 +705,7 @@ def _stabPT_newt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
-    'Nkv', 'Nit', *map(lambda s: 'alpha%s' % s, range(Nc)),
+    'Nkv', 'Nit', *['alpha%s' % s for s in range(Nc)],
     'TPD*', 'r', 'gnorm', 'method',
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
@@ -931,8 +921,8 @@ def _stabPT_ssnewt(
   tmpl_ss = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
   tmpl_nt = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   rangeNc = range(Nc)
-  lbls_lnkv = tuple(map(lambda s: 'lnkv%s' % s, rangeNc))
-  lbls_alpha = tuple(map(lambda s: 'alpha%s' % s, rangeNc))
+  lbls_lnkv = ['lnkv%s' % s for s in rangeNc]
+  lbls_alpha = ['alpha%s' % s for s in rangeNc]
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z
@@ -1193,8 +1183,8 @@ def _stabPT_qnssnewt(
   tmpl_ss = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
   tmpl_nt = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   rangeNc = range(Nc)
-  lbls_lnkv = tuple(map(lambda s: 'lnkv%s' % s, rangeNc))
-  lbls_alpha = tuple(map(lambda s: 'alpha%s' % s, rangeNc))
+  lbls_lnkv = ['lnkv%s' % s for s in rangeNc]
+  lbls_alpha = ['alpha%s' % s for s in rangeNc]
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z

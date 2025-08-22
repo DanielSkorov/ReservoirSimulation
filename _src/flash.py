@@ -12,6 +12,7 @@ from stability import (
 
 from rr import (
   solve2p_FGH,
+  solveNp,
 )
 
 from typing import (
@@ -37,9 +38,6 @@ class Flash2pEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    level: int,
-    idx: int,
-    eps: Scalar,
   ) -> tuple[Vector, ...]: ...
 
   def getPT_lnphii_Z(
@@ -56,6 +54,16 @@ class Flash2pEosPT(Eos):
     yi: Vector,
     n: Scalar,
   ) -> tuple[Vector, Scalar, Matrix]: ...
+
+
+class FlashnpEosPT(Flash2pEosPT):
+
+  def getPT_lnphiji_Zj(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yji: Matrix,
+  ) -> tuple[Matrix, Vector]: ...
 
 
 class FlashResult(dict):
@@ -114,7 +122,7 @@ class flash2pPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -187,11 +195,6 @@ class flash2pPT(object):
 
     Default is `'ss'`.
 
-  level: int
-    Regulates a set of initial k-values obtained by the method
-    `eos.getPT_kvguess(P: Scalar, T: Scalar, yi: Vector, level: int = 0)`.
-    Default is `0`.
-
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`. The value of
@@ -232,7 +235,6 @@ class flash2pPT(object):
     self,
     eos: Flash2pEosPT,
     method: str = 'ss',
-    level: int = 0,
     negflash: bool = True,
     runstab: bool = True,
     useprev: bool = False,
@@ -240,11 +242,10 @@ class flash2pPT(object):
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.level = level
     self.negflash = negflash
     self.runstab = runstab
     self.useprev = useprev
-    self.stabsolver = stabilityPT(eos, level=level, **stabkwargs)
+    self.stabsolver = stabilityPT(eos, **stabkwargs)
     self.preserved = False
     self.prevkvji: None | Matrix = None
     if method == 'ss':
@@ -267,8 +268,6 @@ class flash2pPT(object):
       )
     else:
       raise ValueError(f'The unknown flash-method: {method}.')
-    self._1pstab_yi = np.zeros_like(eos.mwi)
-    self._1pstab_Fj = np.array([1., 0.])
     pass
 
   def run(
@@ -312,15 +311,14 @@ class flash2pPT(object):
     unsuccessfully.
     """
     if kvji0 is None:
-      kvji0 = self.eos.getPT_kvguess(P, T, yi, self.level)
+      kvji0 = self.eos.getPT_kvguess(P, T, yi)
     if self.useprev and self.preserved:
       kvji0 = *self.prevkvji, *kvji0
     if self.runstab:
       stab = self.stabsolver.run(P, T, yi, kvji0)
       if stab.stable:
-        return FlashResult(yji=np.vstack([yi, self._1pstab_yi]),
-                           Fj=self._1pstab_Fj, Zj=np.array([stab.Z, 0.]),
-                           gnorm=0.)
+        return FlashResult(yji=np.atleast_2d(yi), Fj=np.array([1.]),
+                           Zj=np.array([stab.Z]), gnorm=0., Niter=0)
       else:
         self.negflash = False
       if self.useprev and self.preserved:
@@ -417,7 +415,7 @@ def _flash2pPT_ss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'Fv', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e'
   for j, kvi0 in enumerate(kvji0):
@@ -444,7 +442,8 @@ def _flash2pPT_ss(
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
       logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm)
-    if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
+    if (gnorm < tol and np.isfinite(gnorm) and
+        (Fv > 0. and Fv < 1. or negflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -559,7 +558,7 @@ def _flash2pPT_qnss(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'Fv', 'gnorm',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e'
   for j, kvi0 in enumerate(kvji0):
@@ -599,7 +598,8 @@ def _flash2pPT_qnss(
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
+    if (gnorm < tol and np.isfinite(gnorm) and
+        (Fv > 0. and Fv < 1. or negflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -728,7 +728,7 @@ def _flash2pPT_newt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'Fv', 'gnorm',
     'method',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
@@ -780,7 +780,8 @@ def _flash2pPT_newt(
         gi = lnkvik + lnphivi - lnphili
         gnorm = np.linalg.norm(gi)
         logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'SS')
-    if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
+    if (gnorm < tol and np.isfinite(gnorm) and
+        (Fv > 0. and Fv < 1. or negflash)):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
       kvji = np.atleast_2d(kvik)
@@ -930,7 +931,7 @@ def _flash2pPT_ssnewt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'Fv', 'gnorm',
     'method',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
@@ -960,7 +961,7 @@ def _flash2pPT_ssnewt(
       logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
     if np.isfinite(gnorm):
       if gnorm < tol:
-        if 0. < Fv < 1. or negflash:
+        if Fv > 0. and Fv < 1. or negflash:
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1011,7 +1012,8 @@ def _flash2pPT_ssnewt(
             gi = lnkvik + lnphivi - lnphili
             gnorm = np.linalg.norm(gi)
             logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
-        if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
+        if (gnorm < tol and np.isfinite(gnorm) and
+            (Fv > 0. and Fv < 1. or negflash)):
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1164,7 +1166,7 @@ def _flash2pPT_qnssnewt(
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
   logger.debug(
     '%3s%5s' + Nc * '%10s' + '%9s%11s%8s',
-    'Nkv', 'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Fv', 'gnorm',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'Fv', 'gnorm',
     'method',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
@@ -1207,7 +1209,7 @@ def _flash2pPT_qnssnewt(
         lmbd = 30.
     if np.isfinite(gnorm):
       if gnorm < tol:
-        if 0. < Fv < 1. or negflash:
+        if Fv > 0. and Fv < 1. or negflash:
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1258,7 +1260,8 @@ def _flash2pPT_qnssnewt(
             gi = lnkvik + lnphivi - lnphili
             gnorm = np.linalg.norm(gi)
             logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
-        if gnorm < tol and np.isfinite(gnorm) and (0. < Fv < 1. or negflash):
+        if (gnorm < tol and np.isfinite(gnorm) and
+            (Fv > 0. and Fv < 1. or negflash)):
           rhol = yli.dot(eos.mwi) / Zl
           rhov = yvi.dot(eos.mwi) / Zv
           kvji = np.atleast_2d(kvik)
@@ -1278,6 +1281,148 @@ def _flash2pPT_qnssnewt(
     "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * '\n%s',
     eos.name, P, T, yi, *kvji0,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
+
+
+class flashnpPT(object):
+  def __init__(
+    self,
+    eos: FlashnpEosPT,
+    method: str = 'ss',
+    negflash: bool = True,
+    flash2pkwargs: dict = {},
+    stabkwargs: dict = {},
+    **kwargs,
+  ) -> None:
+    self.eos = eos
+    self.negflash = negflash
+    self.stabsolver = stabilityPT(eos, **stabkwargs)
+    self.solver2p = flash2pPT(eos, method=method, negflash=negflash,
+                              stabkwargs=stabkwargs, **flash2pkwargs)
+    if method == 'ss':
+      self.solver = partial(_flashnpPT_ss, eos=eos, **kwargs)
+    elif method == 'qnss':
+      raise NotImplementedError(
+        'QNSS-method for flash calculations is not implemented yet.'
+      )
+    elif method == 'bfgs':
+      raise NotImplementedError(
+        'BFGS-method for flash calculations is not implemented yet.'
+      )
+    elif method == 'newton':
+      raise NotImplementedError(
+        "Newton's method for flash calculations is not implemented yet."
+      )
+    elif method == 'ss-newton':
+      raise NotImplementedError(
+        'SS-Newton method for flash calculations is not implemented yet.'
+      )
+    elif method == 'qnss-newton':
+      raise NotImplementedError(
+        'QNSS-Newton method for flash calculations is not implemented yet.'
+      )
+    elif method == 'newton-full':
+      raise NotImplementedError(
+        "Full Newton's method for flash calculations is not implemented yet."
+      )
+    else:
+      raise ValueError(f'The unknown flash-method: {method}.')
+    pass
+
+  def run(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector,
+    maxNp: int = 3,
+    kvji0: tuple[Vector, ...] | None = None,
+  ) -> FlashResult:
+    res = self.solver2p.run(P, T, yi, kvji0)
+    if res.yji.shape[0] == 1:
+      return res
+    else:
+      for _ in range(2, maxnp + 1):
+        stab = self.stabsolver.run(P, T, res.yji[-1])
+        if stab.stable:
+          return res
+        else:
+          self.negflash = False
+        kvsji0 = (np.vstack([res.kvji, stab.kvji[0]]),)
+        fsji0 = (np.hstack([res.Fj[:-1], 0.]),)
+        res = self.solver(P, T, yi, fsji0, kvsji0)
+      logger.warning(
+        'The equilibrium state was not found. Try to increase the maximum '
+        'number of phases.'
+      )
+      return res
+
+
+def _flashnpPT_ss(
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  fsj0: tuple[Vector, ...],
+  kvsji0: tuple[Matrix, ...],
+  eos: FlashnpEosPT,
+  tol: Scalar = 1e-8,
+  maxiter: int = 30,
+  negflash: bool = True,
+) -> FlashResult:
+  logger.info("Multiphase flash calculation (SS method).")
+  Nc = eos.Nc
+  Npm1 = kvji0[0].shape[0]
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
+  logger.debug(
+    '%3s%5s' + Nc * '%10s' + Npm1 * '%9s' + '%11s', 'Nkv', 'Nit',
+    *['lnkv%s%s' % (j, i) for j in range(Npm1) for i in range(Nc)],
+    *['F%s' % j for j in range(Npm1)], 'gnorm',
+  )
+  tmpl = '%3s%5s' + (Npm1 * Nc) * '%10.4f' + Npm1 * '%9.4f' + '%11.2e'
+  for s, (fjk, kvjik) in enumerate(zip(fsj0, kvsji0)):
+    k = 0
+    lnkvjik = np.log(kvjik)
+    fjk = solveNp(kvjik, yi, fjk)
+    xi = yi / (fjk.dot(kvjik - 1.) + 1.)
+    yji = kvjik * xi
+    lnphiyji, Zyj = eos.getPT_lnphiji_Zj(P, T, yji)
+    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    gji = lnkvjik + lnphiyji - lnphixi
+    gnorm = np.linalg.norm(gji)
+    logger.debug(tmpl, s, k, *lnkvjik.ravel(), *fjk, gnorm)
+    while gnorm > tol and k < maxiter:
+      k += 1
+      lnkvjik -= gji
+      kvjik = np.exp(lnkvjik)
+      fjk = solveNp(kvjik, yi, fjk)
+      xi = yi / (fjk.dot(kvjik - 1.) + 1.)
+      yji = kvjik * xi
+      lnphiyji, Zyj = eos.getPT_lnphiji_Zj(P, T, yji)
+      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      gji = lnkvjik + lnphiyji - lnphixi
+      gnorm = np.linalg.norm(gji)
+      logger.debug(tmpl, s, k, *lnkvjik.ravel(), *fjk, gnorm)
+    if (gnorm < tol and np.isfinite(gnorm) and
+        ((fjk < 1.).all() and (fjk > 0.).all() or negflash)):
+      yji = np.vstack([yji, xi])
+      Fj = np.hstack([fjk, 1. - fjk.sum()])
+      Zj = np.hstack([Zyj, Zx])
+      rhoj = yji.dot(eos.mwi) / Zj
+      idx = np.argsort(rhoj)
+      yji = yji[idx]
+      kvji = yji[:-1] / yji[-1]
+      logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % Fj)
+      return FlashResult(yji=yji, Fj=Fj[idx], Zj=Zj[idx], kvji=kvji,
+                         gnorm=gnorm, Niter=k)
+  logger.warning(
+    "Multiphase flash calculation terminates unsuccessfully.\n"
+    "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s",
+    eos.name, P, T, yi,
   )
   raise SolutionNotFoundError(
     'The flash calculation procedure\nterminates unsuccessfully. Try to '

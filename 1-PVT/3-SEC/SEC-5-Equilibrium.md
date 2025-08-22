@@ -557,14 +557,14 @@ wi = np.array([0.008, 0.27504, 0.344]) # Acentric factors
 mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0., 0.]) # Volume shift parameters
 dij = np.array([0.0253, 0.4907, 0.48]) # Binary interaction parameters
-pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+# kvlevel=1 indicates an increased number of arrays of initial k-values
 ```
 
 Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния.
 
 ``` python
-# level=1 indicates an increased number of arrays of initial k-values
-stab = stabilityPT(pr, method='ss', level=1)
+stab = stabilityPT(pr, method='ss')
 stabres = stab.run(P, T, yi)
 print(stabres)
 ```
@@ -723,9 +723,9 @@ wi = np.array([.008, .27504, .344]) # Acentric factors
 mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0., 0.]) # Volume shift parameters
 dij = np.array([.0253, 0.4907, 0.48]) # Binary interaction parameters
-pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
 
-stab = stabilityPT(pr, method='ss', level=1)
+stab = stabilityPT(pr, method='ss')
 stabres = stab.run(P, T, yi)
 out5 = str(stabres)
 

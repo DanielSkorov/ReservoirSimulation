@@ -70,9 +70,6 @@ class PsatEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    level: int,
-    idx: int,
-    eps: Scalar,
   ) -> tuple[Vector, ...]: ...
 
   def getPT_lnphii_Z(
@@ -113,9 +110,6 @@ class TsatEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    level: int,
-    idx: int,
-    eps: Scalar,
   ) -> tuple[Vector, ...]: ...
 
   def getPT_lnphii_Z(
@@ -266,7 +260,7 @@ def getVT_Tspinodal(
   Nc = eos.Nc
   logger.debug(
     '%3s%9s' + Nc * '%9s' + '%9s%11s',
-    'Nit', 'eigval', *map(lambda s: 'zeta%s' % s, range(Nc)), 'T, K', 'dT, K',
+    'Nit', 'eigval', *['zeta%s' % s for s in range(Nc)], 'T, K', 'dT, K',
   )
   tmpl = '%3s%9.4f' + Nc * '%9.4f' + '%9.2f%11.2e'
   k = 0
@@ -530,7 +524,7 @@ class PsatPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -1283,7 +1277,7 @@ def _PsatPT_ss(
   logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -1453,7 +1447,7 @@ def _PsatPT_qnss(
   logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%11.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -1782,7 +1776,7 @@ def _PsatPT_newtA(
   logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Psat, Pa', 'gnorm',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'gnorm',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
@@ -2003,7 +1997,7 @@ def _PsatPT_newtB(
   logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Psat, Pa', 'gnorm',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'gnorm',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -2218,7 +2212,7 @@ def _PsatPT_newtC(
   logger.info('T = %.2f K, yi =' + Nc * '%7.4f', T, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'Psat, Pa', 'gnorm', 'TPD',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -2294,7 +2288,7 @@ class TsatPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -3040,7 +3034,7 @@ def _TsatPT_ss(
   logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -3211,7 +3205,7 @@ def _TsatPT_qnss(
   logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -3541,7 +3535,7 @@ def _TsatPT_newtA(
   logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'gnorm',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e'
   J = np.zeros(shape=(Nc + 1, Nc + 1))
@@ -3764,7 +3758,7 @@ def _TsatPT_newtB(
   logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'gnorm',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e'
   J = np.empty(shape=(Nc + 1, Nc + 1))
@@ -3981,7 +3975,7 @@ def _TsatPT_newtC(
   logger.info('P = %.1f Pa, yi =' + Nc * '%7.4f', P, *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%10s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)), 'Tsat, K', 'gnorm', 'TPD',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'gnorm', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
   solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -4056,7 +4050,7 @@ class PmaxPT(PsatPT):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -4570,8 +4564,8 @@ def _PmaxPT_ss(
   logger.info('yi =' + Nc * ' %6.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
-    'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
+    'Nit', *['lnkv%s' % s for s in range(Nc)],
+    'P, Pa', 'T, K', 'gnorm', 'TPD', 'dTPDdT'
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -4771,8 +4765,8 @@ def _PmaxPT_qnss(
   logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
-    'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
+    'Nit', *['lnkv%s' % s for s in range(Nc)],
+    'P, Pa', 'T, K', 'gnorm', 'TPD', 'dTPDdT'
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -4998,8 +4992,8 @@ def _PmaxPT_newtC(
   logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
-    'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdT'
+    'Nit', *['lnkv%s' % s for s in range(Nc)],
+    'P, Pa', 'T, K', 'gnorm', 'TPD', 'dTPDdT'
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_PmaxPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
@@ -5087,7 +5081,7 @@ class TmaxPT(TsatPT):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -5589,8 +5583,8 @@ def _TmaxPT_ss(
   logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
-    'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
+    'Nit', *['lnkv%s' % s for s in range(Nc)],
+    'P, Pa', 'T, K', 'gnorm', 'TPD', 'dTPDdP',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -5792,8 +5786,8 @@ def _TmaxPT_qnss(
   logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
-    'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
+    'Nit', *['lnkv%s' % s for s in range(Nc)],
+    'P, Pa', 'T, K', 'gnorm', 'TPD', 'dTPDdP',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
@@ -6022,8 +6016,8 @@ def _TmaxPT_newtC(
   logger.info('yi =' + Nc * '%7.4f', *yi)
   logger.debug(
     '%3s' + Nc * '%9s' + '%12s%9s%10s%11s%11s',
-    'Nit', *map(lambda s: 'lnkv%s' % s, range(Nc)),
-    'Prs, Pa', 'Tmp, K', 'gnorm', 'TPD', 'dTPDdP',
+    'Nit', *['lnkv%s' % s for s in range(Nc)],
+    'P, Pa', 'T, K', 'gnorm', 'TPD', 'dTPDdP',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%9.2f%10.2e%11.2e%11.2e'
   solverTPDeq = partial(_TmaxPT_solve_TPDeq_T, eos=eos,tol=tol_tpd,
@@ -6227,7 +6221,7 @@ class env2pPT(object):
     calculation:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector, level: int) -> tuple[Vector, ...]`
+                     yi: Vector) -> tuple[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
@@ -6629,7 +6623,7 @@ class env2pPT(object):
     logger.info(
       '%4s%5s%6s%8s%5s%10s' + Nc * '%9s' + '%9s%8s',
       'Npnt', 'Ncut', 'Niter', 'Step', 'Sidx', 'Sval',
-      *map(lambda s: 'lnkv%s' % s, range(Nc)), 'lnP', 'lnT',
+      *['lnkv%s' % s for s in range(Nc)], 'lnP', 'lnT',
     )
     tmpl = '%4s%5s%6s%8.4f%5s%10.4f' + Nc * '%9.4f' + '%9.4f%8.4f'
 
@@ -6981,7 +6975,7 @@ def _env2pPT(
   )
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s',
-    'Nit', *map(lambda s: 'lnkv%s'%s, range(Nc)), 'lnP', 'lnT',
+    'Nit', *['lnkv%s' % s for s in range(Nc)], 'lnP', 'lnT',
     'gnorm', 'dx2',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.4f%8.4f%10.2e%10.2e'

@@ -333,6 +333,29 @@ class pr78(object):
     The lower triangle matrix of binary interaction coefficients
     of `Nc` components.
 
+  kvlevel: int
+    Regulates an output of the function `getPT_kvguess` that generates
+    initial k-values. Available options are:
+
+    - 0: Wilson's and inverse Wilson's equations;
+    - 1: previous + the pure component model;
+    - 2: previous + cube roots of Wilson's and inverse Wilson's
+         equations;
+    - 3: previous + the ideal model (fugacity coefficient).
+
+    Default is `0`.
+
+  pureidx: int
+    This parameter governs the pure component model for initial
+    k-values. It is the index of a component that is characterized
+    by a higher concentration in the trial phase. Default is `0`.
+
+  purefrc: Scalar
+    This parameter governs the pure component model for initial
+    k-values. It is the summarized mole fraction of other components
+    in the trial phase except the component with the index `pureidx`.
+    Must be greater than zero and lower than one. Default is `1e-5`.
+
   Methods
   -------
   getPT_Z(P: Scalar, T: Scalar, yi: Vector) -> Scalar
@@ -452,12 +475,11 @@ class pr78(object):
     - compressibility factors for each phase as a `Vector` of shape
       `(Np,)`.
 
-  getPT_kvguess(P: Scalar, T: Scalar, yi: Vector,
-                level: int = 0) -> tuple[Vector, ...]
-    For a given pressure `P` in [Pa], temperature `T` in [K], mole
-    fractions of `Nc` components `yi` of shape `(Nc,)`, and integer
-    `level`, returns a tuple containing arrays of initial k-values
-    each as a `Vector` of shape `(Nc,)`.
+  getPT_kvguess(P: Scalar, T: Scalar, yi: Vector) -> tuple[Vector, ...]
+    For a given pressure `P` in [Pa], temperature `T` in [K], and mole
+    fractions of `Nc` components `yi` of shape `(Nc,)`, returns a tuple
+    containing arrays of initial k-values each as a `Vector` of shape
+    `(Nc,)`.
 
   getVT_P(V: Scalar, T: Scalar, yi: Vector, n: Scalar) -> Scalar
     For a given volume `V` in [m3], temperature `T` in [K], mole
@@ -501,6 +523,9 @@ class pr78(object):
     mwi: Vector,
     vsi: Vector,
     dij: Vector,
+    kvlevel: int = 0,
+    pureidx: int = 0,
+    purefrc: Scalar = 1e-5,
   ) -> None:
     self.name = 'Peng-Robinson (1978) EOS'
     self.Nc = Pci.shape[0]
@@ -523,6 +548,9 @@ class pr78(object):
     self.D = 1. - (D + D.T)
     self.vsi_bi = vsi * self.bi
     self.m = np.array([2, 1, 0])
+    self.kvlevel = kvlevel
+    self.pureidx = pureidx
+    self.purefrc = purefrc
     pass
 
   def getPT_Z(self, P: Scalar, T: Scalar, yi: Vector) -> Scalar:
@@ -1601,9 +1629,6 @@ class pr78(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    level: int = 0,
-    idx: int = 0,
-    eps: Scalar = 1e-5,
   ) -> tuple[Vector, ...]:
     """Computes initial k-values for given pressure, temperature
     and composition.
@@ -1619,54 +1644,25 @@ class pr78(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    level: int
-      Regulates an output of this function. Available options are:
-
-      - 0: Wilson's and inverse Wilson's equations;
-      - 1: previous + the pure component model;
-      - 2: previous + cube roots of Wilson's and inverse Wilson's
-           equations;
-      - 3: previous + the ideal model (fugacity coefficient).
-
-      Default is `0`.
-
-    idx: int
-      Index of a component that is characterized by a higher
-      concentration in the trial phase. Default is `0`.
-
-    eps: Scalar
-      Summarized mole fraction of other components in the trial phase
-      except the component with the index `idx`. Must be greater than
-      zero and lower than one. Default is `1e-5`.
-
     Returns
     -------
     A tuple containing arrays of initial k-values.
     """
     kvi = self.Pci * np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / T)) / P
-    if level == 0:
+    if self.kvlevel == 0:
       return kvi, 1. / kvi
-    elif level == 1:
-      upi = np.where(
-        np.arange(self.Nc) == idx,
-        (1. - eps) / yi[idx],
-        eps / ((self.Nc - 1) * yi),
-      )
+    elif self.kvlevel == 1:
+      upi = self.purefrc / ((self.Nc - 1) * yi)
+      upi[self.pureidx] = (1. - self.purefrc) / yi[self.pureidx]
       return kvi, 1. / kvi, upi, 1. / upi
-    elif level == 2:
-      upi = np.where(
-        np.arange(self.Nc) == idx,
-        (1. - eps) / yi[idx],
-        eps / ((self.Nc - 1) * yi),
-      )
+    elif self.kvlevel == 2:
+      upi = self.purefrc / ((self.Nc - 1) * yi)
+      upi[self.pureidx] = (1. - self.purefrc) / yi[self.pureidx]
       cbrtkvi = np.cbrt(kvi)
       return kvi, 1. / kvi, upi, 1. / upi, cbrtkvi, 1. / cbrtkvi
-    elif level == 3:
-      upi = np.where(
-        np.arange(self.Nc) == idx,
-        (1. - eps) / yi[idx],
-        eps / ((self.Nc - 1) * yi),
-      )
+    elif self.kvlevel == 3:
+      upi = self.purefrc / ((self.Nc - 1) * yi)
+      upi[self.pureidx] = (1. - self.purefrc) / yi[self.pureidx]
       cbrtkvi = np.cbrt(kvi)
       uii = np.exp(self.getPT_lnphii(P, T, yi))
       return kvi, 1. / kvi, upi, 1. / upi, cbrtkvi, 1. / cbrtkvi, uii
