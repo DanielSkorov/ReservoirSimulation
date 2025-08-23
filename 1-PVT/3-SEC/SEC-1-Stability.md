@@ -442,14 +442,14 @@ from eos import pr78
 
 P = 2e6 # Pressure [Pa]
 T = 40. + 273.15 # Temperature [K]
-yi = np.array([.15, .85]) # Mole fractions [fr.]
+yi = np.array([0.15, 0.85]) # Mole fractions [fr.]
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
-wi = np.array([.225, .008]) # Acentric factors
+wi = np.array([0.225, 0.008]) # Acentric factors
 mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
-dij = np.array([.025]) # Binary interaction parameters
+dij = np.array([0.025]) # Binary interaction parameters
 
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 

@@ -12,6 +12,7 @@ from utils import (
 
 from typing import (
   Callable,
+  Iterable,
 )
 
 from custom_types import (
@@ -6778,7 +6779,7 @@ class env2pPT(object):
     T: Scalar,
     yi: Vector,
     Fv: Scalar,
-    kvji0: tuple[Vector, ...] | None = None,
+    kvji0: Iterable[Vector] | None = None,
     Pmin: Scalar = 101325.,
     Npoints: int = 100,
   ) -> tuple[Scalar, FlashResult]:
@@ -6802,9 +6803,9 @@ class env2pPT(object):
     Fv: Scalar
       Phase mole fraction close to which the initial guess is needed.
 
-    kvji0: tuple[Vector, ...] | None
-      A tuple of initial guesses of k-values for flash calculations.
-      Default is `None`.
+    kvji0: Iterable[Vector] | None
+      An iterable object of initial guesses of k-values for flash
+      calculations. Default is `None`.
 
     Pmin: Scalar
       The lower bound of the pressure interval. Default is

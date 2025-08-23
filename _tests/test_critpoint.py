@@ -37,11 +37,11 @@ class critpoint(unittest.TestCase):
     vsi = np.zeros_like(yi)
     dij = np.array([
       0.025,
-      0.010, 0.0,
-      0.090, 0.0, 0.0,
-      0.095, 0.0, 0.0, 0.0,
-      0.110, 0.0, 0.0, 0.0, 0.0,
-      0.110, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.010, 0.,
+      0.090, 0., 0.,
+      0.095, 0., 0., 0.,
+      0.110, 0., 0., 0., 0.,
+      0.110, 0., 0., 0., 0., 0.,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     Pc, Tc = getVT_PcTc(yi, pr, maxiter=5)

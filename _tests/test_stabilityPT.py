@@ -31,13 +31,13 @@ class stab(unittest.TestCase):
   def test_01(self):
     P = 2e6
     T = 40. + 273.15
-    yi = np.array([.15, .85])
+    yi = np.array([0.15, 0.85])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
     stab = stabilityPT(pr, method='ss', tol=tol, maxiter=1)
@@ -48,13 +48,13 @@ class stab(unittest.TestCase):
   def test_02(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
     stab = stabilityPT(pr, method='ss', tol=tol, maxiter=7)
@@ -65,13 +65,13 @@ class stab(unittest.TestCase):
   def test_03(self):
     P = 101325.
     T = 20. + 273.15
-    yi = np.array([.1, .6, .3])
+    yi = np.array([0.1, 0.6, 0.3])
     Pci = np.array([4.600155e6, 3.2890095e6, 22.04832e6])
     Tci = np.array([190.6, 507.5, 647.3])
-    wi = np.array([.008, .27504, .344])
+    wi = np.array([0.008, 0.27504, 0.344])
     mwi = np.array([0.016043, 0.086, 0.018015])
     vsi = np.array([0., 0., 0.])
-    dij = np.array([.0253, 0.4907, 0.48])
+    dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
     tol = 1e-6
     stab = stabilityPT(pr, method='ss', tol=tol, maxiter=4)
@@ -104,13 +104,13 @@ class stab(unittest.TestCase):
   def test_05(self):
     P = 2e6
     T = 40. + 273.15
-    yi = np.array([.15, .85])
+    yi = np.array([0.15, 0.85])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
     stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=3)
@@ -121,13 +121,13 @@ class stab(unittest.TestCase):
   def test_06(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
     stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=6)
@@ -138,13 +138,13 @@ class stab(unittest.TestCase):
   def test_07(self):
     P = 101325.
     T = 20. + 273.15
-    yi = np.array([.1, .6, .3])
+    yi = np.array([0.1, 0.6, 0.3])
     Pci = np.array([4.600155e6, 3.2890095e6, 22.04832e6])
     Tci = np.array([190.6, 507.5, 647.3])
-    wi = np.array([.008, .27504, .344])
+    wi = np.array([0.008, 0.27504, 0.344])
     mwi = np.array([0.016043, 0.086, 0.018015])
     vsi = np.array([0., 0., 0.])
-    dij = np.array([.0253, 0.4907, 0.48])
+    dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
     tol = 1e-6
     stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=5)
@@ -177,13 +177,13 @@ class stab(unittest.TestCase):
   def test_09(self):
     P = 2e6
     T = 40. + 273.15
-    yi = np.array([.15, .85])
+    yi = np.array([0.15, 0.85])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
     stab = stabilityPT(pr, method='newton', tol=tol, maxiter=3)
@@ -194,13 +194,13 @@ class stab(unittest.TestCase):
   def test_10(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-6
     stab = stabilityPT(pr, method='newton', tol=tol, maxiter=4)

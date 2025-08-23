@@ -637,7 +637,7 @@ def solveNp(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     head = map(lambda s: 'f%s' % s, range(Npm1))
     print(('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s')
           % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
-    tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e'
+    tmpl = '%3s%5s' + Npm1 * '%10.4f' + '%12.2e%10.4f%12.2e'
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
     k = 0
@@ -782,7 +782,7 @@ def solveNp_out(Kji, yi, fj0, tol=1e-6, maxiter=30, tol_ls=1e-5, maxiter_ls=10):
     head = map(lambda s: 'f%s' % s, range(Npm1))
     out = (('%3s%5s' + Npm1 * '%10s' + '%12s%10s%12s\n')
            % ('Nit', 'Nls', *head, 'gnorm', 'lmbd', 'dFdlmbd'))
-    tmpl = '%3s%5s' + Npm1 * ' %9.4f' + ' %11.2e %9.4f %11.2e\n'
+    tmpl = '%3s%5s' + Npm1 * '%10.4f' + '%12.2e%10.4f%12.2e\n'
     Aji = 1. - Kji
     bi = np.min([np.min(1. - Kji * yi, axis=0), 1. - yi], axis=0)
     k = 0

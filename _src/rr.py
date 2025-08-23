@@ -215,6 +215,7 @@ def solveNp(
   maxiter: int = 30,
   beta: Scalar = 0.8,
   c: Scalar = 0.3,
+  maxiter_ls: int = 10,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> Vector:
   """Solves the system of Rachford-Rice equations
@@ -250,6 +251,9 @@ def solveNp(
     Coefficient used to calculate the Goldstein's condition for the
     backtracking line search procedure. Default is `0.3`.
 
+  maxiter_ls: int
+    Maximum number of linesearch iterations. Default is `10`.
+
   linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
@@ -264,10 +268,10 @@ def solveNp(
   Npm1 = Kji.shape[0]
   assert Npm1 > 1
   logger.debug(
-    '%3s%5s' + Npm1 * '%10s' + '%10s%11s',
+    '%3s%5s' + Npm1 * '%11s' + '%11s%11s',
     'Nit', 'Nls', *['f%s' % s for s in range(Npm1)], 'F', 'gnorm',
   )
-  tmpl = '%3s%5s' + Npm1 * '%10.4f' + '%10.4f%11.2e'
+  tmpl = '%3s%5s' + Npm1 * '%11.2e' + '%11.2e%11.2e'
   Aji = 1. - Kji
   Bji = np.sqrt(yi) * Aji
   bi = np.vstack([Kji * yi, yi]).max(axis=0)
@@ -285,9 +289,12 @@ def solveNp(
     dfj = -linsolver(Hjl, gj)
     denom = dfj.dot(Aji)
     where = denom > 0.
+    # if where.any():
     lmbdi = ((ti - bi) / denom)[where]
     idx = np.argmin(lmbdi)
     lmbdmax = lmbdi[idx]
+    # else:
+    #   lmbdmax = 1.
     if lmbdmax < 1.:
       gdf = gj.dot(dfj)
       lmbdn = beta * lmbdmax
@@ -296,7 +303,7 @@ def solveNp(
       Fkp1 = - np.log(np.abs(ti)).dot(yi)
       n = 1
       logger.debug(tmpl, k, n, *fjkp1, Fkp1, gnorm)
-      while Fkp1 > F + c * lmbdn * gdf:
+      while Fkp1 > F + c * lmbdn * gdf and n < maxiter_ls:
         lmbdn *= beta
         fjkp1 = fjk + lmbdn * dfj
         ti = 1. - fjkp1.dot(Aji)

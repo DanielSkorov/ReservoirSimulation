@@ -70,7 +70,7 @@ from flash import flash2pPT
 import numpy as np
 P = 6e6 # Pressure [Pa]
 T = 10. + 273.15 # Temperature [K]
-yi = np.array([.9, .1]) # Mole fractions [fr.]
+yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 ```
 
 Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.
@@ -180,14 +180,14 @@ def _plot(fig):
 
   from boundary import env2pPT
 
-  yi = np.array([.9, .1])
+  yi = np.array([0.9, 0.1])
 
   Pci = np.array([7.37646, 4.600155]) * 1e6
   Tci = np.array([304.2, 190.6])
-  wi = np.array([.225, .008])
+  wi = np.array([0.225, 0.008])
   mwi = np.array([0.04401, 0.016043])
   vsi = np.array([0., 0.])
-  dij = np.array([.025])
+  dij = np.array([0.025])
   pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
   stab_ = stabilityPT(pr, method='qnss', tol=1e-8)

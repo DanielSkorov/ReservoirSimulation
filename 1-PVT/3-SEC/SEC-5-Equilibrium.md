@@ -343,13 +343,13 @@ ax2.set_ylim(0., 1.)
 ax2.set_xlabel('Количество вещества диоксида углерода в первой фазе, моль')
 ax2.set_ylabel('Tangent plane distance (TPD)')
 
-ax2ins = ax2.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(0., .04))
+ax2ins = ax2.inset_axes([0.55, 0.4, 0.42, 0.55], xlim=(0.7, 1.), ylim=(0., 0.04))
 ax2ins.plot(xj1, Dj, lw=2., c='m', zorder=2)
 ax2ins.text(0.8, 0.02, '$y_{1,CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
-ax2ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=3)
+ax2ins.plot([0.818, 0.818], [0., 0.035], lw=1., ls='--', c='b', zorder=3)
 ax2ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=3)
 ax2ins.text(0.9, 0.02, '$y_{2,CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
-ax2ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=3)
+ax2ins.plot([0.918, 0.918], [0., 0.035], lw=1., ls='--', c='g', zorder=3)
 ax2ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=3)
 ax2ins.set_xlabel('Количество вещества диоксида\nуглерода в первой фазе, моль', fontsize=9)
 ax2ins.set_ylabel('Tangent plane distance (TPD)', fontsize=9)
@@ -387,7 +387,7 @@ eps = 1e-6 # Tolerance
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
-wi = np.array([.225, .008]) # Acentric factors
+wi = np.array([0.225, 0.008]) # Acentric factors
 mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([0.025]) # Binary interaction parameters
@@ -491,13 +491,13 @@ ax2.set_ylim(0., 1.)
 ax2.set_xlabel('Количество вещества диоксида углерода в первой фазе, моль')
 ax2.set_ylabel('Tangent plane distance (TPD)')
 
-ax2ins = ax2.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(0., .04))
+ax2ins = ax2.inset_axes([0.55, 0.4, 0.42, 0.55], xlim=(0.7, 1.), ylim=(0., 0.04))
 ax2ins.plot(xj1, Dj, lw=2., c='m', zorder=2)
 ax2ins.text(0.8, 0.02, '$y_{1,CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
-ax2ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=3)
+ax2ins.plot([0.818, 0.818], [0., 0.035], lw=1., ls='--', c='b', zorder=3)
 ax2ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=3)
 ax2ins.text(0.9, 0.02, '$y_{2,CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
-ax2ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=3)
+ax2ins.plot([0.918, 0.918], [0., 0.035], lw=1., ls='--', c='g', zorder=3)
 ax2ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=3)
 ax2ins.set_xlabel('Количество вещества диоксида\nуглерода в первой фазе, моль', fontsize=9)
 ax2ins.set_ylabel('Tangent plane distance (TPD)', fontsize=9)
@@ -545,7 +545,7 @@ glue('glued_fig2', fig2)
 ``` python
 P = 101325. # Pressure [Pa]
 T = 20. + 273.15 # Temperature [K]
-yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
+yi = np.array([0.1, 0.6, 0.3]) # Mole fractions [fr.]
 ```
 
 Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.
@@ -715,14 +715,14 @@ print(stab.run(P, T, yji[1]))
 
 P = 101325. # Pressure [Pa]
 T = 20. + 273.15 # Temperature [K]
-yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
+yi = np.array([0.1, 0.6, 0.3]) # Mole fractions [fr.]
 
 Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([190.6, 507.5, 647.3]) # Critical temperatures [K]
-wi = np.array([.008, .27504, .344]) # Acentric factors
+wi = np.array([0.008, 0.27504, 0.344]) # Acentric factors
 mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0., 0.]) # Volume shift parameters
-dij = np.array([.0253, 0.4907, 0.48]) # Binary interaction parameters
+dij = np.array([0.0253, 0.4907, 0.48]) # Binary interaction parameters
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
 
 stab = stabilityPT(pr, method='ss')

@@ -8,6 +8,7 @@ import numpy as np
 
 from typing import (
   Callable,
+  Iterable,
 )
 
 from custom_types import (
@@ -215,7 +216,7 @@ class stabilityPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-    kvji0: tuple[Vector, ...] | None = None,
+    kvji0: Iterable[Vector] | None = None,
   ) -> StabResult:
     """Performs the stability test for a given pressure, temperature
     and composition.
@@ -231,11 +232,11 @@ class stabilityPT(object):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    kvji0: tuple[Vector, ...] | None
-      A tuple containing arrays of initial k-value guesses. Each array's
-      shape should be `(Nc,)`. Default is `None` which means to use
-      initial guesses from the method `getPT_kvguess` of the initialized
-      instance of an EOS.
+    kvji0: Iterable[Vector] | None
+      An iterable object containing arrays of initial k-value guesses.
+      Each array's shape should be `(Nc,)`. Default is `None` which
+      means to use initial guesses from the method `getPT_kvguess` of
+      the initialized instance of an EOS.
 
     Returns
     -------
@@ -265,7 +266,7 @@ def _stabPT_ss(
   P: Scalar,
   T: Scalar,
   yi: Vector,
-  kvji0: tuple[Vector, ...],
+  kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-10,
   eps: Scalar = -1e-8,
@@ -287,9 +288,9 @@ def _stabPT_ss(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[Vector, ...]
-    A tuple containing arrays of initial k-value guesses. Each array's
-    shape should be `(Nc,)`.
+  kvji0: Iterable[Vector]
+    An iterable object containing arrays of initial k-value guesses.
+    Each array's shape should be `(Nc,)`.
 
   eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
@@ -418,7 +419,7 @@ def _stabPT_qnss(
   P: Scalar,
   T: Scalar,
   yi: Vector,
-  kvji0: tuple[Vector, ...],
+  kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-10,
   eps: Scalar = -1e-8,
@@ -445,9 +446,9 @@ def _stabPT_qnss(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[Vector, ...]
-    A tuple containing arrays of initial k-value guesses. Each array's
-    shape should be `(Nc,)`.
+  kvji0: Iterable[Vector]
+    An iterable object containing arrays of initial k-value guesses.
+    Each array's shape should be `(Nc,)`.
 
   eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
@@ -589,7 +590,7 @@ def _stabPT_newt(
   P: Scalar,
   T: Scalar,
   yi: Vector,
-  kvji0: tuple[Vector, ...],
+  kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-10,
   maxiter: int = 50,
@@ -616,9 +617,9 @@ def _stabPT_newt(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[Vector, ...]
-    A tuple containing arrays of initial k-value guesses. Each array's
-    shape should be `(Nc,)`.
+  kvji0: Iterable[Vector]
+    An iterable object containing arrays of initial k-value guesses.
+    Each array's shape should be `(Nc,)`.
 
   eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
@@ -792,7 +793,7 @@ def _stabPT_ssnewt(
   P: Scalar,
   T: Scalar,
   yi: Vector,
-  kvji0: tuple[Vector, ...],
+  kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-10,
   maxiter: int = 50,
@@ -822,9 +823,9 @@ def _stabPT_ssnewt(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[Vector, ...]
-    A tuple containing arrays of initial k-value guesses. Each array's
-    shape should be `(Nc,)`.
+  kvji0: Iterable[Vector]
+    An iterable object containing arrays of initial k-value guesses.
+    Each array's shape should be `(Nc,)`.
 
   eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have
@@ -1052,7 +1053,7 @@ def _stabPT_qnssnewt(
   P: Scalar,
   T: Scalar,
   yi: Vector,
-  kvji0: tuple[Vector, ...],
+  kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-10,
   maxiter: int = 50,
@@ -1084,9 +1085,9 @@ def _stabPT_qnssnewt(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: tuple[Vector, ...]
-    A tuple containing arrays of initial k-value guesses. Each array's
-    shape should be `(Nc,)`.
+  kvji0: Iterable[Vector]
+    An iterable object containing arrays of initial k-value guesses.
+    Each array's shape should be `(Nc,)`.
 
   eos: StabEosPT
     An initialized instance of a PT-based equation of state. Must have

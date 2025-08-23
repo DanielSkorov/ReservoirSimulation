@@ -4,7 +4,7 @@ sys.path.append('../_src/')
 
 import logging
 
-logger = logging.getLogger('stab')
+logger = logging.getLogger('eos')
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)

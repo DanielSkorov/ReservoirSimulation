@@ -31,13 +31,13 @@ class flash2p(unittest.TestCase):
   def test_01(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     flash = flash2pPT(pr, method='ss', tol=tol, maxiter=7,
@@ -49,13 +49,13 @@ class flash2p(unittest.TestCase):
   def test_02(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=6,
@@ -67,13 +67,13 @@ class flash2p(unittest.TestCase):
   def test_03(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     flash = flash2pPT(pr, method='newton', tol=tol, maxiter=3,
@@ -85,13 +85,13 @@ class flash2p(unittest.TestCase):
   def test_04(self):
     P = 6e6
     T = 10. + 273.15
-    yi = np.array([.9, .1])
+    yi = np.array([0.9, 0.1])
     Pci = np.array([7.37646e6, 4.600155e6])
     Tci = np.array([304.2, 190.6])
-    wi = np.array([.225, .008])
+    wi = np.array([0.225, 0.008])
     mwi = np.array([0.04401, 0.016043])
     vsi = np.array([0., 0.])
-    dij = np.array([.025])
+    dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-5
     flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=4,
