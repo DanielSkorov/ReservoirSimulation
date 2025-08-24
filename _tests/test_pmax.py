@@ -44,8 +44,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='ss', maxiter=383, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='ss', maxiter=751, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
@@ -67,8 +67,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='ss', maxiter=385, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='ss', maxiter=755, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
@@ -90,8 +90,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='qnss', maxiter=29, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='qnss', maxiter=44, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
@@ -113,8 +113,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='qnss', maxiter=29, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='qnss', maxiter=49, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
@@ -136,8 +136,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='newton', maxiter=12, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='newton', maxiter=14, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
@@ -159,8 +159,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='newton', maxiter=12, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='newton', maxiter=14, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.gnorm < tol)
@@ -182,8 +182,8 @@ class pmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Pmax = PmaxPT(pr, method='newton', maxiter=16, tol=tol,
+    tol = 1e-8
+    Pmax = PmaxPT(pr, method='newton', maxiter=17, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Pmax.run(P0, T0, yi, search=False)
     self.assertTrue(res.gnorm < tol)

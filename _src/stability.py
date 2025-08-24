@@ -351,10 +351,10 @@ def _stabPT_ss(
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
-    '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
-    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'TPD*', 'r', 'gnorm',
+    '%3s%5s' + Nc * '%9s' + '%11s',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'gnorm',
   )
-  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z
@@ -371,10 +371,7 @@ def _stabPT_ss(
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    ng = ni.dot(gi)
-    tpds = 1. + ng - n
-    r = 2. * tpds / (ng - yi.dot(gi))
-    logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
+    logger.debug(tmpl, j, k, *lnkik, gnorm)
     while gnorm > tol and k < maxiter:
       k += 1
       lnkik -= gi
@@ -385,13 +382,14 @@ def _stabPT_ss(
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
       gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      ng = ni.dot(gi)
-      tpds = 1. + ng - n
-      r = 2. * tpds / (ng - yi.dot(gi))
-      logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
-      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
-        trivial = True
-        break
+      logger.debug(tmpl, j, k, *lnkik, gnorm)
+      if checktrivial:
+        ng = ni.dot(gi)
+        tpds = 1. + ng - n
+        r = 2. * tpds / (ng - yi.dot(gi))
+        if tpds < 1e-3 and r > 0.8 and r < 1.2:
+          trivial = True
+          break
     if gnorm < tol and np.isfinite(gnorm) and not trivial:
       TPD = -np.log(n)
       if TPD < TPDo:
@@ -424,7 +422,6 @@ def _stabPT_qnss(
   tol: Scalar = 1e-10,
   eps: Scalar = -1e-8,
   maxiter: int = 200,
-  checktrivial: bool = False,
   breakunstab: bool = False,
 ) -> StabResult:
   """QNSS-method to perform the stability test using a PT-based
@@ -483,12 +480,6 @@ def _stabPT_qnss(
     System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
 
-  checktrivial: bool
-    A flag indicating whether it is necessary to perform a check for
-    early detection of convergence to the trivial solution. It is based
-    on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
-    Default is `False`.
-
   breakunstab: bool
     A boolean flag indicating whether it is allowed to break a loop
     of various initial guesses checking if the one-phase state was
@@ -509,10 +500,10 @@ def _stabPT_qnss(
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
-    '%3s%5s' + Nc * '%9s' + '%11s%11s%11s',
-    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'TPD*', 'r', 'gnorm',
+    '%3s%5s' + Nc * '%9s' + '%11s',
+    'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'gnorm',
   )
-  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   TPDo = eps
   Zt = Z
@@ -521,7 +512,6 @@ def _stabPT_qnss(
   gnormo = 0.
   for j, ki in enumerate(kvji0):
     k = 0
-    trivial = False
     lnkik = np.log(ki)
     ni = ki * yi
     n = ni.sum()
@@ -529,10 +519,7 @@ def _stabPT_qnss(
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    ng = ni.dot(gi)
-    tpds = 1. + ng - n
-    r = 2. * tpds / (ng - yi.dot(gi))
-    logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
+    logger.debug(tmpl, j, k, *lnkik, gnorm)
     lmbd = 1.
     while gnorm > tol and k < maxiter:
       dlnki = -lmbd * gi
@@ -551,19 +538,13 @@ def _stabPT_qnss(
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
       gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      ng = ni.dot(gi)
-      tpds = 1. + ng - n
-      r = 2. * tpds / (ng - yi.dot(gi))
-      logger.debug(tmpl, j, k, *lnkik, tpds, r, gnorm)
+      logger.debug(tmpl, j, k, *lnkik, gnorm)
       if gnorm < tol:
-        break
-      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
-        trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if gnorm < tol and np.isfinite(gnorm) and not trivial:
+    if gnorm < tol and np.isfinite(gnorm):
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
@@ -596,7 +577,6 @@ def _stabPT_newt(
   maxiter: int = 50,
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
-  checktrivial: bool = True,
   breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
@@ -673,12 +653,6 @@ def _stabPT_newt(
     switch from Newton's method to successive substitution iterations.
     Default is `False`.
 
-  checktrivial: bool
-    A flag indicating whether it is necessary to perform a check for
-    early detection of convergence to the trivial solution. It is based
-    on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
-    Default is `True`.
-
   breakunstab: bool
     A boolean flag indicating whether it is allowed to break a loop
     of various initial guesses checking if the one-phase state was
@@ -705,11 +679,10 @@ def _stabPT_newt(
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   logger.debug(
-    '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
-    'Nkv', 'Nit', *['alpha%s' % s for s in range(Nc)],
-    'TPD*', 'r', 'gnorm', 'method',
+    '%3s%5s' + Nc * '%9s' + '%11s%9s',
+    'Nkv', 'Nit', *['alpha%s' % s for s in range(Nc)], 'gnorm', 'method',
   )
-  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
   hi = lnphiyi + np.log(yi)
   TPDo = eps
@@ -719,7 +692,6 @@ def _stabPT_newt(
   gnormo = 0.
   for j, ki in enumerate(kvji0):
     k = 0
-    trivial = False
     ni = ki * yi
     sqrtni = np.sqrt(ni)
     alphaik = 2. * sqrtni
@@ -729,10 +701,7 @@ def _stabPT_newt(
     gpi = np.log(ni) + lnphixi - hi
     gi = sqrtni * gpi
     gnorm = np.linalg.norm(gi)
-    ng = ni.dot(gpi)
-    tpds = 1. + ng - n
-    r = 2. * tpds / (ng - yi.dot(gpi))
-    logger.debug(tmpl, j, k, *alphaik, tpds, r, gnorm, 'newt')
+    logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
     while gnorm > tol and k < maxiter:
       H = np.diagflat(.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
       dalphai = linsolver(H, -gi)
@@ -760,13 +729,8 @@ def _stabPT_newt(
         gi = sqrtni * gpi
         gnorm = np.linalg.norm(gi)
         method = 'ss'
-      ng = ni.dot(gpi)
-      tpds = 1. + ng - n
-      r = 2. * tpds / (ng - yi.dot(gpi))
-      logger.debug(tmpl, j, k, *alphaik, tpds, r, gnorm, method)
-      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
-        break
-    if gnorm < tol and np.isfinite(gnorm) and not trivial:
+      logger.debug(tmpl, j, k, *alphaik, gnorm, method)
+    if gnorm < tol and np.isfinite(gnorm):
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
@@ -919,8 +883,7 @@ def _stabPT_ssnewt(
   logger.info("Stability Test (SS-Newton method).")
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
-  tmpl_ss = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
-  tmpl_nt = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   rangeNc = range(Nc)
   lbls_lnkv = ['lnkv%s' % s for s in rangeNc]
   lbls_alpha = ['alpha%s' % s for s in rangeNc]
@@ -932,8 +895,8 @@ def _stabPT_ssnewt(
   gnormo = 0.
   for j, ki in enumerate(kvji0):
     logger.debug(
-      '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
-      'Nkv', 'Nit', *lbls_lnkv, 'TPD*', 'r', 'gnorm', 'method',
+      '%3s%5s' + Nc * '%9s' + '%11s%9s',
+      'Nkv', 'Nit', *lbls_lnkv, 'gnorm', 'method',
     )
     k = 0
     trivial = False
@@ -944,10 +907,7 @@ def _stabPT_ssnewt(
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    ng = ni.dot(gi)
-    tpds = 1. + ng - n
-    r = 2. * tpds / (ng - yi.dot(gi))
-    logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'ss')
+    logger.debug(tmpl, j, k, *lnkik, gnorm, 'ss')
     while gnorm > tol_ss and k < maxiter_ss:
       k += 1
       lnkik -= gi
@@ -958,13 +918,14 @@ def _stabPT_ssnewt(
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
       gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      ng = ni.dot(gi)
-      tpds = 1. + ng - n
-      r = 2. * tpds / (ng - yi.dot(gi))
-      logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'ss')
-      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
-        trivial = True
-        break
+      logger.debug(tmpl, j, k, *lnkik, gnorm, 'ss')
+      if checktrivial:
+        ng = ni.dot(gi)
+        tpds = 1. + ng - n
+        r = 2. * tpds / (ng - yi.dot(gi))
+        if tpds < 1e-3 and r > 0.8 and r < 1.2:
+          trivial = True
+          break
     if np.isfinite(gnorm) and not trivial:
       if gnorm < tol:
         TPD = -np.log(n)
@@ -994,7 +955,7 @@ def _stabPT_ssnewt(
           '%3s%5s' + Nc * '%9s' + '%11s%9s',
           'Nkv', 'Nit', *lbls_alpha, 'gnorm', 'method',
         )
-        logger.debug(tmpl_nt, j, k, *alphaik, gnorm, 'newt')
+        logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
         while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gpi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
@@ -1023,7 +984,7 @@ def _stabPT_ssnewt(
             gi = sqrtni * gpi
             gnorm = np.linalg.norm(gi)
             method = 'ss'
-          logger.debug(tmpl_nt, j, k, *alphaik, gnorm, method)
+          logger.debug(tmpl, j, k, *alphaik, gnorm, method)
         if gnorm < tol and np.isfinite(gnorm):
           TPD = -np.log(n)
           if TPD < TPDo:
@@ -1061,7 +1022,6 @@ def _stabPT_qnssnewt(
   maxiter_qnss: int = 30,
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
-  checktrivial: bool = False,
   breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
@@ -1150,12 +1110,6 @@ def _stabPT_qnssnewt(
     switch from Newton's method to successive substitution iterations.
     Default is `False`.
 
-  checktrivial: bool
-    A flag indicating whether it is necessary to perform a check for
-    early detection of convergence to the trivial solution. It is based
-    on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
-    Default is `False`.
-
   breakunstab: bool
     A boolean flag indicating whether it is allowed to break a loop
     of various initial guesses checking if the one-phase state was
@@ -1181,8 +1135,7 @@ def _stabPT_qnssnewt(
   logger.info("Stability Test (QNSS-Newton method).")
   Nc = eos.Nc
   logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
-  tmpl_ss = '%3s%5s' + Nc * '%9.4f' + '%11.2e%11.2e%11.2e%9s'
-  tmpl_nt = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   rangeNc = range(Nc)
   lbls_lnkv = ['lnkv%s' % s for s in rangeNc]
   lbls_alpha = ['alpha%s' % s for s in rangeNc]
@@ -1194,11 +1147,10 @@ def _stabPT_qnssnewt(
   gnormo = 0.
   for j, ki in enumerate(kvji0):
     logger.debug(
-      '%3s%5s' + Nc * '%9s' + '%11s%11s%11s%9s',
-      'Nkv', 'Nit', *lbls_lnkv, 'TPD*', 'r', 'gnorm', 'method',
+      '%3s%5s' + Nc * '%9s' + '%11s%9s',
+      'Nkv', 'Nit', *lbls_lnkv, 'gnorm', 'method',
     )
     k = 0
-    trivial = False
     lnkik = np.log(ki)
     ni = ki * yi
     n = ni.sum()
@@ -1206,11 +1158,8 @@ def _stabPT_qnssnewt(
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
     gi = lnkik + lnphixi - lnphiyi
     gnorm = np.linalg.norm(gi)
-    ng = ni.dot(gi)
-    tpds = 1. + ng - n
-    r = 2. * tpds / (ng - yi.dot(gi))
     lmbd = 1.
-    logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'qnss')
+    logger.debug(tmpl, j, k, *lnkik, gnorm, 'qnss')
     while gnorm > tol_qnss and k < maxiter_qnss:
       dlnki = -lmbd * gi
       max_dlnki = np.abs(dlnki).max()
@@ -1228,19 +1177,13 @@ def _stabPT_qnssnewt(
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
       gi = lnkik + lnphixi - lnphiyi
       gnorm = np.linalg.norm(gi)
-      ng = ni.dot(gi)
-      tpds = 1. + ng - n
-      r = 2. * tpds / (ng - yi.dot(gi))
-      logger.debug(tmpl_ss, j, k, *lnkik, tpds, r, gnorm, 'qnss')
+      logger.debug(tmpl, j, k, *lnkik, gnorm, 'qnss')
       if gnorm < tol_qnss:
-        break
-      if tpds < 1e-3 and r > 0.8 and r < 1.2 and checktrivial:
-        trivial = True
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
-    if np.isfinite(gnorm) and not trivial:
+    if np.isfinite(gnorm):
       if gnorm < tol:
         TPD = -np.log(n)
         if TPD < TPDo:
@@ -1269,7 +1212,7 @@ def _stabPT_qnssnewt(
           '%3s%5s' + Nc * '%9s' + '%11s%9s',
           'Nkv', 'Nit', *lbls_alpha, 'gnorm', 'method',
         )
-        logger.debug(tmpl_nt, j, k, *alphaik, gnorm, 'newt')
+        logger.debug(tmpl, j, k, *alphaik, gnorm, 'newt')
         while gnorm > tol and k < maxiter:
           H = (np.diagflat(.5 * gpi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
@@ -1298,7 +1241,7 @@ def _stabPT_qnssnewt(
             gi = sqrtni * gpi
             gnorm = np.linalg.norm(gi)
             method = 'ss'
-          logger.debug(tmpl_nt, j, k, *alphaik, gnorm, method)
+          logger.debug(tmpl, j, k, *alphaik, gnorm, method)
         if gnorm < tol and np.isfinite(gnorm):
           TPD = -np.log(n)
           if TPD < TPDo:

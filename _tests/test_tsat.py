@@ -44,8 +44,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='ss', maxiter=38, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='ss', maxiter=77, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -67,8 +67,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='ss', maxiter=33, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='ss', maxiter=72, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -90,8 +90,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='ss', maxiter=4, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='ss', maxiter=7, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -113,8 +113,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='ss', maxiter=4, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='ss', maxiter=6, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -136,8 +136,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='qnss', maxiter=7, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='qnss', maxiter=11, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -159,8 +159,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='qnss', maxiter=6, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='qnss', maxiter=11, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -182,8 +182,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='qnss', maxiter=3, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='qnss', maxiter=5, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -205,8 +205,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='qnss', maxiter=3, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='qnss', maxiter=5, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -228,8 +228,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton', maxiter=3, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton', maxiter=4, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -251,8 +251,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -274,8 +274,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -297,8 +297,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -320,7 +320,7 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
+    tol = 1e-8
     Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
@@ -343,8 +343,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton-b', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -366,8 +366,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton-b', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -389,8 +389,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton-b', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -412,8 +412,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton-c', maxiter=3, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton-c', maxiter=4, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -435,8 +435,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton-c', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton-c', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.gnorm < tol)
@@ -458,8 +458,8 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
-    Tsat = TsatPT(pr, method='newton-c', maxiter=2, tol=tol,
+    tol = 1e-8
+    Tsat = TsatPT(pr, method='newton-c', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.gnorm < tol)
@@ -481,7 +481,7 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
+    tol = 1e-8
     Tsat = TsatPT(pr, method='newton-c', maxiter=2, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False)
@@ -504,7 +504,7 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
+    tol = 1e-8
     Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=True, search=False)
@@ -527,7 +527,7 @@ class tsat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-5
+    tol = 1e-8
     Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tsat.run(P, T0, yi, upper=False, search=False, Nnodes=20)

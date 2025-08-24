@@ -39,7 +39,7 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
+    tol = 1e-10
     stab = stabilityPT(pr, method='ss', tol=tol, maxiter=1)
     res = stab.run(P, T, yi)
     self.assertTrue((res.stable) & (res.gnorm < tol))
@@ -56,8 +56,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=7)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=11)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -73,8 +73,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=4)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=5)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -95,8 +95,8 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=71)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=131)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -112,8 +112,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=3)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=4)
     res = stab.run(P, T, yi)
     self.assertTrue((res.stable) & (res.gnorm < tol))
     pass
@@ -129,8 +129,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=6)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=9)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -146,8 +146,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=5)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=7)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -168,8 +168,8 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=20)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=28)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -185,8 +185,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=3)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=6)
     res = stab.run(P, T, yi)
     self.assertTrue((res.stable) & (res.gnorm < tol))
     pass
@@ -202,7 +202,7 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
+    tol = 1e-10
     stab = stabilityPT(pr, method='newton', tol=tol, maxiter=4)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
@@ -224,8 +224,8 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=8)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=12)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -246,8 +246,8 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=15)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=16)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -268,8 +268,8 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=11)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=12)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -292,8 +292,8 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=3)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=5)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -316,8 +316,8 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=6)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=8)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -340,8 +340,8 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=4)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=6)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -366,8 +366,8 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=33)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=55)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -392,8 +392,8 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=18)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=24)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -418,8 +418,8 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=6)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=12)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -444,8 +444,8 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=13)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=14)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -470,7 +470,7 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
+    tol = 1e-10
     stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=9)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
@@ -494,8 +494,8 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=55)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=113)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -516,8 +516,8 @@ class stab(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=22)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=38)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -538,8 +538,8 @@ class stab(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-6
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=26)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=40)
     res = stab.run(P, T, yi)
     self.assertTrue((not res.stable) & (res.gnorm < tol))
     pass
@@ -560,8 +560,8 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=27)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=29)
     res = stab.run(P, T, yi)
     self.assertTrue((res.stable) & (res.gnorm < tol))
     pass
@@ -722,8 +722,8 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=6)
+    tol = 1e-10
+    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=8)
     res = stab.run(P, T, yi)
     self.assertTrue((res.stable) & (res.gnorm < tol))
     pass

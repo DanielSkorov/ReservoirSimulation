@@ -1450,7 +1450,7 @@ def _PsatPT_qnss(
     '%3s' + Nc * '%9s' + '%12s%10s%11s',
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'gnorm', 'TPD',
   )
-  tmpl = '%3s' + Nc * '%9.4f' + '%11.1f%10.2e%11.2e'
+  tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
   solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
@@ -3398,8 +3398,8 @@ def _TsatPT_newtA(
   eos: TsatEosPT,
   tol: Scalar = 1e-8,
   maxiter: int = 20,
-  Tlow: Scalar = 1.,
-  Tupp: Scalar = 1e8,
+  Tlow: Scalar = 173.15,
+  Tupp: Scalar = 973.15,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
@@ -3621,8 +3621,8 @@ def _TsatPT_newtB(
   eos: TsatEosPT,
   tol: Scalar = 1e-8,
   maxiter: int = 20,
-  Tlow: Scalar = 1.,
-  Tupp: Scalar = 1e8,
+  Tlow: Scalar = 173.15,
+  Tupp: Scalar = 973.15,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
@@ -3849,8 +3849,8 @@ def _TsatPT_newtC(
   maxiter: int = 30,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 1.,
-  Tupp: Scalar = 1e8,
+  Tlow: Scalar = 173.15,
+  Tupp: Scalar = 973.15,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   upper: bool = True,
 ) -> SatResult:

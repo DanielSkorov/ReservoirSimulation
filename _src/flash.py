@@ -919,7 +919,7 @@ def _flash2pPT_ssnewt(
     'method',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
-  for i, kvi0 in enumerate(kvji0):
+  for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
     lnkvik = np.log(kvik)
@@ -930,7 +930,7 @@ def _flash2pPT_ssnewt(
     lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
-    logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
+    logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'SS')
     while gnorm > tol_ss and k < maxiter_ss:
       k += 1
       lnkvik -= gi
@@ -942,7 +942,7 @@ def _flash2pPT_ssnewt(
       lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
-      logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
+      logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'SS')
     if np.isfinite(gnorm):
       if gnorm < tol:
         if Fv > 0. and Fv < 1. or negflash:
@@ -964,7 +964,7 @@ def _flash2pPT_ssnewt(
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
         lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
-        logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'Newt')
+        logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'Newt')
         while gnorm > tol and k < maxiter:
           ui = yi / (yli * yvi) - 1.
           FvFl = 1. / (Fv * (1. - Fv))
@@ -984,7 +984,7 @@ def _flash2pPT_ssnewt(
           gnormkp1 = np.linalg.norm(gi)
           if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
-            logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'Newt')
+            logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'Newt')
           else:
             lnkvik -= gi
             kvik = np.exp(lnkvik)
@@ -995,7 +995,7 @@ def _flash2pPT_ssnewt(
             lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P,T, yvi, Fv)
             gi = lnkvik + lnphivi - lnphili
             gnorm = np.linalg.norm(gi)
-            logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
+            logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'SS')
         if (gnorm < tol and np.isfinite(gnorm) and
             (Fv > 0. and Fv < 1. or negflash)):
           rhol = yli.dot(eos.mwi) / Zl
@@ -1154,7 +1154,7 @@ def _flash2pPT_qnssnewt(
     'method',
   )
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e%8s'
-  for i, kvi0 in enumerate(kvji0):
+  for j, kvi0 in enumerate(kvji0):
     k = 0
     kvik = kvi0.flatten()
     lnkvik = np.log(kvik)
@@ -1166,7 +1166,7 @@ def _flash2pPT_qnssnewt(
     gi = lnkvik + lnphivi - lnphili
     gnorm = np.linalg.norm(gi)
     lmbd = 1.
-    logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'QNSS')
+    logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'QNSS')
     while gnorm > tol_qnss and k < maxiter_qnss:
       dlnkvi = -lmbd * gi
       max_dlnkvi = np.abs(dlnkvi).max()
@@ -1185,7 +1185,7 @@ def _flash2pPT_qnssnewt(
       lnphivi, Zv = eos.getPT_lnphii_Z(P, T, yvi)
       gi = lnkvik + lnphivi - lnphili
       gnorm = np.linalg.norm(gi)
-      logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'QNSS')
+      logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'QNSS')
       if gnorm < tol:
         break
       lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
@@ -1212,7 +1212,7 @@ def _flash2pPT_qnssnewt(
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         lnphili, Zl, dlnphilidnj = eos.getPT_lnphii_Z_dnj(P, T, yli, 1. - Fv)
         lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P, T, yvi, Fv)
-        logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'Newt')
+        logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'Newt')
         while gnorm > tol and k < maxiter:
           ui = yi / (yli * yvi) - 1.
           FvFl = 1. / (Fv * (1. - Fv))
@@ -1232,7 +1232,7 @@ def _flash2pPT_qnssnewt(
           gnormkp1 = np.linalg.norm(gi)
           if gnormkp1 < gnorm or forcenewton:
             gnorm = gnormkp1
-            logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'Newt')
+            logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'Newt')
           else:
             lnkvik -= gi
             kvik = np.exp(lnkvik)
@@ -1243,7 +1243,7 @@ def _flash2pPT_qnssnewt(
             lnphivi, Zv, dlnphividnj = eos.getPT_lnphii_Z_dnj(P,T, yvi, Fv)
             gi = lnkvik + lnphivi - lnphili
             gnorm = np.linalg.norm(gi)
-            logger.debug(tmpl, i, k, *lnkvik, Fv, gnorm, 'SS')
+            logger.debug(tmpl, j, k, *lnkvik, Fv, gnorm, 'SS')
         if (gnorm < tol and np.isfinite(gnorm) and
             (Fv > 0. and Fv < 1. or negflash)):
           rhol = yli.dot(eos.mwi) / Zl
@@ -1353,7 +1353,7 @@ class flashnpPT(object):
     Selects two- and multiphase flash solvers. Should be one of:
 
     - `'ss'` (Successive Substitution method),
-    - `'qnss'` (Currently raises `NotImplementedError`),
+    - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Currently raises `NotImplementedError`),
     - `'ss-newton'` (Currently raises `NotImplementedError`),
@@ -1411,9 +1411,8 @@ class flashnpPT(object):
       self.solver = partial(_flashnpPT_ss, eos=eos, negflash=negflash,
                             **kwargs)
     elif method == 'qnss':
-      raise NotImplementedError(
-        'QNSS-method for flash calculations is not implemented yet.'
-      )
+      self.solver = partial(_flashnpPT_qnss, eos=eos, negflash=negflash,
+                            **kwargs)
     elif method == 'bfgs':
       raise NotImplementedError(
         'BFGS-method for flash calculations is not implemented yet.'
@@ -1684,6 +1683,175 @@ def _flashnpPT_ss(
   logger.warning(
     "Multiphase flash calculation terminates unsuccessfully.\n"
     "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
+    "\nT = %s K\nyi = %s",
+    eos.name, P, T, yi,
+  )
+  raise SolutionNotFoundError(
+    'The flash calculation procedure\nterminates unsuccessfully. Try to '
+    'increase the maximum number of\nsolver iterations. It also may be '
+    'advisable to improve the initial\nguesses of k-values.'
+  )
+
+
+def _flashnpPT_qnss(
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  fsj0: Iterable[Vector],
+  kvsji0: Iterable[Matrix],
+  eos: FlashnpEosPT,
+  tol: Scalar = 1e-8,
+  maxiter: int = 30,
+  negflash: bool = True,
+) -> FlashResult:
+  """QNSS-method for multiphase flash calculations using a PT-based
+  equation of state.
+
+  Performs the Quasi-Newton Successive Substitution (QNSS) method to
+  find an equilibrium state by solving a system of nonlinear equations.
+  For the details of the QNSS-method see 10.1016/0378-3812(84)80013-8.
+
+  Parameters
+  ----------
+  P: Scalar
+    Pressure of the mixture [Pa].
+
+  T: Scalar
+    Temperature of the mixture [K].
+
+  yi: Vector, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  fsj0: Iterable[Vector]
+    An iterable object containing 1d-arrays of initial guesses of
+    phase mole fraction. Each array's shape should be `(Np - 1,)`.
+
+  kvji0: Iterable[Matrix]
+    An iterable object containing 2d-arrays of initial k-value guesses.
+    Each array's shape should be `(Np - 1, Nc)`.
+
+  eos: Flash2pEosPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphiji_Zj(P: Scalar, T: Scalar,
+                        yji: Matrix) -> tuple[Matrix, Vector]`
+      For a given pressure [Pa], temperature [K] and mole compositions
+      of `Np` phases (`Matrix` of shape `(Np, Nc)`), this method must
+      return a tuple of
+
+      - logarithms of the fugacity coefficients of components in each
+        phase as a `Matrix` of shape `(Np, Nc)`,
+      - a `Vector` of shape `(Np,)` of compressibility factors of
+        phases.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  tol: Scalar
+    Terminate successfully if the norm of the equilibrium equations
+    vector is less than `tol`. Default is `1e-8`.
+
+  maxiter: int
+    The maximum number of solver iterations. Default is `30`.
+
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
+  Returns
+  -------
+  Flash calculation results as an instance of `FlashResult` object.
+  Important attributes are:
+  - `yji` the component mole fractions in each phase,
+  - `Fj` the phase mole fractions,
+  - `Zj` the compressibility factors of each phase.
+
+  Raises
+  ------
+  `SolutionNotFoundError` if the flash calculation procedure terminates
+  unsuccessfully.
+  """
+  logger.info("Multiphase flash calculation (QNSS method).")
+  Nc = eos.Nc
+  Npm1 = kvsji0[0].shape[0]
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * '%7.4f', P, T, *yi)
+  logger.debug(
+    '%3s%5s' + (Npm1 * Nc) * '%10s' + Npm1 * '%9s' + '%11s', 'Nkv', 'Nit',
+    *['lnkv%s%s' % (j, i) for j in range(Npm1) for i in range(Nc)],
+    *['F%s' % j for j in range(Npm1)], 'gnorm',
+  )
+  tmpl = '%3s%5s' + (Npm1 * Nc) * '%10.4f' + Npm1 * '%9.4f' + '%11.2e'
+  for s, (fjk, kvjik) in enumerate(zip(fsj0, kvsji0)):
+    k = 0
+    lnkvjik = np.log(kvjik)
+    fjk = solveNp(kvjik, yi, fjk)
+    xi = yi / (fjk.dot(kvjik - 1.) + 1.)
+    yji = kvjik * xi
+    lnphiyji, Zyj = eos.getPT_lnphiji_Zj(P, T, yji)
+    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    gji = lnkvjik + lnphiyji - lnphixi
+    gnorm = np.linalg.norm(gji)
+    lmbd = 1.
+    logger.debug(tmpl, s, k, *lnkvjik.ravel(), *fjk, gnorm)
+    while gnorm > tol and k < maxiter:
+      dlnkvji = -lmbd * gji
+      max_dlnkvji = np.abs(dlnkvji).max()
+      if max_dlnkvji > 6.:
+        relax = 6. / max_dlnkvji
+        lmbd *= relax
+        dlnkvji *= relax
+      k += 1
+      tkm1 = dlnkvji.ravel().dot(gji.ravel())
+      lnkvjik += dlnkvji
+      kvjik = np.exp(lnkvjik)
+      fjk = solveNp(kvjik, yi, fjk)
+      xi = yi / (fjk.dot(kvjik - 1.) + 1.)
+      yji = kvjik * xi
+      lnphiyji, Zyj = eos.getPT_lnphiji_Zj(P, T, yji)
+      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      gji = lnkvjik + lnphiyji - lnphixi
+      gnorm = np.linalg.norm(gji)
+      logger.debug(tmpl, s, k, *lnkvjik.ravel(), *fjk, gnorm)
+      if gnorm < tol:
+        break
+      lmbd *= np.abs(tkm1 / (dlnkvji.ravel().dot(gji.ravel()) - tkm1))
+      if lmbd > 30.:
+        lmbd = 30.
+    if (gnorm < tol and np.isfinite(gnorm) and
+        ((fjk < 1.).all() and (fjk > 0.).all() or negflash)):
+      yji = np.vstack([yji, xi])
+      Fj = np.hstack([fjk, 1. - fjk.sum()])
+      Zj = np.hstack([Zyj, Zx])
+      rhoj = yji.dot(eos.mwi) / Zj
+      idx = np.argsort(rhoj)
+      yji = yji[idx]
+      kvji = yji[:-1] / yji[-1]
+      logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*Fj,))
+      return FlashResult(yji=yji, Fj=Fj[idx], Zj=Zj[idx], kvji=kvji,
+                         gnorm=gnorm, Niter=k)
+  logger.warning(
+    "Multiphase flash calculation terminates unsuccessfully.\n"
+    "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s",
     eos.name, P, T, yi,
   )
