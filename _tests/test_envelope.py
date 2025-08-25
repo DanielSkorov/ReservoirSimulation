@@ -162,7 +162,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    maxpoints = 139
+    maxpoints = 136
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)
@@ -530,7 +530,7 @@ class env2p(unittest.TestCase):
                                   stabkwargs=dict(method='qnss-newton'),),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    maxpoints = 137
+    maxpoints = 136
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.05)
     if plotting:
       self.plot(res, -70., 30., 0., 15.)

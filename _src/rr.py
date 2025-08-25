@@ -211,7 +211,7 @@ def solveNp(
   Kji: Matrix,
   yi: Vector,
   fj0: Vector,
-  tol: Scalar = 1e-8,
+  tol: Scalar = 1e-16,
   maxiter: int = 30,
   beta: Scalar = 0.8,
   c: Scalar = 0.3,
@@ -237,8 +237,8 @@ def solveNp(
     Initial guess for phase mole fractions.
 
   tol: Scalar
-    Terminate successfully if the gradient norm is less than `tol`.
-    Default is `1e-6`.
+    Terminate successfully if the sum of squared elements of the
+    gradient is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     Maximum number of iterations. Default is `30`.
@@ -269,7 +269,7 @@ def solveNp(
   assert Npm1 > 1
   logger.debug(
     '%3s%5s' + Npm1 * '%11s' + '%11s%11s',
-    'Nit', 'Nls', *['f%s' % s for s in range(Npm1)], 'F', 'gnorm',
+    'Nit', 'Nls', *['f%s' % s for s in range(Npm1)], 'F', 'g2',
   )
   tmpl = '%3s%5s' + Npm1 * '%11.2e' + '%11.2e%11.2e'
   Aji = 1. - Kji
@@ -281,9 +281,9 @@ def solveNp(
   ti = 1. - fjk.dot(Aji)
   F = - np.log(np.abs(ti)).dot(yi)
   gj = Aji.dot(yi / ti)
-  gnorm = np.linalg.norm(gj)
-  logger.debug(tmpl, k, n, *fjk, F, gnorm)
-  while gnorm > tol and k < maxiter:
+  g2 = gj.dot(gj)
+  logger.debug(tmpl, k, n, *fjk, F, g2)
+  while g2 > tol and k < maxiter:
     Pji = Bji / ti
     Hjl = Pji.dot(Pji.T)
     dfj = -linsolver(Hjl, gj)
@@ -302,28 +302,28 @@ def solveNp(
       ti = 1. - fjkp1.dot(Aji)
       Fkp1 = - np.log(np.abs(ti)).dot(yi)
       n = 1
-      logger.debug(tmpl, k, n, *fjkp1, Fkp1, gnorm)
+      logger.debug(tmpl, k, n, *fjkp1, Fkp1, g2)
       while Fkp1 > F + c * lmbdn * gdf and n < maxiter_ls:
         lmbdn *= beta
         fjkp1 = fjk + lmbdn * dfj
         ti = 1. - fjkp1.dot(Aji)
         Fkp1 = - np.log(np.abs(ti)).dot(yi)
         n += 1
-        logger.debug(tmpl, k, n, *fjkp1, Fkp1, gnorm)
+        logger.debug(tmpl, k, n, *fjkp1, Fkp1, g2)
       fjk = fjkp1
       F = Fkp1
       gj = Aji.dot(yi / ti)
-      gnorm = np.linalg.norm(gj)
+      g2 = gj.dot(gj)
       n = 0
     else:
       fjk += dfj
       ti = 1. - fjk.dot(Aji)
       F = - np.log(np.abs(ti)).dot(yi)
       gj = Aji.dot(yi / ti)
-      gnorm = np.linalg.norm(gj)
+      g2 = gj.dot(gj)
     k += 1
-    logger.debug(tmpl, k, n, *fjk, F, gnorm)
-  if gnorm < tol:
+    logger.debug(tmpl, k, n, *fjk, F, g2)
+  if g2 < tol:
     logger.info('Solution is: Fj = [' + Npm1 * ' %.4f' + '].', *fjk)
     return fjk
   logger.warning(

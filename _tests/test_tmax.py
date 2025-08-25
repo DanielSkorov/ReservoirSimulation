@@ -44,11 +44,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='ss', maxiter=31, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
   def test_02(self):
@@ -67,11 +67,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='ss', maxiter=28, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
   def test_03(self):
@@ -90,11 +90,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='qnss', maxiter=13, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
   def test_04(self):
@@ -113,11 +113,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='qnss', maxiter=12, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
   def test_05(self):
@@ -136,11 +136,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='newton', maxiter=22, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
   def test_06(self):
@@ -159,11 +159,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='newton', maxiter=19, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
   def test_07(self):
@@ -182,11 +182,11 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-8
+    tol = 1e-16
     Tmax = TmaxPT(pr, method='newton', maxiter=20, tol=tol,
                   stabkwargs=dict(method='qnss-newton'))
     res = Tmax.run(P0, T0, yi, search=False)
-    self.assertTrue(res.gnorm < tol)
+    self.assertTrue(res.g2 < tol)
     pass
 
 if __name__ == '__main__':
