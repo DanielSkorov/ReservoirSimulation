@@ -154,8 +154,9 @@ class stabilityPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution),
-    - `'bfgs'` (Currently raises `NotImplementedError`),
     - `'newton'` (Newton's method),
+    - `'ss-bfgs'` (BFGS method with preceding successive substitution
+      iterations for initial guess improvement),
     - `'ss-newton'` (Newton's method with preceding successive
       substitution iterations for initial guess improvement),
     - `'qnss-newton'` (Newton's method with preceding quasi-newton
@@ -198,10 +199,8 @@ class stabilityPT(object):
       self.solver = partial(_stabPT_qnss, eos=eos, **kwargs)
     elif method == 'newton':
       self.solver = partial(_stabPT_newt, eos=eos, **kwargs)
-    elif method == 'bfgs':
-      raise NotImplementedError(
-        'The BFGS-method for the stability test is not implemented yet.'
-      )
+    elif method == 'ss-bfgs':
+      self.solver = partial(_stabPT_ssbfgs, eos=eos, **kwargs)
     elif method == 'ss-newton':
       self.solver = partial(_stabPT_ssnewt, eos=eos, **kwargs)
     elif method == 'qnss-newton':
@@ -268,8 +267,8 @@ def _stabPT_ss(
   kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-20,
-  eps: Scalar = -1e-8,
   maxiter: int = 500,
+  eps: Scalar = -1e-8,
   checktrivial: bool = True,
   breakunstab: bool = False,
 ) -> StabResult:
@@ -363,25 +362,25 @@ def _stabPT_ss(
   for j, ki in enumerate(kvji0):
     k = 0
     trivial = False
-    lnkik = np.log(ki)
+    lnki = np.log(ki)
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
-    logger.debug(tmpl, j, k, *lnkik, g2)
+    logger.debug(tmpl, j, k, *lnki, g2)
     while g2 > tol and k < maxiter:
       k += 1
-      lnkik -= gi
-      ki = np.exp(lnkik)
+      lnki -= gi
+      ki = np.exp(lnki)
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-      gi = lnkik + lnphixi - lnphiyi
+      gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
-      logger.debug(tmpl, j, k, *lnkik, g2)
+      logger.debug(tmpl, j, k, *lnki, g2)
       if checktrivial:
         ng = ni.dot(gi)
         tpds = 1. + ng - n
@@ -393,7 +392,6 @@ def _stabPT_ss(
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
-        kti = ki
         Zt = Zx
         yti = xi
         lnphiti = lnphixi
@@ -418,8 +416,8 @@ def _stabPT_qnss(
   kvji0: Iterable[Vector],
   eos: StabEosPT,
   tol: Scalar = 1e-20,
-  eps: Scalar = -1e-8,
   maxiter: int = 200,
+  eps: Scalar = -1e-8,
   breakunstab: bool = False,
 ) -> StabResult:
   """QNSS-method to perform the stability test using a PT-based
@@ -510,14 +508,14 @@ def _stabPT_qnss(
   g2o = 0.
   for j, ki in enumerate(kvji0):
     k = 0
-    lnkik = np.log(ki)
+    lnki = np.log(ki)
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
-    logger.debug(tmpl, j, k, *lnkik, g2)
+    logger.debug(tmpl, j, k, *lnki, g2)
     lmbd = 1.
     while g2 > tol and k < maxiter:
       dlnki = -lmbd * gi
@@ -528,15 +526,15 @@ def _stabPT_qnss(
         dlnki *= relax
       k += 1
       tkm1 = dlnki.dot(gi)
-      lnkik += dlnki
-      ki = np.exp(lnkik)
+      lnki += dlnki
+      ki = np.exp(lnki)
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-      gi = lnkik + lnphixi - lnphiyi
+      gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
-      logger.debug(tmpl, j, k, *lnkik, g2)
+      logger.debug(tmpl, j, k, *lnki, g2)
       if g2 < tol:
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
@@ -546,7 +544,6 @@ def _stabPT_qnss(
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
-        kti = ki
         Zt = Zx
         yti = xi
         lnphiti = lnphixi
@@ -691,20 +688,20 @@ def _stabPT_newt(
     k = 0
     ni = ki * yi
     sqrtni = np.sqrt(ni)
-    alphaik = 2. * sqrtni
+    alphai = 2. * sqrtni
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
     gpi = np.log(ni) + lnphixi - hi
     gi = sqrtni * gpi
     g2 = gi.dot(gi)
-    logger.debug(tmpl, j, k, *alphaik, g2, 'newt')
+    logger.debug(tmpl, j, k, *alphai, g2, 'newt')
     while g2 > tol and k < maxiter:
       H = np.diagflat(.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
       dalphai = linsolver(H, -gi)
       k += 1
-      alphaik += dalphai
-      sqrtni = alphaik * .5
+      alphai += dalphai
+      sqrtni = alphai * .5
       ni = sqrtni * sqrtni
       n = ni.sum()
       xi = ni / n
@@ -718,7 +715,7 @@ def _stabPT_newt(
       else:
         ni *= np.exp(-gi / sqrtni)
         sqrtni = np.sqrt(ni)
-        alphaik = 2. * sqrtni
+        alphai = 2. * sqrtni
         n = ni.sum()
         xi = ni / n
         lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
@@ -726,12 +723,11 @@ def _stabPT_newt(
         gi = sqrtni * gpi
         g2 = gi.dot(gi)
         method = 'ss'
-      logger.debug(tmpl, j, k, *alphaik, g2, method)
+      logger.debug(tmpl, j, k, *alphai, g2, method)
     if g2 < tol and np.isfinite(g2):
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
-        kti = ni / yi
         Zt = Zx
         yti = xi
         lnphiti = lnphixi
@@ -895,25 +891,25 @@ def _stabPT_ssnewt(
     logger.debug(h1)
     k = 0
     trivial = False
-    lnkik = np.log(ki)
+    lnki = np.log(ki)
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
-    logger.debug(tmpl, j, k, *lnkik, g2, 'ss')
+    logger.debug(tmpl, j, k, *lnki, g2, 'ss')
     while g2 > tol_ss and k < maxiter_ss:
       k += 1
-      lnkik -= gi
-      ki = np.exp(lnkik)
+      lnki -= gi
+      ki = np.exp(lnki)
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-      gi = lnkik + lnphixi - lnphiyi
+      gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
-      logger.debug(tmpl, j, k, *lnkik, g2, 'ss')
+      logger.debug(tmpl, j, k, *lnki, g2, 'ss')
       if checktrivial:
         ng = ni.dot(gi)
         tpds = 1. + ng - n
@@ -941,20 +937,20 @@ def _stabPT_ssnewt(
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
-        alphaik = 2. * sqrtni
+        alphai = 2. * sqrtni
         lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
         gpi = gi
         gi = sqrtni * gpi
         g2 = gi.dot(gi)
         logger.debug(h2)
-        logger.debug(tmpl, j, k, *alphaik, g2, 'newt')
+        logger.debug(tmpl, j, k, *alphai, g2, 'newt')
         while g2 > tol and k < maxiter:
           H = (np.diagflat(.5 * gpi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
           dalphai = linsolver(H, -gi)
           k += 1
-          alphaik += dalphai
-          sqrtni = alphaik * .5
+          alphai += dalphai
+          sqrtni = alphai * .5
           ni = sqrtni * sqrtni
           n = ni.sum()
           xi = ni / n
@@ -968,7 +964,7 @@ def _stabPT_ssnewt(
           else:
             ni *= np.exp(-gi / sqrtni)
             sqrtni = np.sqrt(ni)
-            alphaik = 2. * sqrtni
+            alphai = 2. * sqrtni
             n = ni.sum()
             xi = ni / n
             lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
@@ -976,12 +972,11 @@ def _stabPT_ssnewt(
             gi = sqrtni * gpi
             g2 = gi.dot(gi)
             method = 'ss'
-          logger.debug(tmpl, j, k, *alphaik, g2, method)
+          logger.debug(tmpl, j, k, *alphai, g2, method)
         if g2 < tol and np.isfinite(g2):
           TPD = -np.log(n)
           if TPD < TPDo:
             TPDo = TPD
-            kti = ni / yi
             Zt = Zx
             yti = xi
             lnphiti = lnphixi
@@ -1141,15 +1136,15 @@ def _stabPT_qnssnewt(
   for j, ki in enumerate(kvji0):
     logger.debug(h1)
     k = 0
-    lnkik = np.log(ki)
+    lnki = np.log(ki)
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     lmbd = 1.
-    logger.debug(tmpl, j, k, *lnkik, g2, 'qnss')
+    logger.debug(tmpl, j, k, *lnki, g2, 'qnss')
     while g2 > tol_qnss and k < maxiter_qnss:
       dlnki = -lmbd * gi
       max_dlnki = np.abs(dlnki).max()
@@ -1159,21 +1154,248 @@ def _stabPT_qnssnewt(
         dlnki *= relax
       k += 1
       tkm1 = dlnki.dot(gi)
-      lnkik += dlnki
-      ki = np.exp(lnkik)
+      lnki += dlnki
+      ki = np.exp(lnki)
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
       lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
-      gi = lnkik + lnphixi - lnphiyi
+      gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
-      logger.debug(tmpl, j, k, *lnkik, g2, 'qnss')
+      logger.debug(tmpl, j, k, *lnki, g2, 'qnss')
       if g2 < tol_qnss:
         break
       lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
       if lmbd > 30.:
         lmbd = 30.
     if np.isfinite(g2):
+      if g2 < tol:
+        TPD = -np.log(n)
+        if TPD < TPDo:
+          TPDo = TPD
+          Zt = Zx
+          yti = xi
+          lnphiti = lnphixi
+          g2o = g2
+          if breakunstab:
+            stable = TPDo >= eps
+            logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+            kvji = yti / yi, yi / yti
+            return StabResult(stable=stable, g2=g2o, TPD=TPDo, kvji=kvji,
+                              yti=yti, lnphiti=lnphiti, Zt=Zt,
+                              lnphiyi=lnphiyi, Z=Z)
+      else:
+        hi = lnphiyi + np.log(yi)
+        sqrtni = np.sqrt(ni)
+        alphai = 2. * sqrtni
+        lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
+        gpi = gi
+        gi = sqrtni * gpi
+        g2 = gi.dot(gi)
+        logger.debug(h2)
+        logger.debug(tmpl, j, k, *alphai, g2, 'newt')
+        while g2 > tol and k < maxiter:
+          H = (np.diagflat(.5 * gpi + 1.)
+               + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
+          dalphai = linsolver(H, -gi)
+          k += 1
+          alphai += dalphai
+          sqrtni = alphai * .5
+          ni = sqrtni * sqrtni
+          n = ni.sum()
+          xi = ni / n
+          lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
+          gpi = np.log(ni) + lnphixi - hi
+          gi = sqrtni * gpi
+          g2kp1 = gi.dot(gi)
+          if g2kp1 < g2 or forcenewton:
+            method = 'newt'
+            g2 = g2kp1
+          else:
+            ni *= np.exp(-gi / sqrtni)
+            sqrtni = np.sqrt(ni)
+            alphai = 2. * sqrtni
+            n = ni.sum()
+            xi = ni / n
+            lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
+            gpi = np.log(ni) + lnphixi - hi
+            gi = sqrtni * gpi
+            g2 = gi.dot(gi)
+            method = 'ss'
+          logger.debug(tmpl, j, k, *alphai, g2, method)
+        if g2 < tol and np.isfinite(g2):
+          TPD = -np.log(n)
+          if TPD < TPDo:
+            TPDo = TPD
+            Zt = Zx
+            yti = xi
+            lnphiti = lnphixi
+            g2o = g2
+            if breakunstab:
+              stable = TPDo >= eps
+              logger.info(
+                'The system is stable: %s. TPD = %.3e.', stable, TPDo,
+              )
+              kvji = yti / yi, yi / yti
+              return StabResult(stable=stable, yti=yti, kvji=kvji, TPD=TPDo,
+                                g2=g2o, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+                                lnphiti=lnphiti)
+  stable = TPDo >= eps
+  logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+  kvji = yti / yi, yi / yti
+  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
+                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+
+
+
+def _stabPT_ssbfgs(
+  P: Scalar,
+  T: Scalar,
+  yi: Vector,
+  kvji0: Iterable[Vector],
+  eos: StabEosPT,
+  tol: Scalar = 1e-20,
+  maxiter: int = 50,
+  tol_ss: Scalar = 1e-4,
+  maxiter_ss: int = 30,
+  eps: Scalar = -1e-8,
+  checktrivial: bool = True,
+  breakunstab: bool = False,
+) -> StabResult:
+  """Performs minimization of the Michelsen's modified tangent-plane
+  distance function using BFGS method and a PT-based equation of state.
+  Preceding successive substitution iterations are implemented to
+  improve the initial guess of k-values. The reference for the
+  implementation of the BFGS method for the stability test is the paper
+  of H. Hoteit and A. Firoozabadi (doi: 10.1002/aic.10908).
+
+  Parameters
+  ----------
+  P: Scalar
+    Pressure of the mixture [Pa].
+
+  T: Scalar
+    Temperature of the mixture [K].
+
+  yi: Vector, shape (Nc,)
+    Mole fractions of `Nc` components.
+
+  kvji0: Iterable[Vector]
+    An iterable object containing arrays of initial k-value guesses.
+    Each array's shape should be `(Nc,)`.
+
+  eos: StabEosPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture.
+
+    Also, this instance must have attributes:
+
+    - `Nc: int`
+      The number of components in the system.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+  tol: Scalar
+    Terminate the solver successfully if the sum of squared elements
+    of the gradient of Michelsen's modified tangent-plane distance
+    function is less than `tol`. Default is `1e-20`.
+
+  maxiter: int
+    The maximum number of iterations (total number, for both methods).
+    Default is `50`.
+
+  tol_ss: Scalar
+    Switch to BFGS method if the sum of squared elements of the
+    gradient of the TPD-function is less than `tol_ss`. Default is
+    `1e-4`.
+
+  maxiter_ss: int
+    The maximum number of successive substitution iterations.
+    Default is `30`.
+
+  eps: Scalar
+    System will be considered stable when `TPD >= eps`.
+    Default is `-1e-8`.
+
+  checktrivial: bool
+    A flag indicating whether it is necessary to perform a check for
+    early detection of convergence to the trivial solution. It is based
+    on the paper of M.L. Michelsen (doi: 10.1016/0378-3812(82)85001-2).
+    Default is `True`.
+
+  breakunstab: bool
+    A boolean flag indicating whether it is allowed to break a loop
+    of various initial guesses checking if the one-phase state was
+    identified as unstable. This option should be activated to prevent
+    finding the global minimum of the TPD function if a local minimum
+    is characterised with the negative value of the TPD function.
+    Default is `False`.
+
+  Returns
+  -------
+  Stability test results as an instance of `StabResult`. Important
+  attributes are:
+  - `stab` a boolean flag indicating if a one-phase state is stable,
+  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
+    energy function.
+  """
+  logger.info("Stability Test (SS-BFGS method).")
+  Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
+  tmpl = '%3s%5s' + Nc * '%9s' + '%11s%9s'
+  rangeNc = range(Nc)
+  h1 = tmpl % ('Nkv', 'Nit', *['lnkv%s' % s for s in rangeNc], 'g2', 'method')
+  h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
+  tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
+  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  hi = lnphiyi + np.log(yi)
+  TPDo = eps
+  Zt = Z
+  yti = yi
+  lnphiti = lnphiyi
+  g2o = 0.
+  for j, ki in enumerate(kvji0):
+    logger.debug(h1)
+    k = 0
+    trivial = False
+    lnki = np.log(ki)
+    ni = ki * yi
+    n = ni.sum()
+    xi = ni / n
+    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    gi = lnki + lnphixi - lnphiyi
+    g2 = gi.dot(gi)
+    logger.debug(tmpl, j, k, *lnki, g2, 'ss')
+    while g2 > tol_ss and k < maxiter_ss:
+      k += 1
+      lnki -= gi
+      ki = np.exp(lnki)
+      ni = ki * yi
+      n = ni.sum()
+      xi = ni / n
+      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      gi = lnki + lnphixi - lnphiyi
+      g2 = gi.dot(gi)
+      logger.debug(tmpl, j, k, *lnki, g2, 'ss')
+      if checktrivial:
+        ng = ni.dot(gi)
+        tpds = 1. + ng - n
+        r = 2. * tpds / (ng - yi.dot(gi))
+        if tpds < 1e-3 and r > 0.8 and r < 1.2:
+          trivial = True
+          break
+    if np.isfinite(g2) and not trivial:
       if g2 < tol:
         TPD = -np.log(n)
         if TPD < TPDo:
@@ -1193,47 +1415,59 @@ def _stabPT_qnssnewt(
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
-        alphaik = 2. * sqrtni
-        lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-        gpi = gi
-        gi = sqrtni * gpi
-        g2 = gi.dot(gi)
+        alphai = 2. * sqrtni
+        gik = sqrtni * gi
+        g2 = gik.dot(gik)
         logger.debug(h2)
-        logger.debug(tmpl, j, k, *alphaik, g2, 'newt')
+        logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
+        si = -gik
+        k += 1
+        alphai += si
+        sqrtni = alphai * 0.5
+        ni = sqrtni * sqrtni
+        n = ni.sum()
+        xi = ni / n
+        lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+        gi = np.log(ni) + lnphixi - hi
+        gikm1 = gik
+        gik = sqrtni * gi
+        g2 = gik.dot(gik)
+        logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
+        if checktrivial:
+          tpds = 1. + ni.dot(gi) - n
+          r = 2. * tpds / gik.dot(ni - yi)
+          if tpds < 1e-3 and r > 0.8 and r < 1.2:
+            trivial = True
+            continue
         while g2 > tol and k < maxiter:
-          H = (np.diagflat(.5 * gpi + 1.)
-               + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
-          dalphai = linsolver(H, -gi)
+          qi = gik - gikm1
+          sq = si.dot(qi)
+          sg = si.dot(gik)
+          qq = qi.dot(qi)
+          qg = qi.dot(gik)
+          si = -(gik + (sg - qg + qq * sg / sq) / sq * si - sg / sq * qi)
           k += 1
-          alphaik += dalphai
-          sqrtni = alphaik * .5
+          alphai += si
+          sqrtni = alphai * 0.5
           ni = sqrtni * sqrtni
           n = ni.sum()
           xi = ni / n
-          lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-          gpi = np.log(ni) + lnphixi - hi
-          gi = sqrtni * gpi
-          g2kp1 = gi.dot(gi)
-          if g2kp1 < g2 or forcenewton:
-            method = 'newt'
-            g2 = g2kp1
-          else:
-            ni *= np.exp(-gi / sqrtni)
-            sqrtni = np.sqrt(ni)
-            alphaik = 2. * sqrtni
-            n = ni.sum()
-            xi = ni / n
-            lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-            gpi = np.log(ni) + lnphixi - hi
-            gi = sqrtni * gpi
-            g2 = gi.dot(gi)
-            method = 'ss'
-          logger.debug(tmpl, j, k, *alphaik, g2, method)
-        if g2 < tol and np.isfinite(g2):
+          lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+          gi = np.log(ni) + lnphixi - hi
+          gikm1 = gik
+          gik = sqrtni * gi
+          g2 = gik.dot(gik)
+          logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
+          if checktrivial:
+            tpds = 1. + ni.dot(gi) - n
+            r = 2. * tpds / gik.dot(ni - yi)
+            if tpds < 1e-3 and r > 0.8 and r < 1.2:
+              trivial = True
+              break
+        if g2 < tol and np.isfinite(g2) and not trivial:
           TPD = -np.log(n)
           if TPD < TPDo:
             TPDo = TPD
-            kti = ni / yi
             Zt = Zx
             yti = xi
             lnphiti = lnphixi
@@ -1244,11 +1478,11 @@ def _stabPT_qnssnewt(
                 'The system is stable: %s. TPD = %.3e.', stable, TPDo,
               )
               kvji = yti / yi, yi / yti
-              return StabResult(stable=stable, yti=yti, kvji=kvji, TPD=TPDo,
-                                g2=g2o, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
+              return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o,
+                                Z=Z, TPD=TPDo, lnphiyi=lnphiyi, Zt=Zt,
                                 lnphiti=lnphiti)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o,
-                    TPD=TPDo, Z=Z, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
+                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)

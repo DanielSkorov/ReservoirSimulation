@@ -460,15 +460,16 @@ class pr78(object):
     - partial derivatives of logarithms of the fugacities with respect
       to mole numbers of components as a `Matrix` of shape `(Nc, Nc)`.
 
-  getPT_Zj(P: Scalar, T: Scalar, yji: Matrix) -> Vector
-    For a given pressure `P` in [Pa], temperature `T` in [K], mole
+  getPT_Zj(P: Scalar | Vector, T: Scalar | Vector,
+           yji: Vector | Matrix) -> Vector
+    For given pressure(s) `P` in [Pa], temperature(s) `T` in [K], mole
     fractions of `Nc` components in `Np` phases `yji` of shape
     `(Np, Nc)`, returns compressibility factors for each phase as a
     `Vector` of shape `(Np,)`.
 
-  getPT_lnphiji_Zj(P: Scalar,
-                   T: Scalar, yji: Matrix) -> tuple[Matrix, Vector]
-    For a given pressure `P` in [Pa], temperature `T` in [K], mole
+  getPT_lnphiji_Zj(P: Scalar | Vector, T: Scalar | Vector,
+                   yji: Vector| Matrix) -> tuple[Matrix, Vector]
+    For given pressure(s) `P` in [Pa], temperature(s) `T` in [K], mole
     fractions of `Nc` components in `Np` phases `yji` of shape
     `(Np, Nc)`, returns a tuple that contains:
     - logarithms of fugacity coefficients of components in phases as
