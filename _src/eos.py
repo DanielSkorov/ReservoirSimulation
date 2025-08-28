@@ -6,6 +6,7 @@ from custom_types import (
   Scalar,
   Vector,
   Matrix,
+  Tensor,
 )
 
 from constants import (
@@ -918,7 +919,7 @@ class pr78(object):
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
-    dAdnj = dalphamdnj * PRT / RT
+    dAdnj = PRT / RT * dalphamdnj
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
     dqdnj = ddmdnj.dot(np.power(Z, self.m))
@@ -1079,7 +1080,7 @@ class pr78(object):
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
-    dAdnj = dalphamdnj * PRT / RT
+    dAdnj = PRT / RT * dalphamdnj
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
     Zpm = np.power(Z, self.m)
@@ -1171,7 +1172,7 @@ class pr78(object):
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
-    dAdnj = dalphamdnj * PRT / RT
+    dAdnj = PRT / RT * dalphamdnj
     dBdnj = dbmdnj * PRT
     ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
     Zpm = np.power(Z, self.m)
@@ -1268,7 +1269,7 @@ class pr78(object):
     dSidyj = sqrtalphai[:,None] * sqrtalphai * self.D
     dalphamdyj = Si + yi.dot(dSidyj)
     dbmdyj = self.bi
-    dAdyj = dalphamdyj * PRT / RT
+    dAdyj = PRT / RT * dalphamdyj
     dBdyj = dbmdyj * PRT
     ddmdyj = ddmdA[:,None] * dAdyj + ddmdB[:,None] * dBdyj
     dqdyj = Zpm.dot(ddmdyj)
@@ -1639,6 +1640,111 @@ class pr78(object):
                - np.log(Zj - Bj)[:,None]
                - PRTj[:,None] * self.vsi_bi)
     return lnphiji, Zj - yji.dot(self.vsi_bi) * PRTj
+
+  def getPT_lnphiji_Zj_dnk(
+    self,
+    Pj: Scalar | Vector,
+    Tj: Scalar | Vector,
+    yji: Vector | Matrix,
+    nj: Scalar | Matrix = 1.,
+  ) -> tuple[Matrix, Vector, Tensor]:
+    """Computes fugacity coefficients of components, compressibility
+    factors and partial derivatives of fugacity coefficients with
+    respect to component mole numbers for each mixture.
+
+    Parameters
+    ----------
+    Pj: Scalar | Vector, shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: Scalar | Vector, shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector, shape (Nc,) | Matrix, shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    nj: Scalar | Vector, shape (Np,)
+      Mole number(s) of mixtures [mol]. It is allowed to specify
+      different mole number for each mixture. In that case, `Np` is
+      the number of mixtures. Default is `1.0` [mol].
+
+    Returns
+    -------
+    A tuple of:
+    - logarithms of fugacity coefficients of components in mixtures as
+      a `Matrix` of shape `(Np, Nc)`,
+    - compressibility factors for each mixture as a `Vector` of shape
+      `(Np,)`,
+    - partial derivatives of logarithms of fugacity coefficients with
+      respect to component mole numbers for each mixture as a `Tensor`
+      of shape `(Np, Nc, Nc)`.
+    """
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    nj = np.atleast_1d(nj)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    multji = 1. + self.kappai * (1. - np.sqrt(Tj)[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji = sqrtalphaji * (yji * sqrtalphaji).dot(self.D)
+    alphamj = np.vecdot(yji, Sji)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    Zj = np.vectorize(self.solve_eos)(Aj, Bj)
+    gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
+              * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
+    ZmBj = Zj - Bj * 0.414213562373095
+    ZpBj = Zj + Bj * 2.414213562373095
+    fZj = np.log(ZmBj / ZpBj)
+    lnphiji = (self.bi * ((Zj - 1.) / bmj)[:,None]
+               + gphiji * fZj[:,None]
+               - np.log(Zj - Bj)[:,None]
+               - PRTj[:,None] * self.vsi_bi)
+    ddmdAj = np.zeros(shape=(Bj.shape[0], 3))
+    ddmdAj[:,1] = 1.
+    ddmdAj[:,2] = -Bj
+    ddmdBj = np.ones(shape=(Bj.shape[0], 3))
+    ddmdBj[:,1] = -2. - 6. * Bj
+    ddmdBj[:,2] = Bj * (2. + 3. * Bj) - Aj
+    dqdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + (Aj - 2. * Bj - 3. * Bj * Bj)
+    dgZdZj = 1. / (Zj - Bj)
+    dgZdBj = -dgZdZj
+    dfZdZj = 1. / ZmBj - 1. / ZpBj
+    dfZdBj = -0.414213562373095 / ZmBj - 2.414213562373095 / ZpBj
+    dSjidnk = (sqrtalphaji[:,:,None] * sqrtalphaji[:,None,:] * self.D
+               - Sji[:,:,None]) / nj[:,None,None]
+    dalphamjdnk = 2. / nj[:,None] * (Sji - alphamj[:,None])
+    dbmjdnk = (self.bi - bmj[:,None]) / nj[:,None]
+    dAjdnk = dalphamjdnk * (PRTj / RTj)[:,None]
+    dBjdnk = dbmjdnk * PRTj[:,None]
+    ddmdnk = (ddmdAj[:,None,:] * dAjdnk[:,:,None]
+              + ddmdBj[:,None,:] * dBjdnk[:,:,None])
+    dqjdnk = np.vecdot(ddmdnk, np.power(Zj[:,None], self.m)[:,None,:])
+    dZjdnk = -dqjdnk / dqdZj[:,None]
+    dgZjdnk = dgZdZj[:,None] * dZjdnk + dgZdBj[:,None] * dBjdnk
+    dfZjdnk = dfZdZj[:,None] * dZjdnk + dfZdBj[:,None] * dBjdnk
+    dgphijidnk = (
+      ((2. / alphamj)[:,None,None]
+       * (dSjidnk - (Sji / alphamj[:,None])[:,:,None] * dalphamjdnk[:,None,:])
+       + (self.bi / (bmj * bmj)[:,None])[:,:,None] * dbmjdnk[:,None,:])
+      * (0.3535533905932738 * Aj / Bj)[:,None,None]
+      + ((dAjdnk / Aj[:,None] - dBjdnk / Bj[:,None])[:,None,:]
+         * gphiji[:,:,None])
+    )
+    dlnphiidnj = (
+      ((self.bi / bmj[:,None])[:,:,None]
+       * (dZjdnk - ((Zj - 1.) / bmj)[:,None] * dbmjdnk)[:,None,:])
+      + (fZj[:,None,None] * dgphijidnk + gphiji[:,:,None] * dfZjdnk[:,None,:])
+      - dgZjdnk[:,None,:])
+    return lnphiji, Zj, dlnphiidnj
 
   def getPT_kvguess(
     self,
