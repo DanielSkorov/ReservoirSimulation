@@ -382,6 +382,8 @@ def _stabPT_ss(
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2)
       if checktrivial:
+        if g2 < tol:
+          break
         ng = ni.dot(gi)
         tpds = 1. + ng - n
         r = 2. * tpds / (ng - yi.dot(gi))
@@ -911,6 +913,8 @@ def _stabPT_ssnewt(
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2, 'ss')
       if checktrivial:
+        if g2 < tol:
+          break
         ng = ni.dot(gi)
         tpds = 1. + ng - n
         r = 2. * tpds / (ng - yi.dot(gi))
@@ -1122,6 +1126,7 @@ def _stabPT_qnssnewt(
   """
   logger.info("Stability Test (QNSS-Newton method).")
   Nc = eos.Nc
+  logger.info('P = %.1f Pa, T = %.2f K, yi =' + Nc * ' %6.4f', P, T, *yi)
   tmpl = '%3s%5s' + Nc * '%9s' + '%11s%9s'
   rangeNc = range(Nc)
   h1 = tmpl % ('Nkv', 'Nit', *['lnkv%s' % s for s in rangeNc], 'g2', 'method')
@@ -1245,7 +1250,6 @@ def _stabPT_qnssnewt(
   kvji = yti / yi, yi / yti
   return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
                     lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
-
 
 
 def _stabPT_ssbfgs(
@@ -1389,6 +1393,8 @@ def _stabPT_ssbfgs(
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2, 'ss')
       if checktrivial:
+        if g2 < tol:
+          break
         ng = ni.dot(gi)
         tpds = 1. + ng - n
         r = 2. * tpds / (ng - yi.dot(gi))
@@ -1434,6 +1440,8 @@ def _stabPT_ssbfgs(
         g2 = gik.dot(gik)
         logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
         if checktrivial:
+          if g2 < tol:
+            continue
           tpds = 1. + ni.dot(gi) - n
           r = 2. * tpds / gik.dot(ni - yi)
           if tpds < 1e-3 and r > 0.8 and r < 1.2:
@@ -1459,6 +1467,8 @@ def _stabPT_ssbfgs(
           g2 = gik.dot(gik)
           logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
           if checktrivial:
+            if g2 < tol:
+              break
             tpds = 1. + ni.dot(gi) - n
             r = 2. * tpds / gik.dot(ni - yi)
             if tpds < 1e-3 and r > 0.8 and r < 1.2:

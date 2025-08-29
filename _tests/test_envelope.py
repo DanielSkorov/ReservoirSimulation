@@ -157,12 +157,12 @@ class env2p(unittest.TestCase):
       0.09, 0.0783, 0.0452, 0.0196, 0.0038, 0.0002,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, Tmin=258.15, miniter=1,
+    env = env2pPT(pr, Tmin=258.15, miniter=2,
                   psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    maxpoints = 136
+    maxpoints = 144
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)

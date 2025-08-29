@@ -461,22 +461,37 @@ class pr78(object):
     - partial derivatives of logarithms of the fugacities with respect
       to mole numbers of components as a `Matrix` of shape `(Nc, Nc)`.
 
-  getPT_Zj(P: Scalar | Vector, T: Scalar | Vector,
+  getPT_Zj(Pj: Scalar | Vector, Tj: Scalar | Vector,
            yji: Vector | Matrix) -> Vector
-    For given pressure(s) `P` in [Pa], temperature(s) `T` in [K], mole
-    fractions of `Nc` components in `Np` phases `yji` of shape
-    `(Np, Nc)`, returns compressibility factors for each phase as a
+    For given pressure(s) `Pj` in [Pa], temperature(s) `Tj` in [K], mole
+    fractions of `Nc` components in `Np` mixtures `yji` of shape
+    `(Np, Nc)`, returns compressibility factors for each mixture as a
     `Vector` of shape `(Np,)`.
 
-  getPT_lnphiji_Zj(P: Scalar | Vector, T: Scalar | Vector,
+  getPT_lnphiji_Zj(Pj: Scalar | Vector, Tj: Scalar | Vector,
                    yji: Vector| Matrix) -> tuple[Matrix, Vector]
-    For given pressure(s) `P` in [Pa], temperature(s) `T` in [K], mole
-    fractions of `Nc` components in `Np` phases `yji` of shape
+    For given pressure(s) `Pj` in [Pa], temperature(s) `Tj` in [K], mole
+    fractions of `Nc` components in `Np` mixtures `yji` of shape
     `(Np, Nc)`, returns a tuple that contains:
-    - logarithms of fugacity coefficients of components in phases as
+    - logarithms of fugacity coefficients of components in mixtures as
       a `Vector` of shape `(Np, Nc)`,
-    - compressibility factors for each phase as a `Vector` of shape
+    - compressibility factors for each mixture as a `Vector` of shape
       `(Np,)`.
+
+  getPT_lnphiji_Zj_dnk(Pj: Scalar | Vector, Tj: Scalar | Vector,
+                       yji: Vector | Matrix, nj: Scalar | Vector,
+                      ) -> tuple[Matrix, Vector, Tensor]
+    For given pressure(s) `P` in [Pa], temperature(s) `T` in [K], mole
+    fractions of `Nc` components in `Np` mixtures `yji` of shape
+    `(Np, Nc)` and mole number(s) of mixtures in [mol], returns a tuple
+    that contains:
+    - logarithms of fugacity coefficients of components in mixtures as
+      a `Vector` of shape `(Np, Nc)`,
+    - compressibility factors for each mixture as a `Vector` of shape
+      `(Np,)`,
+    - partial derivatives of logarithms of fugacity coefficients with
+      respect to component mole numbers for each mixture as a `Tensor`
+      of shape `(Np, Nc, Nc)`.
 
   getPT_kvguess(P: Scalar, T: Scalar, yi: Vector) -> tuple[Vector, ...]
     For a given pressure `P` in [Pa], temperature `T` in [K], and mole

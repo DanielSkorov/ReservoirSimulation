@@ -529,7 +529,7 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=86,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=88,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)

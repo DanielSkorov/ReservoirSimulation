@@ -169,41 +169,27 @@ class flashnp(unittest.TestCase):
     self.assertTrue(res.g2 < tol and res.Niter <= maxiter)
     pass
 
-  # def test_07(self):
-  #   P = 9.39375e6
-  #   T = 305.35
-  #   yi = np.array([0.646, 0.1040406, 0.0360726, 0.0295590, 0.0117174,
-  #                  0.0426216, 0.0559674, 0.0291342, 0.0186912, 0.0097704,
-  #                  0.0164256])
-  #   Pci = np.array([73.82, 45.40, 48.20, 41.90, 37.50, 28.82, 23.74, 18.59,
-  #                   14.80, 11.95, 8.52]) * 1e5
-  #   Tci = np.array([304.211, 190.60, 305.40, 369.80, 425.20, 516.667, 590.00,
-  #                   668.611, 745.778, 812.667, 914.889])
-  #   mwi = np.array([44.0, 16.0, 30.1, 44.1, 58.1, 89.9, 125.7, 174.4, 240.3,
-  #                   336.1, 536.7]) / 1e3
-  #   wi = np.array([0.225, 0.008, 0.098, 0.152, 0.193, 0.2651, 0.3644, 0.4987,
-  #                  0.6606, 0.8771, 1.2789])
-  #   vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
-  #   dij = np.array([
-  #     0.115,
-  #     0.115, 0.000,
-  #     0.115, 0.000, 0.,
-  #     0.115, 0.000, 0., 0.,
-  #     0.115, 0.045, 0., 0., 0.,
-  #     0.115, 0.055, 0., 0., 0., 0.,
-  #     0.115, 0.055, 0., 0., 0., 0., 0.,
-  #     0.115, 0.060, 0., 0., 0., 0., 0., 0.,
-  #     0.115, 0.080, 0., 0., 0., 0., 0., 0., 0.,
-  #     0.115, 0.280, 0., 0., 0., 0., 0., 0., 0., 0.,
-  #   ])
-  #   pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-  #   tol = 1e-16
-  #   maxiter = 210
-  #   flash = flashnpPT(pr, method='ss', tol=tol, maxiter=maxiter,
-  #                     stabkwargs=dict(method='qnss-newton'))
-  #   res = flash.run(P, T, yi, maxNp=3)
-  #   self.assertTrue(res.g2 < tol and res.Niter <= maxiter)
-  #   pass
+  def test_07(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.1, 0.6, 0.3])
+    Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6
+    Tci = np.array([190.6, 507.5, 647.3])
+    wi = np.array([0.008, 0.27504, 0.344])
+    vsi = np.array([0., 0., 0.])
+    mwi = np.array([0.016043, 0.086, 0.018015])
+    dij = np.array([
+      0.0253,
+      0.4907, 0.48,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
+    tol = 1e-16
+    maxiter = 3
+    flash = flashnpPT(pr, method='newton', tol=tol, maxiter=maxiter,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi, maxNp=3)
+    self.assertTrue(res.g2 < tol and res.Niter <= maxiter)
+    pass
 
 
 if __name__ == '__main__':

@@ -63,7 +63,7 @@ def fD(
 def solve2p_FGH(
   kvi: Vector,
   yi: Vector,
-  tol: Scalar = 1e-8,
+  tol: Scalar = 1e-12,
   maxiter: int = 50,
 ) -> Scalar:
   """FGH-method for solving the Rachford-Rice equation.
@@ -81,7 +81,7 @@ def solve2p_FGH(
 
   tol: Scalar
     Terminate successfully if the absolute value of the D-function
-    is less than `tol`. Default is `1e-8`.
+    is less than `tol`. Default is `1e-12`.
 
   maxiter: int
     Maximum number of iterations. Default is `50`.
@@ -137,7 +137,7 @@ def solve2p_FGH(
 def solve2p_GH(
   kvi: Vector,
   yi: Vector,
-  tol: Scalar = 1e-8,
+  tol: Scalar = 1e-12,
   maxiter: int = 50,
 ) -> Scalar:
   """GH-method for solving the Rachford-Rice equation.
@@ -155,7 +155,7 @@ def solve2p_GH(
 
   tol: Scalar
     Terminate successfully if the absolute value of the D-function
-    is less than `tol`. Default is `1e-8`.
+    is less than `tol`. Default is `1e-12`.
 
   maxiter: int
     Maximum number of iterations. Default is `50`.
@@ -211,7 +211,7 @@ def solveNp(
   Kji: Matrix,
   yi: Vector,
   fj0: Vector,
-  tol: Scalar = 1e-16,
+  tol: Scalar = 1e-20,
   maxiter: int = 30,
   beta: Scalar = 0.8,
   c: Scalar = 0.3,
@@ -238,7 +238,7 @@ def solveNp(
 
   tol: Scalar
     Terminate successfully if the sum of squared elements of the
-    gradient is less than `tol`. Default is `1e-16`.
+    gradient is less than `tol`. Default is `1e-20`.
 
   maxiter: int
     Maximum number of iterations. Default is `30`.

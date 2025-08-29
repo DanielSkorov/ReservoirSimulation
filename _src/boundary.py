@@ -1285,28 +1285,28 @@ def _PsatPT_ss(
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P0, T, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   TPD = xi.dot(gi - np.log(n))
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-  logger.debug(tmpl, k, *lnkik, Pk, g2, TPD)
+  logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   while repeat and k < maxiter:
-    lnkik -= gi
+    lnki -= gi
     k += 1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-    logger.debug(tmpl, k, *lnkik, Pk, g2, TPD)
+    logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -1455,18 +1455,18 @@ def _PsatPT_qnss(
                         maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
                         increasing=upper)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P0, T, yi, xi)
-  gi = np.log(kik) + lnphixi - lnphiyi
+  gi = np.log(ki) + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   TPD = xi.dot(gi - np.log(n))
   lmbd = 1.
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-  logger.debug(tmpl, k, *lnkik, Pk, g2, TPD)
+  logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
@@ -1476,18 +1476,18 @@ def _PsatPT_qnss(
       dlnki *= relax
     k += 1
     tkm1 = dlnki.dot(gi)
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     xi = ni / ni.sum()
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-    logger.debug(tmpl, k, *lnkik, Pk, g2, TPD)
+    logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -1784,9 +1784,9 @@ def _PsatPT_newtA(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(
@@ -1795,10 +1795,10 @@ def _PsatPT_newtA(
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(
     Pk, T, xi, n,
   )
-  gi[:Nc] = lnkik + lnphixi - lnphiyi
+  gi[:Nc] = lnki + lnphixi - lnphiyi
   gi[-1] = n - 1.
   g2 = gi.dot(gi)
-  logger.debug(tmpl, k, *lnkik, Pk, g2)
+  logger.debug(tmpl, k, *lnki, Pk, g2)
   while g2 > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = ni
@@ -1808,7 +1808,7 @@ def _PsatPT_newtA(
     except:
       dlnkilnP = -gi
     k += 1
-    lnkik += dlnkilnP[:-1]
+    lnki += dlnkilnP[:-1]
     Pkp1 = Pk * np.exp(dlnkilnP[-1])
     if Pkp1 > Pupp:
       Pk = .5 * (Pk + Pupp)
@@ -1816,18 +1816,18 @@ def _PsatPT_newtA(
       Pk = .5 * (Plow + Pk)
     else:
       Pk = Pkp1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(
       Pk, T, xi, n,
     )
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-    gi[:Nc] = lnkik + lnphixi - lnphiyi
+    gi[:Nc] = lnki + lnphixi - lnphiyi
     gi[-1] = n - 1.
     g2 = gi.dot(gi)
-    logger.debug(tmpl, k, *lnkik, Pk, g2)
+    logger.debug(tmpl, k, *lnki, Pk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -2005,9 +2005,9 @@ def _PsatPT_newtB(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphiyi, Zy, dlnphiyidP = _PsatPT_newt_improveP0(
@@ -2016,11 +2016,11 @@ def _PsatPT_newtB(
   lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(
     Pk, T, xi, n,
   )
-  gi[:Nc] = lnkik + lnphixi - lnphiyi
+  gi[:Nc] = lnki + lnphixi - lnphiyi
   hi = gi[:Nc] - np.log(n)
   gi[-1] = xi.dot(hi)
   g2 = gi.dot(gi)
-  logger.debug(tmpl, k, *lnkik, Pk, g2)
+  logger.debug(tmpl, k, *lnki, Pk, g2)
   while g2 > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = xi * (hi - gi[-1])
@@ -2031,7 +2031,7 @@ def _PsatPT_newtB(
     except:
       dlnkilnP = -gi
     k += 1
-    lnkik += dlnkilnP[:-1]
+    lnki += dlnkilnP[:-1]
     Pkp1 = Pk * np.exp(dlnkilnP[-1])
     if Pkp1 > Pupp:
       Pk = .5 * (Pk + Pupp)
@@ -2039,19 +2039,19 @@ def _PsatPT_newtB(
       Pk = .5 * (Plow + Pk)
     else:
       Pk = Pkp1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidP = eos.getPT_lnphii_Z_dnj_dP(
       Pk, T, xi, n,
     )
     lnphiyi, Zy, dlnphiyidP = eos.getPT_lnphii_Z_dP(Pk, T, yi)
-    gi[:Nc] = lnkik + lnphixi - lnphiyi
+    gi[:Nc] = lnki + lnphixi - lnphiyi
     hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     g2 = gi.dot(gi)
-    logger.debug(tmpl, k, *lnkik, Pk, g2)
+    logger.debug(tmpl, k, *lnki, Pk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -2221,17 +2221,17 @@ def _PsatPT_newtC(
                         increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P0, T, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   TPD = ni.dot(gi)
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-  logger.debug(tmpl, k, *lnkik, Pk, g2, TPD)
+  logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, T, xi, n)[2]
     J = I + ni * dlnphixidnj
@@ -2240,16 +2240,16 @@ def _PsatPT_newtC(
     except:
       dlnki = -gi
     k += 1
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Pk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(Pk, T, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-    logger.debug(tmpl, k, *lnkik, Pk, g2, TPD)
+    logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -3042,26 +3042,26 @@ def _TsatPT_ss(
                         maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   xi = ni / ni.sum()
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-  logger.debug(tmpl, k, *lnkik, Tk, g2, TPD)
+  logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   while repeat and k < maxiter:
-    lnkik -= gi
+    lnki -= gi
     k += 1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     xi = ni / ni.sum()
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-    logger.debug(tmpl, k, *lnkik, Tk, g2, TPD)
+    logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -3213,17 +3213,17 @@ def _TsatPT_qnss(
                         maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
                         increasing=upper)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   xi = ni / ni.sum()
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   TPD = ni.dot(gi)
   lmbd = 1.
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-  logger.debug(tmpl, k, *lnkik, Tk, g2, TPD)
+  logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
@@ -3233,18 +3233,18 @@ def _TsatPT_qnss(
       dlnki *= relax
     k += 1
     tkm1 = dlnki.dot(gi)
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     xi = ni / ni.sum()
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
     if lmbd > 30.:
       lmbd = 30.
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-    logger.debug(tmpl, k, *lnkik, Tk, g2, TPD)
+    logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -3543,9 +3543,9 @@ def _TsatPT_newtA(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Tk, lnphiyi, Zy, dlnphiyidT = _TsatPT_newt_improveT0(
@@ -3554,10 +3554,10 @@ def _TsatPT_newtA(
   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(
     P, Tk, xi, n,
   )
-  gi[:Nc] = lnkik + lnphixi - lnphiyi
+  gi[:Nc] = lnki + lnphixi - lnphiyi
   gi[-1] = n - 1.
   g2 = gi.dot(gi)
-  logger.debug(tmpl, k, *lnkik, Tk, g2)
+  logger.debug(tmpl, k, *lnki, Tk, g2)
   while g2 > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = ni
@@ -3567,7 +3567,7 @@ def _TsatPT_newtA(
     except:
       dlnkilnT = -gi
     k += 1
-    lnkik += dlnkilnT[:-1]
+    lnki += dlnkilnT[:-1]
     Tkp1 = Tk * np.exp(dlnkilnT[-1])
     if Tkp1 > Tupp:
       Tk = .5 * (Tk + Tupp)
@@ -3575,18 +3575,18 @@ def _TsatPT_newtA(
       Tk = .5 * (Tlow + Tk)
     else:
       Tk = Tkp1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(
       P, Tk, xi, n,
     )
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-    gi[:Nc] = lnkik + lnphixi - lnphiyi
+    gi[:Nc] = lnki + lnphixi - lnphiyi
     gi[-1] = n - 1.
     g2 = gi.dot(gi)
-    logger.debug(tmpl, k, *lnkik, Tk, g2)
+    logger.debug(tmpl, k, *lnki, Tk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -3766,9 +3766,9 @@ def _TsatPT_newtB(
   gi = np.empty(shape=(Nc + 1,))
   I = np.eye(Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Tk, lnphiyi, Zy, dlnphiyidT = _TsatPT_newt_improveT0(
@@ -3777,11 +3777,11 @@ def _TsatPT_newtB(
   lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(
     P, Tk, xi, n,
   )
-  gi[:Nc] = lnkik + lnphixi - lnphiyi
+  gi[:Nc] = lnki + lnphixi - lnphiyi
   hi = gi[:Nc] - np.log(n)
   gi[-1] = xi.dot(hi)
   g2 = gi.dot(gi)
-  logger.debug(tmpl, k, *lnkik, Tk, g2)
+  logger.debug(tmpl, k, *lnki, Tk, g2)
   while g2 > tol and k < maxiter:
     J[:Nc,:Nc] = I + ni * dlnphixidnj
     J[-1,:Nc] = xi * (hi - gi[-1])
@@ -3792,7 +3792,7 @@ def _TsatPT_newtB(
     except:
       dlnkilnT = -gi
     k += 1
-    lnkik += dlnkilnT[:-1]
+    lnki += dlnkilnT[:-1]
     Tkp1 = Tk * np.exp(dlnkilnT[-1])
     if Tkp1 > Tupp:
       Tk = .5 * (Tk + Tupp)
@@ -3800,19 +3800,19 @@ def _TsatPT_newtB(
       Tk = .5 * (Tlow + Tk)
     else:
       Tk = Tkp1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     lnphixi, Zx, dlnphixidnj, dlnphixidT = eos.getPT_lnphii_Z_dnj_dT(
       P, Tk, xi, n,
     )
     lnphiyi, Zy, dlnphiyidT = eos.getPT_lnphii_Z_dT(P, Tk, yi)
-    gi[:Nc] = lnkik + lnphixi - lnphiyi
+    gi[:Nc] = lnki + lnphixi - lnphiyi
     hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     g2 = gi.dot(gi)
-    logger.debug(tmpl, k, *lnkik, Tk, g2)
+    logger.debug(tmpl, k, *lnki, Tk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -3984,16 +3984,16 @@ def _TsatPT_newtC(
                         increasing=upper)
   I = np.eye(Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, T0, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-  logger.debug(tmpl, k, *lnkik, Tk, g2, TPD)
+  logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
@@ -4002,16 +4002,16 @@ def _TsatPT_newtC(
     except:
       dlnki = -gi
     k += 1
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Tk, lnphixi, lnphiyi, Zx, Zy, TPD = solverTPDeq(P, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
-    logger.debug(tmpl, k, *lnkik, Tk, g2, TPD)
+    logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -4574,36 +4574,36 @@ def _PmaxPT_ss(
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
                          maxiter=maxiter_tpd)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
     P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, True,
   )
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
             TPD < -tol_tpd or TPD > tol_tpd or
             dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
-  logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdT)
+  logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   while repeat and k < maxiter:
-    lnkik -= gi
+    lnki -= gi
     k += 1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
     repeat = (g2 > tol or
               TPD < -tol_tpd or TPD > tol_tpd or
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
-    logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdT)
+    logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -4774,20 +4774,20 @@ def _PmaxPT_qnss(
   solverCBAReq = partial(_PmaxPT_solve_dTPDdTeq_T, eos=eos, tol=tol_tpd,
                          maxiter=maxiter_tpd)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(P0, T0, yi, xi, eos, tol_tpd,
                                       maxiter_tpd, Plow, Pupp, True)
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   lmbd = 1.
   repeat = (g2 > tol or
             TPD < -tol_tpd or TPD > tol_tpd or
             dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
-  logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdT)
+  logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
@@ -4797,14 +4797,14 @@ def _PmaxPT_qnss(
       dlnki *= relax
     k += 1
     tkm1 = dlnki.dot(gi)
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
@@ -4813,7 +4813,7 @@ def _PmaxPT_qnss(
     repeat = (g2 > tol or
               TPD < -tol_tpd or TPD > tol_tpd or
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
-    logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdT)
+    logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -5001,9 +5001,9 @@ def _PmaxPT_newtC(
                          maxiter=maxiter_tpd)
   I = np.eye(eos.Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
@@ -5011,12 +5011,12 @@ def _PmaxPT_newtC(
     tol_tpd, maxiter_tpd, Plow, Pupp, True,
   )
   Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
             TPD < -tol_tpd or TPD > tol_tpd or
             dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
-  logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdT)
+  logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
@@ -5025,20 +5025,20 @@ def _PmaxPT_newtC(
     except:
       dlnki = -gi
     k += 1
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
     Tk, lnphixi, lnphiyi, Zx, Zy, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     TPD = xi.dot(gi - np.log(n))
     g2 = gi.dot(gi)
     repeat = (g2 > tol or
               TPD < -tol_tpd or TPD > tol_tpd or
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
-    logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdT)
+    logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -5590,36 +5590,36 @@ def _TmaxPT_ss(
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
                            maxiter=maxiter_tpd)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
     P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
   )
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
             TPD < -tol_tpd or TPD > tol_tpd or
             dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
-  logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdP)
+  logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   while repeat and k < maxiter:
-    lnkik -= gi
+    lnki -= gi
     k += 1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
     Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
     repeat = (g2 > tol or
               TPD < -tol_tpd or TPD > tol_tpd or
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
-    logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdP)
+    logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -5792,21 +5792,21 @@ def _TmaxPT_qnss(
   solverCTHERMeq = partial(_TmaxPT_solve_dTPDdPeq_P, eos=eos, tol=tol_tpd,
                            maxiter=maxiter_tpd)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
     P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
   )
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   lmbd = 1.
   repeat = (g2 > tol or
             TPD < -tol_tpd or TPD > tol_tpd or
             dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
-  logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdP)
+  logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   while repeat and k < maxiter:
     dlnki = -lmbd * gi
     max_dlnki = np.abs(dlnki).max()
@@ -5816,14 +5816,14 @@ def _TmaxPT_qnss(
       dlnki *= relax
     k += 1
     tkm1 = dlnki.dot(gi)
-    lnkik += dlnki
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    lnki += dlnki
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
     Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
     lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
@@ -5832,7 +5832,7 @@ def _TmaxPT_qnss(
     repeat = (g2 > tol or
               TPD < -tol_tpd or TPD > tol_tpd or
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
-    logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdP)
+    logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
@@ -6022,21 +6022,21 @@ def _TmaxPT_newtC(
                            maxiter=maxiter_tpd)
   I = np.eye(eos.Nc)
   k = 0
-  kik = kvi0
-  lnkik = np.log(kik)
-  ni = kik * yi
+  ki = kvi0
+  lnki = np.log(ki)
+  ni = ki * yi
   n = ni.sum()
   xi = ni / n
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
     P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
   )
   Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
-  gi = lnkik + lnphixi - lnphiyi
+  gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
             TPD < -tol_tpd or TPD > tol_tpd or
             dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
-  logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdP)
+  logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   while repeat and k < maxiter:
     dlnphixidnj = eos.getPT_lnphii_Z_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
@@ -6044,21 +6044,21 @@ def _TmaxPT_newtC(
       dlnki = linsolver(J, -gi)
     except:
       dlnki = -gi
-    lnkik += dlnki
+    lnki += dlnki
     k += 1
-    kik = np.exp(lnkik)
-    ni = kik * yi
+    ki = np.exp(lnki)
+    ni = ki * yi
     n = ni.sum()
     xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
     Pk, lnphixi, lnphiyi, Zx, Zy, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
-    gi = lnkik + lnphixi - lnphiyi
+    gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
     repeat = (g2 > tol or
               TPD < -tol_tpd or TPD > tol_tpd or
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
-    logger.debug(tmpl, k, *lnkik, Pk, Tk, g2, TPD, dTPDdP)
+    logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
     rhoy = yi.dot(eos.mwi) / Zy
     rhox = xi.dot(eos.mwi) / Zx
