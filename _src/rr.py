@@ -277,7 +277,7 @@ def solveNp(
   bi = np.vstack([Kji * yi, yi]).max(axis=0)
   k = 0
   n = 0
-  fjk = fj0
+  fjk = fj0.flatten()
   ti = 1. - fjk.dot(Aji)
   F = - np.log(np.abs(ti)).dot(yi)
   gj = Aji.dot(yi / ti)
@@ -289,12 +289,9 @@ def solveNp(
     dfj = -linsolver(Hjl, gj)
     denom = dfj.dot(Aji)
     where = denom > 0.
-    # if where.any():
     lmbdi = ((ti - bi) / denom)[where]
     idx = np.argmin(lmbdi)
     lmbdmax = lmbdi[idx]
-    # else:
-    #   lmbdmax = 1.
     if lmbdmax < 1.:
       gdf = gj.dot(dfj)
       lmbdn = beta * lmbdmax

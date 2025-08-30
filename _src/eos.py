@@ -246,7 +246,34 @@ class vdw(object):
       raise ValueError(f'Unsupported level number: {level}.')
 
   @staticmethod
-  def solve_eos(A: Scalar, B: Scalar) -> Scalar:
+  def fdG(Z1: Scalar, Z2: Scalar, A: Scalar, B: Scalar) -> Scalar:
+    """Calculates the Gibbs energy difference between two states
+    corresponding to the roots of the equation of state.
+
+    Parameters
+    ----------
+    Z1: Scalar
+      The first root (compressibility factor) of the equation of state.
+
+    Z2: Scalar
+      The second root (compressibility factor) of the equation of state.
+
+    A: Scalar
+      The coefficient of the cubic form of the equation of state.
+
+    B: Scalar
+      The coefficient of the cubic form of the equation of state.
+
+    Returns
+    -------
+    The Gibbs energy difference between two states corresponding to the
+    roots of the equation of state.
+    """
+    return (B * (Z2 - Z1) / ((Z1 - B) * (Z2 - B))
+            + np.log((Z2 - B) / (Z1 - B))
+            + 2. * A * (Z1 - Z2) / (Z1 * Z2))
+
+  def solve_eos(self, A: Scalar, B: Scalar) -> Scalar:
     """Solves the Van-der-Waals equation of state.
 
     This method implements the Cardano's method to solve the cubic form
@@ -288,16 +315,14 @@ class vdw(object):
       D = np.sqrt(r * r - 4. * k)
       x1 = (-r + D) * .5
       x2 = (-r - D) * .5
-      fdG = lambda Z1, Z2: (B * (Z2 - Z1) / (Z1 - B) / (Z2 - B)
-        + np.log((Z2 - B) / (Z1 - B)) + 2. * A * (Z1 - Z2) / Z1 / Z2)
       if x2 > B:
-        dG = fdG(x0, x2)
+        dG = self.fdG(x0, x2, A, B)
         if dG < 0.:
           return x0
         else:
           return x2
       elif x1 > B:
-        dG = fdG(x0, x1)
+        dG = self.fdG(x0, x1, A, B)
         if dG < 0.:
           return x0
         else:
@@ -1984,7 +2009,38 @@ class pr78(object):
     return yi.dot(self.bi)
 
   @staticmethod
-  def solve_eos(A: Scalar, B: Scalar) -> Scalar:
+  def fdG(Z1: Scalar, Z2: Scalar, A: Scalar, B: Scalar) -> Scalar:
+    """Calculates the Gibbs energy difference between two states
+    corresponding to the roots of the equation of state.
+
+    Parameters
+    ----------
+    Z1: Scalar
+      The first root (compressibility factor) of the equation of state.
+
+    Z2: Scalar
+      The second root (compressibility factor) of the equation of state.
+
+    A: Scalar
+      The coefficient of the cubic form of the equation of state.
+
+    B: Scalar
+      The coefficient of the cubic form of the equation of state.
+
+    Returns
+    -------
+    The Gibbs energy difference between two states corresponding to the
+    roots of the equation of state.
+    """
+    return (np.log((Z2 - B) / (Z1 - B))
+            + (Z1 - Z2)
+            + np.log((Z1 - B * 0.414213562373095)
+                     * (Z2 + B * 2.414213562373095)
+                     / ((Z1 + B * 2.414213562373095)
+                        * (Z2 - B * 0.414213562373095)))
+              * 0.3535533905932738 * A / B)
+
+  def solve_eos(self, A: Scalar, B: Scalar) -> Scalar:
     """Solves the modified Peng-Robinson equation of state.
 
     This method implements the Cardano's method to solve the cubic form
@@ -2027,27 +2083,17 @@ class pr78(object):
       D = np.sqrt(r * r - 4. * k)
       x1 = (-r + D) * .5
       x2 = (-r - D) * .5
-      fdG = lambda Z1, Z2: (np.log((Z2 - B) / (Z1 - B))
-                            + (Z1 - Z2)
-                            + np.log((Z1 - B * 0.414213562373095)
-                                     * (Z2 + B * 2.414213562373095)
-                                     / (Z1 + B * 2.414213562373095)
-                                     / (Z2 - B * 0.414213562373095))
-                              * 0.3535533905932738 * A / B)
       if x2 > B:
-        dG = fdG(x0, x2)
+        dG = self.fdG(x0, x2, A, B)
         if dG < 0.:
           return x0
         else:
           return x2
       elif x1 > B:
-        dG = fdG(x0, x1)
+        dG = self.fdG(x0, x1, A, B)
         if dG < 0.:
           return x0
         else:
           return x1
       else:
         return x0
-
-
-
