@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('bound')
 logger.setLevel(logging.INFO)
-
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -15,6 +14,7 @@ logger.addHandler(handler)
 import unittest
 
 import numpy as np
+
 np.set_printoptions(linewidth=np.inf)
 
 from eos import (
@@ -184,8 +184,9 @@ class pmax(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Pmax = PmaxPT(pr, method='newton', maxiter=17, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Pmax.run(P0, T0, yi, search=False)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding')
+    res = Pmax.run(P0, T0, yi)
     self.assertTrue(res.g2 < tol)
     pass
 

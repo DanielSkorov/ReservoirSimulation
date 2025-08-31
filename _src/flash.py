@@ -106,7 +106,7 @@ class FlashResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Phase composition:\n{self.yji}\n"
            f"Phase mole fractions:\n{self.Fj}\n"
-           f"Phase compressibility factors:\n{self.Zj}\n")
+           f"Phase compressibility factors:\n{self.Zj}")
     return s
 
 
@@ -459,6 +459,7 @@ def _flash2pPT_qnss(
   eos: Flash2pEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
+  lmbdmax: Scalar = 15.,
   negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for two-phase flash calculations using a PT-based
@@ -516,6 +517,9 @@ def _flash2pPT_qnss(
 
   maxiter: int
     The maximum number of solver iterations. Default is `50`.
+
+  lmbdmax: Scalar
+    The maximum step length. Default is `15.0`.
 
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -576,9 +580,12 @@ def _flash2pPT_qnss(
       logger.debug(tmpl, j, k, *lnkvi, Fv, g2)
       if g2 < tol:
         break
-      lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
-      if lmbd > 30.:
-        lmbd = 30.
+      if k % Nc == 0:
+        lmbd = 1.
+      else:
+        lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+        if lmbd > lmbdmax:
+          lmbd = lmbdmax
     if g2 < tol and np.isfinite(g2) and (Fv > 0. and Fv < 1. or negflash):
       rhol = yli.dot(eos.mwi) / Zl
       rhov = yvi.dot(eos.mwi) / Zv
@@ -615,9 +622,9 @@ def _flash2pPT_newt(
   eos: Flash2pEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
-  negflash: bool = True,
   forcenewton: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  negflash: bool = True,
 ) -> FlashResult:
   """Performs minimization of the Gibbs energy function using Newton's
   method and a PT-based equation of state. A switch to the successive
@@ -676,10 +683,6 @@ def _flash2pPT_newt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
     switch from Newton's method to successive substitution iterations.
@@ -690,6 +693,10 @@ def _flash2pPT_newt(
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
+
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
 
   Returns
   -------
@@ -796,10 +803,10 @@ def _flash2pPT_ssnewt(
   eos: Flash2pEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
-  negflash: bool = True,
+  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.1, 1e-2, 1e-10, 1e-4),
   forcenewton: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  negflash: bool = True,
 ) -> FlashResult:
   r"""Performs minimization of the Gibbs energy function using Newton's
   method and a PT-based equation of state. A switch to the successive
@@ -890,11 +897,7 @@ def _flash2pPT_ssnewt(
     :math:`k` is the iteration number, :math:`F_1` is the mole fraction
     of the non-reference phase. Analytical expressions of the switching
     conditions were taken from the paper of L.X. Nghiem
-    (doi: 10.2118/8285-PA). Default is `(0.6, 1e-2, 1e-10, 1e-4)`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
+    (doi: 10.2118/8285-PA). Default is `(0.1, 1e-2, 1e-10, 1e-4)`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the switch from
@@ -907,6 +910,10 @@ def _flash2pPT_ssnewt(
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
+
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
 
   Returns
   -------
@@ -1050,10 +1057,11 @@ def _flash2pPT_qnssnewt(
   eos: Flash2pEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
-  negflash: bool = True,
+  lmbdmax: Scalar = 15.,
+  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.1, 1e-2, 1e-10, 1e-4),
   forcenewton: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  negflash: bool = True,
 ) -> FlashResult:
   r"""Performs minimization of the Gibbs energy function using Newton's
   method and a PT-based equation of state. A switch to the successive
@@ -1126,6 +1134,9 @@ def _flash2pPT_qnssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
+  lmbdmax: Scalar
+    The maximum step length. Default is `15.0`.
+
   switchers: tuple[Scalar, Scalar, Scalar, Scalar]
     Allows to modify the conditions of switching from the QNSS to
     Newton's method. The parameter must be represented as a tuple
@@ -1146,7 +1157,7 @@ def _flash2pPT_qnssnewt(
     :math:`k` is the iteration number, :math:`F_1` is the mole fraction
     of the non-reference phase. Analytical expressions of the switching
     conditions were taken from the paper of L.X. Nghiem
-    (doi: 10.2118/8285-PA). Default is `(0.6, 1e-2, 1e-10, 1e-4)`.
+    (doi: 10.2118/8285-PA). Default is `(0.1, 1e-2, 1e-10, 1e-4)`.
 
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -1227,9 +1238,12 @@ def _flash2pPT_qnssnewt(
       logger.debug(tmpl, j, k, *lnkvi, Fv, g2, 'QNSS')
       if g2 < tol or switch:
         break
-      lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
-      if lmbd > 30.:
-        lmbd = 30.
+      if k % Nc == 0:
+        lmbd = 1.
+      else:
+        lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+        if lmbd > lmbdmax:
+          lmbd = lmbdmax
     if np.isfinite(g2):
       if g2 < tol:
         if Fv > 0. and Fv < 1. or negflash:

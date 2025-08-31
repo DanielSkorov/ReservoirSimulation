@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('flash')
 logger.setLevel(logging.INFO)
-
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -15,6 +14,7 @@ logger.addHandler(handler)
 import unittest
 
 import numpy as np
+
 np.set_printoptions(linewidth=np.inf)
 
 from eos import (
@@ -58,7 +58,7 @@ class flash2p(unittest.TestCase):
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=11,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=12,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
@@ -101,6 +101,24 @@ class flash2p(unittest.TestCase):
     pass
 
   def test_05(self):
+    P = 6e6
+    T = 10. + 273.15
+    yi = np.array([0.9, 0.1])
+    Pci = np.array([7.37646e6, 4.600155e6])
+    Tci = np.array([304.2, 190.6])
+    wi = np.array([0.225, 0.008])
+    mwi = np.array([0.04401, 0.016043])
+    vsi = np.array([0., 0.])
+    dij = np.array([0.025])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=7,
+                      stabkwargs=dict(method='ss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_06(self):
     P = 17e6
     T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
@@ -123,7 +141,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_06(self):
+  def test_07(self):
     P = 17e6
     T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
@@ -146,7 +164,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_07(self):
+  def test_08(self):
     P = 17e6
     T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
@@ -169,7 +187,30 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_08(self):
+  def test_09(self):
+    P = 17e6
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=5,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_10(self):
     P = 17e6
     T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
@@ -187,56 +228,6 @@ class flash2p(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=5,
-                      stabkwargs=dict(method='qnss'))
-    res = flash.run(P, T, yi)
-    self.assertTrue(res.g2 < tol)
-    pass
-
-  def test_09(self):
-    P = 1e6
-    T = 160.
-    yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
-    Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
-    Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
-    wi = np.array([0.0115, 0.0995, 0.1523, 0.2002, 0.2515, 0.3013, 0.0377])
-    mwi = np.array([0.0160, 0.0301, 0.0441, 0.0581, 0.0722, 0.0860, 0.0280])
-    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
-    dij = np.array([
-      0.00269,
-      0.00854, 0.00166,
-      0.01475, 0.00491, 0.00087,
-      0.02064, 0.00858, 0.00271, 0.00051,
-      0.02535, 0.01175, 0.00462, 0.00149, 0.0002,
-      0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
-    ])
-    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=17,
-                      stabkwargs=dict(method='qnss'))
-    res = flash.run(P, T, yi)
-    self.assertTrue(res.g2 < tol)
-    pass
-
-  def test_10(self):
-    P = 1e6
-    T = 160.
-    yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
-    Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
-    Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
-    wi = np.array([0.0115, 0.0995, 0.1523, 0.2002, 0.2515, 0.3013, 0.0377])
-    mwi = np.array([0.0160, 0.0301, 0.0441, 0.0581, 0.0722, 0.0860, 0.0280])
-    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
-    dij = np.array([
-      0.00269,
-      0.00854, 0.00166,
-      0.01475, 0.00491, 0.00087,
-      0.02064, 0.00858, 0.00271, 0.00051,
-      0.02535, 0.01175, 0.00462, 0.00149, 0.0002,
-      0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
-    ])
-    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=13,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
@@ -261,7 +252,7 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=5,
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=17,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
@@ -286,13 +277,88 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=17,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=11,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 
   def test_13(self):
+    P = 1e6
+    T = 160.
+    yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
+    Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
+    wi = np.array([0.0115, 0.0995, 0.1523, 0.2002, 0.2515, 0.3013, 0.0377])
+    mwi = np.array([0.0160, 0.0301, 0.0441, 0.0581, 0.0722, 0.0860, 0.0280])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.00269,
+      0.00854, 0.00166,
+      0.01475, 0.00491, 0.00087,
+      0.02064, 0.00858, 0.00271, 0.00051,
+      0.02535, 0.01175, 0.00462, 0.00149, 0.0002,
+      0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=5,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_14(self):
+    P = 1e6
+    T = 160.
+    yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
+    Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
+    wi = np.array([0.0115, 0.0995, 0.1523, 0.2002, 0.2515, 0.3013, 0.0377])
+    mwi = np.array([0.0160, 0.0301, 0.0441, 0.0581, 0.0722, 0.0860, 0.0280])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.00269,
+      0.00854, 0.00166,
+      0.01475, 0.00491, 0.00087,
+      0.02064, 0.00858, 0.00271, 0.00051,
+      0.02535, 0.01175, 0.00462, 0.00149, 0.0002,
+      0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=17,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_15(self):
+    P = 1e6
+    T = 160.
+    yi = np.array([0.9430, 0.0270, 0.0074, 0.0049, 0.0027, 0.0010, 0.0140])
+    Pci = np.array([4.599, 4.872, 4.248, 3.796, 3.370, 3.025, 3.400]) * 1e6
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 469.70, 507.60, 126.20])
+    wi = np.array([0.0115, 0.0995, 0.1523, 0.2002, 0.2515, 0.3013, 0.0377])
+    mwi = np.array([0.0160, 0.0301, 0.0441, 0.0581, 0.0722, 0.0860, 0.0280])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.00269,
+      0.00854, 0.00166,
+      0.01475, 0.00491, 0.00087,
+      0.02064, 0.00858, 0.00271, 0.00051,
+      0.02535, 0.01175, 0.00462, 0.00149, 0.0002,
+      0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=11,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_16(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([
@@ -319,7 +385,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_14(self):
+  def test_17(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([
@@ -340,13 +406,13 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=34,
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=28,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_15(self):
+  def test_18(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([
@@ -373,7 +439,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_16(self):
+  def test_19(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([
@@ -400,7 +466,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_17(self):
+  def test_20(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([
@@ -421,13 +487,13 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=12,
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=8,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_18(self):
+  def test_21(self):
     P = 101325.
     T = 20. + 273.15
     yi = np.array([0.1, 0.6, 0.3])
@@ -448,7 +514,169 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_19(self):
+  def test_22(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.1, 0.6, 0.3])
+    Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6
+    Tci = np.array([190.6, 507.5, 647.3])
+    wi = np.array([0.008, 0.27504, 0.344])
+    vsi = np.array([0., 0., 0.])
+    mwi = np.array([0.016043, 0.086, 0.018015])
+    dij = np.array([
+      0.0253,
+      0.4907, 0.48,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=5,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_23(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.1, 0.6, 0.3])
+    Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6
+    Tci = np.array([190.6, 507.5, 647.3])
+    wi = np.array([0.008, 0.27504, 0.344])
+    vsi = np.array([0., 0., 0.])
+    mwi = np.array([0.016043, 0.086, 0.018015])
+    dij = np.array([
+      0.0253,
+      0.4907, 0.48,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=3,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_24(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.1, 0.6, 0.3])
+    Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6
+    Tci = np.array([190.6, 507.5, 647.3])
+    wi = np.array([0.008, 0.27504, 0.344])
+    vsi = np.array([0., 0., 0.])
+    mwi = np.array([0.016043, 0.086, 0.018015])
+    dij = np.array([
+      0.0253,
+      0.4907, 0.48,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=6,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_25(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.1, 0.6, 0.3])
+    Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6
+    Tci = np.array([190.6, 507.5, 647.3])
+    wi = np.array([0.008, 0.27504, 0.344])
+    vsi = np.array([0., 0., 0.])
+    mwi = np.array([0.016043, 0.086, 0.018015])
+    dij = np.array([
+      0.0253,
+      0.4907, 0.48,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=5,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_26(self):
+    P = 8.7625e6
+    T = 316.48
+    yi = np.array([0.590516, 0.02893275, 0.0727285, 0.081162, 0.1310115,
+                   0.06467075, 0.0309785])
+    Pci = np.array([73.76, 46.00, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.2, 190.6, 338.8, 466.1, 611.1, 777.8, 972.2])
+    mwi = np.array([44.01, 16.04, 36.01, 70.52, 147.18, 301.48, 562.81]) / 1e3
+    wi = np.array([0.2250, 0.0080, 0.1260, 0.2439, 0.6386, 1.0002, 1.2812])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.05,
+      0.05, 0.0052,
+      0.05, 0.0214, 0.0057,
+      0.09, 0.0494, 0.0234, 0.0062,
+      0.09, 0.0717, 0.0401, 0.0162, 0.0024,
+      0.09, 0.0783, 0.0452, 0.0196, 0.0038, 0.0002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=447,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_27(self):
+    P = 8.7625e6
+    T = 316.48
+    yi = np.array([0.590516, 0.02893275, 0.0727285, 0.081162, 0.1310115,
+                   0.06467075, 0.0309785])
+    Pci = np.array([73.76, 46.00, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.2, 190.6, 338.8, 466.1, 611.1, 777.8, 972.2])
+    mwi = np.array([44.01, 16.04, 36.01, 70.52, 147.18, 301.48, 562.81]) / 1e3
+    wi = np.array([0.2250, 0.0080, 0.1260, 0.2439, 0.6386, 1.0002, 1.2812])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.05,
+      0.05, 0.0052,
+      0.05, 0.0214, 0.0057,
+      0.09, 0.0494, 0.0234, 0.0062,
+      0.09, 0.0717, 0.0401, 0.0162, 0.0024,
+      0.09, 0.0783, 0.0452, 0.0196, 0.0038, 0.0002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=63,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_28(self):
+    P = 8.7625e6
+    T = 316.48
+    yi = np.array([0.590516, 0.02893275, 0.0727285, 0.081162, 0.1310115,
+                   0.06467075, 0.0309785])
+    Pci = np.array([73.76, 46.00, 45.53, 33.68, 20.95, 15.88, 15.84]) * 1e5
+    Tci = np.array([304.2, 190.6, 338.8, 466.1, 611.1, 777.8, 972.2])
+    mwi = np.array([44.01, 16.04, 36.01, 70.52, 147.18, 301.48, 562.81]) / 1e3
+    wi = np.array([0.2250, 0.0080, 0.1260, 0.2439, 0.6386, 1.0002, 1.2812])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.05,
+      0.05, 0.0052,
+      0.05, 0.0214, 0.0057,
+      0.09, 0.0494, 0.0234, 0.0062,
+      0.09, 0.0717, 0.0401, 0.0162, 0.0024,
+      0.09, 0.0783, 0.0452, 0.0196, 0.0038, 0.0002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=4,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_29(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([0.590516, 0.02893275, 0.0727285, 0.081162, 0.1310115,
@@ -474,7 +702,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_20(self):
+  def test_30(self):
     P = 8.7625e6
     T = 316.48
     yi = np.array([0.590516, 0.02893275, 0.0727285, 0.081162, 0.1310115,
@@ -494,13 +722,13 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=24,
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=16,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_21(self):
+  def test_31(self):
     P = 9.39375e6
     T = 305.35
     yi = np.array([0.646, 0.1040406, 0.0360726, 0.0295590, 0.0117174,
@@ -529,13 +757,83 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=88,
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=210,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_22(self):
+  def test_32(self):
+    P = 9.39375e6
+    T = 305.35
+    yi = np.array([0.646, 0.1040406, 0.0360726, 0.0295590, 0.0117174,
+                   0.0426216, 0.0559674, 0.0291342, 0.0186912, 0.0097704,
+                   0.0164256])
+    Pci = np.array([73.82, 45.40, 48.20, 41.90, 37.50, 28.82, 23.74, 18.59,
+                    14.80, 11.95, 8.52]) * 1e5
+    Tci = np.array([304.211, 190.60, 305.40, 369.80, 425.20, 516.667, 590.00,
+                    668.611, 745.778, 812.667, 914.889])
+    mwi = np.array([44.0, 16.0, 30.1, 44.1, 58.1, 89.9, 125.7, 174.4, 240.3,
+                    336.1, 536.7]) / 1e3
+    wi = np.array([0.225, 0.008, 0.098, 0.152, 0.193, 0.2651, 0.3644, 0.4987,
+                   0.6606, 0.8771, 1.2789])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.115,
+      0.115, 0.000,
+      0.115, 0.000, 0.,
+      0.115, 0.000, 0., 0.,
+      0.115, 0.045, 0., 0., 0.,
+      0.115, 0.055, 0., 0., 0., 0.,
+      0.115, 0.055, 0., 0., 0., 0., 0.,
+      0.115, 0.060, 0., 0., 0., 0., 0., 0.,
+      0.115, 0.080, 0., 0., 0., 0., 0., 0., 0.,
+      0.115, 0.280, 0., 0., 0., 0., 0., 0., 0., 0.,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=69,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_33(self):
+    P = 9.39375e6
+    T = 305.35
+    yi = np.array([0.646, 0.1040406, 0.0360726, 0.0295590, 0.0117174,
+                   0.0426216, 0.0559674, 0.0291342, 0.0186912, 0.0097704,
+                   0.0164256])
+    Pci = np.array([73.82, 45.40, 48.20, 41.90, 37.50, 28.82, 23.74, 18.59,
+                    14.80, 11.95, 8.52]) * 1e5
+    Tci = np.array([304.211, 190.60, 305.40, 369.80, 425.20, 516.667, 590.00,
+                    668.611, 745.778, 812.667, 914.889])
+    mwi = np.array([44.0, 16.0, 30.1, 44.1, 58.1, 89.9, 125.7, 174.4, 240.3,
+                    336.1, 536.7]) / 1e3
+    wi = np.array([0.225, 0.008, 0.098, 0.152, 0.193, 0.2651, 0.3644, 0.4987,
+                   0.6606, 0.8771, 1.2789])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+    dij = np.array([
+      0.115,
+      0.115, 0.000,
+      0.115, 0.000, 0.,
+      0.115, 0.000, 0., 0.,
+      0.115, 0.045, 0., 0., 0.,
+      0.115, 0.055, 0., 0., 0., 0.,
+      0.115, 0.055, 0., 0., 0., 0., 0.,
+      0.115, 0.060, 0., 0., 0., 0., 0., 0.,
+      0.115, 0.080, 0., 0., 0., 0., 0., 0., 0.,
+      0.115, 0.280, 0., 0., 0., 0., 0., 0., 0., 0.,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=5,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_34(self):
     P = 9.39375e6
     T = 305.35
     yi = np.array([0.646, 0.1040406, 0.0360726, 0.0295590, 0.0117174,
@@ -570,7 +868,7 @@ class flash2p(unittest.TestCase):
     self.assertTrue(res.g2 < tol)
     pass
 
-  def test_23(self):
+  def test_35(self):
     P = 9.39375e6
     T = 305.35
     yi = np.array([0.646, 0.1040406, 0.0360726, 0.0295590, 0.0117174,
@@ -599,7 +897,122 @@ class flash2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
-    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=54,
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=44,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_36(self):
+    P = 16.18e6
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='ss', tol=tol, maxiter=88,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_37(self):
+    P = 16.18e6
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss', tol=tol, maxiter=18,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_38(self):
+    P = 16.18e6
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='newton', tol=tol, maxiter=5,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_39(self):
+    P = 16.18e6
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='ss-newton', tol=tol, maxiter=11,
+                      stabkwargs=dict(method='qnss'))
+    res = flash.run(P, T, yi)
+    self.assertTrue(res.g2 < tol)
+    pass
+
+  def test_40(self):
+    P = 16.18e6
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([4.599e6, 4.872e6, 4.248e6, 3.796e6, 2.398e6])
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.02])
+    wi = np.array([0.012, 0.100, 0.152, 0.200, 0.414])
+    mwi = np.array([0.016043, 0.03007, 0.044097, 0.058123, 0.120])
+    vsi = np.array([-0.1595, -0.1134, -0.0863, -0.0675, 0.05661])
+    dij = np.array([
+      0.002689,
+      0.008537, 0.001662,
+      0.014748, 0.004914, 0.000866,
+      0.039265, 0.021924, 0.011676, 0.006228,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    tol = 1e-16
+    flash = flash2pPT(pr, method='qnss-newton', tol=tol, maxiter=10,
                       stabkwargs=dict(method='qnss'))
     res = flash.run(P, T, yi)
     self.assertTrue(res.g2 < tol)

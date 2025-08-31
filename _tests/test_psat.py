@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('bound')
 logger.setLevel(logging.INFO)
-
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -15,6 +14,7 @@ logger.addHandler(handler)
 import unittest
 
 import numpy as np
+
 np.set_printoptions(linewidth=np.inf)
 
 from eos import (
@@ -565,8 +565,9 @@ class psat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Psat = PsatPT(pr, method='newton-b', maxiter=34, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Psat.run(P0, T, yi, upper=True, search=False)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding')
+    res = Psat.run(P0, T, yi, upper=True)
     self.assertTrue(res.g2 < tol)
     pass
 
@@ -588,8 +589,9 @@ class psat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Psat = PsatPT(pr, method='newton-b', maxiter=3, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Psat.run(P0, T, yi, upper=False, search=False, logspace=True)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding', initkwargs=dict(logspace=True))
+    res = Psat.run(P0, T, yi, upper=False)
     self.assertTrue(res.g2 < tol)
     pass
 
@@ -613,8 +615,9 @@ class psat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Psat = PsatPT(pr, method='newton-b', maxiter=25, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Psat.run(P0, T, yi, search=False)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding')
+    res = Psat.run(P0, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 
@@ -647,8 +650,9 @@ class psat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Psat = PsatPT(pr, method='newton-b', maxiter=6, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Psat.run(P0, T, yi, search=False)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding')
+    res = Psat.run(P0, T, yi)
     self.assertTrue(res.g2 < tol)
     pass
 

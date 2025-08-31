@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('bound')
 logger.setLevel(logging.INFO)
-
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -15,6 +14,7 @@ logger.addHandler(handler)
 import unittest
 
 import numpy as np
+
 np.set_printoptions(linewidth=np.inf)
 
 from eos import (
@@ -44,8 +44,8 @@ class env2p(unittest.TestCase):
               label='Critical point')
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
-    ax.set_xlabel('Temperature, C')
-    ax.set_ylabel('Pressure, MPa')
+    ax.set_xlabel('Temperature [C]')
+    ax.set_ylabel('Pressure [MPa]')
     ax.legend(loc='best', fontsize=9)
     ax.grid(zorder=1)
     plt.show()
@@ -157,12 +157,12 @@ class env2p(unittest.TestCase):
       0.09, 0.0783, 0.0452, 0.0196, 0.0038, 0.0002,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, Tmin=258.15, miniter=2,
+    env = env2pPT(pr, Tmin=258.15, miniter=1,
                   psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
                                   stabkwargs=dict(method='qnss-newton')),
                   flashkwargs=dict(method='qnss-newton', runstab=False,
                                    useprev=True, tol=1e-8))
-    maxpoints = 144
+    maxpoints = 147
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)
@@ -649,6 +649,45 @@ class env2p(unittest.TestCase):
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, sidx0=1)
     if plotting:
       self.plot(res, -200., 50., 0., 10.)
+    self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
+    pass
+
+  def test_18(self):
+    print('=== test_18 ===')
+    P0 = 14.5e6
+    T0 = 13.8 + 273.15
+    yi = np.array([0.078407, 0.862017, 0.033332, 0.013233, 0.006012, 0.004636,
+                   0.001919, 0.000432, 1.2e-5])
+    Pci = np.array([32.789, 45.4, 48.2, 41.9, 37.022, 33.008, 20.794, 16.727,
+                    11.698]) * 101325.
+    Tci = np.array([122.141, 190.6, 305.4, 369.8, 419.746, 482.781, 547.033,
+                    674.011, 833.580])
+    wi = np.array([0.02946, 0.008, 0.098, 0.152, 0.18767, 0.25456, 0.31931,
+                   0.32841, 0.43005])
+    vsi = np.array([-0.15670, -0.18633, -0.15018, -0.11403, -0.07789,
+                    -0.02655, 0.01541, 0.10440, 0.22653])
+    mwi = np.array([27.385, 16.043, 30.070, 44.097, 58.124, 77.671, 103.418,
+                    185.177, 298.021]) / 1e3
+    dij = np.array([
+      0.00030,
+      0.00035, 0.00566,
+      0.00043, 0.01884, 0.00296,
+      0.00121, 0.02884, 0.00874, 0.00087,
+      0.00150, 0.04275, 0.01812, 0.00824, 0.00211,
+      0.00176, 0.06061, 0.03113, 0.02758, 0.01329, 0.00564,
+      0.00418, 0.15956, 0.10787, 0.07426, 0.04277, 0.02351, -0.00126,
+      0.00630, 0.19705, 0.13549, 0.08406, 0.05104, 0.02627, -0.01284,-0.01087,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=200., Tmax=400., Pmax=30e6,
+                  psatkwargs=dict(method='newton', tol=1e-8, tol_tpd=1e-8,
+                                  stabkwargs=dict(method='qnss-newton')),
+                  flashkwargs=dict(method='qnss-newton', runstab=False,
+                                   useprev=True, tol=1e-8))
+    maxpoints = 196
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.1)
+    if plotting:
+      self.plot(res, -70., 100., 0., 30.)
     self.assertTrue(res.succeed and res.Pk.shape[0] == maxpoints)
     pass
 

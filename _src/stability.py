@@ -419,6 +419,7 @@ def _stabPT_qnss(
   eos: StabEosPT,
   tol: Scalar = 1e-20,
   maxiter: int = 200,
+  lmbdmax: Scalar = 30.,
   eps: Scalar = -1e-8,
   breakunstab: bool = False,
 ) -> StabResult:
@@ -473,6 +474,9 @@ def _stabPT_qnss(
 
   maxiter: int
     The maximum number of solver iterations. Default is `200`.
+
+  lmbdmax: Scalar
+    The maximum step length. Default is `30.0`.
 
   eps: Scalar
     System will be considered stable when `TPD >= eps`.
@@ -539,9 +543,12 @@ def _stabPT_qnss(
       logger.debug(tmpl, j, k, *lnki, g2)
       if g2 < tol:
         break
-      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
-      if lmbd > 30.:
-        lmbd = 30.
+      if k % Nc == 0:
+        lmbd = 1.
+      else:
+        lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+        if lmbd > lmbdmax:
+          lmbd = lmbdmax
     if g2 < tol and np.isfinite(g2):
       TPD = -np.log(n)
       if TPD < TPDo:
@@ -1011,6 +1018,7 @@ def _stabPT_qnssnewt(
   maxiter: int = 50,
   tol_qnss: Scalar = 1e-4,
   maxiter_qnss: int = 30,
+  lmbdmax: Scalar = 30.,
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
   breakunstab: bool = False,
@@ -1093,6 +1101,9 @@ def _stabPT_qnssnewt(
     The maximum number of quasi-newton successive substitution
     iterations. Default is `30`.
 
+  lmbdmax: Scalar
+    The maximum step length. Default is `30.0`.
+
   eps: Scalar
     System will be considered stable when `TPD >= eps`.
     Default is `-1e-8`.
@@ -1170,9 +1181,12 @@ def _stabPT_qnssnewt(
       logger.debug(tmpl, j, k, *lnki, g2, 'qnss')
       if g2 < tol_qnss:
         break
-      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
-      if lmbd > 30.:
-        lmbd = 30.
+      if k % Nc == 0:
+        lmbd = 1.
+      else:
+        lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+        if lmbd > lmbdmax:
+          lmbd = lmbdmax
     if np.isfinite(g2):
       if g2 < tol:
         TPD = -np.log(n)

@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('bound')
 logger.setLevel(logging.INFO)
-
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -15,6 +14,7 @@ logger.addHandler(handler)
 import unittest
 
 import numpy as np
+
 np.set_printoptions(linewidth=np.inf)
 
 from eos import (
@@ -506,8 +506,9 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Tsat.run(P, T0, yi, upper=True, search=False)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding')
+    res = Tsat.run(P, T0, yi, upper=True)
     self.assertTrue(res.g2 < tol)
     pass
 
@@ -529,8 +530,9 @@ class tsat(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     tol = 1e-16
     Tsat = TsatPT(pr, method='newton-b', maxiter=3, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
-    res = Tsat.run(P, T0, yi, upper=False, search=False, Nnodes=20)
+                  stabkwargs=dict(method='qnss-newton'),
+                  initmethod='gridding', initkwargs=dict(Nnodes=20))
+    res = Tsat.run(P, T0, yi, upper=False)
     self.assertTrue(res.g2 < tol)
     pass
 

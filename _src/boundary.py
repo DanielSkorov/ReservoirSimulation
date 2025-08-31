@@ -552,8 +552,7 @@ class PsatPT(object):
         of components with respect to pressure as a `Vector` of shape
         `(Nc,)`.
 
-    If the solution method would be one of `'newton'`, `'ss-newton'` or
-    `'qnss-newton'` then it also must have:
+    If the solution method would be `'newton'`, then it also must have:
 
     - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
        ) -> tuple[Vector, Scalar, Matrix, Vector]`
@@ -587,9 +586,7 @@ class PsatPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Quasi-Newton Successive Substitution method),
-    - `'newton'` (Newton's method),
-    - `'ss-newton'` (Currently raises `NotImplementedError`),
-    - `'qnss-newton'` (Currently raises `NotImplementedError`).
+    - `'newton'` (Newton's method).
 
     Default is `'ss'`.
 
@@ -598,6 +595,23 @@ class PsatPT(object):
     interval of the saturation pressure. This dictionary is used to
     specify arguments for the stability test procedure. Default is an
     empty dictionary.
+
+  initmethod: str
+    This parameter can be used to choose the procedure to generate an
+    initial guess for saturation pressure calculation. Should be one of:
+
+    - `'search'` (the preliminary search procedure),
+    - `'gridding'` (the gridding procedure).
+
+    It is recommended to use the gridding procedure only if an initial
+    guess of the saturation pressure is significantly inaccurate.
+    Default is `'search'`.
+
+  initkwargs: dict
+    Parameters for the preliminary search or gridding procedure. It may
+    contain key-value pairs to change default values for `Pmin`, `Pmax`,
+    `Nnodes` and other depending on the selected method by the
+    `initmethod` parameter. Default is an empty dictionary.
 
   **kwargs: dict
     Other arguments for a Psat-solver. It may contain such arguments
@@ -638,6 +652,8 @@ class PsatPT(object):
     eos: PsatEosPT,
     method: str = 'ss',
     stabkwargs: dict = {},
+    initmethod: str = 'search',
+    initkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
@@ -652,18 +668,14 @@ class PsatPT(object):
       self.solver = partial(_PsatPT_newtB, eos=eos, **kwargs)
     elif method == 'newton-c':
       self.solver = partial(_PsatPT_newtC, eos=eos, **kwargs)
-    elif method == 'ss-newton':
-      raise NotImplementedError(
-        'The SS-Newton method for the saturation pressure calculation is '
-        'not implemented yet.'
-      )
-    elif method == 'qnss-newton':
-      raise NotImplementedError(
-        'The QNSS-Newton method for the saturation pressure calculation is '
-        'not implemented yet.'
-      )
     else:
       raise ValueError(f'The unknown method: {method}.')
+    if initmethod == 'search':
+      self.initialize = partial(self.search, **initkwargs)
+    elif initmethod == 'gridding':
+      self.initialize = partial(self.gridding, **initkwargs)
+    else:
+      raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
 
   def run(
@@ -672,8 +684,6 @@ class PsatPT(object):
     T: Scalar,
     yi: Vector,
     upper: bool = True,
-    search: bool = True,
-    **kwargs,
   ) -> SatResult:
     """Performs the saturation pressure calculation for known
     temperature and composition. To improve an initial guess, the
@@ -696,19 +706,6 @@ class PsatPT(object):
       The cricondentherm serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
-    search: bool
-      A boolean flag that indicates whether the preliminary search or
-      gridding procedure should be used to refine an initial guess of
-      the saturation pressure calculation. It is recommended to use the
-      gridding procedure if the initial guess of the saturation pressure
-      is significantly inaccurate. Default is `True`.
-
-    **kwargs: dict
-      Parameters for the preliminary search or gridding procedure.
-      It may contain key-value pairs to change default values for
-      `Pmin`, `Pmax`, `Nnodes` and other depending on the `search`
-      flag. Default is an empty dictionary.
-
     Returns
     -------
     Saturation pressure calculation results as an instance of the
@@ -722,17 +719,14 @@ class PsatPT(object):
     ------
     ValueError
       The `ValueError` exception will be raised if the one-phase or
-      two-phase region was not found using a preliminary search.
+      two-phase region was not found during initialization.
 
     SolutionNotFoundError
       The `SolutionNotFoundError` exception will be raised if the
       saturation pressure calculation procedure terminates
       unsuccessfully.
     """
-    if search:
-      P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper=upper, **kwargs)
-    else:
-      P0, kvi0, Plow, Pupp = self.gridding(P, T, yi, upper=upper, **kwargs)
+    P0, kvi0, Plow, Pupp = self.initialize(P, T, yi, upper)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
 
   def search(
@@ -740,9 +734,9 @@ class PsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
+    upper: bool = True,
     Pmin: Scalar = 1.,
     Pmax: Scalar = 1e8,
-    upper: bool = True,
     step: Scalar = 0.1,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
     """Performs the preliminary search to refine the initial guess of
@@ -942,9 +936,9 @@ class PsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
+    upper: bool = True,
     Pmin: Scalar = 1.,
     Pmax: Scalar = 1e8,
-    upper: bool = True,
     Nnodes: int = 10,
     logspace: bool = False,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
@@ -1341,6 +1335,7 @@ def _PsatPT_qnss(
   eos: PsatEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
+  lmbdmax: Scalar = 30.,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
@@ -1405,6 +1400,9 @@ def _PsatPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
+
+  lmbdmax: Scalar
+    The maximum step length. Default is `30.0`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
@@ -2316,8 +2314,7 @@ class TsatPT(object):
         of components with respect to temperature as a `Vector` of
         shape `(Nc,)`.
 
-    If the solution method would be one of `'newton'`, `'ss-newton'` or
-    `'qnss-newton'` then it also must have:
+    If the solution method would be `'newton'`,  then it also must have:
 
     - `getPT_lnphii_Z_dnj_dT(
          P: Scalar, T: Scalar, yi: Vector, n: Scalar,
@@ -2352,9 +2349,7 @@ class TsatPT(object):
 
     - `'ss'` (Successive Substitution method),
     - `'qnss'` (Currently raises `NotImplementedError`),
-    - `'newton'` (Currently raises `NotImplementedError`),
-    - `'ss-newton'` (Currently raises `NotImplementedError`),
-    - `'qnss-newton'` (Currently raises `NotImplementedError`).
+    - `'newton'` (Currently raises `NotImplementedError`).
 
     Default is `'ss'`.
 
@@ -2363,6 +2358,23 @@ class TsatPT(object):
     interval of the saturation temperature. This dictionary is used to
     specify arguments for the stability test procedure. Default is an
     empty dictionary.
+
+  initmethod: str
+    This parameter can be used to choose the procedure to generate an
+    initial guess for saturation temperature calculation. Should be one of:
+
+    - `'search'` (the preliminary search procedure),
+    - `'gridding'` (the gridding procedure).
+
+    It is recommended to use the gridding procedure only if an initial
+    guess of the saturation temperature is significantly inaccurate.
+    Default is `'search'`.
+
+  initkwargs: dict
+    Parameters for the preliminary search or gridding procedure. It may
+    contain key-value pairs to change default values for `Tmin`, `Tmax`,
+    `Nnodes` and other depending on the selected method by the
+    `initmethod` parameter. Default is an empty dictionary.
 
   **kwargs: dict
     Other arguments for a Tsat-solver. It may contain such arguments
@@ -2403,6 +2415,8 @@ class TsatPT(object):
     eos: TsatEosPT,
     method: str = 'ss',
     stabkwargs: dict = {},
+    initmethod: str = 'search',
+    initkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
@@ -2417,18 +2431,14 @@ class TsatPT(object):
       self.solver = partial(_TsatPT_newtB, eos=eos, **kwargs)
     elif method == 'newton-c':
       self.solver = partial(_TsatPT_newtC, eos=eos, **kwargs)
-    elif method == 'ss-newton':
-      raise NotImplementedError(
-        'The SS-Newton method for the saturation temperature calculation is '
-        'not implemented yet.'
-      )
-    elif method == 'qnss-newton':
-      raise NotImplementedError(
-        'The QNSS-Newton method for the saturation temperature calculation '
-        'is not implemented yet.'
-      )
     else:
       raise ValueError(f'The unknown method: {method}.')
+    if initmethod == 'search':
+      self.initialize = partial(self.search, **initkwargs)
+    elif initmethod == 'gridding':
+      self.initialize = partial(self.gridding, **initkwargs)
+    else:
+      raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
 
   def run(
@@ -2437,8 +2447,6 @@ class TsatPT(object):
     T: Scalar,
     yi: Vector,
     upper: bool = True,
-    search: bool = True,
-    **kwargs,
   ) -> SatResult:
     """Performs the saturation temperature calculation for known
     pressure and composition. To improve an initial guess, the
@@ -2461,19 +2469,6 @@ class TsatPT(object):
       The cricondenbar serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
-    search: bool
-      A boolean flag that indicates whether the preliminary search or
-      gridding procedure should be used to refine an initial guess of
-      the saturation temperature calculation. It is recommended to use
-      the gridding procedure if the initial guess of the saturation
-      temperature is significantly inaccurate. Default is `True`.
-
-    **kwargs: dict
-      Parameters for the preliminary search or gridding procedure.
-      It may contain key-value pairs to change default values for
-      `Tmin`, `Tmax`, `Nnodes` and other depending on the `search`
-      flag. Default is an empty dictionary.
-
     Returns
     -------
     Saturation temperature calculation results as an instance of the
@@ -2487,17 +2482,14 @@ class TsatPT(object):
     ------
     ValueError
       The `ValueError` exception may be raised if the one-phase or
-      two-phase region was not found using a preliminary search.
+      two-phase region was not found during initialization.
 
     SolutionNotFoundError
       The `SolutionNotFoundError` exception will be raised if the
       saturation pressure calculation procedure terminates
       unsuccessfully.
     """
-    if search:
-      T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper=upper, **kwargs)
-    else:
-      T0, kvi0, Tlow, Tupp = self.gridding(P, T, yi, upper=upper, **kwargs)
+    T0, kvi0, Tlow, Tupp = self.initialize(P, T, yi, upper)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
 
   def search(
@@ -2505,9 +2497,9 @@ class TsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
+    upper: bool = True,
     Tmin: Scalar = 173.15,
     Tmax: Scalar = 973.15,
-    upper: bool = True,
     step: Scalar = 0.1,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
     """Performs a preliminary search to refine the initial guess of
@@ -2708,9 +2700,9 @@ class TsatPT(object):
     P: Scalar,
     T: Scalar,
     yi: Vector,
+    upper: bool = True,
     Tmin: Scalar = 173.15,
     Tmax: Scalar = 973.15,
-    upper: bool = True,
     Nnodes: int = 10,
   ) -> tuple[Scalar, Vector, Scalar, Scalar]:
     """Performs the gridding procedure to refine the initial guess of
@@ -3096,6 +3088,7 @@ def _TsatPT_qnss(
   eos: TsatEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
+  lmbdmax: Scalar = 30.,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
@@ -3161,6 +3154,9 @@ def _TsatPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
+
+  lmbdmax: Scalar
+    The maximum step length. Default is `30.0`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
@@ -4129,29 +4125,28 @@ class PmaxPT(PsatPT):
 
     Default is `'ss'`.
 
-  step: Scalar
-    To specify the confidence interval for pressure of the cricondenbar
-    point calculation, the preliminary search is performed. This
-    parameter regulates the step of this search in fraction units.
-    During the preliminary search, the next value of pressure will be
-    calculated from the previous one using the formula:
-    `Pnext = Pprev * (1. + step)`. Default is `0.1`.
-
-  lowerlimit: Scalar
-    During the preliminary search, the pressure can not drop below
-    the lower limit. Otherwise, the `ValueError` will be rised.
-    Default is `1.` [Pa].
-
-  upperlimit: Scalar
-    During the preliminary search, the pressure can not exceed the
-    upper limit. Otherwise, the `ValueError` will be rised.
-    Default is `1e8` [Pa].
-
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
     interval for pressure of the cricondenbar point. This dictionary is
     used to specify arguments for the stability test procedure. Default
     is an empty dictionary.
+
+  initmethod: str
+    This parameter can be used to choose the procedure to generate an
+    initial guess for cricondenbar calculation. Should be one of:
+
+    - `'search'` (the preliminary search procedure),
+    - `'gridding'` (the gridding procedure).
+
+    It is recommended to use the gridding procedure only if an initial
+    guess of the cricondenbar is significantly inaccurate.
+    Default is `'search'`.
+
+  initkwargs: dict
+    Parameters for the preliminary search or gridding procedure. It may
+    contain key-value pairs to change default values for `Pmin`, `Pmax`,
+    `Nnodes` and other depending on the selected method by the
+    `initmethod` parameter. Default is an empty dictionary.
 
   **kwargs: dict
     Other arguments for a cricondebar-solver. It may contain such
@@ -4192,6 +4187,8 @@ class PmaxPT(PsatPT):
     eos: PmaxEosPT,
     method: str = 'ss',
     stabkwargs: dict = {},
+    initmethod: str = 'search',
+    initkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
@@ -4204,16 +4201,15 @@ class PmaxPT(PsatPT):
       self.solver = partial(_PmaxPT_newtC, eos=eos, **kwargs)
     else:
       raise ValueError(f'The unknown method: {method}.')
+    if initmethod == 'search':
+      self.initialize = partial(self.search, **initkwargs)
+    elif initmethod == 'gridding':
+      self.initialize = partial(self.gridding, **initkwargs)
+    else:
+      raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
 
-  def run(
-    self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    search: bool = True,
-    **kwargs,
-  ) -> SatResult:
+  def run(self, P: Scalar, T: Scalar, yi: Vector) -> SatResult:
     """Performs the cricondenbar point calculation for a mixture. To
     improve the initial guess of pressure, the preliminary search is
     performed.
@@ -4229,19 +4225,6 @@ class PmaxPT(PsatPT):
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
 
-    search: bool
-      A boolean flag that indicates whether the preliminary search or
-      gridding procedure should be used to refine an initial guess of
-      the cricondenbar calculation. It is advisable to use the gridding
-      procedure if the initial guess of the cricondenbar is vastly
-      inaccurate. Default is `True`.
-
-    **kwargs: dict
-      Parameters for the preliminary search or gridding procedure.
-      It may contain key-value pairs to change default values for
-      `Pmin`, `Pmax`, `Nnodes` and other depending on the `search`
-      flag. Default is an empty dictionary.
-
     Returns
     -------
     Cricondenbar point calculation results as an instance of the
@@ -4255,16 +4238,13 @@ class PmaxPT(PsatPT):
     ------
     ValueError
       The `ValueError` exception may be raised if the one-phase or
-      two-phase region was not found using a preliminary search.
+      two-phase region was not found during initialization.
 
     SolutionNotFoundError
       The `SolutionNotFoundError` exception will be raised if the
       cricondenbar calculation procedure terminates unsuccessfully.
     """
-    if search:
-      P0, kvi0, Plow, Pupp = self.search(P, T, yi, upper=True, **kwargs)
-    else:
-      P0, kvi0, Plow, Pupp = self.gridding(P, T, yi, upper=True, **kwargs)
+    P0, kvi0, Plow, Pupp = self.initialize(P, T, yi, True)
     return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp)
 
 
@@ -4639,6 +4619,7 @@ def _PmaxPT_qnss(
   eos: PmaxEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
+  lmbdmax: Scalar = 30.,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
@@ -4728,6 +4709,9 @@ def _PmaxPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
+
+  lmbdmax: Scalar
+    The maximum step length. Default is `30.0`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation and the cricondenbar equation solvers
@@ -5163,6 +5147,23 @@ class TmaxPT(TsatPT):
     dictionary is used to specify arguments for the stability test
     procedure. Default is an empty dictionary.
 
+  initmethod: str
+    This parameter can be used to choose the procedure to generate an
+    initial guess for cricondentherm calculation. Should be one of:
+
+    - `'search'` (the preliminary search procedure),
+    - `'gridding'` (the gridding procedure).
+
+    It is recommended to use the gridding procedure only if an initial
+    guess of the cricondentherm is significantly inaccurate.
+    Default is `'search'`.
+
+  initkwargs: dict
+    Parameters for the preliminary search or gridding procedure. It may
+    contain key-value pairs to change default values for `Tmin`, `Tmax`,
+    `Nnodes` and other depending on the selected method by the
+    `initmethod` parameter. Default is an empty dictionary.
+
   **kwargs: dict
     Other arguments for a cricondentherm-solver. It may contain such
     arguments as `tol`, `maxiter`, `tol_tpd`, `maxiter_tpd` or others
@@ -5202,6 +5203,8 @@ class TmaxPT(TsatPT):
     eos: TmaxEosPT,
     method: str = 'ss',
     stabkwargs: dict = {},
+    initmethod: str = 'search',
+    initkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
@@ -5214,16 +5217,15 @@ class TmaxPT(TsatPT):
       self.solver = partial(_TmaxPT_newtC, eos=eos, **kwargs)
     else:
       raise ValueError(f'The unknown method: {method}.')
+    if initmethod == 'search':
+      self.initialize = partial(self.search, **initkwargs)
+    elif initmethod == 'gridding':
+      self.initialize = partial(self.gridding, **initkwargs)
+    else:
+      raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
 
-  def run(
-    self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    search: bool = True,
-    **kwargs,
-  ) -> SatResult:
+  def run(self, P: Scalar, T: Scalar, yi: Vector) -> SatResult:
     """Performs the cricindentherm point calculation for a mixture. To
     improve an initial guess of temperature, the preliminary search is
     performed.
@@ -5238,19 +5240,6 @@ class TmaxPT(TsatPT):
 
     yi: Vector, shape (Nc,)
       Mole fractions of `Nc` components.
-
-    search: bool
-      A boolean flag that indicates whether the preliminary search or
-      gridding procedure should be used to refine an initial guess of
-      the cricondentherm calculation. It is advisable to use the
-      gridding procedure if the initial guess of the cricondenbar is
-      vastly inaccurate. Default is `True`.
-
-    **kwargs: dict
-      Parameters for the preliminary search or gridding procedure.
-      It may contain key-value pairs to change default values for
-      `Tmin`, `Tmax`, `Nnodes` and other depending on the `search`
-      flag. Default is an empty dictionary.
 
     Returns
     -------
@@ -5267,16 +5256,13 @@ class TmaxPT(TsatPT):
     ------
     ValueError
       The `ValueError` exception may be raised if the one-phase or
-      two-phase region was not found using a preliminary search.
+      two-phase region was not found during initialization.
 
     SolutionNotFoundError
       The `SolutionNotFoundError` exception will be raised if the
       cricondentherm calculation procedure terminates unsuccessfully.
     """
-    if search:
-      T0, kvi0, Tlow, Tupp = self.search(P, T, yi, upper=True, **kwargs)
-    else:
-      T0, kvi0, Tlow, Tupp = self.gridding(P, T, yi, upper=True, **kwargs)
+    T0, kvi0, Tlow, Tupp = self.initialize(P, T, yi, True)
     return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp)
 
 
@@ -5655,6 +5641,7 @@ def _TmaxPT_qnss(
   eos: TmaxEosPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
+  lmbdmax: Scalar = 30.,
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
@@ -5744,6 +5731,9 @@ def _TmaxPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
+
+  lmbdmax: Scalar
+    The maximum step length. Default is `30.0`.
 
   tol_tpd: Scalar
     Terminate the TPD-equation solver successfully if the absolute
@@ -6244,8 +6234,7 @@ class env2pPT(object):
         `(Nc,)`.
 
     If the solution method of the first saturation pressure calculation
-    would be one of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it
-    also must have:
+    would be `'newton'` then it also must have:
 
     - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
        ) -> tuple[Vector, Scalar, Matrix, Vector]`
@@ -6400,10 +6389,11 @@ class env2pPT(object):
     for the first saturation pressure calculation.
 
   flashkwargs: dict
-    To clarify the initial guess of the first phase envelope point,
-    a preliminary search is implemented using several flash calculations
-    launched by the `flash2pPT` class. This parameter allows to specify
-    settings for the flash calculation procedure.
+    To clarify the initial guess of the first phase envelope point
+    (for the specific phase mole fraction), a preliminary search is
+    implemented using several flash calculations launched by the
+    `flash2pPT` class. This parameter allows to specify settings for
+    the flash calculation procedure.
 
   **kwargs: dict
     Other arguments for the two-phase envelope solver. It may contain
@@ -6480,7 +6470,6 @@ class env2pPT(object):
     unconvmult: Scalar = 0.75,
     maxrepeats: int = 8,
     maxpoints: int = 200,
-    searchkwargs: dict = {},
   ) -> EnvelopeResult:
     """This method should be used to calculate the entire phase envelope.
 
@@ -6568,12 +6557,6 @@ class env2pPT(object):
       The maximum number of points of the phase envelope. Default is
       `200`.
 
-    searchkwargs: dict
-      Advanced parameters for the preliminary search. It can contain
-      such keys as `Pmin`, `Pmax and `step`. For the details, see the
-      method `run` of the class `PsatPT`. Default is an empty
-      dictionary.
-
     Returns
     -------
     The phase envelope construction results as an instance of the
@@ -6585,7 +6568,7 @@ class env2pPT(object):
     zeroth saturation point (for the given initial guesses).
     """
     try:
-      psres = self.psatsolver.run(P0, T0, yi, True, **searchkwargs)
+      psres = self.psatsolver.run(P0, T0, yi, True)
     except SolutionNotFoundError:
       raise SolutionNotFoundError(
         'The saturation pressure was not found for the specified\n'

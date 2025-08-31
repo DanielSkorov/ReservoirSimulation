@@ -36,8 +36,7 @@ class LabResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Pressure steps:\n{self.Ps} Pa\n"
            f"Phase mole fractions:\n{self.Fsj.T}\n"
-           f"Phase compressibility factors:\n{self.Zsj.T}\n"
-           f"Calculation completed successfully:\n{self.success}")
+           f"Phase compressibility factors:\n{self.Zsj.T}\n")
     return s
 
 
@@ -46,49 +45,50 @@ def cvdPT(
   T: Scalar,
   yi: Vector,
   eos: PsatEosPT,
-  Psat0: Scalar = 20e6,
-  n: Scalar = 1.,
+  Psat0: Scalar,
+  n0: Scalar = 1.,
   flashkwargs: dict = {},
   psatkwargs: dict = {},
 ) -> LabResult:
-  logger.debug(
-    'Constant volume depletion for:\n\tT = %s K\n\tyi = %s', T, yi,
-  )
-  flash = flash2pPT(eos, **flashkwargs)
+  logger.info('Constant volume depletion (CVD).')
+  Nc = eos.Nc
   zi = yi.copy()
+  logger.info('T = %.2f K, zi =' + Nc * '%7.4f', T, *zi)
+  flash = flash2pPT(eos, **flashkwargs)
   Psatres = PsatPT(eos, **psatkwargs).run(Psat0, T, zi, True)
   Psat = Psatres.P
-  logger.debug(
-    'Saturation pressure calculation:\n\tPsat = %s Pa\n\tsuccess = %s',
-    Psat, Psatres.success,
-  )
   Zj = Psatres.Zj
+  logger.debug('Saturation pressure: %.1f Pa', Psat)
+  n = n0
   V0 = n * Zj[0] * R * T / Psat
   PP_filtered = PP[PP < Psat]
   PP_out = np.hstack([Psat, PP_filtered])
   Npoints = PP_out.shape[0]
-  yji_out = np.empty(shape=(Npoints, 2, eos.Nc))
+  yji_out = np.zeros(shape=(Npoints, 2, Nc))
   yji_out[0] = Psatres.yji
-  Zj_out = np.empty(shape=(Npoints, 2))
+  Zj_out = np.zeros(shape=(Npoints, 2))
   Zj_out[0] = Zj
-  Fj_out = np.empty(shape=(Npoints, 2))
-  Fj_out[0] = np.array([1., 0.])
-  n_out = np.empty_like(PP_out)
+  Fj_out = np.zeros(shape=(Npoints, 2))
+  Fj_out[0, 0] = 1.
+  Fj_out[0, 1] = 0.
+  n_out = np.zeros_like(PP_out)
   n_out[0] = n
-  for i, P in enumerate(PP_filtered):
+  logger.debug(
+    '%3s%12s' + (Nc + 3) * '%9s',
+    'Nst', 'P, Pa', 'F0', 'F1', *['z%s' % s for s in range(Nc)], 'n, mol',
+  )
+  tmpl = '%3s%12.1f' + (Nc + 3) * '%9.4f'
+  logger.debug(tmpl, 0, Psat, 1., 0., *zi, n)
+  for i, P in enumerate(PP_filtered, 1):
     flashres = flash.run(P, T, zi)
     yji = flashres.yji
     Zj = flashres.Zj
     Fj = flashres.Fj
-    yji_out[i+1] = yji
-    Zj_out[i+1] = Zj
-    Fj_out[i+1] = Fj
-    n_out[i+1] = n
-    logger.debug(
-      'For pressure %s Pa, composition %s and mole number %s mol:\n'
-      '\tZj = %s\n\tFj = %s\n\tflash was successful: %s',
-      P, zi, n, Zj, Fj, flashres.success,
-    )
+    yji_out[i] = yji
+    Zj_out[i] = Zj
+    Fj_out[i] = Fj
+    n_out[i] = n
+    Np = Fj.shape[0]
     nj = Fj * n
     V = R * T * nj.dot(Zj) / P
     rhog = P / (Zj[0] * R * T)
@@ -98,10 +98,15 @@ def cvdPT(
     ngi = yji[0] * nj[0]
     nginew = ngi - dngi
     ngnew = nj[0] - dng
-    n = nj[1] + ngnew
-    zi = (nginew + nj[1] * yji[1]) / n
-  return LabResult(Ps=PP_out, ysji=yji_out, Zsj=Zj_out, Fsj=Fj_out, ns=n_out,
-                   success=True)
+    if Np == 2:
+      logger.debug(tmpl, i, P, *Fj, *zi, n)
+      n = nj[1] + ngnew
+      zi = (nginew + nj[1] * yji[1]) / n
+    else:
+      logger.debug(tmpl, i, P, 1., 0., *zi, n)
+      n = ngnew
+  logger.info('Total produced amount of gas: %.3f mol.', n0 - n)
+  return LabResult(Ps=PP_out, ysji=yji_out, Zsj=Zj_out, Fsj=Fj_out, ns=n_out)
 
 
 def ccePT(
@@ -109,18 +114,20 @@ def ccePT(
   T: Scalar,
   yi: Vector,
   eos: Flash2pEosPT,
-  n: Scalar = 1.,
+  n0: Scalar = 1.,
   flashkwargs: dict = {},
 ) -> LabResult:
-  logger.debug(
-    'Constant composition expansion for:\n\tT = %s K\n\tyi = %s', T, yi,
-  )
+  logger.info('Constant composition expansion (CCE).')
+  Nc = eos.Nc
   Npoints = PP.shape[0]
-  yji_out = np.empty(shape=(Npoints, 2, eos.Nc))
-  Zj_out = np.empty(shape=(Npoints, 2))
-  Fj_out = np.empty(shape=(Npoints, 2))
-  n_out = np.empty_like(PP)
+  logger.info('T = %.2f K, zi =' + Nc * '%7.4f', T, *yi)
+  yji_out = np.zeros(shape=(Npoints, 2, Nc))
+  Zj_out = np.zeros(shape=(Npoints, 2))
+  Fj_out = np.zeros(shape=(Npoints, 2))
+  n_out = np.zeros_like(PP)
   flash = flash2pPT(eos, **flashkwargs)
+  logger.debug('%3s%12s%9s%9s%9s%9s', 'Nst', 'P, Pa', 'F0', 'F1', 'Z0', 'Z1')
+  tmpl = '%3s%12.1f%9.4f%9.4f%9.4f%9.4f'
   for i, P in enumerate(PP):
     flashres = flash.run(P, T, yi)
     yji = flashres.yji
@@ -129,12 +136,10 @@ def ccePT(
     yji_out[i] = yji
     Zj_out[i] = Zj
     Fj_out[i] = Fj
-    n_out[i] = n
-    logger.debug(
-      'For pressure step %s Pa:\n'
-      '\tZj = %s\n\tFj = %s\n\tflash was successful: %s',
-      P, Zj, Fj, flashres.success,
-    )
-  return LabResult(Ps=PP, ysji=yji_out, Zsj=Zj_out, Fsj=Fj_out, ns=n_out,
-                   success=True)
-
+    n_out[i] = n0
+    Np = Fj.shape[0]
+    if Np == 2:
+      logger.debug(tmpl, i, P, *Fj, *Zj)
+    else:
+      logger.debug(tmpl, i, P, 1., 0., Zj[0], 0.)
+  return LabResult(Ps=PP, ysji=yji_out, Zsj=Zj_out, Fsj=Fj_out, ns=n_out)
