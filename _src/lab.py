@@ -26,6 +26,30 @@ logger = logging.getLogger('lab')
 
 
 class LabResult(dict):
+  """Container for experiment simulation outputs with pretty-printing.
+
+  Attributes
+  ----------
+  Ps: Vector, shape (Ns,)
+    A 1d-array with pressures corresponding to the stages of an
+    experiment, where `Ns` is the number of stages.
+
+  ysji: Tensor, shape (Ns, Np, Nc)
+    Mole fractions of components in each phase at each stage of an
+    experiment as a `Tensor` of shape `(Ns, Np, Nc)`, where `Np` is
+    the number of phases and `Nc` is the number of components.
+
+  Fsj: Matrix, shape (Ns, Np)
+    Phase mole fractions at each stage of an experiment as a `Matrix`
+    of shape `(Ns, Np)`.
+
+  Zsj: Matrix, shape (Ns, Np)
+    Phase compressibility factors at each stage of an experiment as
+    a `Matrix` of shape `(Ns, Np)`.
+
+  ns: Vector, shape (Ns,)
+    Mole number of a system at each stage of an experiment.
+  """
   def __getattr__(self, name):
     try:
       return self[name]
@@ -36,7 +60,7 @@ class LabResult(dict):
     with np.printoptions(linewidth=np.inf):
       s = (f"Pressure steps:\n{self.Ps} Pa\n"
            f"Phase mole fractions:\n{self.Fsj.T}\n"
-           f"Phase compressibility factors:\n{self.Zsj.T}\n")
+           f"Phase compressibility factors:\n{self.Zsj.T}")
     return s
 
 
@@ -44,12 +68,141 @@ def cvdPT(
   PP: Vector,
   T: Scalar,
   yi: Vector,
-  eos: PsatEosPT,
   Psat0: Scalar,
+  eos: PsatEosPT,
   n0: Scalar = 1.,
   flashkwargs: dict = {},
   psatkwargs: dict = {},
 ) -> LabResult:
+  """Constant volume depletion (CVD) experiment.
+
+  The CVD experiment is usually performed for natural gas to simulate the
+  processes encountered during the field development. The experiment is
+  conducted according to the following procedure:
+
+  1) The gas sample is prepared to ensure that its state corresponds to
+     the dew point.
+  2) Pressure is reduced by increasing the cell volume. Some amount of
+     the condensate appears. The volume of that liquid phase is
+     registered.
+  3) Part of the gas is expelled from the cell until the volume of the
+     cell equals the volume at the dew point.
+  4) The gas collected is sent to a multistage separator to study its
+     properties and composition.
+  5) The process is repeated for several pressure steps.
+
+  Parameters
+  ----------
+  PP: Vector, shape (Ns,)
+    A 1d-array with pressures corresponding to the stages of an
+    experiment, where `Ns` is the number of stages. All pressures above
+    the saturation pressure will be ignored.
+
+  T: Scalar
+    The temperature held constant during the experiment.
+
+  yi: Vector, shape (Nc,)
+    The global mole fractions of the gas at the beginning of the
+    experiment.
+
+  Psat0: Scalar
+    An initial guess of the saturation pressure. It may be derived from
+    existing experimental data, if available. The initial guess of the
+    saturation pressure would be refined by internal procedures.
+
+  eos: PsatEosPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_kvguess(P: Scalar, T: Scalar,
+                     yi: Vector) -> Iterable[Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as a an iterable object of `Vector` of shape
+      `(Nc,)`.
+
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture.
+
+    - `getPT_lnphii_Z_dP(P: Scalar, T: Scalar,
+                         yi: Vector) -> tuple[Vector, Scalar, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition,
+      this method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`.
+
+    If solution methods for the saturation pressure determination and
+    flash calculations are based on Newton's method, then it also must
+    have:
+
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    - `getPT_lnphii_Z_dnj_dP(P: Scalar, T: Scalar, yi: Vector, n: Scalar,
+       ) -> tuple[Vector, Scalar, Matrix, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition,
+      this method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`,
+      - partial derivatives of logarithms of the fugacity coefficients
+        of components with respect to pressure as a `Vector` of shape
+        `(Nc,)`.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  n0: Scalar
+    The initial amount of the fluid in a cell. Default is `1.0` mol.
+
+  flashkwargs: dict
+    Settings for the flash calculation procedure. Default is an empty
+    dictionary.
+
+  psatkwargs: dict
+    Setting for the saturation pressure calculation procedure. Default
+    is an empty dictionary.
+
+  Returns
+  -------
+  Constant volume depletion simulation results as an instance of the
+  `LabResult`.
+  """
   logger.info('Constant volume depletion (CVD).')
   Nc = eos.Nc
   zi = yi.copy()
@@ -117,6 +270,93 @@ def ccePT(
   n0: Scalar = 1.,
   flashkwargs: dict = {},
 ) -> LabResult:
+  """Constant composition (mass) expansion (CCE) experiment.
+
+  A sample of the reservoir fluid (natural gas or oil) is placed in a
+  cell. Pressure is adjusted to a value equal to or greater than the
+  initial reservoir pressure. The experiment is conducted at the
+  constant temperature equal to the reservoir temperature. Pressure is
+  reduced by increasing the volume of the cell. No gas or liquid is
+  removed from the cell.
+
+  At each stage, the pressure and total volume of the reservoir fluid
+  (oil and gas) are measured. Additional phase properties that can be
+  determined include the liquid phase volume, oil and gas densities,
+  viscosities, compressibility factors, etc.
+
+  Parameters
+  ----------
+  PP: Vector, shape (Ns,)
+    A 1d-array with pressures corresponding to the stages of an
+    experiment, where `Ns` is the number of stages.
+
+  T: Scalar
+    The temperature held constant during the experiment.
+
+  yi: Vector, shape (Nc,)
+    The global mole fractions of the reservoir fluid.
+
+  eos: Flash2pEosPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_kvguess(P: Scalar, T: Scalar,
+                     yi: Vector) -> Iterable[Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
+
+    - `getPT_lnphii_Z(P: Scalar,
+                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the phase compressibility factor of the mixture.
+
+    If the solution method for flash calculations would be one of
+    `'newton'`, `'ss-newton'` or `'qnss-newton'` then it also must have:
+
+    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
+                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - logarithms of the fugacity coefficients of components as a
+        `Vector` of shape `(Nc,)`,
+      - the mixture compressibility factor,
+      - partial derivatives of logarithms of the fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  n0: Scalar
+    The initial amount of the fluid in a cell. Default is `1.0` mol.
+
+  flashkwargs: dict
+    Settings for the flash calculation procedure. Default is an empty
+    dictionary.
+
+  Returns
+  -------
+  Constant composition expansion simulation results as an instance of
+  the `LabResult`.
+  """
   logger.info('Constant composition expansion (CCE).')
   Nc = eos.Nc
   Npoints = PP.shape[0]

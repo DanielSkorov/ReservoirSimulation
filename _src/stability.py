@@ -29,7 +29,7 @@ class StabEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-  ) -> tuple[Vector, ...]: ...
+  ) -> Iterable[Vector]: ...
 
   def getPT_lnphii_Z(
     self,
@@ -63,7 +63,7 @@ class StabResult(dict):
     The compressibility factor of the tested mixture at a given
     pressure and temperature.
 
-  lnphiyi: Vector
+  lnphiyi: Vector, shape (Nc,)
     Natural logarithms of the fugacity coefficients of components in
     the mixture at a given pressure and temperature.
 
@@ -73,11 +73,11 @@ class StabResult(dict):
   Zt: Scalar
     The compressibility factor of the trial phase.
 
-  lnphiti: Vector
+  lnphiti: Vector, shape (Nc,
     Natural logarithms of the fugacity coefficients of components in
     the trial phase at a given pressure and temperature.
 
-  kvji: tuple[Vector, ...]
+  kvji: Iterable[Vector]
     K-values of `Nc` components. They may be further used as an initial
     guess for flash calculations.
 
@@ -110,10 +110,11 @@ class stabilityPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`

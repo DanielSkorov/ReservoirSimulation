@@ -71,7 +71,7 @@ class PsatEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-  ) -> tuple[Vector, ...]: ...
+  ) -> Iterable[Vector]: ...
 
   def getPT_lnphii_Z(
     self,
@@ -111,7 +111,7 @@ class TsatEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-  ) -> tuple[Vector, ...]: ...
+  ) -> Iterable[Vector]: ...
 
   def getPT_lnphii_Z(
     self,
@@ -525,10 +525,11 @@ class PsatPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector, ...]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
@@ -2287,10 +2288,11 @@ class TsatPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
@@ -4047,10 +4049,11 @@ class PmaxPT(PsatPT):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
@@ -5063,10 +5066,11 @@ class TmaxPT(TsatPT):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
@@ -6206,10 +6210,11 @@ class env2pPT(object):
     calculation:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`

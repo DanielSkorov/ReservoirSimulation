@@ -39,7 +39,7 @@ class Flash2pEosPT(Eos):
     P: Scalar,
     T: Scalar,
     yi: Vector,
-  ) -> tuple[Vector, ...]: ...
+  ) -> Iterable[Vector]: ...
 
   def getPT_lnphii_Z(
     self,
@@ -73,22 +73,22 @@ class FlashResult(dict):
   Attributes
   ----------
   yji: Matrix, shape (Np, Nc)
-    Mole fractions of components in each phase. Two-dimensional
-    array of real elements of size `(Np, Nc)`, where `Np` is
-    the number of phases and `Nc` is the number of components.
+    Mole fractions of components in each phase as a `Matrix` of shape
+    `(Np, Nc)`, where `Np` is the number of phases and `Nc` is the
+    number of components.
 
   Fj: Vector, shape (Np,)
-    Phase mole fractions. Vector of real elements of size `(Np,)`,
+    Phase mole fractions. `Vector` of real elements of shape `(Np,)`,
     where `Np` is the number of phases.
 
   Zj: Vector, shape (Np,)
-    Compressibility factors of each phase. Array of real elements of
-    size `(Np,)`, where `Np` is the number of phases.
+    Phase compressibility factors as a `Vector` of shape `(Np,)`,
+    where `Np` is the number of phases.
 
   kvji: Matrix, shape (Np - 1, Nc)
-    K-values of components in non-reference phases. Two-dimensional
-    array of real elements of size `(Np - 1, Nc)`, where `Np` is
-    the number of phases and `Nc` is the number of components.
+    K-values of components in non-reference phases as a `Matrix` of
+    shape `(Np - 1, Nc)`, where `Np` is the number of phases and `Nc`
+    is the number of components.
 
   g2: Scalar
     The sum of squared elements of the vector of equilibrium equations.
@@ -123,10 +123,11 @@ class flash2pPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
@@ -1338,10 +1339,11 @@ class flashnpPT(object):
     the following methods:
 
     - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> tuple[Vector, ...]`
+                     yi: Vector) -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as a tuple of `Vector` of shape `(Nc,)`.
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
 
     - `getPT_lnphii_Z(P: Scalar,
                       T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
