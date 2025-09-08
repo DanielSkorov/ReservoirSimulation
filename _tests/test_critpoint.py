@@ -21,7 +21,7 @@ from eos import (
   pr78,
 )
 
-from boundary import (
+from envelope import (
   getVT_PcTc,
 )
 

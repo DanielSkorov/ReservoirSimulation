@@ -33,30 +33,8 @@ from matplotlib import (
   pyplot as plt,
 )
 
-plotting = True
-
 
 class cvd(unittest.TestCase):
-
-  @staticmethod
-  def plot(T, res, Pmax, Qmax, P_lab=None, Qsl_lab=None):
-    Vsj = res.Zsj * res.Fsj * res.ns[:, None] * R * T / res.Ps[:, None]
-    Vs = Vsj.sum(axis=1)
-    Qsl = Vsj[:, 1] / Vs[0]
-    fig, ax = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-    ax.plot(res.Ps / 1e6, Qsl * 100., lw=2., c='teal', label='Calculated',
-            zorder=3)
-    if P_lab is not None:
-      ax.plot(P_lab / 1e6, Qsl_lab * 100., 'o', lw=0., mfc='cyan', mec='teal',
-              label='Experimental', zorder=2)
-    ax.set_xlim(0., Pmax / 1e6)
-    ax.set_ylim(0., Qmax * 100.)
-    ax.set_xlabel('Pressure [MPa]')
-    ax.set_ylabel('Liquid volume  [% original vol.]')
-    ax.grid(zorder=1)
-    ax.legend(loc=3)
-    plt.show()
-    pass
 
   def test_01(self):
     PP = np.array([12240., 10720., 9180., 7640., 6120., 4650., 3110., 1680.,
@@ -85,17 +63,11 @@ class cvd(unittest.TestCase):
       0.00630, 0.19705, 0.13549, 0.08406, 0.05104, 0.02627, -0.01284,-0.01087,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    res = cvdPT(PP, T, yi, pr, 20e6,
-                flashkwargs=dict(method='qnss-newton', useprev=True,
-                                 stabkwargs=dict(method='qnss-newton')),
+    cvd = cvdPT(pr, flashkwargs=dict(method='qnss-newton', useprev=True,
+                                     stabkwargs=dict(method='qnss-newton')),
                 psatkwargs=dict(method='newton-b',
                                 stabkwargs=dict(method='qnss-newton')))
-    if plotting:
-      P_lab = np.array([13740., 12240., 10720., 9180., 7640., 6120., 4650.,
-                        3110., 1680., 100.]) * 1e3
-      Qsl_lab = np.array([0., 0.022, 0.066, 0.125, 0.172, 0.196, 0.198, 0.179,
-                          0.149, 0.077]) / 100.
-      self.plot(T, res, 15e6, 0.002, P_lab, Qsl_lab)
+    res = cvd.run(PP, T, yi, 20e6)
     pass
 
   def test_02(self):
@@ -116,13 +88,11 @@ class cvd(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    res = cvdPT(PP, T, yi, pr, 17e6,
-                flashkwargs=dict(method='qnss-newton', useprev=True,
-                                 stabkwargs=dict(method='qnss-newton')),
+    cvd = cvdPT(pr, flashkwargs=dict(method='qnss-newton', useprev=True,
+                                     stabkwargs=dict(method='qnss-newton')),
                 psatkwargs=dict(method='newton-b',
                                 stabkwargs=dict(method='qnss-newton')))
-    if plotting:
-      self.plot(T, res, 20e6, 0.15)
+    res = cvd.run(PP, T, yi, 17e6)
     pass
 
 if __name__ == '__main__':

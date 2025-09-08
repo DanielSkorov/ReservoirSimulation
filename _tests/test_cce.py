@@ -33,70 +33,8 @@ from matplotlib import (
   pyplot as plt,
 )
 
-plotting = True
-
 
 class cce(unittest.TestCase):
-
-  @staticmethod
-  def plot(T, mwi, res, Pmax, Qmax, Zmax, Dmax, idx2p=0,
-           Nnodeq=None, Nnodez=None, Nnoded=None,
-           P_lab=None, Qsl_lab=None, Zsg_lab=None, Dsg_lab=None):
-    Ps = res.Ps
-    Fsj = res.Fsj
-    Zsj = res.Zsj
-    ysji = res.ysji
-    ns = res.ns
-    Vsj = Zsj * Fsj * ns[:, None] * R * T / Ps[:, None]
-    Vs = Vsj.sum(axis=1)
-    Qsl = Vsj[idx2p:, 1] / Vs[idx2p:]
-    Dsg = ysji[:idx2p, 0].dot(mwi) * Ps[:idx2p] / (Zsj[:idx2p, 0] * R * T)
-    fig, ax = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
-    ax.plot(Ps[idx2p:] / 1e6, Qsl * 100., lw=2., c='teal', zorder=3)
-    if Qsl_lab is not None:
-      ax.plot(P_lab[idx2p:] / 1e6, Qsl_lab * 100., 'o', lw=0., mfc='cyan',
-              mec='teal', zorder=2)
-    ax.set_xlim(0., Pmax / 1e6)
-    ax.set_ylim(0., Qmax * 100.)
-    if Nnodeq is not None:
-      ax.set_yticks(np.linspace(0., Qmax * 100., Nnodeq, endpoint=True))
-    ax.set_xlabel('Pressure [MPa]')
-    ax.set_ylabel('Liquid volume  [% original vol.]', color='teal')
-    ax.grid(zorder=1)
-    ax.tick_params(axis='y', colors='teal')
-    ax.spines['left'].set_color('teal')
-    ax.spines['right'].set_visible(False)
-    axz = ax.twinx()
-    axz.plot(Ps[:idx2p] / 1e6, Zsj[:idx2p, 0], lw=2., c='purple', zorder=3)
-    if Zsg_lab is not None:
-      axz.plot(P_lab[:idx2p] / 1e6, Zsg_lab, 'o', lw=0., mfc='orchid',
-               mec='purple', zorder=2)
-    axz.set_ylim(0.6, Zmax)
-    if Nnodez is not None:
-      axz.set_yticks(np.linspace(0.6, Zmax, Nnodez, endpoint=True))
-    axz.set_ylabel('Gas compressibility factor', color='purple')
-    axz.tick_params(axis='y', colors='purple')
-    axz.spines['left'].set_visible(False)
-    axz.spines['top'].set_visible(False)
-    axz.spines['bottom'].set_visible(False)
-    axz.spines['right'].set_color('purple')
-    axd = ax.twinx()
-    axd.plot(Ps[:idx2p] / 1e6, Dsg, lw=2., c='maroon', zorder=3)
-    if Dsg_lab is not None:
-      axd.plot(P_lab[:idx2p] / 1e6, Dsg_lab, 'o', lw=0., mfc='coral',
-               mec='maroon', zorder=2)
-    axd.set_ylim(0., Dmax)
-    if Nnoded is not None:
-      axd.set_yticks(np.linspace(0., Dmax, Nnoded, endpoint=True))
-    axd.set_ylabel('Gas density [kg/m³]', color='maroon')
-    axd.tick_params(axis='y', colors='maroon')
-    axd.spines['left'].set_visible(False)
-    axd.spines['top'].set_visible(False)
-    axd.spines['bottom'].set_visible(False)
-    axd.spines['right'].set_color('maroon')
-    axd.spines['right'].set_position(('axes', 1.15))
-    plt.show()
-    pass
 
   def test_01(self):
     PP = np.array([19070., 16860., 15280., 13740., 13100., 12570., 11760.,
@@ -125,18 +63,9 @@ class cce(unittest.TestCase):
       0.00630, 0.19705, 0.13549, 0.08406, 0.05104, 0.02627, -0.01284,-0.01087,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    res = ccePT(PP, T, yi, pr,
-                flashkwargs=dict(method='qnss-newton', useprev=True,
-                                 stabkwargs=dict(method='qnss-newton')))
-    if plotting:
-      P_lab = PP
-      Zsg_lab = np.array([0.796, 0.782, 0.777, 0.777])
-      Dsg_lab = np.array([186.2, 167.5, 152.9, 137.5])
-      Qsl_lab = np.array([0.008004269, 0.014044944, 0.029698266,
-                          0.072485354, 0.111375682, 0.106154777,
-                          0.090601758, 0.074345276]) / 100.
-      self.plot(T, mwi, res, 20e6, 0.0015, 1.1, 250., 4, 6, P_lab=P_lab,
-                Qsl_lab=Qsl_lab, Zsg_lab=Zsg_lab, Dsg_lab=Dsg_lab)
+    cce = ccePT(pr, flashkwargs=dict(method='qnss-newton', useprev=True,
+                                     stabkwargs=dict(method='qnss-newton')))
+    res = cce.run(PP, T, yi)
     pass
 
   def test_02(self):
@@ -157,11 +86,9 @@ class cce(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    res = ccePT(PP, T, yi, pr,
-                flashkwargs=dict(method='qnss-newton', useprev=True,
-                                 stabkwargs=dict(method='qnss-newton')))
-    if plotting:
-      self.plot(T, mwi, res, 30e6, 0.15, 1.1, 500., 5, 6)
+    cce = ccePT(pr, flashkwargs=dict(method='qnss-newton', useprev=True,
+                                     stabkwargs=dict(method='qnss-newton')))
+    res = cce.run(PP, T, yi)
     pass
 
 

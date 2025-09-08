@@ -39,10 +39,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=1)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=1)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_02(self):
@@ -56,10 +55,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=4)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=4)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_03(self):
@@ -73,10 +71,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=6)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=6)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_04(self):
@@ -90,10 +87,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=1)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=1)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_05(self):
@@ -107,10 +103,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=3)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=3)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_06(self):
@@ -124,10 +119,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=1)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=1)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_07(self):
@@ -141,10 +135,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=11)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=11)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_08(self):
@@ -158,10 +151,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=9)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=9)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_09(self):
@@ -175,10 +167,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=4)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=4)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_10(self):
@@ -192,10 +183,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=4)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=4)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_11(self):
@@ -209,10 +199,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=5)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=5)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_12(self):
@@ -226,10 +215,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=6)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=6)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_13(self):
@@ -243,10 +231,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=5)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=5)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_14(self):
@@ -260,10 +247,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=7)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=7)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_15(self):
@@ -277,10 +263,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=12)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=12)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_16(self):
@@ -294,10 +279,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=3)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=3)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_17(self):
@@ -311,10 +295,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=6)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=6)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_18(self):
@@ -328,10 +311,9 @@ class stab(unittest.TestCase):
     vsi = np.array([0., 0., 0.])
     dij = np.array([0.0253, 0.4907, 0.48])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=4)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=4)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_19(self):
@@ -350,10 +332,9 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=131)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=131)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_20(self):
@@ -372,10 +353,9 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=24)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=24)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_21(self):
@@ -394,10 +374,9 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=12)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=12)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_22(self):
@@ -416,10 +395,9 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=16)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=16)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_23(self):
@@ -438,10 +416,9 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=11)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=11)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_24(self):
@@ -460,10 +437,9 @@ class stab(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=18)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=18)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_25(self):
@@ -484,10 +460,9 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=5)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=5)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_26(self):
@@ -508,10 +483,9 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=8)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=8)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_27(self):
@@ -532,10 +506,9 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=6)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=6)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_28(self):
@@ -556,10 +529,9 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=3)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=3)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_29(self):
@@ -580,10 +552,9 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=6)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=6)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_30(self):
@@ -604,10 +575,9 @@ class stab(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=4)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=4)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_31(self):
@@ -630,10 +600,9 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=55)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=55)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_32(self):
@@ -656,10 +625,9 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=15)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=15)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_33(self):
@@ -682,10 +650,9 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=12)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=12)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_34(self):
@@ -708,10 +675,9 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=14)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=14)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_35(self):
@@ -734,10 +700,9 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=9)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=9)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_36(self):
@@ -760,10 +725,9 @@ class stab(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=16)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=16)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_37(self):
@@ -784,10 +748,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=1320)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=1320)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_38(self):
@@ -808,10 +771,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=98)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=98)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_39(self):
@@ -832,10 +794,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=15)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=15)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_40(self):
@@ -856,10 +817,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=36)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=36)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_41(self):
@@ -880,10 +840,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=18)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=18)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_42(self):
@@ -904,10 +863,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=43)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=44)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_43(self):
@@ -926,10 +884,9 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=25)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=25)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_44(self):
@@ -948,10 +905,9 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=24)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=24)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_45(self):
@@ -970,10 +926,9 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=9)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=9)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_46(self):
@@ -992,10 +947,9 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=25)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=25)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_47(self):
@@ -1014,10 +968,9 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=10)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=10)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_48(self):
@@ -1036,10 +989,9 @@ class stab(unittest.TestCase):
       0.080, 0.125, 0.010, 0.005,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=25)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=25)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_49(self):
@@ -1060,10 +1012,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=23)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=23)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_50(self):
@@ -1084,10 +1035,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=42)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=42)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_51(self):
@@ -1108,10 +1058,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=15)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=15)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_52(self):
@@ -1132,10 +1081,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=23)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=23)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_53(self):
@@ -1156,10 +1104,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=17)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=17)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_54(self):
@@ -1180,10 +1127,9 @@ class stab(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=23)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=23)
     res = stab.run(P, T, yi)
-    self.assertTrue((res.stable) & (res.g2 < tol))
+    self.assertTrue(res.stable)
     pass
 
   def test_55(self):
@@ -1213,10 +1159,9 @@ class stab(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=278)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=278)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_56(self):
@@ -1246,10 +1191,9 @@ class stab(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=137)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=137)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_57(self):
@@ -1279,10 +1223,9 @@ class stab(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=16)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=16)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_58(self):
@@ -1312,10 +1255,9 @@ class stab(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=33)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=34)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_59(self):
@@ -1345,10 +1287,9 @@ class stab(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=23)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=23)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_60(self):
@@ -1378,10 +1319,9 @@ class stab(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=42)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=44)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_61(self):
@@ -1411,10 +1351,9 @@ class stab(unittest.TestCase):
       0.120, 0.060, 0.030, 0.030, 0.030, 0.000, 0.000, 0.000, 0.000, 0.000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss', tol=tol, maxiter=7)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=7)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_62(self):
@@ -1444,10 +1383,9 @@ class stab(unittest.TestCase):
       0.120, 0.060, 0.030, 0.030, 0.030, 0.000, 0.000, 0.000, 0.000, 0.000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss', tol=tol, maxiter=11)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=11)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_63(self):
@@ -1477,10 +1415,9 @@ class stab(unittest.TestCase):
       0.120, 0.060, 0.030, 0.030, 0.030, 0.000, 0.000, 0.000, 0.000, 0.000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='newton', tol=tol, maxiter=9)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=9)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_64(self):
@@ -1510,10 +1447,9 @@ class stab(unittest.TestCase):
       0.120, 0.060, 0.030, 0.030, 0.030, 0.000, 0.000, 0.000, 0.000, 0.000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-newton', tol=tol, maxiter=4)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=4)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_65(self):
@@ -1543,10 +1479,9 @@ class stab(unittest.TestCase):
       0.120, 0.060, 0.030, 0.030, 0.030, 0.000, 0.000, 0.000, 0.000, 0.000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='qnss-newton', tol=tol, maxiter=7)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=7)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
 
   def test_66(self):
@@ -1576,11 +1511,601 @@ class stab(unittest.TestCase):
       0.120, 0.060, 0.030, 0.030, 0.030, 0.000, 0.000, 0.000, 0.000, 0.000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-20
-    stab = stabilityPT(pr, method='ss-bfgs', tol=tol, maxiter=5)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=5)
     res = stab.run(P, T, yi)
-    self.assertTrue((not res.stable) & (res.g2 < tol))
+    self.assertTrue(not res.stable)
     pass
+
+  def test_67(self):
+    P = 18e6
+    T = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=30)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_68(self):
+    P = 18e6
+    T = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=21)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_69(self):
+    P = 18e6
+    T = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=12)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_70(self):
+    P = 18e6
+    T = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=10)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_71(self):
+    P = 18e6
+    T = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=12)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_72(self):
+    P = 18e6
+    T = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=12)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_73(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=3)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_74(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=9)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_75(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss', tol=1e-20, maxiter=3)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_76(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='qnss', tol=1e-20, maxiter=9)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_77(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='newton', tol=1e-20, maxiter=4)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_78(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss-newton', tol=1e-20, maxiter=3)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_79(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='qnss-newton', tol=1e-20, maxiter=8)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+  def test_80(self):
+    P = 101325.
+    T = 20. + 273.15
+    yi = np.array([0.0122802, 0.0045439, 0.7351892, 0.1175384, 0.0579690,
+                   0.0091837, 0.0224902, 0.0062381, 0.0056632, 0.0125755,
+                   0.0145719, 0.0011667, 0.0005780, 1.0668e-5, 1.3320e-6])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    stab = stabilityPT(pr, method='ss-bfgs', tol=1e-20, maxiter=18)
+    res = stab.run(P, T, yi)
+    self.assertTrue(not res.stable)
+    pass
+
+
+
 
 
 if __name__ == '__main__':

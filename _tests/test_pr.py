@@ -35,7 +35,7 @@ class pr(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    lnfi, Z = pr.getPT_lnfi_Z(P, T, yi)
+    s, Z, lnfi = pr.getPT_Z_lnfi(P, T, yi)
     Z_ = 0.95664027
     lnfi_ = np.array([12.52680951, 14.30933176])
     self.assertTrue(np.isclose(Z, Z_) & np.allclose(lnfi, lnfi_))

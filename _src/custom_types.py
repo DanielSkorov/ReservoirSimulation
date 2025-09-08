@@ -16,6 +16,8 @@ Matrix = np.ndarray[tuple[int, int], np.dtype[DType]]
 
 Tensor = np.ndarray[tuple[int, int, int], np.dtype[DType]]
 
+IVector = np.ndarray[tuple[int], np.dtype[np.int_]]
+
 
 class Eos(Protocol):
   name: str

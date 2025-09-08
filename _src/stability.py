@@ -1,5 +1,9 @@
 import logging
 
+from dataclasses import (
+  dataclass,
+)
+
 from functools import (
   partial,
 )
@@ -31,23 +35,24 @@ class StabEosPT(Eos):
     yi: Vector,
   ) -> Iterable[Vector]: ...
 
-  def getPT_lnphii_Z(
+  def getPT_Z_lnphii(
     self,
     P: Scalar,
     T: Scalar,
     yi: Vector,
-  ) -> tuple[Vector, Scalar]: ...
+  ) -> tuple[int, Scalar, Vector]: ...
 
-  def getPT_lnphii_Z_dnj(
+  def getPT_Z_lnphii_dnj(
     self,
     P: Scalar,
     T: Scalar,
     yi: Vector,
     n: Scalar,
-  ) -> tuple[Vector, Scalar, Matrix]: ...
+  ) -> tuple[int, Scalar, Vector, Matrix]: ...
 
 
-class StabResult(dict):
+@dataclass
+class StabResult(object):
   """Container for stability test outputs with pretty-printing.
 
   Attributes
@@ -55,46 +60,25 @@ class StabResult(dict):
   stable: bool
     A boolean flag indicating if the one-phase state is stable.
 
-  TPD: Scalar
-    The tangent-plane distance at a local minimum of the potential
-    energy function.
-
   Z: Scalar
     The compressibility factor of the tested mixture at a given
     pressure and temperature.
 
-  lnphiyi: Vector, shape (Nc,)
-    Natural logarithms of the fugacity coefficients of components in
-    the mixture at a given pressure and temperature.
-
-  yti: Vector, shape (Nc,)
-    The trial-phase composition. `Nc` is the number of components.
-
-  Zt: Scalar
-    The compressibility factor of the trial phase.
-
-  lnphiti: Vector, shape (Nc,
-    Natural logarithms of the fugacity coefficients of components in
-    the trial phase at a given pressure and temperature.
+  s: int
+    The designated phase (state) of the tested mixture (`0` = vapour,
+    `1` = liquid, etc.).
 
   kvji: Iterable[Vector]
     K-values of `Nc` components. They may be further used as an initial
     guess for flash calculations.
-
-  g2: Scalar
-    The sum of squared elements of the gradient of TPD-function.
   """
-  def __getattr__(self, name: str) -> object:
-    try:
-      return self[name]
-    except KeyError as e:
-      raise AttributeError(name) from e
+  stable: bool
+  Z: Scalar
+  s: int
+  kvji: Iterable[Vector]
 
   def __repr__(self) -> str:
-    with np.printoptions(linewidth=np.inf):
-      s = (f"The one-phase state is stable:\n{self.stable}\n"
-           f"Tangent-plane distance:\n{self.TPD}")
-    return s
+    return f"The one-phase state is stable: {self.stable}."
 
 
 class stabilityPT(object):
@@ -109,36 +93,38 @@ class stabilityPT(object):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar,
-                     yi: Vector) -> Iterable[Vector]`
+    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
+       -> Iterable[Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must generate initial
       guesses of k-values as an iterable object of `Vector` of shape
       `(Nc,)`.
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
     If the solution method would be one of `'newton'`, `'ss-newton'` or
     `'qnss-newton'` then it also must have:
 
-    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
-                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - partial derivatives of logarithms of the fugacity coefficients
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix` of shape
         `(Nc, Nc)`.
 
@@ -174,14 +160,6 @@ class stabilityPT(object):
     Other arguments for a stability test solver. It may contain such
     arguments as `tol`, `maxiter` and others appropriate for the selected
     stability test solver.
-
-  Methods
-  -------
-  run(P: Scalar, T: Scalar, yi: Vector) -> StabResult
-    This method performs stability test procedure for a given pressure
-    `P` in [Pa], temperature `T` in [K], mole composition `yi` of shape
-    `(Nc,)`, and returns stability test results as an instance of
-    `StabResult`.
   """
   def __init__(
     self,
@@ -242,8 +220,8 @@ class stabilityPT(object):
     Stability test results as an instance of `StabResult`. Important
     attributes are:
     - `stab` a boolean flag indicating if a one-phase state is stable,
-    - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-      energy function.
+    - `kvji` an iterable object containing vectors of k-values that can
+      be used as an initial guess for flash calculations.
 
     Raises
     ------
@@ -295,15 +273,16 @@ def _stabPT_ss(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
@@ -343,8 +322,8 @@ def _stabPT_ss(
   Stability test results as an instance of `StabResult`. Important
   attributes are:
   - `stab` a boolean flag indicating if a one-phase state is stable,
-  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-    energy function.
+  - `kvji` an iterable object containing vectors of k-values that can
+    be used as an initial guess for flash calculations.
   """
   logger.info('Stability Test (SS-method).')
   Nc = eos.Nc
@@ -354,12 +333,10 @@ def _stabPT_ss(
     'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'g2',
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e'
-  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
+  ygas = s == 0
   TPDo = eps
-  Zt = Z
   yti = yi
-  lnphiti = lnphiyi
-  g2o = 0.
   for j, ki in enumerate(kvji0):
     k = 0
     trivial = False
@@ -367,7 +344,9 @@ def _stabPT_ss(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    if sx == 0 and ygas:
+      continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *lnki, g2)
@@ -378,7 +357,7 @@ def _stabPT_ss(
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
-      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2)
@@ -395,21 +374,15 @@ def _stabPT_ss(
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
-        Zt = Zx
         yti = xi
-        lnphiti = lnphixi
-        g2o = g2
         if breakunstab:
-          stable = TPDo >= eps
-          logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+          logger.info('The system is stable: False. TPD = %.3e.', TPDo)
           kvji = yti / yi, yi / yti
-          return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, Z=Z,
-                            TPD=TPDo, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+          return StabResult(False, Z, s, kvji)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
-                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable, Z, s, kvji)
 
 
 def _stabPT_qnss(
@@ -451,15 +424,16 @@ def _stabPT_qnss(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
@@ -496,8 +470,8 @@ def _stabPT_qnss(
   Stability test results as an instance of `StabResult`. Important
   attributes are:
   - `stab` a boolean flag indicating if a one-phase state is stable,
-  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-    energy function.
+  - `kvji` an iterable object containing vectors of k-values that can
+    be used as an initial guess for flash calculations.
   """
   logger.info('Stability Test (QNSS-method).')
   Nc = eos.Nc
@@ -507,19 +481,19 @@ def _stabPT_qnss(
     'Nkv', 'Nit', *['lnkv%s' % s for s in range(Nc)], 'g2',
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e'
-  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
+  ygas = s == 0
   TPDo = eps
-  Zt = Z
   yti = yi
-  lnphiti = lnphiyi
-  g2o = 0.
   for j, ki in enumerate(kvji0):
     k = 0
     lnki = np.log(ki)
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    if sx == 0 and ygas:
+      continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *lnki, g2)
@@ -538,7 +512,7 @@ def _stabPT_qnss(
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
-      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2)
@@ -554,21 +528,15 @@ def _stabPT_qnss(
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
-        Zt = Zx
         yti = xi
-        lnphiti = lnphixi
-        g2o = g2
         if breakunstab:
-          stable = TPDo >= eps
-          logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+          logger.info('The system is stable: False. TPD = %.3e.', TPDo)
           kvji = yti / yi, yi / yti
-          return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, Z=Z,
-                            TPD=TPDo, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+          return StabResult(False, Z, s, kvji)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
-                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable, Z, s, kvji)
 
 
 def _stabPT_newt(
@@ -609,26 +577,28 @@ def _stabPT_newt(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
-    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
-                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - partial derivatives of logarithms of the fugacity coefficients
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix` of shape
         `(Nc, Nc)`.
 
@@ -676,8 +646,8 @@ def _stabPT_newt(
   Stability test results as an instance of `StabResult`. Important
   attributes are:
   - `stab` a boolean flag indicating if a one-phase state is stable,
-  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-    energy function.
+  - `kvji` an iterable object containing vectors of k-values that can
+    be used as an initial guess for flash calculations.
   """
   logger.info("Stability Test (Newton's method).")
   Nc = eos.Nc
@@ -687,13 +657,11 @@ def _stabPT_newt(
     'Nkv', 'Nit', *['alpha%s' % s for s in range(Nc)], 'g2', 'method',
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
-  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
+  ygas = s == 0
   hi = lnphiyi + np.log(yi)
   TPDo = eps
-  Zt = Z
   yti = yi
-  lnphiti = lnphiyi
-  g2o = 0.
   for j, ki in enumerate(kvji0):
     k = 0
     ni = ki * yi
@@ -701,36 +669,35 @@ def _stabPT_newt(
     alphai = 2. * sqrtni
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-    gpi = np.log(ni) + lnphixi - hi
-    gi = sqrtni * gpi
+    sx, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+    if sx == 0 and ygas:
+      continue
+    gi = np.log(ni) + lnphixi - hi
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *alphai, g2, 'newt')
     while g2 > tol and k < maxiter:
-      H = np.diagflat(.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
-      dalphai = linsolver(H, -gi)
+      H = np.diagflat(.5 * gi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
+      dalphai = linsolver(H, -sqrtni * gi)
       k += 1
       alphai += dalphai
       sqrtni = alphai * .5
       ni = sqrtni * sqrtni
       n = ni.sum()
       xi = ni / n
-      lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-      gpi = np.log(ni) + lnphixi - hi
-      gi = sqrtni * gpi
+      _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+      gi = np.log(ni) + lnphixi - hi
       g2kp1 = gi.dot(gi)
       if g2kp1 < g2 or forcenewton:
         g2 = g2kp1
         method = 'newt'
       else:
-        ni *= np.exp(-gi / sqrtni)
+        ni *= np.exp(-gi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
         n = ni.sum()
         xi = ni / n
-        lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-        gpi = np.log(ni) + lnphixi - hi
-        gi = sqrtni * gpi
+        _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+        gi = np.log(ni) + lnphixi - hi
         g2 = gi.dot(gi)
         method = 'ss'
       logger.debug(tmpl, j, k, *alphai, g2, method)
@@ -738,21 +705,15 @@ def _stabPT_newt(
       TPD = -np.log(n)
       if TPD < TPDo:
         TPDo = TPD
-        Zt = Zx
         yti = xi
-        lnphiti = lnphixi
-        g2o = g2
         if breakunstab:
-          stable = TPDo >= eps
-          logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+          logger.info('The system is stable: False. TPD = %.3e.', TPDo)
           kvji = yti / yi, yi / yti
-          return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, Z=Z,
-                            TPD=TPDo, lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+          return StabResult(False, Z, s, kvji)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
-                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable, Z, s, kvji)
 
 
 def _stabPT_ssnewt(
@@ -797,26 +758,28 @@ def _stabPT_ssnewt(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
-    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
-                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - partial derivatives of logarithms of the fugacity coefficients
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix` of shape
         `(Nc, Nc)`.
 
@@ -880,8 +843,8 @@ def _stabPT_ssnewt(
   Stability test results as an instance of `StabResult`. Important
   attributes are:
   - `stab` a boolean flag indicating if a one-phase state is stable,
-  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-    energy function.
+  - `kvji` an iterable object containing vectors of k-values that can
+    be used as an initial guess for flash calculations.
   """
   logger.info("Stability Test (SS-Newton method).")
   Nc = eos.Nc
@@ -891,12 +854,10 @@ def _stabPT_ssnewt(
   h1 = tmpl % ('Nkv', 'Nit', *['lnkv%s' % s for s in rangeNc], 'g2', 'method')
   h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
-  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
+  ygas = s == 0
   TPDo = eps
-  Zt = Z
   yti = yi
-  lnphiti = lnphiyi
-  g2o = 0.
   for j, ki in enumerate(kvji0):
     logger.debug(h1)
     k = 0
@@ -905,7 +866,9 @@ def _stabPT_ssnewt(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    if sx == 0 and ygas:
+      continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *lnki, g2, 'ss')
@@ -916,7 +879,7 @@ def _stabPT_ssnewt(
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
-      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2, 'ss')
@@ -935,53 +898,42 @@ def _stabPT_ssnewt(
         if TPD < TPDo:
           TPDo = TPD
           kti = ki
-          Zt = Zx
           yti = xi
-          lnphiti = lnphixi
-          g2o = g2
           if breakunstab:
-            stable = TPDo >= eps
-            logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+            logger.info('The system is stable: False. TPD = %.3e.', TPDo)
             kvji = yti / yi, yi / yti
-            return StabResult(stable=stable, g2=g2o, TPD=TPDo, kvji=kvji,
-                              yti=yti, lnphiti=lnphiti, Zt=Zt,
-                              lnphiyi=lnphiyi, Z=Z)
+            return StabResult(False, Z, s, kvji)
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
-        lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-        gpi = gi
-        gi = sqrtni * gpi
-        g2 = gi.dot(gi)
+        _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
         logger.debug(h2)
         logger.debug(tmpl, j, k, *alphai, g2, 'newt')
         while g2 > tol and k < maxiter:
-          H = (np.diagflat(.5 * gpi + 1.)
+          H = (np.diagflat(.5 * gi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
-          dalphai = linsolver(H, -gi)
+          dalphai = linsolver(H, -sqrtni * gi)
           k += 1
           alphai += dalphai
           sqrtni = alphai * .5
           ni = sqrtni * sqrtni
           n = ni.sum()
           xi = ni / n
-          lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-          gpi = np.log(ni) + lnphixi - hi
-          gi = sqrtni * gpi
+          _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+          gi = np.log(ni) + lnphixi - hi
           g2kp1 = gi.dot(gi)
           if g2kp1 < g2 or forcenewton:
-            method = 'newt'
             g2 = g2kp1
+            method = 'newt'
           else:
-            ni *= np.exp(-gi / sqrtni)
+            ni *= np.exp(-gi)
             sqrtni = np.sqrt(ni)
             alphai = 2. * sqrtni
             n = ni.sum()
             xi = ni / n
-            lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-            gpi = np.log(ni) + lnphixi - hi
-            gi = sqrtni * gpi
+            _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+            gi = np.log(ni) + lnphixi - hi
             g2 = gi.dot(gi)
             method = 'ss'
           logger.debug(tmpl, j, k, *alphai, g2, method)
@@ -989,24 +941,15 @@ def _stabPT_ssnewt(
           TPD = -np.log(n)
           if TPD < TPDo:
             TPDo = TPD
-            Zt = Zx
             yti = xi
-            lnphiti = lnphixi
-            g2o = g2
             if breakunstab:
-              stable = TPDo >= eps
-              logger.info(
-                'The system is stable: %s. TPD = %.3e.', stable, TPDo,
-              )
+              logger.info('The system is stable: False. TPD = %.3e.', TPDo)
               kvji = yti / yi, yi / yti
-              return StabResult(stable=stable, yti=yti, kvji=kvji, TPD=TPDo,
-                                g2=g2o, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                                lnphiti=lnphiti)
+              return StabResult(False, Z, s, kvji)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
-                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable, Z, s, kvji)
 
 
 def _stabPT_qnssnewt(
@@ -1053,26 +996,28 @@ def _stabPT_qnssnewt(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
-    - `getPT_lnphii_Z_dnj(P: Scalar, T: Scalar, yi: Vector,
-                          n: Scalar) -> tuple[Vector, Scalar, Matrix]`
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
       method must return a tuple of:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - partial derivatives of logarithms of the fugacity coefficients
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix` of shape
         `(Nc, Nc)`.
 
@@ -1133,8 +1078,8 @@ def _stabPT_qnssnewt(
   Stability test results as an instance of `StabResult`. Important
   attributes are:
   - `stab` a boolean flag indicating if a one-phase state is stable,
-  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-    energy function.
+  - `kvji` an iterable object containing vectors of k-values that can
+    be used as an initial guess for flash calculations.
   """
   logger.info("Stability Test (QNSS-Newton method).")
   Nc = eos.Nc
@@ -1144,12 +1089,10 @@ def _stabPT_qnssnewt(
   h1 = tmpl % ('Nkv', 'Nit', *['lnkv%s' % s for s in rangeNc], 'g2', 'method')
   h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
-  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
+  ygas = s == 0
   TPDo = eps
-  Zt = Z
   yti = yi
-  lnphiti = lnphiyi
-  g2o = 0.
   for j, ki in enumerate(kvji0):
     logger.debug(h1)
     k = 0
@@ -1157,7 +1100,9 @@ def _stabPT_qnssnewt(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    if sx == 0 and ygas:
+      continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     lmbd = 1.
@@ -1176,7 +1121,7 @@ def _stabPT_qnssnewt(
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
-      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2, 'qnss')
@@ -1193,53 +1138,42 @@ def _stabPT_qnssnewt(
         TPD = -np.log(n)
         if TPD < TPDo:
           TPDo = TPD
-          Zt = Zx
           yti = xi
-          lnphiti = lnphixi
-          g2o = g2
           if breakunstab:
-            stable = TPDo >= eps
-            logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+            logger.info('The system is stable: False. TPD = %.3e.', TPDo)
             kvji = yti / yi, yi / yti
-            return StabResult(stable=stable, g2=g2o, TPD=TPDo, kvji=kvji,
-                              yti=yti, lnphiti=lnphiti, Zt=Zt,
-                              lnphiyi=lnphiyi, Z=Z)
+            return StabResult(False, Z, s, kvji)
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
-        lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-        gpi = gi
-        gi = sqrtni * gpi
-        g2 = gi.dot(gi)
+        _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
         logger.debug(h2)
         logger.debug(tmpl, j, k, *alphai, g2, 'newt')
         while g2 > tol and k < maxiter:
-          H = (np.diagflat(.5 * gpi + 1.)
+          H = (np.diagflat(.5 * gi + 1.)
                + (sqrtni[:,None] * sqrtni) * dlnphixidnj)
-          dalphai = linsolver(H, -gi)
+          dalphai = linsolver(H, -sqrtni * gi)
           k += 1
           alphai += dalphai
           sqrtni = alphai * .5
           ni = sqrtni * sqrtni
           n = ni.sum()
           xi = ni / n
-          lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-          gpi = np.log(ni) + lnphixi - hi
-          gi = sqrtni * gpi
+          _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+          gi = np.log(ni) + lnphixi - hi
           g2kp1 = gi.dot(gi)
           if g2kp1 < g2 or forcenewton:
-            method = 'newt'
             g2 = g2kp1
+            method = 'newt'
           else:
-            ni *= np.exp(-gi / sqrtni)
+            ni *= np.exp(-gi)
             sqrtni = np.sqrt(ni)
             alphai = 2. * sqrtni
             n = ni.sum()
             xi = ni / n
-            lnphixi, Zx, dlnphixidnj = eos.getPT_lnphii_Z_dnj(P, T, xi, n)
-            gpi = np.log(ni) + lnphixi - hi
-            gi = sqrtni * gpi
+            _, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
+            gi = np.log(ni) + lnphixi - hi
             g2 = gi.dot(gi)
             method = 'ss'
           logger.debug(tmpl, j, k, *alphai, g2, method)
@@ -1247,24 +1181,16 @@ def _stabPT_qnssnewt(
           TPD = -np.log(n)
           if TPD < TPDo:
             TPDo = TPD
-            Zt = Zx
             yti = xi
-            lnphiti = lnphixi
-            g2o = g2
             if breakunstab:
               stable = TPDo >= eps
-              logger.info(
-                'The system is stable: %s. TPD = %.3e.', stable, TPDo,
-              )
+              logger.info('The system is stable: False. TPD = %.3e.', TPDo)
               kvji = yti / yi, yi / yti
-              return StabResult(stable=stable, yti=yti, kvji=kvji, TPD=TPDo,
-                                g2=g2o, Z=Z, lnphiyi=lnphiyi, Zt=Zt,
-                                lnphiti=lnphiti)
+              return StabResult(False, Z, s, kvji)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
-                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable, Z, s, kvji)
 
 
 def _stabPT_ssbfgs(
@@ -1307,15 +1233,16 @@ def _stabPT_ssbfgs(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_lnphii_Z(P: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Scalar]`
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
       For a given pressure [Pa], temperature [K] and mole composition
       (`Vector` of shape `(Nc,)`), this method must return a tuple that
       contains:
 
-      - logarithms of the fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
-      - the phase compressibility factor of the mixture.
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
@@ -1366,8 +1293,8 @@ def _stabPT_ssbfgs(
   Stability test results as an instance of `StabResult`. Important
   attributes are:
   - `stab` a boolean flag indicating if a one-phase state is stable,
-  - `TPD` the tangent-plane distance at a local minimum of the Gibbs
-    energy function.
+  - `kvji` an iterable object containing vectors of k-values that can
+    be used as an initial guess for flash calculations.
   """
   logger.info("Stability Test (SS-BFGS method).")
   Nc = eos.Nc
@@ -1377,13 +1304,11 @@ def _stabPT_ssbfgs(
   h1 = tmpl % ('Nkv', 'Nit', *['lnkv%s' % s for s in rangeNc], 'g2', 'method')
   h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
-  lnphiyi, Z = eos.getPT_lnphii_Z(P, T, yi)
+  s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
+  ygas = s == 0
   hi = lnphiyi + np.log(yi)
   TPDo = eps
-  Zt = Z
   yti = yi
-  lnphiti = lnphiyi
-  g2o = 0.
   for j, ki in enumerate(kvji0):
     logger.debug(h1)
     k = 0
@@ -1392,7 +1317,9 @@ def _stabPT_ssbfgs(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    if sx == 0 and ygas:
+      continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *lnki, g2, 'ss')
@@ -1403,7 +1330,7 @@ def _stabPT_ssbfgs(
       ni = ki * yi
       n = ni.sum()
       xi = ni / n
-      lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+      _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnki, g2, 'ss')
@@ -1421,24 +1348,16 @@ def _stabPT_ssbfgs(
         TPD = -np.log(n)
         if TPD < TPDo:
           TPDo = TPD
-          kti = ki
-          Zt = Zx
           yti = xi
-          lnphiti = lnphixi
-          g2o = g2
           if breakunstab:
-            stable = TPDo >= eps
-            logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
+            logger.info('The system is stable: False. TPD = %.3e.', TPDo)
             kvji = yti / yi, yi / yti
-            return StabResult(stable=stable, g2=g2o, TPD=TPDo, kvji=kvji,
-                              yti=yti, lnphiti=lnphiti, Zt=Zt,
-                              lnphiyi=lnphiyi, Z=Z)
+            return StabResult(False, Z, s, kvji)
       else:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
         gik = sqrtni * gi
-        g2 = gik.dot(gik)
         logger.debug(h2)
         logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
         si = -gik
@@ -1448,11 +1367,11 @@ def _stabPT_ssbfgs(
         ni = sqrtni * sqrtni
         n = ni.sum()
         xi = ni / n
-        lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+        _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
         gi = np.log(ni) + lnphixi - hi
         gikm1 = gik
         gik = sqrtni * gi
-        g2 = gik.dot(gik)
+        g2 = gi.dot(gi)
         logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
         if checktrivial:
           if g2 < tol:
@@ -1475,11 +1394,11 @@ def _stabPT_ssbfgs(
           ni = sqrtni * sqrtni
           n = ni.sum()
           xi = ni / n
-          lnphixi, Zx = eos.getPT_lnphii_Z(P, T, xi)
+          _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
           gi = np.log(ni) + lnphixi - hi
           gikm1 = gik
           gik = sqrtni * gi
-          g2 = gik.dot(gik)
+          g2 = gi.dot(gi)
           logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
           if checktrivial:
             if g2 < tol:
@@ -1493,21 +1412,12 @@ def _stabPT_ssbfgs(
           TPD = -np.log(n)
           if TPD < TPDo:
             TPDo = TPD
-            Zt = Zx
             yti = xi
-            lnphiti = lnphixi
-            g2o = g2
             if breakunstab:
-              stable = TPDo >= eps
-              logger.info(
-                'The system is stable: %s. TPD = %.3e.', stable, TPDo,
-              )
+              logger.info('The system is stable: False. TPD = %.3e.', TPDo)
               kvji = yti / yi, yi / yti
-              return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o,
-                                Z=Z, TPD=TPDo, lnphiyi=lnphiyi, Zt=Zt,
-                                lnphiti=lnphiti)
+              return StabResult(False, Z, s, kvji)
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
   kvji = yti / yi, yi / yti
-  return StabResult(stable=stable, yti=yti, kvji=kvji, g2=g2o, TPD=TPDo, Z=Z,
-                    lnphiyi=lnphiyi, Zt=Zt, lnphiti=lnphiti)
+  return StabResult(stable, Z, s, kvji)
