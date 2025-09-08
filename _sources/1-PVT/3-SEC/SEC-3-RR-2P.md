@@ -283,20 +283,20 @@ def update(carry, pF, tmpl):
     print(tmpl % (k + 1, akp1, eqkp1))
     return k + 1, akp1, dakp1, eqkp1
 
-pupdate = partial(update, pF=pG, tmpl='%3s %11.2e %11.2e')
+pupdate = partial(update, pF=pG, tmpl='%3s%12.2e%12.2e')
 ```
 
 Решим уравнение Речфорда-Райса с использованием метода Ньютона:
 
 ```{code-cell} python
-print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
+print('%3s%12s%12s' % ('Nit', 'a', 'G(a)'))
 
 k = 0 # Iteration number
 ak = 4. # Initial estimate
 eqk, gradk = pG(ak) # Function G(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
-print('%3s %11.2e %11.2e' % (k, ak, eqk))
+print('%3s%12.2e%12.2e' % (k, ak, eqk))
 
 carry = (k, ak, dak, eqk)
 
@@ -312,14 +312,14 @@ print('f = %.3f' % f)
 Метод Ньютона успешно нашел решение за пять итераций. Кроме того, анализируя изменение знака функции $G \left( a \right)$, можно отметить, что метод Ньютона [сходится немонотонно](https://en.wikipedia.org/wiki/Newton%27s_method#Fourier_conditions), то есть, если обозначить $a^*$ как решение уравнения, то на нулевой итерации $a_0 > a^*, \; G \left( a_0 \right) < 0$, а на первой итерации $a_1 < a^*, \; G \left( a_1 \right) > 0$. В этом случае значение на первой итерации, по сути, является перелетом *(overshoot)*. Такое поведение иногда может приводить к колебаниям вокруг решения уравнения или выходу за границы рассматриваемого интервала (NF-window). Появление перелета на первой итерации обуславливается двумя факторами: начальным приближением и видом (формулировкой) решаемого уравнения. Рассмотрим путь сходимости метода Ньютона для другого начального приближения:
 
 ```{code-cell} python
-print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
+print('%3s%12s%12s' % ('Nit', 'a', 'G(a)'))
 
 k = 0 # Iteration number
 ak = 1. # Initial estimate
 eqk, gradk = pG(ak) # Function G(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
-print('%3s %11.2e %11.2e' % (k, ak, eqk))
+print('%3s%12.2e%12.2e' % (k, ak, eqk))
 
 carry = (k, ak, dak, eqk)
 
@@ -387,16 +387,16 @@ ax3.grid(zorder=1)
 ```{code-cell} python
 pG = partial(G_val_der, yi=yi, di=di)
 pcondit = partial(condit, tol=1e-8, maxiter=50)
-pupdate = partial(update, pF=pG, tmpl='%3s %11.2e %11.2e')
+pupdate = partial(update, pF=pG, tmpl='%3s%12.2e%12.2e')
 
-print('%3s %11s %11s' % ('Nit', 'a', 'G(a)'))
+print('%3s%12s%12s' % ('Nit', 'a', 'G(a)'))
 
 k = 0 # Iteration number
 ak = 4. # Initial estimate
 eqk, gradk = pG(ak) # Function G(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
-print('%3s %11.2e %11.2e' % (k, ak, eqk))
+print('%3s%12.2e%12.2e' % (k, ak, eqk))
 
 carry = (k, ak, dak, eqk)
 
@@ -589,20 +589,20 @@ pH = partial(H_val_der, yi=yi, di=di)
 Проинициализируем функцию `update`:
 
 ```{code-cell} python
-pupdate = partial(update, pF=pH, tmpl='%3s %11.2e %11.2e')
+pupdate = partial(update, pF=pH, tmpl='%3s%12.2e%12.2e')
 ```
 
 Решим уравнение Речфорда-Райса, используя формулировку в виде $H \left( a \right) = 0$:
 
 ```{code-cell} python
-print('%3s %11s %11s' % ('Nit', 'a', 'H(a)'))
+print('%3s%12s%12s' % ('Nit', 'a', 'H(a)'))
 
 k = 0 # Iteration number
 ak = 4. # Initial estimate
 eqk, gradk = pH(ak) # Function H(a) and its derivative
 dak = eqk / gradk # Basic variable update
 
-print('%3s %11.2e %11.2e' % (k, ak, eqk))
+print('%3s%12.2e%12.2e' % (k, ak, eqk))
 
 carry = (k, ak, dak, eqk)
 
@@ -903,7 +903,7 @@ def update(carry, pD, tmpl):
     print(tmpl % (k + 1, akp1, Dkp1, form))
     return k + 1, akp1, Dkp1 / dDkp1da, Dkp1
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s')
 ```
 
 Зададим номер итерации, начальное приближение и рассчитаем значения функции $D \left( a \right)$ и ее производной в точке с начальным приближением:
@@ -917,8 +917,8 @@ Dk, dDkda = pD(ak)
 Решим уравнение Речфорда-Райса методом Ньютона:
 
 ``` python
-print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
-print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
+print('%3s%12s%12s%9s' % ('Nit', 'a', 'D(a)', 'Form'))
+print('%3s%12.2e%12.2e%9s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -979,15 +979,15 @@ def update(carry, pD, tmpl):
     Dkp1, dDkp1da = pD(akp1)
     return (k + 1, akp1, Dkp1 / dDkp1da, Dkp1), tmpl % (k + 1, akp1, Dkp1, form)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s\n')
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out1 = ''
-out1 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out1 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
+out1 += '%3s%12s%12s%9s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out1 += '%3s%12.2e%12.2e%9s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1054,7 +1054,7 @@ pD = partial(fD, yi=yi, di=di)
 Проинициализируем функцию `update`, созданную при рассмотрении предыдущего примера:
 
 ``` python
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s')
 ```
 
 Зададим номер итерации, начальное приближение и рассчитаем значения функции $D \left( a \right)$ и ее производной в точке с начальным приближением:
@@ -1068,8 +1068,8 @@ Dk, dDkda = pD(ak)
 Решим уравнение Речфорда-Райса методом Ньютона:
 
 ``` python
-print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
-print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
+print('%3s%12s%12s%9s' % ('Nit', 'a', 'D(a)', 'Form'))
+print('%3s%12.2e%12.2e%9s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 while pcondit(carry):
@@ -1102,15 +1102,15 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s\n')
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out3 = ''
-out3 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out3 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
+out3 += '%3s%12s%12s%9s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out3 += '%3s%12.2e%12.2e%9s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1152,15 +1152,15 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s')
 
-print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
+print('%3s%12s%12s%9s' % ('Nit', 'a', 'D(a)', 'Form'))
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
-print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
+print('%3s%12.2e%12.2e%9s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1195,15 +1195,15 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s\n')
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out5 = ''
-out5 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out5 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
+out5 += '%3s%12s%12s%9s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out5 += '%3s%12.2e%12.2e%9s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1244,15 +1244,15 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s')
 
-print('%3s %11s %11s %8s' % ('Nit', 'a', 'D(a)', 'Form'))
+print('%3s%12s%12s%9s' % ('Nit', 'a', 'D(a)', 'Form'))
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
-print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
+print('%3s%12.2e%12.2e%9s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1286,15 +1286,15 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s\n')
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out7 = ''
-out7 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out7 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
+out7 += '%3s%12s%12s%9s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out7 += '%3s%12.2e%12.2e%9s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1349,13 +1349,13 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s')
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
-print('%3s %11.2e %11.2e %8s' % (k, ak, Dk, 'D'))
+print('%3s%12.2e%12.2e%9s' % (k, ak, Dk, 'D'))
 
 carry = (k, ak, Dk / dDkda, Dk)
 
@@ -1390,15 +1390,15 @@ di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
 
 pD = partial(fD, yi=yi, di=di)
 
-pupdate = partial(update, pD=pD, tmpl='%3s %11.2e %11.2e %8s\n')
+pupdate = partial(update, pD=pD, tmpl='%3s%12.2e%12.2e%9s\n')
 
 k = 0
 ak = yi[0] / yi[-1]
 Dk, dDkda = pD(ak)
 
 out9 = ''
-out9 += '%3s %11s %11s %8s\n' % ('Nit', 'a', 'D(a)', 'Form')
-out9 += '%3s %11.2e %11.2e %8s\n' % (k, ak, Dk, 'D')
+out9 += '%3s%12s%12s%9s\n' % ('Nit', 'a', 'D(a)', 'Form')
+out9 += '%3s%12.2e%12.2e%9s\n' % (k, ak, Dk, 'D')
 
 carry = (k, ak, Dk / dDkda, Dk)
 

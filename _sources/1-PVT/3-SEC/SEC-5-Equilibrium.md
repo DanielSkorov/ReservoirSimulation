@@ -21,13 +21,6 @@ kernelspec:
 
 В результате решения задачи поиска равновесного состояния многокомпонентной ($N_c$ – количество компонентов), многофазной ($N_p$ – количество фаз) системы для фиксированных и известных давления $P$, температуры $T$, а также количеств вещества компонентов в системе $n_i, \, i = 1 \, \ldots \, N_c,$ требуется определить количества вещества компонентов в фазах $n_{ji}, \, j = 1 \, \ldots N_p - 1, \, i = 1 \, \ldots \, N_c,$ то есть всего $N_c \times \left( N_p - 1 \right)$ неизвестных, соответствующих положению [глобального минимума функции энергии Гиббса](../1-TD/TD-14-PhaseEquilibrium.md), с учетом ограничений $0 \leq n_{ji} \leq n_i, \, j = 1 \, \ldots N_p, \, i = 1 \, \ldots \, N_c,$ и $\sum_{j=1}^{N_p} n_{ji} = n_i, \, i = 1 \, \ldots \, N_c,$. В этом случае задача поиска равновесного состояния формулируется как задача минимизации функции энергии Гиббса и, принимая во внимание ее [экстенсивность](../1-TD/TD-9-Observables.md#pvt-td-observables-extensive), может быть записана следующим образом:
 
-````{margin}
-```{admonition} Дополнительно
-:class: note
-При использовании двойного индексирования здесь и далее первый индекс будет обозначать фазу, второй – компонент. То есть под $n_{ji}$ следует понимать количество вещества $i$-го компонента в $j$-й фазе, а под, например, $f_{N_pk}$ – летучесть $k$-го компонента в $N_p$-й фазе. При использовании одинарного индексирования будет явно указано отношение данного элемента к вектору, характеризующему свойства фаз или компонентов.
-```
-````
-
 $$ \begin{alignat}{1}
 \min_{\hat{K}} & \;\;\;\;\;\;\; && G \left( \hat{K} \right) = \sum_{j=1}^{N_p} G_j \left( \mathbf{n}_j \right) \\
 \mathrm{subject\,to} &&& 0 \leq n_{ji} \leq n_i, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c \\
@@ -218,7 +211,7 @@ def condit_ssi(carry, tol, maxiter):
 pcondit_ssi = partial(condit_ssi, tol=eps, maxiter=maxiter)
 ```
 
-Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Для расчета логарифмов летучести компонентов будем использовать метод `getPT_lnphii` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий массив логарифмов коэффициентов летучести компонента такой же размерности.
+Также создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Для расчета логарифмов летучести компонентов будем использовать метод `getPT_lnphii` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий состояние системы (жидкость или газ), а также массив логарифмов коэффициентов летучести компонента размерности `(Nc,)`.
 
 ``` python
 def update_ssi_2p(carry, yi, plnphi):
@@ -227,8 +220,8 @@ def update_ssi_2p(carry, yi, plnphi):
     F1_kp1 = solve2p_FGH(kvi_kp1, yi)
     y2i = yi / (F1_kp1 * (kvi_kp1 - 1.) + 1.)
     y1i = y2i * kvi_kp1
-    lnphi2i = plnphi(yi=y2i)
-    lnphi1i = plnphi(yi=y1i)
+    _, lnphi2i = plnphi(yi=y2i)
+    _, lnphi1i = plnphi(yi=y1i)
     gi_kp1 = np.log(kvi_kp1) + lnphi1i - lnphi2i
     return k + 1, kvi_kp1, F1_kp1, gi_kp1
 
@@ -242,8 +235,8 @@ for i, kvi in enumerate(stabres.kvji):
     F1 = solve2p_FGH(kvi, yi)
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i = pr.getPT_lnphii(P, T, y2i)
-    lnphi1i = pr.getPT_lnphii(P, T, y1i)
+    _, lnphi2i = pr.getPT_lnphii(P, T, y2i)
+    _, lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
     carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
@@ -273,20 +266,20 @@ print(stab.run(P, T, y1i))
 ```{glue:} glued_out4
 ```
 
-Тест стабильности показал, что найденное решение соответствует равновесному состоянию. Проиллюстрируем данный пример графически. Для этого построим зависимость функции приведенной добавочной энергии Гиббса для первой фазы от компонентного состава и проведем касательную в точке с найденным равновесным составом этой фазы. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `getPT_lnphiji_Zj`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий соответствующие коэффициенты летучести компонентов в виде двумерного массива такой же размерности и коэффициенты сверхсжимаемости в виде одномерного массива для каждого компонентного состава.
+Тест стабильности показал, что найденное решение соответствует равновесному состоянию. Проиллюстрируем данный пример графически. Для этого построим зависимость функции приведенной добавочной энергии Гиббса для первой фазы от компонентного состава и проведем касательную в точке с найденным равновесным составом этой фазы. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `getPT_Zj_lnphiji`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий одномерный массив (вектор) состояний системы (жидкость или газ), вектор коэффициентов сверхсжимаемости для каждого компонентного состава, а также соответствующие коэффициенты летучести компонентов в виде двумерного массива (матрицы) размерности `(Np, Nc)`.
 
 ``` python
 xj1 = np.linspace(1e-4, 0.9999, 1000, endpoint=True)
 xji = np.vstack([xj1, 1. - xj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+_, _, lnphiji = pr.getPT_Zj_lnphiji(P, T, xji)
 lnfji = lnphiji + np.log(P * xji)
 Gj = np.vecdot(xji, lnfji)
 ```
 
-Получим значения касательной, проведенной к функции приведенной добавочной энергии Гиббса. Для расчета логарифмов летучести компонентов будем использовать метод `getPT_lnfi`, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью `(Nc,)`) и возвращающий логарифмы летучести компонентов в виде одномерного массива такой же размерности.
+Получим значения касательной, проведенной к функции приведенной добавочной энергии Гиббса. Для расчета логарифмов летучести компонентов будем использовать метод `getPT_lnfi`, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью `(Nc,)`) и возвращающий состояние компонентного состава (газ или жидкость), а также вектор логарифмов летучести компонентов.
 
 ``` python
-lnfi = pr.getPT_lnfi(P, T, y1i)
+_, lnfi = pr.getPT_lnfi(P, T, y1i)
 Lj = xji.dot(lnfi)
 ```
 
@@ -343,13 +336,13 @@ ax2.set_ylim(0., 1.)
 ax2.set_xlabel('Количество вещества диоксида углерода в первой фазе, моль')
 ax2.set_ylabel('Tangent plane distance (TPD)')
 
-ax2ins = ax2.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(0., .04))
+ax2ins = ax2.inset_axes([0.55, 0.4, 0.42, 0.55], xlim=(0.7, 1.), ylim=(0., 0.04))
 ax2ins.plot(xj1, Dj, lw=2., c='m', zorder=2)
 ax2ins.text(0.8, 0.02, '$y_{1,CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
-ax2ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=3)
+ax2ins.plot([0.818, 0.818], [0., 0.035], lw=1., ls='--', c='b', zorder=3)
 ax2ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=3)
 ax2ins.text(0.9, 0.02, '$y_{2,CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
-ax2ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=3)
+ax2ins.plot([0.918, 0.918], [0., 0.035], lw=1., ls='--', c='g', zorder=3)
 ax2ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=3)
 ax2ins.set_xlabel('Количество вещества диоксида\nуглерода в первой фазе, моль', fontsize=9)
 ax2ins.set_ylabel('Tangent plane distance (TPD)', fontsize=9)
@@ -387,7 +380,7 @@ eps = 1e-6 # Tolerance
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
-wi = np.array([.225, .008]) # Acentric factors
+wi = np.array([0.225, 0.008]) # Acentric factors
 mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
 dij = np.array([0.025]) # Binary interaction parameters
@@ -413,8 +406,8 @@ def update_ssi_2p(carry, yi, plnphi):
     F1_kp1 = solve2p_FGH(kvi_kp1, yi)
     y2i = yi / (F1_kp1 * (kvi_kp1 - 1.) + 1.)
     y1i = y2i * kvi_kp1
-    lnphi2i = plnphi(yi=y2i)
-    lnphi1i = plnphi(yi=y1i)
+    _, lnphi2i = plnphi(yi=y2i)
+    _, lnphi1i = plnphi(yi=y1i)
     gi_kp1 = np.log(kvi_kp1) + lnphi1i - lnphi2i
     return k + 1, kvi_kp1, F1_kp1, gi_kp1
 
@@ -426,8 +419,8 @@ for i, kvi in enumerate(stabres.kvji):
     F1 = solve2p_FGH(kvi, yi)
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i = pr.getPT_lnphii(P, T, y2i)
-    lnphi1i = pr.getPT_lnphii(P, T, y1i)
+    _, lnphi2i = pr.getPT_lnphii(P, T, y2i)
+    _, lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
     carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
@@ -448,11 +441,11 @@ out4 = str(stab.run(P, T, y1i))
 
 xj1 = np.linspace(1e-4, 0.9999, 1000, endpoint=True)
 xji = np.vstack([xj1, 1. - xj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+_, _, lnphiji = pr.getPT_Zj_lnphiji(P, T, xji)
 lnfji = lnphiji + np.log(P * xji)
 Gj = np.vecdot(xji, lnfji)
 
-lnfi = pr.getPT_lnfi(P, T, y1i)
+_, lnfi = pr.getPT_lnfi(P, T, y1i)
 Lj = xji.dot(lnfi)
 
 from matplotlib import pyplot as plt
@@ -491,13 +484,13 @@ ax2.set_ylim(0., 1.)
 ax2.set_xlabel('Количество вещества диоксида углерода в первой фазе, моль')
 ax2.set_ylabel('Tangent plane distance (TPD)')
 
-ax2ins = ax2.inset_axes([.55, .4, .42, .55], xlim=(.7, 1.), ylim=(0., .04))
+ax2ins = ax2.inset_axes([0.55, 0.4, 0.42, 0.55], xlim=(0.7, 1.), ylim=(0., 0.04))
 ax2ins.plot(xj1, Dj, lw=2., c='m', zorder=2)
 ax2ins.text(0.8, 0.02, '$y_{1,CO_2} = 0.818$', fontsize=8, color='b', rotation='vertical')
-ax2ins.plot([0.818, 0.818], [0., .035], lw=1., ls='--', c='b', zorder=3)
+ax2ins.plot([0.818, 0.818], [0., 0.035], lw=1., ls='--', c='b', zorder=3)
 ax2ins.plot([0.818], [1e-3], lw=0., marker='v', c='b', zorder=3)
 ax2ins.text(0.9, 0.02, '$y_{2,CO_2} = 0.918$', fontsize=8, color='g', rotation='vertical')
-ax2ins.plot([0.918, 0.918], [0., .035], lw=1., ls='--', c='g', zorder=3)
+ax2ins.plot([0.918, 0.918], [0., 0.035], lw=1., ls='--', c='g', zorder=3)
 ax2ins.plot([0.918], [1e-3], lw=0., marker='v', c='g', zorder=3)
 ax2ins.set_xlabel('Количество вещества диоксида\nуглерода в первой фазе, моль', fontsize=9)
 ax2ins.set_ylabel('Tangent plane distance (TPD)', fontsize=9)
@@ -545,7 +538,7 @@ glue('glued_fig2', fig2)
 ``` python
 P = 101325. # Pressure [Pa]
 T = 20. + 273.15 # Temperature [K]
-yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
+yi = np.array([0.1, 0.6, 0.3]) # Mole fractions [fr.]
 ```
 
 Зададим свойства компонентов, необходимые для уравнения состояния Пенга-Робинсона, и выполним инициализацию класса.
@@ -557,14 +550,14 @@ wi = np.array([0.008, 0.27504, 0.344]) # Acentric factors
 mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0., 0.]) # Volume shift parameters
 dij = np.array([0.0253, 0.4907, 0.48]) # Binary interaction parameters
-pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
+# kvlevel=1 indicates an increased number of arrays of initial k-values
 ```
 
 Проиницилизируем класс для проведения теста стабильности и выполним проверку стабильности однофазного состояния.
 
 ``` python
-# level=1 indicates an increased number of arrays of initial k-values
-stab = stabilityPT(pr, method='ss', level=1)
+stab = stabilityPT(pr, method='ss')
 stabres = stab.run(P, T, yi)
 print(stabres)
 ```
@@ -585,10 +578,10 @@ for i, kvi in enumerate(stabres.kvji):
     F1 = solve2p_FGH(kvi, yi)
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i = pr.getPT_lnphii(P, T, y2i)
-    lnphi1i = pr.getPT_lnphii(P, T, y1i)
+    _, lnphi2i = pr.getPT_lnphii(P, T, y2i)
+    _, lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -607,7 +600,7 @@ for i, kvi in enumerate(stabres.kvji):
 ```{glue:} glued_out6
 ```
 
-Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за пять итераций. Проверим, является ли двухфазное состояние рассматриваемой системы стабильным. Для этого проведем тест стабильности для одной из фаз.
+Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за четыре итерации. Проверим, является ли двухфазное состояние рассматриваемой системы стабильным. Для этого проведем тест стабильности для одной из фаз.
 
 ``` python
 stabres = stab.run(P, T, y2i)
@@ -646,10 +639,10 @@ xi = yi / (Fj.dot(kvji - 1.) + 1.)
 yji = xi * kvji
 ```
 
-Выполним расчет коэффициентов летучестей для каждого компонента в каждой из фаз. Для этого воспользуемся методом `getPT_lnphiji_Zj` инициализированного класса с уравнением состояния.
+Выполним расчет коэффициентов летучестей для каждого компонента в каждой из фаз. Для этого воспользуемся методом `getPT_Zj_lnphiji` инициализированного класса с уравнением состояния.
 
 ``` python
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, np.vstack([yji, xi]))
+_, Zj, lnphiji = pr.getPT_Zj_lnphiji(P, T, np.vstack([yji, xi]))
 ```
 
 Рассчитаем матрицу невязок.
@@ -667,17 +660,17 @@ def update_ssi_Np(carry, yi, plnphi):
     Fj_kp1 = solveNp(kvji_kp1, yi, Fj_k)
     xi = yi / (Fj_kp1.dot(kvji_kp1 - 1.) + 1.)
     yji = xi * kvji_kp1
-    lnphiji, Zj = plnphi(yji=np.vstack([yji, xi]))
+    _, _, lnphiji = plnphi(yji=np.vstack([yji, xi]))
     gji_kp1 = np.log(kvji_kp1) + lnphiji[:-1] - lnphiji[-1]
     return k + 1, kvji_kp1, Fj_kp1, gji_kp1
 
-pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, Pj=P, Tj=T))
+pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_Zj_lnphiji, Pj=P, Tj=T))
 ```
 
 В цикле `while` найдем решение системы нелинейных уравнений, определяющей положение локальных минимумов функции энергии Гиббса, соответствующих трехфазному состоянию системы.
 
 ``` python
-carry = (1, kvji, Fj, gji)
+carry = (0, kvji, Fj, gji)
 
 while pcondit_ssi(carry):
     carry = pupdate_ssi_Np(carry)
@@ -715,17 +708,17 @@ print(stab.run(P, T, yji[1]))
 
 P = 101325. # Pressure [Pa]
 T = 20. + 273.15 # Temperature [K]
-yi = np.array([.1, .6, .3]) # Mole fractions [fr.]
+yi = np.array([0.1, 0.6, 0.3]) # Mole fractions [fr.]
 
 Pci = np.array([4.600155, 3.2890095, 22.04832]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([190.6, 507.5, 647.3]) # Critical temperatures [K]
-wi = np.array([.008, .27504, .344]) # Acentric factors
+wi = np.array([0.008, 0.27504, 0.344]) # Acentric factors
 mwi = np.array([0.016043, 0.086, 0.018015]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0., 0.]) # Volume shift parameters
-dij = np.array([.0253, 0.4907, 0.48]) # Binary interaction parameters
-pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+dij = np.array([0.0253, 0.4907, 0.48]) # Binary interaction parameters
+pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=1)
 
-stab = stabilityPT(pr, method='ss', level=1)
+stab = stabilityPT(pr, method='ss')
 stabres = stab.run(P, T, yi)
 out5 = str(stabres)
 
@@ -736,10 +729,10 @@ for i, kvi in enumerate(stabres.kvji):
     F1 = solve2p_FGH(kvi, yi)
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i = pr.getPT_lnphii(P, T, y2i)
-    lnphi1i = pr.getPT_lnphii(P, T, y1i)
+    _, lnphi2i = pr.getPT_lnphii(P, T, y2i)
+    _, lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -765,7 +758,7 @@ out9 = f'{Fj = }'
 
 xi = yi / (Fj.dot(kvji - 1.) + 1.)
 yji = xi * kvji
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, np.vstack([yji, xi]))
+_, _, lnphiji = pr.getPT_Zj_lnphiji(P, T, np.vstack([yji, xi]))
 gji = np.log(kvji) + lnphiji[:-1] - lnphiji[-1]
 
 def update_ssi_Np(carry, yi, plnphi):
@@ -774,13 +767,13 @@ def update_ssi_Np(carry, yi, plnphi):
     Fj_kp1 = solveNp(kvji_kp1, yi, Fj_k)
     xi = yi / (Fj_kp1.dot(kvji_kp1 - 1.) + 1.)
     yji = xi * kvji_kp1
-    lnphiji, Zj = plnphi(yji=np.vstack([yji, xi]))
+    _, _, lnphiji = plnphi(yji=np.vstack([yji, xi]))
     gji_kp1 = np.log(kvji_kp1) + lnphiji[:-1] - lnphiji[-1]
     return k + 1, kvji_kp1, Fj_kp1, gji_kp1
 
-pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_lnphiji_Zj, Pj=P, Tj=T))
+pupdate_ssi_Np = partial(update_ssi_Np, yi=yi, plnphi=partial(pr.getPT_Zj_lnphiji, Pj=P, Tj=T))
 
-carry = (1, kvji, Fj, gji)
+carry = (0, kvji, Fj, gji)
 
 while pcondit_ssi(carry):
     carry = pupdate_ssi_Np(carry)
@@ -883,10 +876,10 @@ for i, kvi in enumerate(stabres.kvji):
     F1 = solve2p_FGH(kvi, yi)
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i = pr.getPT_lnphii(P, T, y2i)
-    lnphi1i = pr.getPT_lnphii(P, T, y1i)
+    _, lnphi2i = pr.getPT_lnphii(P, T, y2i)
+    _, lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -905,7 +898,7 @@ for i, kvi in enumerate(stabres.kvji):
 ```{glue:} glued_out13
 ```
 
-Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за 99 итераций. Проверим, является ли двухфазное состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
+Метод последовательных подстановок нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, за 98 итераций. Проверим, является ли двухфазное состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
 
 ``` python
 stabres = stab.run(P, T, y2i)
@@ -951,10 +944,10 @@ for i, kvi in enumerate(stabres.kvji):
     F1 = solve2p_FGH(kvi, yi)
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i = pr.getPT_lnphii(P, T, y2i)
-    lnphi1i = pr.getPT_lnphii(P, T, y1i)
+    _, lnphi2i = pr.getPT_lnphii(P, T, y2i)
+    _, lnphi1i = pr.getPT_lnphii(P, T, y1i)
     gi = np.log(kvi) + lnphi1i - lnphi2i
-    carry = (1, kvi, F1, gi)
+    carry = (0, kvi, F1, gi)
     while pcondit_ssi(carry):
         carry = pupdate_ssi_2p(carry)
     k, kvi, F1, gi = carry
@@ -1234,7 +1227,7 @@ print(stabres)
 ```{glue:} glued_out15
 ```
 
-Выполним расчет двухфазного равновесного состояния с использованием метода локальной минимизации энергии Гиббса. Для этого создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Для расчета логарифмов летучести компонентов и их частных производных по количеству вещества компонентов будем использовать метод `getPT_lnphii_Z_dnj` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K), компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и количество вещества фазы (в моль) и возвращающий кортеж из массива логарифмов коэффициентов летучести компонентов (размерностью `(Nc,)`), коэффициент сверхсжимаемости фазы, а также матрицу частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества (размерностью `(Nc, Nc)`). Для решения системы линейных уравнений будем использовать [`numpy.linalg.solve`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html).
+Выполним расчет двухфазного равновесного состояния с использованием метода локальной минимизации энергии Гиббса. Для этого создадим функцию, которая будет принимать на вход результаты предыдущей итерации в виде кортежа и рассчитывать результаты для новой итерации. Для расчета логарифмов летучести компонентов и их частных производных по количеству вещества компонентов будем использовать метод `getPT_Z_lnphii_dnj` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K), компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и количество вещества фазы (в моль) и возвращающий кортеж из состояния системы (жидкость или газ), коэффициента сверхсжимаемости фазы, массива логарифмов коэффициентов летучести компонентов (размерностью `(Nc,)`), а также матрицы частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества (размерностью `(Nc, Nc)`). Для решения системы линейных уравнений будем использовать [`numpy.linalg.solve`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html).
 
 ``` python
 def update_newton_2p(carry, yi, plnphi):
@@ -1247,8 +1240,8 @@ def update_newton_2p(carry, yi, plnphi):
     F2_kp1 = 1. - F1_kp1
     y2i = yi / (F1_kp1 * (kvi_kp1 - 1.) + 1.)
     y1i = y2i * kvi_kp1
-    lnphi2i, Z2, dlnphi2idn2j = plnphi(yi=y2i, n=F2_kp1)
-    lnphi1i, Z1, dlnphi1idn1j = plnphi(yi=y1i, n=F1_kp1)
+    _, _, lnphi2i, dlnphi2idn2j = plnphi(yi=y2i, n=F2_kp1)
+    _, _, lnphi1i, dlnphi1idn1j = plnphi(yi=y1i, n=F1_kp1)
     gi_kp1 = lnkvi_kp1 + lnphi1i - lnphi2i
     U_kp1 = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1_kp1 * F2_kp1)
     H_kp1 = dlnphi1idn1j + dlnphi2idn2j + U_kp1
@@ -1257,7 +1250,7 @@ def update_newton_2p(carry, yi, plnphi):
 pupdate_newton_2p = partial(
   update_newton_2p,
   yi=yi,
-  plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T),
+  plnphi=partial(pr.getPT_Z_lnphii_dnj, P=P, T=T),
 )
 ```
 
@@ -1287,12 +1280,12 @@ for i, kvi in enumerate(stabres.kvji):
     F2 = 1. - F1
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i, Z2, dlnphi2idn2j = pr.getPT_lnphii_Z_dnj(P, T, y2i, F2)
-    lnphi1i, Z1, dlnphi1idn1j = pr.getPT_lnphii_Z_dnj(P, T, y1i, F1)
+    _, _, lnphi2i, dlnphi2idn2j = pr.getPT_Z_lnphii_dnj(P, T, y2i, F2)
+    _, _, lnphi1i, dlnphi1idn1j = pr.getPT_Z_lnphii_dnj(P, T, y1i, F1)
     gi = lnkvi + lnphi1i - lnphi2i
     U = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1 * F2)
     H = dlnphi1idn1j + dlnphi2idn2j + U
-    carry = (1, lnkvi, F1, H, U, gi)
+    carry = (0, lnkvi, F1, H, U, gi)
     while pcondit_newton(carry):
         carry = pupdate_newton_2p(carry)
     k, lnkvi, F1, _, _, gi = carry
@@ -1312,7 +1305,7 @@ for i, kvi in enumerate(stabres.kvji):
 ```{glue:} glued_out16
 ```
 
-Метод Ньютона нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, всего за пять итераций. Проверим, является ли это состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
+Метод Ньютона нашел состояние, характеризующееся равенством летучестей соответствующих компонентов в фазах, всего за четыре итерации. Проверим, является ли это состояние стабильным. Для этого проведем тест стабильности для одной из фаз:
 
 ``` python
 stabres = stab.run(P, T, y2i)
@@ -1346,8 +1339,8 @@ def update_newton_2p(carry, yi, plnphi):
     F2_kp1 = 1. - F1_kp1
     y2i = yi / (F1_kp1 * (kvi_kp1 - 1.) + 1.)
     y1i = y2i * kvi_kp1
-    lnphi2i, Z2, dlnphi2idn2j = plnphi(yi=y2i, n=F2_kp1)
-    lnphi1i, Z1, dlnphi1idn1j = plnphi(yi=y1i, n=F1_kp1)
+    _, _, lnphi2i, dlnphi2idn2j = plnphi(yi=y2i, n=F2_kp1)
+    _, _, lnphi1i, dlnphi1idn1j = plnphi(yi=y1i, n=F1_kp1)
     gi_kp1 = lnkvi_kp1 + lnphi1i - lnphi2i
     U_kp1 = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1_kp1 * F2_kp1)
     H_kp1 = dlnphi1idn1j + dlnphi2idn2j + U_kp1
@@ -1356,7 +1349,7 @@ def update_newton_2p(carry, yi, plnphi):
 pupdate_newton_2p = partial(
   update_newton_2p,
   yi=yi,
-  plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T),
+  plnphi=partial(pr.getPT_Z_lnphii_dnj, P=P, T=T),
 )
 
 maxiter = 50 # Maximum number of iterations
@@ -1375,12 +1368,12 @@ for i, kvi in enumerate(stabres.kvji):
     F2 = 1. - F1
     y2i = yi / (F1 * (kvi - 1.) + 1.)
     y1i = y2i * kvi
-    lnphi2i, Z2, dlnphi2idn2j = pr.getPT_lnphii_Z_dnj(P, T, y2i, F2)
-    lnphi1i, Z1, dlnphi1idn1j = pr.getPT_lnphii_Z_dnj(P, T, y1i, F1)
+    _, _, lnphi2i, dlnphi2idn2j = pr.getPT_Z_lnphii_dnj(P, T, y2i, F2)
+    _, _, lnphi1i, dlnphi1idn1j = pr.getPT_Z_lnphii_dnj(P, T, y1i, F1)
     gi = lnkvi + lnphi1i - lnphi2i
     U = (np.diagflat(yi / (y1i * y2i)) - 1.) / (F1 * F2)
     H = dlnphi1idn1j + dlnphi2idn2j + U
-    carry = (1, lnkvi, F1, H, U, gi)
+    carry = (0, lnkvi, F1, H, U, gi)
     while pcondit_newton(carry):
         carry = pupdate_newton_2p(carry)
     k, lnkvi, F1, _, _, gi = carry
@@ -1404,7 +1397,7 @@ glue('glued_out16', MultilineText(out16))
 glue('glued_out17', MultilineText(out17))
 ```
 
-В данном примере начальные приближения для метода локальной минимизации функции энергии Гиббса были получены на основе результатов теста стабильности. Пример реализации алгоритма определения равновесного состояния системы, основанного на применении метода последовательных подстановок для уточнения начальных приближений, представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py).
+В данном примере начальные приближения для метода локальной минимизации функции энергии Гиббса были получены на основе результатов теста стабильности. Пример реализации алгоритма определения равновесного состояния системы, основанного на применении метода последовательных подстановок для уточнения начальных приближений, представлен [здесь](https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/flash.py). Кроме того, там же представлен пример реализации метода Ньютона для нахождения равновесного состояния многофазной системы.
 
 Таким образом, в рамках данного подраздела были подробно рассмотрены различные алгоритмы расчета равновесного состояния для известных давления, температуры и компонентного состава, а также их реализации. Следующий подраздел будет посвящен нахождению равновесного состояния для известных объема, температуры и компонентного состава.
 

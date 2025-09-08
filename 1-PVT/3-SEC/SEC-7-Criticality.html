@@ -477,10 +477,7 @@ P_c &amp;= \sum_{i=1}^{N_c} {P_c}_i y_i, \; i = 1 \, \ldots \, N_c,
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable:
-False
-Tangent-plane distance:
--0.0040533336630620065
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The one-phase state is stable: False.
 </pre></div>
 </div>
 </div>
@@ -495,7 +492,7 @@ Tangent-plane distance:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase composition:
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Phase compositions:
 [[0.87389659 0.12610341]
  [0.91968935 0.08031065]]
 Phase mole fractions:
@@ -587,7 +584,7 @@ Phase compressibility factors:
 \[\begin{split} \begin{align}
 \delta F &amp;= 0 &amp;&amp; \mathrm{and} \\
 \delta^2 F &amp; &gt; 0 &amp;&amp; \mathrm{but \, if} = 0, \, \mathrm{then} \\
-\delta^3 F &amp; &gt; 0 &amp;&amp; \mathrm{but \, if} = 0, \, \mathrm{then} \, \ldots \; \mathrm{until} \, \delta^m F &gt; 0.
+\delta^3 F &amp; &gt; 0 &amp;&amp; \mathrm{but \, if} = 0, \, \mathrm{then} \, \ldots \; \mathrm{until} \; \delta^m F &gt; 0.
 \end{align} \end{split}\]</div>
 <p>Кроме того, принцип изолированности рассматриваемой системы можно сформулировать в виде следующих выражений (на примере двухфазной постановки):</p>
 <div class="math notranslate nohighlight">
@@ -780,13 +777,12 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">pyrqi</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rayleigh quotient iteration:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">lmbdk</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Minimum eigenvalue is: </span><span class="si">{</span><span class="n">lmbdk</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rayleigh quotient iteration:
-	lmbdk = np.float64(0.6398571436700974)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Minimum eigenvalue is: 0.640
 </pre></div>
 </div>
 </div>
@@ -794,20 +790,11 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 <p>Для начального приближения минимальное собственное значение матрицы <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> получилось больше нуля, то есть начальное приближение не находится на спинодали рассматриваемой смеси. Определим такую темперутуру, решая уравнение <span class="math notranslate nohighlight">\(\lambda_{min} \left( T, \, V \right) = 0\)</span> с использованием представленного выше численного метода. На его первой итерации необходимо получить значение частной производной минимального собственного значения по температуре. Зададимся небольшим сдвигом температуры, определим матрицу частных производных для соответствующей температуры и ее минимальное собственное значение. Необходимо отметить, что во избежание влияния погрешности определения минимального собственного значения на его частную производную по температуре, будем использовать метод <code class="docutils literal notranslate"><span class="pre">np.linalg.eigvals</span></code> для определения собственных значений матрицы и метод <code class="docutils literal notranslate"><span class="pre">np.min</span></code> для выбора минимального из них. Данный подход будет использоваться только на начальной итерации:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dT</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="o">*</span> <span class="n">Tk</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">dT</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="o">*</span> <span class="n">Tk</span>
 <span class="n">lmbdkdT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 <span class="n">dlmbddT</span> <span class="o">=</span> <span class="p">(</span><span class="n">lmbdkdT</span> <span class="o">-</span> <span class="n">lmbdk</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span>
 <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdk</span> <span class="o">/</span> <span class="n">dlmbddT</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Tk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">lmbdk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dT</span><span class="w"> </span><span class="si">= }</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
-	Tk = np.float64(255.33072500000003)
-	lmbdk = np.float64(0.6398571436700974)
-	dT = np.float64(-65.11969654518651)
 </pre></div>
 </div>
 </div>
@@ -815,7 +802,12 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
 <p>Решим первое условие критического состояния с использованием чиленного подхода. Значения производных минимального собственного значения по температуре будем определять с использованием предложенного выше квазиньютоновского подхода.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tmpl</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%3s%9.2f%8.3f%13.3e</span><span class="s1">&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%3s%9s%8s%13s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;Nit&#39;</span><span class="p">,</span> <span class="s1">&#39;T, K&#39;</span><span class="p">,</span> <span class="s1">&#39;lmbd&#39;</span><span class="p">,</span> <span class="s1">&#39;ΔT / T&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">lmbdk</span><span class="p">,</span> <span class="n">dT</span><span class="p">))</span>
+
+<span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lmbdk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-5</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">:</span>
+    <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="n">Tkp1</span> <span class="o">=</span> <span class="n">Tk</span> <span class="o">+</span> <span class="n">dT</span>
     <span class="n">Q</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_lnfi_dnj</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Tkp1</span><span class="p">,</span> <span class="n">yi</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">zetai</span><span class="p">,</span> <span class="n">lmbdkp1</span> <span class="o">=</span> <span class="n">pyrqi</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
@@ -823,41 +815,19 @@ x_k^{\left( 1 \right)} + x_k^{\left( 2 \right)} &amp;= \mathrm{const}, \\
     <span class="n">dT</span> <span class="o">=</span> <span class="o">-</span><span class="n">lmbdkp1</span> <span class="o">/</span> <span class="n">dlmbddT</span>
     <span class="n">Tk</span> <span class="o">=</span> <span class="n">Tkp1</span>
     <span class="n">lmbdk</span> <span class="o">=</span> <span class="n">lmbdkp1</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Tk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">lmbdk</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dT</span><span class="w"> </span><span class="si">= }</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">lmbdk</span><span class="p">,</span> <span class="n">dT</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #1:
-	Tk = np.float64(190.21102845481352)
-	lmbdk = np.float64(-0.44814878928288915)
-	dT = np.float64(26.822751863114615)
-
-Iteration #2:
-	Tk = np.float64(217.03378031792812)
-	lmbdk = np.float64(0.14190768403932816)
-	dT = np.float64(-6.45083101118289)
-
-Iteration #3:
-	Tk = np.float64(210.58294930674523)
-	lmbdk = np.float64(0.02498710683917039)
-	dT = np.float64(-1.3786076628917203)
-
-Iteration #4:
-	Tk = np.float64(209.20434164385352)
-	lmbdk = np.float64(-0.0017225441074411926)
-	dT = np.float64(0.08890840658809379)
-
-Iteration #5:
-	Tk = np.float64(209.29325005044163)
-	lmbdk = np.float64(1.950104296757985e-05)
-	dT = np.float64(-0.0009952707922906805)
-
-Iteration #6:
-	Tk = np.float64(209.29225477964934)
-	lmbdk = np.float64(1.5043411175023768e-08)
-	dT = np.float64(-7.683602637668729e-07)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Nit     T, K    lmbd       ΔT / T
+  0   255.33   0.640   -6.512e+01
+  1   190.21  -0.448    2.682e+01
+  2   217.03   0.142   -6.451e+00
+  3   210.58   0.025   -1.379e+00
+  4   209.20  -0.002    8.891e-02
+  5   209.29   0.000   -9.953e-04
+  6   209.29   0.000   -7.684e-07
 </pre></div>
 </div>
 </div>
@@ -888,10 +858,10 @@ Iteration #6:
 </div>
 </div>
 </div>
-<p>В последующем будем использовать <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/boundary.py">реализацию</a> данного алгоритма в виде функции <code class="docutils literal notranslate"><span class="pre">getVT_Tspinodal</span></code>:</p>
+<p>В последующем будем использовать <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/envelope.py">реализацию</a> данного алгоритма в виде функции <code class="docutils literal notranslate"><span class="pre">getVT_Tspinodal</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">boundary</span> <span class="kn">import</span> <span class="n">getVT_Tspinodal</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">envelope</span> <span class="kn">import</span> <span class="n">getVT_Tspinodal</span>
 </pre></div>
 </div>
 </div>
@@ -923,14 +893,14 @@ Iteration #6:
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="n">Tk</span>
-<span class="n">T</span><span class="p">,</span> <span class="n">zetai</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="si">= :</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> K</span><span class="se">\n</span><span class="s1">zetai = </span><span class="si">{</span><span class="n">zetai</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(209.29225477964934),
- array([0.00418311, 0.99716538, 0.06485697, 0.02543874, 0.02179882,
-        0.00548063, 0.01687987]))
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>T = 209.29 K
+zetai = [0.00418311 0.99716538 0.06485697 0.02543874 0.02179882 0.00548063
+ 0.01687987]
 </pre></div>
 </div>
 </div>
@@ -939,12 +909,12 @@ Iteration #6:
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pr</span><span class="o">.</span><span class="n">getVT_d3F</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zetai</span><span class="p">)</span>
-<span class="n">C</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">C</span><span class="w"> </span><span class="si">= :</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(-8285.011103015984)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C = -8285.011
 </pre></div>
 </div>
 </div>
@@ -969,17 +939,6 @@ Iteration #6:
 <span class="n">kappaj</span> <span class="o">=</span> <span class="n">kappa</span>
 <span class="n">zetaij</span> <span class="o">=</span> <span class="n">zetai</span>
 <span class="n">Cj</span> <span class="o">=</span> <span class="n">C</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Cj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">kappaj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dkappa</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="si">= }</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #0:
-	Cj = np.float64(-8285.011103015984)
-	kappaj = 3.5
-	dkappa = np.float64(-0.4177134755062985)
-	T = np.float64(209.29225477964934)
 </pre></div>
 </div>
 </div>
@@ -987,7 +946,12 @@ Iteration #6:
 <p>Решим уравнение с использованием представленного выше численного алгоритма:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dkappa</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tmpl</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%3s%8.3f%9.2f%13.3e%13.3e</span><span class="s1">&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%3s%8s%9s%13s%13s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;Nit&#39;</span><span class="p">,</span> <span class="s1">&#39;ϰ&#39;</span><span class="p">,</span> <span class="s1">&#39;T, K&#39;</span><span class="p">,</span> <span class="s1">&#39;C*&#39;</span><span class="p">,</span> <span class="s1">&#39;Δϰ / ϰ&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">kappaj</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Cj</span><span class="p">,</span> <span class="n">dkappa</span><span class="p">))</span>
+
+<span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dkappa</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+    <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="n">kappajp1</span> <span class="o">=</span> <span class="n">kappaj</span> <span class="o">+</span> <span class="n">dkappa</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">bm</span> <span class="o">*</span> <span class="n">kappajp1</span> <span class="o">*</span> <span class="n">n</span>
     <span class="n">T</span><span class="p">,</span> <span class="n">zetaijp1</span> <span class="o">=</span> <span class="n">getVT_Tspinodal</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">zetaij</span><span class="p">)</span>
@@ -999,47 +963,19 @@ Iteration #6:
     <span class="n">kappaj</span> <span class="o">=</span> <span class="n">kappajp1</span>
     <span class="n">Cj</span> <span class="o">=</span> <span class="n">Cjp1</span>
     <span class="n">zetaij</span> <span class="o">=</span> <span class="n">zetaijp1</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration #</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s1">:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">Cj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">kappaj</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">dkappa</span><span class="w"> </span><span class="si">= }</span><span class="se">\n\t</span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="si">= }</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tmpl</span> <span class="o">%</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">kappaj</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Cj</span><span class="p">,</span> <span class="n">dkappa</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iteration #1:
-	Cj = np.float64(-2628.640201440035)
-	kappaj = np.float64(3.0822865244937017)
-	dkappa = np.float64(-0.19412065677891976)
-	T = np.float64(205.91596808232205)
-
-Iteration #2:
-	Cj = np.float64(-269.97201405067307)
-	kappaj = np.float64(2.8881658677147817)
-	dkappa = np.float64(-0.02221895600222177)
-	T = np.float64(203.03407896473146)
-
-Iteration #3:
-	Cj = np.float64(-10.472875462204716)
-	kappaj = np.float64(2.8659469117125598)
-	dkappa = np.float64(-0.0008967134163805474)
-	T = np.float64(202.6356664387729)
-
-Iteration #4:
-	Cj = np.float64(-0.04815856894876145)
-	kappaj = np.float64(2.865050198296179)
-	dkappa = np.float64(-4.142504331986153e-06)
-	T = np.float64(202.6192536360225)
-
-Iteration #5:
-	Cj = np.float64(0.03341733762361785)
-	kappaj = np.float64(2.865046055791847)
-	dkappa = np.float64(1.696965092829899e-06)
-	T = np.float64(202.6192536360225)
-
-Iteration #6:
-	Cj = np.float64(5.9776018091364525e-09)
-	kappaj = np.float64(2.86504775275694)
-	dkappa = np.float64(3.035485213598955e-13)
-	T = np.float64(202.6192536360225)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Nit       ϰ     T, K           C*       Δϰ / ϰ
+  0   3.500   209.29   -8.285e+03   -4.177e-01
+  1   3.082   205.92   -2.629e+03   -1.941e-01
+  2   2.888   203.03   -2.700e+02   -2.222e-02
+  3   2.866   202.64   -1.047e+01   -8.967e-04
+  4   2.865   202.62   -4.816e-02   -4.143e-06
+  5   2.865   202.62    3.342e-02    1.697e-06
+  6   2.865   202.62    5.978e-09    3.035e-13
 </pre></div>
 </div>
 </div>
@@ -1059,7 +995,7 @@ Pc =  5.861 MPa
 </div>
 </div>
 </div>
-<p>Пример реализации сфорулированного численного метода определения критического состояния многокомпонентной системы представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/boundary.py">здесь</a>.</p>
+<p>Пример реализации сфорулированного численного метода определения критического состояния многокомпонентной системы представлен <a class="reference external" href="https://github.com/DanielSkorov/ReservoirSimulation/blob/main/_src/envelope.py">здесь</a>.</p>
 <p>Данным разделом завершается часть курса, посвященная PVT-моделированию, рассматривающая теоретические и алгоритмические аспекты определения равновесного состояния, стабильности и критического состояния многокомпонентных систем. Необходимо отметить, что существует еще множество интересных задач, например, определение градиента компонентного состава залежи углеводородов по глубине, без которого невозможна корректная инициализация композиционных гидродинамических моделей нефтегазовых залежей; определение давления многоконтактного смешивания компонентных составов закачиваемого и пластового флюидов; рассмотрение подходов к разделению плюс-фракции и формированию псевдокомпонентов; расчет количества выпавших асфальтенов и других, которым будет посвящен отдельный <a class="reference internal" href="../5-ETC/ETC-0-Introduction.html"><span class="std std-doc">раздел</span></a>.</p>
 <p>В следующем разделе будут рассматриваться моделирование лабораторных экспериментов, а также некоторые практические особенности построения и адаптации композиционных PVT-моделей залежей углеводородов.</p>
 </section>

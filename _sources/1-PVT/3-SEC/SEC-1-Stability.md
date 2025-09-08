@@ -50,6 +50,19 @@ $$ 0 < n_{ji} < n_i, \; j = 1 \, \ldots \, N_p, \; i = 1 \, \ldots \, N_c. $$
 
 $$ \sum_{j=1}^{N_p} n_{ji} = n_i, \; i = 1 \, \ldots \, N_c, $$
 
+````{margin}
+```{admonition} Дополнительно
+Здесь и далее зависимость энергии Гиббса $j$-й фазы:
+
+$$ \begin{align}
+G_j = & G \left( P, \, T, \, \mathbf{n}_j \right), \\
+& j = 1 \, \ldots \, N_p,
+\end{align} $$
+
+от давления и температуры опустим, поскольку они являются исходными данными рассматриваемой задачи.
+```
+````
+
 где $N_p$ – количество фаз в системе, а $N_c$ – число компонентов. При известных и заданных давлении и температуре рассматриваемой системы, а также количествах вещества компонентов в ней [энергия Гиббса](../1-TD/TD-10-MixtureGibbsEnergy.md) некоторой фазы определяется количеством вещества каждого компонента в фазе, то есть:
 
 $$ G_j = G_j \left( \mathbf{n}_j \right), \; j = 1 \, \ldots \, N_p. $$
@@ -369,20 +382,20 @@ dij = np.array([0.025]) # Binary interaction parameters
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ```
 
-Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `getPT_lnphiji_Zj`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий соответствующие коэффициенты летучести компонентов в виде двумерного массива такой же размерности и коэффициенты сверхсжимаемости в виде одномерного массива для каждого компонентного состава. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
+Выполним расчет приведенной энергии Гиббса для всех возможных компонентных составов рассматриваемой смеси. Для расчета коэффициентов летучестей компонентов для различных составов будем использовать метод `getPT_Zj_lnphiji`, принимающий в качестве аргументов давление (в Па), температуру (в K) и набор компонентных составов в виде двумерного массива (размерностью `(Np, Nc)`, где `Np` – количество наборов компонентных составов, `Nc` – количество компонентов в каждом компонентном составе) и возвращающий одномерный массив (вектор) состояний системы (жидкость или газ), вектор коэффициентов сверхсжимаемости для каждого компонентного состава, а также соответствующие коэффициенты летучести компонентов в виде двумерного массива (матрицы) размерности `(Np, Nc)`. Затем вычислим летучести компонентов и энергии Гиббса для соответствующих компонентных составов.
 
 ``` python
 xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 xji = np.vstack([xj1, 1. - xj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+_, Zj, lnphiji = pr.getPT_Zj_lnphiji(P, T, xji)
 lnfji = lnphiji + np.log(P * xji)
 Gj = np.vecdot(xji, lnfji)
 ```
 
-Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого будем использовать метод `getPT_lnfi`, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью `(Nc,)`) и возвращающий логарифмы летучести компонентов в виде одномерного массива такой же размерности. Затем вычислим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
+Теперь вычислим летучести компонентов для заданного компонентного состава. Для этого будем использовать метод `getPT_lnfi`, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного масива (размерностью `(Nc,)`) и возвращающий состояние компонентного состава (газ или жидкость), а также вектор логарифмов летучести компонентов. Затем вычислим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
-lnfi = pr.getPT_lnfi(P, T, yi)
+_, lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = xji.dot(lnfi)
 ```
 
@@ -442,24 +455,24 @@ from eos import pr78
 
 P = 2e6 # Pressure [Pa]
 T = 40. + 273.15 # Temperature [K]
-yi = np.array([.15, .85]) # Mole fractions [fr.]
+yi = np.array([0.15, 0.85]) # Mole fractions [fr.]
 
 Pci = np.array([7.37646, 4.600155]) * 1e6 # Critical pressures [Pa]
 Tci = np.array([304.2, 190.6]) # Critical temperatures [K]
-wi = np.array([.225, .008]) # Acentric factors
+wi = np.array([0.225, 0.008]) # Acentric factors
 mwi = np.array([0.04401, 0.016043]) # Molar mass [kg/gmole]
 vsi = np.array([0., 0.]) # Volume shift parameters
-dij = np.array([.025]) # Binary interaction parameters
+dij = np.array([0.025]) # Binary interaction parameters
 
 pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 
 xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 xji = np.vstack([xj1, 1. - xj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+_, Zj, lnphiji = pr.getPT_Zj_lnphiji(P, T, xji)
 lnfji = lnphiji + np.log(P * xji)
 Gj = np.vecdot(xji, lnfji)
 
-lnfi = pr.getPT_lnfi(P, T, yi)
+_, lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = xji.dot(lnfi)
 
 fig1, ax1 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
@@ -503,7 +516,7 @@ yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 ``` python
 xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 xji = np.vstack([xj1, 1. - xj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+_, Zj, lnphiji = pr.getPT_Zj_lnphiji(P, T, xji)
 lnfji = lnphiji + np.log(P * xji)
 Gj = np.vecdot(xji, lnfji)
 ```
@@ -511,7 +524,7 @@ Gj = np.vecdot(xji, lnfji)
 Теперь вычислим летучести компонентов для заданного компонентного состава. Затем определим значения касательной к функции энергии Гиббса в точке с рассматриваемым компонентным составом.
 
 ``` python
-lnfi = pr.getPT_lnfi(P, T, yi)
+_, lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = xji.dot(lnfi)
 ```
 
@@ -567,11 +580,11 @@ yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 
 xj1 = np.linspace(1e-4, 0.9999, 100, endpoint=True)
 xji = np.vstack([xj1, 1. - xj1]).T
-lnphiji, Zj = pr.getPT_lnphiji_Zj(P, T, xji)
+_, Zj, lnphiji = pr.getPT_Zj_lnphiji(P, T, xji)
 lnfji = lnphiji + np.log(P * xji)
 Gj = np.vecdot(xji, lnfji)
 
-lnfi = pr.getPT_lnfi(P, T, yi)
+_, lnfi = pr.getPT_lnfi(P, T, yi)
 Lj = xji.dot(lnfi)
 
 fig3, ax3 = plt.subplots(1, 1, figsize=(6., 4.), tight_layout=True)
@@ -923,14 +936,17 @@ def update_ss(carry, hi, yi, plnphi):
     k, ki, gi = carry
     ki_kp1 = ki_k * np.exp(-gi_k)
     ni = ki_kp1 * yi
-    gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = plnphi(yi=xi)
+    gi_kp1 = np.log(ni) + lnphixi - hi
     return k + 1, ki_kp1, gi_kp1
 ```
 
-Выполним расчет коэффициентов летучести для начального компонентного состава. Для этого будем использовать метод `getPT_lnphii` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий массив логарифмов коэффициентов летучести компонента такой же размерности:
+Выполним расчет коэффициентов летучести для начального компонентного состава. Для этого будем использовать метод `getPT_lnphii` инициализированного класса с уравнением состояния, принимающий на вход давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий состояние смеси (газ или жидкость), а также одномерный массив логарифмов коэффициентов летучести компонентов:
 
 ``` python
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 ```
 
 Проинициализируем функции `condit_ss` и `update_ss`:
@@ -947,7 +963,9 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 ``` python
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = pr.getPT_lnphii(P, T, xi)
+    gi = np.log(ni) + lnphixi - hi
     carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -997,10 +1015,13 @@ def update_ss(carry, hi, yi, plnphi):
     k, ki_k, gi_k = carry
     ki_kp1 = ki_k * np.exp(-gi_k)
     ni = ki_kp1 * yi
-    gi_kp1 = np.log(ni) + plnphi(yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = plnphi(yi=xi)
+    gi_kp1 = np.log(ni) + lnphixi - hi
     return k + 1, ki_kp1, gi_kp1
 
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 
 from functools import partial
 
@@ -1011,7 +1032,9 @@ out1 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = pr.getPT_lnphii(P, T, xi)
+    gi = np.log(ni) + lnphixi - hi
     carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -1081,7 +1104,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 Выполним расчет коэффициентов летучести для начального компонентного состава:
 
 ``` python
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 ```
 
 Проинициализируем функции `condit_ss` и `update_ss`:
@@ -1096,7 +1120,9 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 ``` python
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = pr.getPT_lnphii(P, T, xi)
+    gi = np.log(ni) + lnphixi - hi
     carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -1134,7 +1160,8 @@ yi = np.array([0.9, 0.1]) # Mole fractions [fr.]
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 
 pcondit = partial(condit_ss, tol=eps1, maxiter=maxiter)
 pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, T=T))
@@ -1143,7 +1170,9 @@ out2 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = pr.getPT_lnphii(P, T, xi)
+    gi = np.log(ni) + lnphixi - hi
     carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -1225,7 +1254,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 Выполним расчет коэффициентов летучести для начального компонентного состава:
 
 ``` python
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 ```
 
 Зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$. Для данного примера увеличим максимальное число итераций:
@@ -1248,7 +1278,9 @@ pupdate = partial(update_ss, hi=hi, yi=yi, plnphi=partial(pr.getPT_lnphii, P=P, 
 ``` python
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = pr.getPT_lnphii(P, T, xi)
+    gi = np.log(ni) + lnphixi - hi
     carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -1299,7 +1331,8 @@ pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 
 maxiter = 200 # Maximum number of iterations
 eps1 = 1e-6 # Tolerance
@@ -1312,7 +1345,9 @@ out3 = ''
 
 for i, ki in enumerate(K):
     ni = ki * yi
-    gi = np.log(ni) + pr.getPT_lnphii(P=P, T=T, yi=ni/ni.sum()) - hi
+    xi = ni / ni.sum()
+    _, lnphixi = pr.getPT_lnphii(P, T, xi)
+    gi = np.log(ni) + lnphixi - hi
     carry = (0, ki, gi)
     while pcondit(carry):
         carry = pupdate(carry)
@@ -1586,7 +1621,8 @@ K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 Выполним расчет коэффициентов летучести для начального компонентного состава:
 
 ``` python
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 ```
 
 Зададим максимальное число итераций $N_{iter}$, точность решения системы нелинейных уравнений $\epsilon_1$, численную погрешность расчета $\epsilon_2$:
@@ -1616,18 +1652,18 @@ def update_newt(carry, hi, plnphi):
     ni = sqrtni * sqrtni
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx, dlnphixidnj = plnphi(yi=xi, n=n)
+    _, Zx, lnphixi, dlnphixidnj = plnphi(yi=xi, n=n)
     gpi_kp1 = np.log(ni) + lnphixi - hi
     gi_kp1 = sqrtni * gpi_kp1
     H_kp1 = np.diagflat(0.5 * gpi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     return k + 1, alphai_kp1, gi_kp1, H_kp1
 ```
 
-Проинициализируем функции `condit` и `update`. Для расчета коэффициентов летучестей и их частных производных по количеству вещества компонентов будем использовать метод `getPT_lnphii_Z_dnj` инициализированного класса с уравнением состояния, принимающий в качестве аргументов давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий кортеж с логарифмами коэффициентов летучести компонентов в виде одномерного массива такой же размерности, коэффициентом сверхсжимаемости заданного компонентного состава, а также с матрицей размерностью `(Nc, Nc)`, состоящей из значений частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества:
+Проинициализируем функции `condit` и `update`. Для расчета коэффициентов летучестей и их частных производных по количеству вещества компонентов будем использовать метод `getPT_Z_lnphii_dnj` инициализированного класса с уравнением состояния, принимающий в качестве аргументов давление (в Па), температуру (в K) и компонентный состав в виде одномерного массива (размерностью `(Nc,)`) и возвращающий кортеж с состоянием заданного компонентного состава, коэффициентом сверхсжимаемости, логарифмами коэффициентов летучести компонентов в виде одномерного массива размерности `(Nc,)`, а также с матрицей размерностью `(Nc, Nc)`, состоящей из значений частных производных логарифмов коэффициентов летучести компонентов по их количеству вещества:
 
 ``` python
 pcondit = partial(condit_newt, tol=eps1, maxiter=maxiter)
-pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
+pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_Z_lnphii_dnj, P=P, T=T))
 ```
 
 Выполним расчет функции TPD для различных начальных приближений:
@@ -1639,7 +1675,7 @@ for i, ki in enumerate(K):
     alphai = 2. * sqrtni
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx, dlnphixidnj = pr.getPT_lnphii_Z_dnj(P, T, xi, n)
+    _, Zx, lnphixi, dlnphixidnj = pr.getPT_Z_lnphii_dnj(P, T, xi, n)
     gpi = np.log(ni) + lnphixi - hi
     gi = sqrtni * gpi
     H = np.diagflat(0.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
@@ -1680,7 +1716,8 @@ yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573]) # Mole fractions [fr.]
 ki = Pci * np.exp(5.3727 * (1. + wi) * (1. - Tci / T)) / P # Wilson's correlation
 K = np.vstack([ki, 1. / ki]) # Matrix of initial estimates
 
-hi = pr.getPT_lnphii(P, T, yi) + np.log(yi)
+_, lnphiyi = pr.getPT_lnphii(P, T, yi)
+hi = lnphiyi + np.log(yi)
 
 maxiter = 20 # Maximum number of iterations
 eps1 = 1e-6 # Tolerance
@@ -1698,14 +1735,14 @@ def update_newt(carry, hi, plnphi):
     ni = sqrtni * sqrtni
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx, dlnphixidnj = plnphi(yi=xi, n=n)
+    _, Zx, lnphixi, dlnphixidnj = plnphi(yi=xi, n=n)
     gpi_kp1 = np.log(ni) + lnphixi - hi
     gi_kp1 = sqrtni * gpi_kp1
     H_kp1 = np.diagflat(0.5 * gpi_kp1 + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
     return k + 1, alphai_kp1, gi_kp1, H_kp1
 
 pcondit = partial(condit_newt, tol=eps1, maxiter=maxiter)
-pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_lnphii_Z_dnj, P=P, T=T))
+pupdate = partial(update_newt, hi=hi, plnphi=partial(pr.getPT_Z_lnphii_dnj, P=P, T=T))
 
 out4 = ''
 
@@ -1715,7 +1752,7 @@ for i, ki in enumerate(K):
     alphai = 2. * sqrtni
     n = ni.sum()
     xi = ni / n
-    lnphixi, Zx, dlnphixidnj = pr.getPT_lnphii_Z_dnj(P, T, xi, n)
+    _, Zx, lnphixi, dlnphixidnj = pr.getPT_Z_lnphii_dnj(P, T, xi, n)
     gpi = np.log(ni) + lnphixi - hi
     gi = sqrtni * gpi
     H = np.diagflat(0.5 * gpi + 1.) + (sqrtni[:,None] * sqrtni) * dlnphixidnj
