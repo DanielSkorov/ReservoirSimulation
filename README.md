@@ -28,7 +28,7 @@ In order to call Fortran *subroutines* in Python files, one can use [`numpy.f2py
 
 This library allows to run the stability test, flash calculations, determine the saturation pressure or temperature, cricondenbar or cricondentherm, and construct the phase envelope for a multicomponent mixture based on the PT-thermodynamics. It also provides the function to calculate the critical point for the VT-thermodynamics.
 
-Using the library, one can simulate some laboratory experiments such as the Constant Volume Depletion (CVD) and the Constant Composition Expansion (CCE).
+Using the library, one can simulate some laboratory experiments such as the Constant Volume Depletion (CVD), the Constant Composition Expansion (CCE) and the Differential Liberation (DL).
 
 For now, only the modified Peng-Robinson equation of state is supported. In the future, the [CPA](https://doi.org/10.1021/ie9600203) and [ePC-SAFT](https://doi.org/10.1016/j.fluid.2021.112967) equations of state will be added.
 
@@ -36,7 +36,7 @@ The usage examples of the code can be found in the `_tests` folder.
 
 Библиотека содержит реализации (для PT-термодинамики) теста стабильности фазового состояния, расчета равновесного состояния, определения давления и температуры насыщения, криконденбары и крикондентермы, построения границы двухфазной области многокомпонентной системы, а также для VT-термодинамики – расчет критической точки.
 
-С использованием данной библиотеки также можно моделировать некоторые лабораторные эксперименты, например, контактную (CCE) и контактно-дифференциальную (CVD) конденсации.
+С использованием данной библиотеки также можно моделировать некоторые лабораторные эксперименты, например, контактную (CCE) и контактно-дифференциальную (CVD) конденсации, а также дифференциальное разгазирование (DL).
 
 На данный момент поддержано только модифицированное уравнение состояние Пенга-Робинсона. В дальнейшие планы входит добавление уравнений состояния [CPA](https://doi.org/10.1021/ie9600203) и [ePC-SAFT](https://doi.org/10.1016/j.fluid.2021.112967).
 

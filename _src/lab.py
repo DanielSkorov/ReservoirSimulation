@@ -57,45 +57,66 @@ class LabResult(object):
     Phase compressibility factors at each stage of an experiment as
     a `Matrix` of shape `(Ns, Np)`.
 
-  bgs: Vector, shape (Ns,)
-    Formation volume factors [m3/m3] of the gas phase at each stage of
-    an experiment as a `Vector` of shape `(Ns,)`.
+  props: Matrix, shape (Ns, 11)
+    A 2d-array containing values of properties. It includes (in the
+    iteration order):
 
-  ccs: Vector, shape (Ns,)
-    Condensate-gas ratios [kg/m3] at standard conditions of the gas
-    phase at each stage of an experiment as a `Vector` of shape `(Ns,)`.
+    0: formation volume factor [rm3/sm3] of the gas phase at each stage
+       of an experiment,
 
-  c5ps: Vector, shape (Ns,)
-    Potential condensate-gas ratios [kg/m3] at standard conditions of
-    the gas phase at each stage of an experiment as a `Vector` of shape
-    `(Ns,)`. It is calculated as the ratio of the sum of masses of C5+
-    components in the gas phase at the pressure and temperature of
-    the stage to the volume of the gas phase at standard conditions.
+    1: viscosity [cP] of the gas phase at each stage of an experiment,
 
-  bos: Vector, shape (Ns,)
-    Formation volume factors [m3/m3] of the oil phase at each stage of
-    an experiment as a `Vector` of shape `(Ns,)`.
+    2: density [kg/sm3] of the gas phase at standard conditions,
 
-  gors: Vector, shape (Ns,)
-    Gas-oil ratios [m3/m3] at standard conditions of the oil phase
-    at each stage of an experiment as a `Vector` of shape `(Ns,)`.
+    3: condensate-gas ratio [kg/sm3] of the gas phase at standard
+       conditions,
+
+    4: potential condensate-gas ratio [kg/sm3] of the gas phase at
+       standard conditions (it is calculated as the ratio of the sum of
+       masses of C5+ components in the gas phase at the pressure and
+       temperature of the stage to the volume of the gas phase at
+       standard conditions),
+
+    5: density [kg/sm3] of the condensate at standard conditions,
+
+    6: formation volume factor [rm3/sm3] of the oil phase at each stage
+       of an experiment,
+
+    7: viscosity [cP] of the oil phase at each stage of an experiment,
+
+    8: density [kg/sm3] of the dead oil phase at standard conditions,
+
+    9: gas-oil ratio [sm3/sm3] of the oil phase at standard conditions,
+
+    10: density [kg/sm3] of the dissolved gas at standard conditions.
   """
   Ps: Vector
   ns: Vector
   Fsj: Matrix
   ysji: Tensor
   Zsj: Matrix
-  bgs: Vector
-  ccs: Vector
-  c5ps: Vector
-  bos: Vector
-  gors: Vector
+  props: Matrix
 
-  def __repr__(self):
-    with np.printoptions(linewidth=np.inf):
-      return (f"Pressure steps:\n{self.Ps} Pa\n"
-              f"Phase mole fractions:\n{self.Fsj.T}\n"
-              f"Phase compressibility factors:\n{self.Zsj.T}")
+  def __repr__(cls):
+    tmpl = ('%3s%9s%9s%9s%9s'
+            '%12s%10s%11s%11s%11s%11s'
+            '%12s%8s%11s%12s%12s\n')
+    s = tmpl % (
+      'Nst', 'P', 'Fg', 'Fo', 'n',
+      'Bg', 'μg', 'Dg', 'Cc', 'C₅₊', 'Dc',
+      'Bo', 'μo', 'Ddo', 'GOR', 'Dsg',
+    )
+    s += tmpl % (
+      '', '[MPa]', '[fr]', '[fr]', '[mol]',
+      '[rm3/sm3]', '[cP]', '[kg/sm3]', '[kg/sm3]', '[kg/sm3]', '[kg/sm3]',
+      '[rm3/sm3]', '[cP]', '[kg/sm3]', '[sm3/sm3]', '[kg/sm3]',
+    )
+    tmpl = ('%3s%9.3f%9.4f%9.4f%9.4f'
+            '%12.5f%10.5f%11.4f%11.4f%11.4f%11.1f'
+            '%12.3f%8.3f%11.1f%12.1f%12.4f\n')
+    for i in range(cls.Ps.shape[0]):
+      s += tmpl % (i, cls.Ps[i] / 1e6, *cls.Fsj[i], cls.ns[i], *cls.props[i])
+    return s
 
 
 class cvdPT(object):
@@ -291,36 +312,15 @@ class cvdPT(object):
     Zsj = np.zeros(shape=(Ns, 2))
     Fsj = np.zeros_like(Zsj)
     ns = np.zeros_like(Ps)
-    bgs = np.full_like(Ps, -1.)
-    ccs = np.full_like(Ps, -1.)
-    c5ps = np.full_like(Ps, -1.)
-    mugs = np.full_like(Ps, -1.)
-    bos = np.full_like(Ps, -1.)
-    gors = np.full_like(Ps, -1.)
-    muos = np.full_like(Ps, -1.)
-    logger.info(
-      '%3s%13s%9s%9s%9s%12s%11s%12s%10s%12s%13s%9s',
-      'Nst', 'P, Pa', 'Sg, fr', 'So, fr', 'n, mol', 'Bg, m3/m3', 'Co, g/m3',
-      'C5+, g/m3', 'μg, cP', 'Bo, m3/m3', 'GOR, m3/m3', 'μo, cP',
-    )
-    tmpl = '%3s%13.1f%9.4f%9.4f%9.4f%12.5f%11.3f%12.3f%10.5f%12.3f%13.2f%9.3f'
+    props = np.empty(shape=(Ns, 11))
     n = n0
     ysji[0] = psatres.yji
     Zsj[0] = psatres.Zj
     Fsj[0, 0] = 1.
     ns[0] = n
-    bg, cc, c5p, mug = self._gasprops(psatres.yji[0], vrg)
-    bo, gor, muo = self._oilprops(psatres.yji[1], vro)
-    bgs[0] = bg
-    ccs[0] = cc
-    c5ps[0] = c5p
-    mugs[0] = mug
-    bos[0] = bo
-    gors[0] = gor
-    muos[0] = muo
-    logger.info(
-      tmpl, 0, Psat, 1., 0., n, bg, cc * 1e3, c5p * 1e3, mug, bo, gor, muo,
-    )
+    bg, mug, deng, cc, c5p, denc = self._gasprops(psatres.yji[0], vrg)
+    bo, muo, dendo, gor, densg = self._oilprops(psatres.yji[1], vro)
+    props[0] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
     for i, P in enumerate(PP_filtered, 1):
       mix = self.solver.run(P, T, zi)
       ysji[i] = mix.yji
@@ -342,18 +342,9 @@ class cvdPT(object):
         nrgi = yrgi * nrg
         nrgi_sp1 = nrgi - dnrgi
         nrg_sp1 = nrg - dnrg
-        bg, cc, c5p, mug = self._gasprops(yrgi, vrg)
-        bo, gor, muo = self._oilprops(yroi, vro)
-        bgs[i] = bg
-        ccs[i] = cc
-        c5ps[i] = c5p
-        mugs[i] = mug
-        bos[i] = bo
-        gors[i] = gor
-        muos[i] = muo
-        logger.info(
-          tmpl, i, P, Srg, Sro, n, bg, cc * 1e3, c5p * 1e3, mug, bo, gor, muo,
-        )
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yrgi, vrg)
+        bo, muo, dendo, gor, densg = self._oilprops(yroi, vro)
+        props[i] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
         if nrg_sp1 < 0.:
           logger.warning('There is no gas to remove. '
                          'The CVD experiment can not be completed.')
@@ -371,14 +362,8 @@ class cvdPT(object):
         nrgi = yrgi * nrg
         nrgi_sp1 = nrgi - dnrgi
         nrg_sp1 = nrg - dnrg
-        bg, cc, c5p, mug = self._gasprops(yrgi, vrg)
-        bgs[i] = bg
-        ccs[i] = cc
-        c5ps[i] = c5p
-        mugs[i] = mug
-        logger.info(
-          tmpl, i, P, 1., 0., n, bg, cc * 1e3, c5p * 1e3, mug, -1., -1., -1.,
-        )
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yrgi, vrg)
+        props[i] = bg, mug, deng, cc, c5p, denc, -1., -1., -1., -1., -1.
         if nrg_sp1 < 0.:
           logger.warning('There is no gas to remove. '
                          'The CVD experiment can not be completed.')
@@ -387,22 +372,21 @@ class cvdPT(object):
       else:
         yroi = mix.yji[0]
         vro = R * T * mix.Zj[0] / P
-        bo, gor, muo = self._oilprops(yroi, vro)
-        bos[i] = bo
-        gors[i] = gor
-        muos[i] = muo
-        logger.info(tmpl, i, P, 0., 1., n, -1., -1., -1., -1., bo, gor, muo)
+        bo, muo, dendo, gor, densg = self._oilprops(yroi, vro)
+        props[i] = -1., -1., -1., -1., -1., -1., bo, muo, dendo, gor, densg
         logger.warning('There is no gas to remove.'
-                     'The CVD experiment can not be completed.')
+                       'The CVD experiment can not be completed.')
         break
     logger.info('Total produced amount of gas: %.3f mol.', n0 - n)
-    return LabResult(Ps, ns, Fsj, ysji, Zsj, bgs, ccs, c5ps, bos, gors)
+    res = LabResult(Ps, ns, Fsj, ysji, Zsj, props)
+    logger.info(res)
+    return res
 
   def _gasprops(
     self,
     yrgi: Vector,
     vrg: Scalar,
-  ) -> tuple[Scalar, Scalar, Scalar, Scalar]:
+  ) -> tuple[Scalar, Scalar, Scalar, Scalar, Scalar, Scalar]:
     """Calculates properties of the gas phase at standard conditions.
     The flash calculation procedure is performed to compute fluid
     properties at standard pressure and temperature.
@@ -420,34 +404,43 @@ class cvdPT(object):
     Returns
     -------
     A tuple of:
-    - gas formation volume factor [m3/m3],
-    - oil-gas ratio (oil solubility in gas) [kg/m3],
-    - potential oil-gas ratio [kg/m3],
-    - gas viscosity [cP].
+    - gas formation volume factor [rm3/sm3],
+    - gas viscosity [cP],
+    - gas density [kg/sm3],
+    - condensate-gas ratio (condensate solubility in gas) [kg/sm3],
+    - potential condensate-gas ratio (potential condensate solubility
+      in gas) [kg/sm3],
+    - condensate density [kg/sm3].
     """
-    gsc = self.solversc.run(self.Psc, self.Tsc, yrgi)
-    if gsc.sj.shape[0] == 2:
-      vsg = gsc.Fj[0] * gsc.Zj[0] * R * self.Tsc / self.Psc
-      bg = vrg / vsg
-      cc = gsc.Fj[1] * gsc.yji[1].dot(self.eos.mwi) / vsg
-      c5p = yrgi[self.maskc5pi].dot(self.mwc5pi) / vsg
+    mix = self.solversc.run(self.Psc, self.Tsc, yrgi)
+    if mix.sj.shape[0] == 2:
+      vj = mix.Zj * (R * self.Tsc / self.Psc)
+      Vj = mix.Fj * vj
+      bg = vrg / Vj[0]
       mug = -1.
-      return bg, cc, c5p, mug
-    elif gsc.sj[0] == 0:
-      vsg = gsc.Zj[0] * R * self.Tsc / self.Psc
-      bg = vrg / vsg
+      mwj = mix.yji.dot(self.eos.mwi)
+      deng, denc = mwj / vj
+      cc = mix.Fj[1] * mwj[1] / Vj[0]
+      c5p = yrgi[self.maskc5pi].dot(self.mwc5pi) / Vj[0]
+      return bg, mug, deng, cc, c5p, denc
+    elif mix.sj[0] == 0:
+      vg = mix.Zj[0] * R * self.Tsc / self.Psc
+      bg = vrg / vg
+      mug = -1.
+      deng = mix.yji[0].dot(self.eos.mwi) / vg
       cc = 0.
-      c5p = yrgi[self.maskc5pi].dot(self.mwc5pi) / vsg
-      mug = -1.
-      return bg, 0., c5p, mug
+      c5p = yrgi[self.maskc5pi].dot(self.mwc5pi) / vg
+      return bg, mug, deng, 0., c5p, -1.
     else:
-      return -1., -1., -1., -1.
+      vc = mix.Zj[0] * R * self.Tsc / self.Psc
+      denc = mix.yji[0].dot(self.eos.mwi) / vc
+      return -1., -1., -1., -1., -1., denc
 
   def _oilprops(
     self,
     yroi: Vector,
     vro: Scalar,
-  ) -> tuple[Scalar, Scalar, Scalar]:
+  ) -> tuple[Scalar, Scalar, Scalar, Scalar, Scalar]:
     """Calculates properties of the oil phase at standard conditions.
     The flash calculation procedure is performed to compute fluid
     properties at standard pressure and temperature.
@@ -465,23 +458,32 @@ class cvdPT(object):
     Returns
     -------
     A tuple of:
-    - formation volume factor [m3/m3],
-    - gas-oil ratio (gas solubility in oil) [m3/m3],
-    - oil viscosity [cP].
+    - oil formation volume factor [rm3/sm3],
+    - oil viscosity [cP],
+    - dead oil density [kg/sm3],
+    - gas-oil ratio (gas solubility in oil) [sm3/sm3],
+    - dissolved gas density [kg/sm3].
     """
-    osc = self.solversc.run(self.Psc, self.Tsc, yroi)
-    if osc.sj.shape[0] == 2:
-      bo = vro * self.Psc / (osc.Fj[1] * osc.Zj[1] * R * self.Tsc)
-      gor = osc.Fj[0] * osc.Zj[0] / (osc.Fj[1] * osc.Zj[1])
+    mix = self.solversc.run(self.Psc, self.Tsc, yroi)
+    if mix.sj.shape[0] == 2:
+      vj = mix.Zj * (R * self.Tsc / self.Psc)
+      Vj = mix.Fj * vj
+      bo = vro / Vj[1]
       muo = -1.
-      return bo, gor, muo
-    elif osc.sj[0] == 1:
-      bo = vro * self.Psc / (osc.Zj[0] * R * self.Tsc)
+      deng, deno = mix.yji.dot(self.eos.mwi) / vj
+      gor = mix.Fj[0] * mix.Zj[0] / (mix.Fj[1] * mix.Zj[1])
+      return bo, muo, deno, gor, deng
+    elif mix.sj[0] == 1:
+      vo = mix.Zj[0] * R * self.Tsc / self.Psc
+      bo = vro / vo
+      muo = -1.
+      deno = mix.yji[0].dot(self.eos.mwi) / vo
       gor = 0.
-      muo = -1.
-      return bo, gor, muo
+      return bo, muo, deno, gor, -1.
     else:
-      return -1., -1., -1.
+      vg = mix.Zj[0] * R * self.Tsc / self.Psc
+      deng = mix.yji[0].dot(self.eos.mwi) / vg
+      return -1., -1., -1., -1., deng
 
 
 class ccePT(cvdPT):
@@ -628,19 +630,7 @@ class ccePT(cvdPT):
     Zsj = np.zeros(shape=(Ns, 2))
     Fsj = np.zeros_like(Zsj)
     ns = np.zeros_like(PP)
-    bgs = np.full_like(PP, -1.)
-    ccs = np.full_like(PP, -1.)
-    c5ps = np.full_like(PP, -1.)
-    mugs = np.full_like(PP, -1.)
-    bos = np.full_like(PP, -1.)
-    gors = np.full_like(PP, -1.)
-    muos = np.full_like(PP, -1.)
-    logger.info(
-      '%3s%13s%9s%9s%9s%12s%11s%12s%10s%12s%13s%9s',
-      'Nst', 'P, Pa', 'Sg, fr', 'So, fr', 'n, mol', 'Bg, m3/m3', 'Co, g/m3',
-      'C5+, g/m3', 'μg, cP', 'Bo, m3/m3', 'GOR, m3/m3', 'μo, cP',
-    )
-    tmpl = '%3s%13.1f%9.4f%9.4f%9.4f%12.5f%11.3f%12.3f%10.5f%12.3f%13.2f%9.3f'
+    props = np.empty(shape=(Ns, 11))
     for i, P in enumerate(PP):
       mix = self.solver.run(P, T, yi)
       yji = mix.yji
@@ -654,34 +644,18 @@ class ccePT(cvdPT):
         vj = Zj * R * T / P
         Vj = Fj * vj
         Sj = Vj / Vj.sum()
-        bg, cc, c5p, mug = self._gasprops(yji[0], vj[0])
-        bo, gor, muo = self._oilprops(yji[1], vj[1])
-        bgs[i] = bg
-        ccs[i] = cc
-        c5ps[i] = c5p
-        mugs[i] = mug
-        bos[i] = bo
-        gors[i] = gor
-        muos[i] = muo
-        logger.info(
-          tmpl, i, P, *Sj, n0, bg, cc * 1e3, c5p * 1e3, mug, bo, gor, muo,
-        )
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yji[0], vj[0])
+        bo, muo, dendo, gor, densg = self._oilprops(yji[1], vj[1])
+        props[i] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
       elif mix.sj[0] == 0:
-        bg, cc, c5p, mug = self._gasprops(yi, Zj[0] * R * T / P)
-        bgs[i] = bg
-        ccs[i] = cc
-        c5ps[i] = c5p
-        mugs[i] = mug
-        logger.info(
-          tmpl, i, P, 1., 0., n0, bg, cc * 1e3, c5p * 1e3, mug, -1., -1., -1.,
-        )
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yi, Zj[0] * R * T / P)
+        props[i] = bg, mug, deng, cc, c5p, denc, -1., -1., -1., -1., -1.
       else:
-        bo, gor, muo = self._oilprops(yi, Zj[0] * R * T / P)
-        bos[i] = bo
-        gors[i] = gor
-        muos[i] = muo
-        logger.info(tmpl, i, P, 0., 1., n0, -1., -1., -1., -1., bo, gor, muo)
-    return LabResult(PP, ns, Fsj, ysji, Zsj, bgs, ccs, c5ps, bos, gors)
+        bo, muo, dendo, gor, densg = self._oilprops(yi, Zj[0] * R * T / P)
+        props[i] = -1., -1., -1., -1., -1., -1., bo, muo, dendo, gor, densg
+    res = LabResult(PP, ns, Fsj, ysji, Zsj, props)
+    logger.info(res)
+    return res
 
 
 class dlPT(cvdPT):
@@ -857,7 +831,7 @@ class dlPT(cvdPT):
 
     Returns
     -------
-    Constant volume depletion simulation results as an instance of the
+    Differential liberation simulation results as an instance of the
     `LabResult`.
     """
     logger.info('Differential liberation (DL).')
@@ -873,37 +847,16 @@ class dlPT(cvdPT):
     Zsj = np.zeros(shape=(Ns, 2))
     Fsj = np.zeros_like(Zsj)
     ns = np.zeros_like(Ps)
-    bgs = np.zeros_like(Ps)
-    ccs = np.zeros_like(Ps)
-    c5ps = np.zeros_like(Ps)
-    mugs = np.zeros_like(Ps)
-    bos = np.zeros_like(Ps)
-    gors = np.zeros_like(Ps)
-    muos = np.zeros_like(Ps)
-    logger.info(
-      '%3s%13s%9s%9s%9s%12s%11s%12s%10s%12s%13s%9s',
-      'Nst', 'P, Pa', 'Sg, fr', 'So, fr', 'n, mol', 'Bg, m3/m3', 'Co, g/m3',
-      'C5+, g/m3', 'μg, cP', 'Bo, m3/m3', 'GOR, m3/m3', 'μo, cP',
-    )
-    tmpl = '%3s%13.1f%9.4f%9.4f%9.4f%12.5f%11.3f%12.3f%10.5f%12.3f%13.2f%9.3f'
+    props = np.empty(shape=(Ns, 11))
     n = n0
     ysji[0] = psatres.yji
     Zsj[0] = psatres.Zj
     Fsj[0, 1] = 1.
     ns[0] = n
     vrg, vro = psatres.Zj * R * T / Psat
-    bg, cc, c5p, mug = self._gasprops(psatres.yji[0], vrg)
-    bo, gor, muo = self._oilprops(psatres.yji[1], vro)
-    bgs[0] = bg
-    ccs[0] = cc
-    c5ps[0] = c5p
-    mugs[0] = mug
-    bos[0] = bo
-    gors[0] = gor
-    muos[0] = muo
-    logger.info(
-      tmpl, 0, Psat, 0., 1., n, bg, cc * 1e3, c5p * 1e3, mug, bo, gor, muo,
-    )
+    bg, mug, deng, cc, c5p, denc = self._gasprops(psatres.yji[0], vrg)
+    bo, muo, dendo, gor, densg = self._oilprops(psatres.yji[1], vro)
+    props[0] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
     for i, P in enumerate(PP_filtered, 1):
       mix = self.solver.run(P, T, zi)
       yji = mix.yji
@@ -917,37 +870,21 @@ class dlPT(cvdPT):
         vj = Zj * R * T / P
         Vj = Fj * vj
         Sj = Vj / Vj.sum()
-        bg, cc, c5p, mug = self._gasprops(yji[0], vj[0])
-        bo, gor, muo = self._oilprops(yji[1], vj[1])
-        bgs[i] = bg
-        ccs[i] = cc
-        c5ps[i] = c5p
-        mugs[i] = mug
-        bos[i] = bo
-        gors[i] = gor
-        muos[i] = muo
-        logger.info(
-          tmpl, i, P, *Sj, n, bg, cc * 1e3, c5p * 1e3, mug, bo, gor, muo,
-        )
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yji[0], vj[0])
+        bo, muo, dendo, gor, densg = self._oilprops(yji[1], vj[1])
+        props[i] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
         zi = yji[1]
         n *= Fj[1]
       elif mix.sj[0] == 1:
-        bo, gor, muo = self._oilprops(zi, Zj[0] * R * T / P)
-        bos[i] = bo
-        gors[i] = gor
-        muos[i] = muo
-        logger.info(tmpl, i, P, 0., 1., n, -1., -1., -1., -1., bo, gor, muo)
+        bo, muo, dendo, gor, densg = self._oilprops(zi, Zj[0] * R * T / P)
+        props[i] = -1., -1., -1., -1., -1., -1., bo, muo, dendo, gor, densg
       else:
-        bg, cc, c5p, mug = self._gasprops(zi, Zj[0] * R * T / P)
-        bgs[i] = bg
-        ccs[i] = cc
-        c5ps[i] = c5p
-        mugs[i] = mug
-        logger.info(
-          tmpl, i, P, 1., 0., n, bg, cc * 1e3, c5p * 1e3, mug, -1., -1., -1.,
-        )
+        bg, mug, deng, cc, c5p, denc = self._gasprops(zi, Zj[0] * R * T / P)
+        props[i] = bg, mug, deng, cc, c5p, denc, -1., -1., -1., -1., -1.
         logger.warning('There is no oil in a cell.'
                        'The DL experiment can not be completed.')
         break
     logger.info('Total produced amount of gas: %.3f mol.', n0 - n)
-    return LabResult(Ps, ns, Fsj, ysji, Zsj, bgs, ccs, c5ps, bos, gors)
+    res = LabResult(PP, ns, Fsj, ysji, Zsj, props)
+    logger.info(res)
+    return res
