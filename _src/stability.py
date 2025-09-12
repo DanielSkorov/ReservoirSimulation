@@ -26,7 +26,7 @@ from custom_types import (
 logger = logging.getLogger('stab')
 
 
-class StabEosPT(Eos):
+class EosStabPT(Eos):
 
   def getPT_kvguess(
     self,
@@ -89,7 +89,7 @@ class stabilityPT(object):
 
   Parameters
   ----------
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -149,7 +149,7 @@ class stabilityPT(object):
     - `'qnss-newton'` (Newton's method with preceding quasi-newton
       successive substitution iterations for initial guess improvement).
 
-    Default is `'ss'`.
+    Default is `'qnss-newton'`.
 
   useprev: bool
     Allows to preseve previous calculation results (if the solution
@@ -163,8 +163,8 @@ class stabilityPT(object):
   """
   def __init__(
     self,
-    eos: StabEosPT,
-    method: str = 'ss',
+    eos: EosStabPT,
+    method: str = 'qnss-newton',
     useprev: bool = False,
     **kwargs,
   ) -> None:
@@ -244,7 +244,7 @@ def _stabPT_ss(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: StabEosPT,
+  eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 500,
   eps: Scalar = -1e-8,
@@ -269,7 +269,7 @@ def _stabPT_ss(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -390,7 +390,7 @@ def _stabPT_qnss(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: StabEosPT,
+  eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 200,
   lmbdmax: Scalar = 30.,
@@ -420,7 +420,7 @@ def _stabPT_qnss(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -544,7 +544,7 @@ def _stabPT_newt(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: StabEosPT,
+  eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
   eps: Scalar = -1e-8,
@@ -573,7 +573,7 @@ def _stabPT_newt(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -721,7 +721,7 @@ def _stabPT_ssnewt(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: StabEosPT,
+  eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
   tol_ss: Scalar = 1e-4,
@@ -754,7 +754,7 @@ def _stabPT_ssnewt(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -957,7 +957,7 @@ def _stabPT_qnssnewt(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: StabEosPT,
+  eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
   tol_qnss: Scalar = 1e-4,
@@ -992,7 +992,7 @@ def _stabPT_qnssnewt(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1198,7 +1198,7 @@ def _stabPT_ssbfgs(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: StabEosPT,
+  eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
   tol_ss: Scalar = 1e-4,
@@ -1229,7 +1229,7 @@ def _stabPT_ssbfgs(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: StabEosPT
+  eos: EosStabPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 

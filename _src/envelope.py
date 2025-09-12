@@ -43,7 +43,7 @@ from flash import (
 logger = logging.getLogger('bound')
 
 
-class CritEosVT(Eos):
+class EosCritVT(Eos):
   Tci: Vector
 
   def getVT_lnfi_dnj(
@@ -70,7 +70,7 @@ class CritEosVT(Eos):
   ) -> Scalar: ...
 
 
-class PsatEosPT(Eos):
+class EosPsatPT(Eos):
 
   def getPT_kvguess(
     self,
@@ -110,7 +110,7 @@ class PsatEosPT(Eos):
   ) -> tuple[int, Scalar, Vector, Vector, Matrix]: ...
 
 
-class TsatEosPT(Eos):
+class EosTsatPT(Eos):
 
   def getPT_kvguess(
     self,
@@ -150,7 +150,7 @@ class TsatEosPT(Eos):
   ) -> tuple[int, Scalar, Vector, Vector, Matrix]: ...
 
 
-class PmaxEosPT(PsatEosPT):
+class EosPmaxPT(EosPsatPT):
 
   def getPT_Z_lnphii_dT_d2T(
     self,
@@ -160,7 +160,7 @@ class PmaxEosPT(PsatEosPT):
   ) -> tuple[int, Scalar, Vector, Vector, Vector]: ...
 
 
-class TmaxEosPT(TsatEosPT):
+class EosTmaxPT(EosTsatPT):
 
   def getPT_Z_lnphii_dP_d2P(
     self,
@@ -170,7 +170,7 @@ class TmaxEosPT(TsatEosPT):
   ) -> tuple[int, Scalar, Vector, Vector, Vector]: ...
 
 
-class Env2pEosPT(PsatEosPT):
+class EosEnv2pPT(EosPsatPT):
 
   def getPT_Z_lnphii_dP_dT_dyj(
     self,
@@ -190,7 +190,7 @@ class Env2pEosPT(PsatEosPT):
 def getVT_Tspinodal(
   V: Scalar,
   yi: Vector,
-  eos: CritEosVT,
+  eos: EosCritVT,
   T0: None | Scalar = None,
   zeta0i: None | Vector = None,
   multdT0: Scalar = 1e-5,
@@ -208,7 +208,7 @@ def getVT_Tspinodal(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  eos: CritEosVT
+  eos: EosCritVT
     An initialized instance of a VT-based equation of state. Must have
     the following methods:
 
@@ -312,7 +312,7 @@ def getVT_Tspinodal(
 
 def getVT_PcTc(
   yi: Vector,
-  eos: CritEosVT,
+  eos: EosCritVT,
   v0: None | Scalar = None,
   T0: None | Scalar = None,
   kappa0: None | Scalar = 3.5,
@@ -329,7 +329,7 @@ def getVT_PcTc(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
-  eos: CritEosVT
+  eos: EosCritVT
     An initialized instance of a VT-based equation of state. Must have
     the following methods:
 
@@ -521,7 +521,7 @@ class PsatPT(object):
 
   Parameters
   ----------
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -591,7 +591,7 @@ class PsatPT(object):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'newton'` (Newton's method).
 
-    Default is `'ss'`.
+    Default is `'newton'`.
 
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
@@ -623,8 +623,8 @@ class PsatPT(object):
   """
   def __init__(
     self,
-    eos: PsatEosPT,
-    method: str = 'ss',
+    eos: EosPsatPT,
+    method: str = 'newton',
     stabkwargs: dict = {},
     initmethod: str = 'search',
     initkwargs: dict = {},
@@ -1025,7 +1025,7 @@ def _PsatPT_solve_TPDeq_P(
   T: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
   Plow0: Scalar = 1.,
@@ -1053,7 +1053,7 @@ def _PsatPT_solve_TPDeq_P(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1144,7 +1144,7 @@ def _PsatPT_ss(
   T: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 200,
   tol_tpd: Scalar = 1e-8,
@@ -1171,7 +1171,7 @@ def _PsatPT_ss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1306,7 +1306,7 @@ def _PsatPT_qnss(
   T: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
   lmbdmax: Scalar = 30.,
@@ -1339,7 +1339,7 @@ def _PsatPT_qnss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1493,7 +1493,7 @@ def _PsatPT_newt_improveP0(
   T: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
   Plow0: Scalar = 1.,
@@ -1523,7 +1523,7 @@ def _PsatPT_newt_improveP0(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1613,7 +1613,7 @@ def _PsatPT_newtA(
   T: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 20,
   Plow: Scalar = 1.,
@@ -1647,7 +1647,7 @@ def _PsatPT_newtA(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1830,7 +1830,7 @@ def _PsatPT_newtB(
   T: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 20,
   Plow: Scalar = 1.,
@@ -1864,7 +1864,7 @@ def _PsatPT_newtB(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -2050,7 +2050,7 @@ def _PsatPT_newtC(
   T: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PsatEosPT,
+  eos: EosPsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   tol_tpd: Scalar = 1e-8,
@@ -2085,7 +2085,7 @@ def _PsatPT_newtC(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -2249,7 +2249,7 @@ class TsatPT(object):
 
   Parameters
   ----------
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -2319,7 +2319,7 @@ class TsatPT(object):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'newton'` (Newton's method).
 
-    Default is `'ss'`.
+    Default is `'newton'`.
 
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
@@ -2351,8 +2351,8 @@ class TsatPT(object):
   """
   def __init__(
     self,
-    eos: TsatEosPT,
-    method: str = 'ss',
+    eos: EosTsatPT,
+    method: str = 'newton',
     stabkwargs: dict = {},
     initmethod: str = 'search',
     initkwargs: dict = {},
@@ -2744,7 +2744,7 @@ def _TsatPT_solve_TPDeq_T(
   T0: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
   Tlow0: Scalar = 173.15,
@@ -2772,7 +2772,7 @@ def _TsatPT_solve_TPDeq_T(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -2862,7 +2862,7 @@ def _TsatPT_ss(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 200,
   tol_tpd: Scalar = 1e-8,
@@ -2889,7 +2889,7 @@ def _TsatPT_ss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -3024,7 +3024,7 @@ def _TsatPT_qnss(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
   lmbdmax: Scalar = 30.,
@@ -3058,7 +3058,7 @@ def _TsatPT_qnss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -3213,7 +3213,7 @@ def _TsatPT_newt_improveT0(
   T0: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
   Tlow0: Scalar = 173.15,
@@ -3243,7 +3243,7 @@ def _TsatPT_newt_improveT0(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -3333,7 +3333,7 @@ def _TsatPT_newtA(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 20,
   Tlow: Scalar = 173.15,
@@ -3367,7 +3367,7 @@ def _TsatPT_newtA(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -3552,7 +3552,7 @@ def _TsatPT_newtB(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 20,
   Tlow: Scalar = 173.15,
@@ -3586,7 +3586,7 @@ def _TsatPT_newtB(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -3774,7 +3774,7 @@ def _TsatPT_newtC(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TsatEosPT,
+  eos: EosTsatPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   tol_tpd: Scalar = 1e-8,
@@ -3809,7 +3809,7 @@ def _TsatPT_newtC(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TsatEosPT
+  eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -3974,7 +3974,7 @@ class PmaxPT(PsatPT):
 
   Parameters
   ----------
-  eos: PmaxEosPT
+  eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -4059,7 +4059,7 @@ class PmaxPT(PsatPT):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'newton'` (Newton's method).
 
-    Default is `'ss'`.
+    Default is `'newton'`.
 
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
@@ -4091,8 +4091,8 @@ class PmaxPT(PsatPT):
   """
   def __init__(
     self,
-    eos: PmaxEosPT,
-    method: str = 'ss',
+    eos: EosPmaxPT,
+    method: str = 'newton',
     stabkwargs: dict = {},
     initmethod: str = 'search',
     initkwargs: dict = {},
@@ -4160,7 +4160,7 @@ def _PmaxPT_solve_TPDeq_P(
   T: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: PmaxEosPT,
+  eos: EosPmaxPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
 ) -> Scalar:
@@ -4183,7 +4183,7 @@ def _PmaxPT_solve_TPDeq_P(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: PmaxEosPT
+  eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -4237,7 +4237,7 @@ def _PmaxPT_solve_dTPDdTeq_T(
   T0: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: PmaxEosPT,
+  eos: EosPmaxPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
 ) -> tuple[Scalar, Vector, Vector, Scalar, Scalar]:
@@ -4261,7 +4261,7 @@ def _PmaxPT_solve_dTPDdTeq_T(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: PmaxEosPT
+  eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -4333,7 +4333,7 @@ def _PmaxPT_ss(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PmaxEosPT,
+  eos: EosPmaxPT,
   tol: Scalar = 1e-16,
   maxiter: int = 200,
   tol_tpd: Scalar = 1e-8,
@@ -4372,7 +4372,7 @@ def _PmaxPT_ss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PmaxEosPT
+  eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -4530,7 +4530,7 @@ def _PmaxPT_qnss(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PmaxEosPT,
+  eos: EosPmaxPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
   lmbdmax: Scalar = 30.,
@@ -4573,7 +4573,7 @@ def _PmaxPT_qnss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PmaxEosPT
+  eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -4750,7 +4750,7 @@ def _PmaxPT_newtC(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: PmaxEosPT,
+  eos: EosPmaxPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   tol_tpd: Scalar = 1e-8,
@@ -4788,7 +4788,7 @@ def _PmaxPT_newtC(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: PmaxEosPT
+  eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -4977,7 +4977,7 @@ class TmaxPT(TsatPT):
 
   Parameters
   ----------
-  eos: TmaxEosPT
+  eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -5062,7 +5062,7 @@ class TmaxPT(TsatPT):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'newton'` (Newton's method).
 
-    Default is `'ss'`.
+    Default is `'newton'`.
 
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
@@ -5094,8 +5094,8 @@ class TmaxPT(TsatPT):
   """
   def __init__(
     self,
-    eos: TmaxEosPT,
-    method: str = 'ss',
+    eos: EosTmaxPT,
+    method: str = 'newton',
     stabkwargs: dict = {},
     initmethod: str = 'search',
     initkwargs: dict = {},
@@ -5165,7 +5165,7 @@ def _TmaxPT_solve_TPDeq_T(
   T0: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: TmaxEosPT,
+  eos: EosTmaxPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
 ) -> Scalar:
@@ -5188,7 +5188,7 @@ def _TmaxPT_solve_TPDeq_T(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: TmaxEosPT
+  eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -5242,7 +5242,7 @@ def _TmaxPT_solve_dTPDdPeq_P(
   T: Scalar,
   yi: Vector,
   xi: Vector,
-  eos: TmaxEosPT,
+  eos: EosTmaxPT,
   tol: Scalar = 1e-8,
   maxiter: int = 10,
 ) -> tuple[Scalar, Vector, Vector, Scalar, Scalar]:
@@ -5266,7 +5266,7 @@ def _TmaxPT_solve_dTPDdPeq_P(
   xi: Vector, shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
-  eos: TmaxEosPT
+  eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -5340,7 +5340,7 @@ def _TmaxPT_ss(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TmaxEosPT,
+  eos: EosTmaxPT,
   tol: Scalar = 1e-16,
   maxiter: int = 200,
   tol_tpd: Scalar = 1e-8,
@@ -5379,7 +5379,7 @@ def _TmaxPT_ss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TmaxEosPT
+  eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -5541,7 +5541,7 @@ def _TmaxPT_qnss(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TmaxEosPT,
+  eos: EosTmaxPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
   lmbdmax: Scalar = 30.,
@@ -5584,7 +5584,7 @@ def _TmaxPT_qnss(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TmaxEosPT
+  eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -5765,7 +5765,7 @@ def _TmaxPT_newtC(
   T0: Scalar,
   yi: Vector,
   kvi0: Vector,
-  eos: TmaxEosPT,
+  eos: EosTmaxPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   tol_tpd: Scalar = 1e-8,
@@ -5804,7 +5804,7 @@ def _TmaxPT_newtC(
   kvi0: Vector, shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
-  eos: TmaxEosPT
+  eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -6114,7 +6114,7 @@ class env2pPT(object):
 
   Parameters
   ----------
-  eos: Env2pEosPT
+  eos: EosEnv2pPT
     An initialized instance of a PT-based equation of state. First of
     all, it should contain methods for the first saturation pressure
     calculation:
@@ -6320,7 +6320,7 @@ class env2pPT(object):
   """
   def __init__(
     self,
-    eos: Env2pEosPT,
+    eos: EosEnv2pPT,
     approx: bool = False,
     method: str = 'newton',
     Pmin: Scalar = 1.,
@@ -6765,7 +6765,7 @@ def _env2pPT(
   sval: Scalar,
   yi: Vector,
   Fv: Scalar,
-  eos: Env2pEosPT,
+  eos: EosEnv2pPT,
   tolres: Scalar = 1e-12,
   tolvar: Scalar = 1e-14,
   maxiter: int = 5,
@@ -6797,7 +6797,7 @@ def _env2pPT(
     Phase mole fraction for which the phase envelope should be
     constructed.
 
-  eos: Env2pEosPT
+  eos: EosEnv2pPT
     An inizialized instance of an equation of state. Solution of the
     phase envelope equations relies on Newton's method, for which the
     Jacobian is constructed using the partial derivatives calculated by
@@ -6963,7 +6963,7 @@ def _aenv2pPT(
   lnkpi: Vector,
   Fv: Scalar,
   zi: Vector,
-  eos: Env2pEosPT,
+  eos: EosEnv2pPT,
   tolres: Scalar = 1e-12,
   tolvar: Scalar = 1e-14,
   maxiter: int = 5,

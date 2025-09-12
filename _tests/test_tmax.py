@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('bound')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -44,9 +44,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='ss', maxiter=31, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
+    Tmax = TmaxPT(pr, method='ss', maxiter=31)
     res = Tmax.run(P0, T0, yi)
     pass
 
@@ -66,9 +64,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='ss', maxiter=28, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
+    Tmax = TmaxPT(pr, method='ss', maxiter=28)
     res = Tmax.run(P0, T0, yi)
     pass
 
@@ -88,9 +84,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='qnss', maxiter=13, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
+    Tmax = TmaxPT(pr, method='qnss', maxiter=13)
     res = Tmax.run(P0, T0, yi)
     pass
 
@@ -110,9 +104,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='qnss', maxiter=12, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
+    Tmax = TmaxPT(pr, method='qnss', maxiter=12)
     res = Tmax.run(P0, T0, yi)
     pass
 
@@ -132,9 +124,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='newton', maxiter=22, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
+    Tmax = TmaxPT(pr, method='newton', maxiter=22)
     res = Tmax.run(P0, T0, yi)
     pass
 
@@ -154,9 +144,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='newton', maxiter=19, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'))
+    Tmax = TmaxPT(pr, method='newton', maxiter=19)
     res = Tmax.run(P0, T0, yi)
     pass
 
@@ -176,10 +164,7 @@ class tmax(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    Tmax = TmaxPT(pr, method='newton', maxiter=20, tol=tol,
-                  stabkwargs=dict(method='qnss-newton'),
-                  initmethod='gridding')
+    Tmax = TmaxPT(pr, method='newton', maxiter=20, initmethod='gridding')
     res = Tmax.run(P0, T0, yi)
     pass
 

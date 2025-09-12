@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('lab')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -23,6 +23,7 @@ from eos import (
 
 from lab import (
   dlPT,
+  SimpleSeparator,
 )
 
 from constants import (
@@ -74,10 +75,9 @@ class cvd(unittest.TestCase):
        0.033, 0.014, 0.012, 0.002,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    dl = dlPT(pr, flashkwargs=dict(method='qnss-newton', useprev=True,
-                                   stabkwargs=dict(method='qnss-newton')),
-              psatkwargs=dict(method='newton-b',
-                              stabkwargs=dict(method='qnss-newton')))
+    sepg = SimpleSeparator(pr, useprev=True)
+    sepo = SimpleSeparator(pr, useprev=True)
+    dl = dlPT(pr, sepg, sepo, flashkwargs=dict(useprev=True))
     res = dl.run(PP, T, yi, 18e6)
     pass
 

@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('bound')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -44,8 +44,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='ss', maxiter=230, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='ss', maxiter=230)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -65,8 +64,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='ss', maxiter=231, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='ss', maxiter=231)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -86,8 +84,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='ss', maxiter=3, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='ss', maxiter=3)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -107,8 +104,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='ss', maxiter=4, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='ss', maxiter=4)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -128,8 +124,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='qnss', maxiter=16, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='qnss', maxiter=16)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -149,8 +144,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='qnss', maxiter=16, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='qnss', maxiter=16)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -170,8 +164,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='qnss', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='qnss', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -191,8 +184,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='qnss', maxiter=3, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='qnss', maxiter=3)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -212,8 +204,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton', maxiter=6, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton', maxiter=6)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -233,8 +224,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton', maxiter=7, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton', maxiter=7)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -254,8 +244,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -275,8 +264,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -296,8 +284,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=5, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=5)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -317,8 +304,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=5, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=5)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -338,8 +324,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -359,8 +344,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -380,8 +364,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-c', maxiter=6, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-c', maxiter=6)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -401,8 +384,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-c', maxiter=7, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-c', maxiter=7)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 
@@ -422,8 +404,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-c', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-c', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -443,8 +424,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-c', maxiter=2, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-c', maxiter=2)
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -466,8 +446,7 @@ class psat(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=18, tol=1e-16, tol_tpd=1e-8,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=18)
     res = Psat.run(P0, T, yi)
     pass
 
@@ -498,8 +477,7 @@ class psat(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=5, tol=1e-16, tol_tpd=1e-8,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=5)
     res = Psat.run(P0, T, yi)
     pass
 
@@ -519,8 +497,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=34, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'),
+    Psat = PsatPT(pr, method='newton-b', maxiter=34,
                   initmethod='gridding')
     res = Psat.run(P0, T, yi, upper=True)
     pass
@@ -541,9 +518,8 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=3, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'),
-                  initmethod='gridding', initkwargs=dict(logspace=True))
+    Psat = PsatPT(pr, method='newton-b', maxiter=3, initmethod='gridding',
+                  initkwargs=dict(logspace=True))
     res = Psat.run(P0, T, yi, upper=False)
     pass
 
@@ -565,9 +541,7 @@ class psat(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=25, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'),
-                  initmethod='gridding')
+    Psat = PsatPT(pr, method='newton-b', maxiter=25, initmethod='gridding')
     res = Psat.run(P0, T, yi)
     pass
 
@@ -598,9 +572,7 @@ class psat(unittest.TestCase):
       0.115, 0.280, 0.089, 0.068, 0.055, 0.032, 0.020, 0.010, 0.004, 0.001,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=6, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'),
-                  initmethod='gridding')
+    Psat = PsatPT(pr, method='newton-b', maxiter=6, initmethod='gridding')
     res = Psat.run(P0, T, yi)
     pass
 
@@ -641,8 +613,7 @@ class psat(unittest.TestCase):
        0.033, 0.014, 0.012, 0.002,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='newton-b', maxiter=3, tol=1e-16,
-                  stabkwargs=dict(method='qnss-newton'))
+    Psat = PsatPT(pr, method='newton-b', maxiter=3)
     res = Psat.run(P0, T, yi)
     pass
 

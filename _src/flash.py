@@ -39,7 +39,7 @@ from custom_types import (
 logger = logging.getLogger('flash')
 
 
-class Flash2pEosPT(Eos):
+class EosFlash2pPT(Eos):
 
   def getPT_kvguess(
     self,
@@ -64,7 +64,7 @@ class Flash2pEosPT(Eos):
   ) -> tuple[int, Scalar, Vector, Matrix]: ...
 
 
-class FlashnpEosPT(Flash2pEosPT):
+class EosFlashnpPT(EosFlash2pPT):
 
   def getPT_Zj_lnphiji(
     self,
@@ -131,7 +131,7 @@ class flash2pPT(object):
 
   Parameters
   ----------
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -194,7 +194,7 @@ class flash2pPT(object):
     - `'qnss-newton'` (Newton's method with preceding quasi-newton
       successive substitution iterations for initial guess improvement).
 
-    Default is `'ss'`.
+    Default is `'qnss-newton'`.
 
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -225,8 +225,8 @@ class flash2pPT(object):
   """
   def __init__(
     self,
-    eos: Flash2pEosPT,
-    method: str = 'ss',
+    eos: EosFlash2pPT,
+    method: str = 'qnss-newton',
     negflash: bool = True,
     runstab: bool = True,
     useprev: bool = False,
@@ -325,7 +325,7 @@ def _flash2pPT_ss(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: Flash2pEosPT,
+  eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 100,
   negflash: bool = True,
@@ -348,7 +348,7 @@ def _flash2pPT_ss(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -465,7 +465,7 @@ def _flash2pPT_qnss(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: Flash2pEosPT,
+  eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
   lmbdmax: Scalar = 15.,
@@ -493,7 +493,7 @@ def _flash2pPT_qnss(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -629,7 +629,7 @@ def _flash2pPT_newt(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: Flash2pEosPT,
+  eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   forcenewton: bool = False,
@@ -656,7 +656,7 @@ def _flash2pPT_newt(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -814,7 +814,7 @@ def _flash2pPT_ssnewt(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: Flash2pEosPT,
+  eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.1, 1e-2, 1e-10, 1e-4),
@@ -843,7 +843,7 @@ def _flash2pPT_ssnewt(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1073,7 +1073,7 @@ def _flash2pPT_qnssnewt(
   T: Scalar,
   yi: Vector,
   kvji0: Iterable[Vector],
-  eos: Flash2pEosPT,
+  eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   lmbdmax: Scalar = 15.,
@@ -1106,7 +1106,7 @@ def _flash2pPT_qnssnewt(
     An iterable object containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1357,7 +1357,7 @@ class flashnpPT(object):
 
   Parameters
   ----------
-  eos: FlashnpEosPT
+  eos: EosFlashnpPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1460,7 +1460,7 @@ class flashnpPT(object):
     - `'qnss-newton'` (Newton's method with preceding quasi-newton
       successive substitution iterations for initial guess improvement).
 
-    Default is `'ss'`.
+    Default is `'qnss-newton'`.
 
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -1482,8 +1482,8 @@ class flashnpPT(object):
   """
   def __init__(
     self,
-    eos: FlashnpEosPT,
-    method: str = 'ss',
+    eos: EosFlashnpPT,
+    method: str = 'qnss-newton',
     negflash: bool = False,
     flash2pkwargs: dict = {},
     stabkwargs: dict = {},
@@ -1623,7 +1623,7 @@ def _flashnpPT_ss(
   yi: Vector,
   fsj0: Iterable[Vector],
   kvsji0: Iterable[Matrix],
-  eos: FlashnpEosPT,
+  eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 100,
   negflash: bool = True,
@@ -1651,7 +1651,7 @@ def _flashnpPT_ss(
     An iterable object containing 2d-arrays of initial guesses of.
     k-values. Each array's shape should be `(Np - 1, Nc)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1783,7 +1783,7 @@ def _flashnpPT_qnss(
   yi: Vector,
   fsj0: Iterable[Vector],
   kvsji0: Iterable[Matrix],
-  eos: FlashnpEosPT,
+  eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
   negflash: bool = True,
@@ -1815,7 +1815,7 @@ def _flashnpPT_qnss(
     An iterable object containing 2d-arrays of initial guesses of.
     k-values. Each array's shape should be `(Np - 1, Nc)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -1960,7 +1960,7 @@ def _flashnpPT_newt(
   yi: Vector,
   fsj0: Iterable[Vector],
   kvsji0: Iterable[Matrix],
-  eos: FlashnpEosPT,
+  eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   negflash: bool = True,
@@ -1992,7 +1992,7 @@ def _flashnpPT_newt(
     An iterable object containing 2d-arrays of initial guesses of.
     k-values. Each array's shape should be `(Np - 1, Nc)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -2194,7 +2194,7 @@ def _flashnpPT_ssnewt(
   yi: Vector,
   fsj0: Iterable[Vector],
   kvsji0: Iterable[Matrix],
-  eos: FlashnpEosPT,
+  eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
@@ -2228,7 +2228,7 @@ def _flashnpPT_ssnewt(
     An iterable object containing 2d-arrays of initial guesses of.
     k-values. Each array's shape should be `(Np - 1, Nc)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -2514,7 +2514,7 @@ def _flashnpPT_qnssnewt(
   yi: Vector,
   fsj0: Iterable[Vector],
   kvsji0: Iterable[Matrix],
-  eos: FlashnpEosPT,
+  eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
   switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
@@ -2549,7 +2549,7 @@ def _flashnpPT_qnssnewt(
     An iterable object containing 2d-arrays of initial guesses of.
     k-values. Each array's shape should be `(Np - 1, Nc)`.
 
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 

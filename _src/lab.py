@@ -7,12 +7,13 @@ from dataclasses import (
 import numpy as np
 
 from flash import (
-  Flash2pEosPT,
+  EosFlash2pPT,
+  FlashResult,
   flash2pPT,
 )
 
 from envelope import (
-  PsatEosPT,
+  EosPsatPT,
   PsatPT,
 )
 
@@ -20,15 +21,38 @@ from constants import (
   R,
 )
 
+from typing import (
+  Protocol,
+  Iterable,
+)
+
 from custom_types import (
   Scalar,
   Vector,
   Matrix,
   Tensor,
+  IVector,
 )
 
 
 logger = logging.getLogger('lab')
+
+
+class EosSeparator(EosFlash2pPT):
+
+  def getPT_Z(
+    self,
+    P: Scalar,
+    T: Scalar,
+    yi: Vector
+  ) -> tuple[int, Scalar]: ...
+
+
+class Separator(Protocol):
+  Ps: Iterable[Scalar] | Scalar
+  Ts: Iterable[Scalar] | Scalar
+
+  def run(self, yi: Vector) -> FlashResult: ...
 
 
 @dataclass
@@ -119,8 +143,266 @@ class LabResult(object):
     return s
 
 
+class SimpleSeparator(object):
+  """Two-phase simple separator.
+
+  Performs flash calculation for specific pressure and temperature, and
+  returns its outputs as an instance of `FlashResult`.
+
+  Parameters
+  ----------
+  eos: EosFlash2pPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
+       -> Iterable[Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
+
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
+
+    If the solution method would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then it also must have:
+
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the mixture compressibility factor,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  Ps: Scalar
+    Pressure [Pa] for which flash calculations should be performed.
+    Default is `101325.0` Pa.
+
+  Ts: Scalar
+    Temperatures [K] for which flash calculations should be performed.
+    Default is `293.15` K.
+
+  **kwargs: dict
+    Other arguments for a flash solver. It may contain such arguments
+    as `method`, `tol`, `maxiter` and others, depending on the selected
+    solver.
+  """
+  def __init__(
+    self,
+    eos: EosFlash2pPT,
+    Ps: Scalar = 101325.,
+    Ts: Scalar = 293.15,
+    **kwargs,
+  ) -> None:
+    self.Ps = Ps
+    self.Ts = Ts
+    self.solver = flash2pPT(eos, **kwargs)
+    pass
+
+  def run(self, yi: Vector) -> FlashResult:
+    """Performs two-phase flash calculations to obtain compositions
+    of phases at separator conditions.
+
+    Parameters
+    ----------
+    yi: Vector, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    Separator calculation results as an instance of `FlashResult`.
+    """
+    return self.solver.run(self.Ps, self.Ts, yi)
+
+
+class GasSeparator(object):
+  """Two-phase gas separator that can be used to simulate low-
+  temperature separation. At each stage of the separation process the
+  liquid phase is removed into the stock tank conditions. The gas phase
+  collected from one stage is transferred to the subsequent stage. The
+  gas obtained from the liquid phase under stock tank conditions is
+  combined with the primary gas flow. The stock tank conditions are the
+  pressure and temperature at the last stage.
+
+  Parameters
+  ----------
+  eos: EosSeparator
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_Z(P: Scalar, T: Scalar, yi: Vector) -> tuple[int, Scalar]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return the
+      designated phase of the fluid and the compressibility factor.
+
+    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
+       -> Iterable[Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
+
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
+
+    If the solution method would be one of `'newton'`, `'ss-newton'` or
+    `'qnss-newton'` then it also must have:
+
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the mixture compressibility factor,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      A vector of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  Ps: Scalar
+    Pressure [Pa] at stages of the separation process.
+    Default is `[7e6, 4.5e6, 2e6, 101325.0]` Pa.
+
+  Ts: Scalar
+    Temperatures [K] at stages of the separation process.
+    Default is `[223.15, 238.15, 258.15, 293.15]` K.
+
+  **kwargs: dict
+    Other arguments for a flash solver. It may contain such arguments
+    as `method`, `tol`, `maxiter` and others, depending on the selected
+    solver.
+  """
+  def __init__(
+    self,
+    eos: EosSeparator,
+    Ps: Iterable[Scalar] = [7e6, 4.5e6, 2e6, 101325.],
+    Ts: Iterable[Scalar] = [223.15, 238.15, 258.15, 293.15],
+    **kwargs,
+  ) -> None:
+    self.Ps = Ps
+    self.Ts = Ts
+    self.eos = eos
+    self.solver = flash2pPT(eos, **kwargs)
+    pass
+
+  def run(self, yi: Vector) -> FlashResult:
+    """Performs a series of flash calculations, collecting the liquid
+    phase in stock tank conditions.
+
+    Parameters
+    ----------
+    yi: Vector, shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    Separator calculation results as an instance of `FlashResult`.
+    """
+    ng = 1.
+    ygi = yi
+    noi = np.zeros(shape=(self.eos.Nc,))
+    for P, T in zip(self.Ps, self.Ts):
+      flash = self.solver.run(P, T, ygi)
+      ygi = flash.yji[0]
+      nj = ng * flash.Fj
+      if flash.sj.shape[0] > 1:
+        noi += flash.yji[1] * nj[1]
+      ng = nj[0]
+    no = noi.sum()
+    if no > 0.:
+      Zg = flash.Zj[0]
+      sg = flash.sj[0]
+      yoi = noi / no
+      flash = self.solver.run(P, T, yoi)
+      if flash.sj.shape[0] > 1:
+        nsg = no * flash.Fj[0]
+        ngi = ng * ygi
+        ngi += nsg * flash.yji[0]
+        ng += nsg
+        ygi = ngi / ng
+        sg, Zg = self.eos.getPT_Z(P, T, ygi)
+        nj = np.array([ng, no - nsg])
+        Fj = nj / nj.sum()
+        yji = np.vstack([ygi, flash.yji[1]])
+        Zj = np.array([Zg, flash.Zj[1]])
+        sj = np.array([sg, flash.sj[1]])
+        return FlashResult(yji, Fj, Zj, sj)
+      elif flash.sj[0] == 0:
+        nsg = no
+        ngi = ng * ygi
+        ngi += nsg * flash.yji[0]
+        ng += nsg
+        ygi = ngi / ng
+        sg, Zg = self.eos.getPT_Z(P, T, ygi)
+        Fj = np.array([1.])
+        yji = np.atleast_2d(ygi)
+        Zj = np.array([Zg])
+        sj = np.array([sg])
+        return FlashResult(yji, Fj, Zj, sj)
+      else:
+        nj = np.array([ng, no])
+        Fj = nj / nj.sum()
+        yji = np.vstack([ygi, flash.yji[0]])
+        Zj = np.array([Zg, flash.Zj[0]])
+        sj = np.array([sg, flash.sj[0]])
+        return FlashResult(yji, Fj, Zj, sj)
+    else:
+      return flash
+
+
 class cvdPT(object):
-  """Constant volume depletion (CVD) experiment.
+  """Two-phase constant volume depletion (CVD) experiment.
 
   The CVD experiment is usually performed with natural gas to simulate
   the processes encountered during the field development. The experiment
@@ -139,7 +421,7 @@ class cvdPT(object):
 
   Parameters
   ----------
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -218,9 +500,59 @@ class cvdPT(object):
     - `Nc: int`
       The number of components in the system.
 
-  Psc: Scalar
-    Pressure at standard conditions used to calculate properties of
-    phases formed during the experiment. Default is `101325.0` [Pa].
+  gassep: Separator
+    Before calculating properties of the gas phase (gas formation
+    volume factor, condensate solubility in gas, etc.) at the current
+    experiment stage, the gas mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the gas mixture collected from the
+    cell during the CVD experiment.
+
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+    - `run(yi: Vector) -> Iterable[FlashResult]`
+      For a given composition of a mixture this method should perform
+      a series of separation steps and return their outputs as an
+      interable object of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar]`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps.
+
+    - `Ts: Iterable[Scalar]`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps.
+
+  oilsep: Separator
+    Before calculating properties of the oil phase (oil formation
+    volume factor, gas solubility in oil, etc.) at the current
+    experiment stage, the oil mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the oil mixture at the current stage
+    of the CVD experiment.
+
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+    - `run(yi: Vector) -> Iterable[FlashResult]`
+      For a given composition of a mixture this method should perform
+      a series of separation steps and return their outputs as an
+      interable object of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar]`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps.
+
+    - `Ts: Iterable[Scalar]`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps.
 
   Tsc: Scalar
     Temperature at standard conditions used to calculate properties of
@@ -240,21 +572,36 @@ class cvdPT(object):
   """
   def __init__(
     self,
-    eos: PsatEosPT,
-    Psc: Scalar = 101325.,
-    Tsc: Scalar = 293.15,
+    eos: EosPsatPT,
+    gassep: Separator,
+    oilsep: Separator,
     flashkwargs: dict = {},
     psatkwargs: dict = {},
     mwc5: Scalar = 0.07215,
   ) -> None:
     self.eos = eos
-    self.Psc = Psc
-    self.Tsc = Tsc
+    self.gassep = gassep
+    self.oilsep = oilsep
     self.solver = flash2pPT(eos, **flashkwargs)
-    self.solversc = flash2pPT(eos, **flashkwargs)
     self.psatsolver = PsatPT(eos, **psatkwargs)
     self.maskc5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.maskc5pi]
+    if isinstance(gassep.Ts, Iterable) and isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps[-1]
+    elif isinstance(gassep.Ts, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps
+    elif isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts / gassep.Ps[-1]
+    else:
+      self.TPgsc = gassep.Ts / gassep.Ps
+    if isinstance(oilsep.Ts, Iterable) and isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps[-1]
+    elif isinstance(oilsep.Ts, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps
+    elif isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts / oilsep.Ps[-1]
+    else:
+      self.TPosc = oilsep.Ts / oilsep.Ps
     pass
 
   def run(
@@ -326,7 +673,6 @@ class cvdPT(object):
       ysji[i] = mix.yji
       Zsj[i] = mix.Zj
       Fsj[i] = mix.Fj
-      ns[i] = n
       if mix.sj.shape[0] == 2:
         yrgi, yroi = mix.yji
         nrg, nro = mix.Fj * n
@@ -377,6 +723,7 @@ class cvdPT(object):
         logger.warning('There is no gas to remove.'
                        'The CVD experiment can not be completed.')
         break
+      ns[i] = n
     logger.info('Total produced amount of gas: %.3f mol.', n0 - n)
     res = LabResult(Ps, ns, Fsj, ysji, Zsj, props)
     logger.info(res)
@@ -412,9 +759,9 @@ class cvdPT(object):
       in gas) [kg/sm3],
     - condensate density [kg/sm3].
     """
-    mix = self.solversc.run(self.Psc, self.Tsc, yrgi)
-    if mix.sj.shape[0] == 2:
-      vj = mix.Zj * (R * self.Tsc / self.Psc)
+    mix = self.gassep.run(yrgi)
+    if mix.sj.shape[0] > 1:
+      vj = mix.Zj * (R * self.TPgsc)
       Vj = mix.Fj * vj
       bg = vrg / Vj[0]
       mug = -1.
@@ -424,7 +771,7 @@ class cvdPT(object):
       c5p = yrgi[self.maskc5pi].dot(self.mwc5pi) / Vj[0]
       return bg, mug, deng, cc, c5p, denc
     elif mix.sj[0] == 0:
-      vg = mix.Zj[0] * R * self.Tsc / self.Psc
+      vg = mix.Zj[0] * R * self.TPgsc
       bg = vrg / vg
       mug = -1.
       deng = mix.yji[0].dot(self.eos.mwi) / vg
@@ -432,7 +779,7 @@ class cvdPT(object):
       c5p = yrgi[self.maskc5pi].dot(self.mwc5pi) / vg
       return bg, mug, deng, 0., c5p, -1.
     else:
-      vc = mix.Zj[0] * R * self.Tsc / self.Psc
+      vc = mix.Zj[0] * R * self.TPgsc
       denc = mix.yji[0].dot(self.eos.mwi) / vc
       return -1., -1., -1., -1., -1., denc
 
@@ -464,9 +811,9 @@ class cvdPT(object):
     - gas-oil ratio (gas solubility in oil) [sm3/sm3],
     - dissolved gas density [kg/sm3].
     """
-    mix = self.solversc.run(self.Psc, self.Tsc, yroi)
-    if mix.sj.shape[0] == 2:
-      vj = mix.Zj * (R * self.Tsc / self.Psc)
+    mix = self.oilsep.run(yroi)
+    if mix.sj.shape[0] > 1:
+      vj = mix.Zj * (R * self.TPosc)
       Vj = mix.Fj * vj
       bo = vro / Vj[1]
       muo = -1.
@@ -474,20 +821,20 @@ class cvdPT(object):
       gor = mix.Fj[0] * mix.Zj[0] / (mix.Fj[1] * mix.Zj[1])
       return bo, muo, deno, gor, deng
     elif mix.sj[0] == 1:
-      vo = mix.Zj[0] * R * self.Tsc / self.Psc
+      vo = mix.Zj[0] * R * self.TPosc
       bo = vro / vo
       muo = -1.
       deno = mix.yji[0].dot(self.eos.mwi) / vo
       gor = 0.
       return bo, muo, deno, gor, -1.
     else:
-      vg = mix.Zj[0] * R * self.Tsc / self.Psc
+      vg = mix.Zj[0] * R * self.TPosc
       deng = mix.yji[0].dot(self.eos.mwi) / vg
       return -1., -1., -1., -1., deng
 
 
 class ccePT(cvdPT):
-  """Constant composition (mass) expansion (CCE) experiment.
+  """Two phase constant composition (mass) expansion (CCE) experiment.
 
   A sample of the reservoir fluid (natural gas or oil) is placed in a
   cell. Pressure is adjusted to a value equal to or greater than the
@@ -503,7 +850,7 @@ class ccePT(cvdPT):
 
   Parameters
   ----------
-  eos: Flash2pEosPT
+  eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -578,19 +925,34 @@ class ccePT(cvdPT):
   """
   def __init__(
     self,
-    eos: PsatEosPT,
-    Psc: Scalar = 101325.,
-    Tsc: Scalar = 293.15,
+    eos: EosPsatPT,
+    gassep: Separator,
+    oilsep: Separator,
     flashkwargs: dict = {},
     mwc5: Scalar = 0.07215,
   ) -> None:
     self.eos = eos
-    self.Psc = Psc
-    self.Tsc = Tsc
+    self.gassep = gassep
+    self.oilsep = oilsep
     self.solver = flash2pPT(eos, **flashkwargs)
-    self.solversc = flash2pPT(eos, **flashkwargs)
     self.maskc5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.maskc5pi]
+    if isinstance(gassep.Ts, Iterable) and isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps[-1]
+    elif isinstance(gassep.Ts, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps
+    elif isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts / gassep.Ps[-1]
+    else:
+      self.TPgsc = gassep.Ts / gassep.Ps
+    if isinstance(oilsep.Ts, Iterable) and isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps[-1]
+    elif isinstance(oilsep.Ts, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps
+    elif isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts / oilsep.Ps[-1]
+    else:
+      self.TPosc = oilsep.Ts / oilsep.Ps
     pass
 
   def run(
@@ -659,7 +1021,7 @@ class ccePT(cvdPT):
 
 
 class dlPT(cvdPT):
-  """Differential liberation (DL) experiment.
+  """Two phase differential liberation (DL) experiment.
 
   The DL experiment is usually performed with an oil phase to simulate
   the processes encountered during the field development. The experiment
@@ -676,7 +1038,7 @@ class dlPT(cvdPT):
 
   Parameters
   ----------
-  eos: PsatEosPT
+  eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -777,21 +1139,36 @@ class dlPT(cvdPT):
   """
   def __init__(
     self,
-    eos: PsatEosPT,
-    Psc: Scalar = 101325.,
-    Tsc: Scalar = 293.15,
+    eos: EosPsatPT,
+    gassep: Separator,
+    oilsep: Separator,
     flashkwargs: dict = {},
     psatkwargs: dict = {},
     mwc5: Scalar = 0.07215,
   ) -> None:
     self.eos = eos
-    self.Psc = Psc
-    self.Tsc = Tsc
+    self.gassep = gassep
+    self.oilsep = oilsep
     self.solver = flash2pPT(eos, **flashkwargs)
-    self.solversc = flash2pPT(eos, **flashkwargs)
     self.psatsolver = PsatPT(eos, **psatkwargs)
     self.maskc5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.maskc5pi]
+    if isinstance(gassep.Ts, Iterable) and isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps[-1]
+    elif isinstance(gassep.Ts, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps
+    elif isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts / gassep.Ps[-1]
+    else:
+      self.TPgsc = gassep.Ts / gassep.Ps
+    if isinstance(oilsep.Ts, Iterable) and isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps[-1]
+    elif isinstance(oilsep.Ts, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps
+    elif isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts / oilsep.Ps[-1]
+    else:
+      self.TPosc = oilsep.Ts / oilsep.Ps
     pass
 
   def run(

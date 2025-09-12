@@ -69,10 +69,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 118
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -98,10 +95,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 103
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.1)
     if plotting:
@@ -127,10 +121,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 32
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, sidx0=5)
     if plotting:
@@ -158,10 +149,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=258.15, miniter=1,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 139
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -189,10 +177,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=293.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 103
     res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=maxpoints)
     if plotting:
@@ -220,10 +205,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=295.6,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 99
     res = env.run(P0, T0, yi, 0., sidx0=6, maxpoints=maxpoints)
     if plotting:
@@ -250,11 +232,8 @@ class env2p(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, Tmin=328.15,
-                  psatkwargs=dict(method='newton-b', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+    env = env2pPT(pr, Tmin=328.15, psatkwargs=dict(method='newton-b'),
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 99
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -291,10 +270,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=303.15,
-                  psatkwargs=dict(method='newton-b', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 185
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.15)
     if plotting:
@@ -331,10 +307,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=323.15,
-                  psatkwargs=dict(method='newton-b', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 109
     res = env.run(P0, T0, yi, 0., sidx0=10, maxpoints=maxpoints)
     if plotting:
@@ -371,10 +344,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 321
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -411,10 +381,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 320
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -451,10 +418,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 117
     res = env.run(P0, T0, yi, 0., sidx0=11, maxpoints=maxpoints)
     if plotting:
@@ -499,10 +463,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=193.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 127
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -526,10 +487,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=213.15, miniter=1,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton'),),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 136
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.05)
     if plotting:
@@ -567,10 +525,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=73.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 651
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.5)
     if plotting:
@@ -617,10 +572,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=123.15,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 161
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
@@ -641,10 +593,7 @@ class env2p(unittest.TestCase):
     dij = np.array([.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=120., Tmax=300., Pmax=10e6,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 91
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, sidx0=1)
     if plotting:
@@ -680,10 +629,7 @@ class env2p(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=200., Tmax=400., Pmax=30e6,
-                  psatkwargs=dict(method='newton', tol=1e-16, tol_tpd=1e-8,
-                                  stabkwargs=dict(method='qnss-newton')),
-                  flashkwargs=dict(method='qnss-newton', runstab=False,
-                                   useprev=True, tol=1e-16))
+                  flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 196
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.1)
     if plotting:
