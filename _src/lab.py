@@ -512,20 +512,22 @@ class cvdPT(object):
     This parameter should be represented as an initialized instance of
     a class that must have the following methods:
 
-    - `run(yi: Vector) -> Iterable[FlashResult]`
-      For a given composition of a mixture this method should perform
+    - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
       a series of separation steps and return their outputs as an
-      interable object of `FlashResult`.
+      instance of `FlashResult`.
 
     Also, this instance must have attributes:
 
-    - `Ps: Iterable[Scalar]`
+    - `Ps: Iterable[Scalar] | Scalar`
       An iterable object of pressures [Pa] representing a sequence of
-      pressures at separation steps.
+      pressures at separation steps or specific pressure for the
+      separation process.
 
-    - `Ts: Iterable[Scalar]`
+    - `Ts: Iterable[Scalar] | Scalar`
       An iterable object of temperatures [K] representing a sequence of
-      temperatures at separation steps.
+      temperatures at separation steps or specific temperature for the
+      separation process.
 
   oilsep: Separator
     Before calculating properties of the oil phase (oil formation
@@ -539,24 +541,22 @@ class cvdPT(object):
     This parameter should be represented as an initialized instance of
     a class that must have the following methods:
 
-    - `run(yi: Vector) -> Iterable[FlashResult]`
-      For a given composition of a mixture this method should perform
+        - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
       a series of separation steps and return their outputs as an
-      interable object of `FlashResult`.
+      instance of `FlashResult`.
 
     Also, this instance must have attributes:
 
-    - `Ps: Iterable[Scalar]`
+    - `Ps: Iterable[Scalar] | Scalar`
       An iterable object of pressures [Pa] representing a sequence of
-      pressures at separation steps.
+      pressures at separation steps or specific pressure for the
+      separation process.
 
-    - `Ts: Iterable[Scalar]`
+    - `Ts: Iterable[Scalar] | Scalar`
       An iterable object of temperatures [K] representing a sequence of
-      temperatures at separation steps.
-
-  Tsc: Scalar
-    Temperature at standard conditions used to calculate properties of
-    phases formed during the experiment. Default is `293.15` [K].
+      temperatures at separation steps or specific temperature for the
+      separation process.
 
   flashkwargs: dict
     Settings for the flash calculation procedure. Default is an empty
@@ -901,13 +901,63 @@ class ccePT(cvdPT):
     - `Nc: int`
       The number of components in the system.
 
-  Psc: Scalar
-    Pressure at surface conditions used to calculate properties of
-    phases formed during the experiment. Default is `101325.0` [Pa].
+  gassep: Separator
+    Before calculating properties of the gas phase (gas formation
+    volume factor, condensate solubility in gas, etc.) at the current
+    experiment stage, the gas mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the gas mixture collected from the
+    cell during the CVD experiment.
 
-  Tsc: Scalar
-    Temperature at surface conditions used to calculate properties of
-    phases formed during the experiment. Default is `273.15` [K].
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+    - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
+      a series of separation steps and return their outputs as an
+      instance of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar] | Scalar`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps or specific pressure for the
+      separation process.
+
+    - `Ts: Iterable[Scalar] | Scalar`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps or specific temperature for the
+      separation process.
+
+  oilsep: Separator
+    Before calculating properties of the oil phase (oil formation
+    volume factor, gas solubility in oil, etc.) at the current
+    experiment stage, the oil mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the oil mixture at the current stage
+    of the CVD experiment.
+
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+        - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
+      a series of separation steps and return their outputs as an
+      instance of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar] | Scalar`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps or specific pressure for the
+      separation process.
+
+    - `Ts: Iterable[Scalar] | Scalar`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps or specific temperature for the
+      separation process.
 
   flashkwargs: dict
     Settings for the flash calculation procedure. Default is an empty
@@ -1117,13 +1167,63 @@ class dlPT(cvdPT):
     - `Nc: int`
       The number of components in the system.
 
-  Psc: Scalar
-    Pressure at standard conditions used to calculate properties of
-    phases formed during the experiment. Default is `101325.0` [Pa].
+  gassep: Separator
+    Before calculating properties of the gas phase (gas formation
+    volume factor, condensate solubility in gas, etc.) at the current
+    experiment stage, the gas mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the gas mixture collected from the
+    cell during the CVD experiment.
 
-  Tsc: Scalar
-    Temperature at standard conditions used to calculate properties of
-    phases formed during the experiment. Default is `293.15` [K].
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+    - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
+      a series of separation steps and return their outputs as an
+      instance of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar] | Scalar`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps or specific pressure for the
+      separation process.
+
+    - `Ts: Iterable[Scalar] | Scalar`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps or specific temperature for the
+      separation process.
+
+  oilsep: Separator
+    Before calculating properties of the oil phase (oil formation
+    volume factor, gas solubility in oil, etc.) at the current
+    experiment stage, the oil mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the oil mixture at the current stage
+    of the CVD experiment.
+
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+        - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
+      a series of separation steps and return their outputs as an
+      instance of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar] | Scalar`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps or specific pressure for the
+      separation process.
+
+    - `Ts: Iterable[Scalar] | Scalar`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps or specific temperature for the
+      separation process.
 
   flashkwargs: dict
     Settings for the flash calculation procedure. Default is an empty
