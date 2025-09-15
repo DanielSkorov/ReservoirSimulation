@@ -150,7 +150,7 @@ class env2p(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     env = env2pPT(pr, Tmin=258.15, miniter=1,
                   flashkwargs=dict(runstab=False, useprev=True))
-    maxpoints = 139
+    maxpoints = 136
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
     if plotting:
       self.plot(res, -20., 500., 0., 40.)
@@ -232,7 +232,8 @@ class env2p(unittest.TestCase):
       0.12, 0.0693, 0.0384, 0.0156, 0.0044, 0.0003,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    env = env2pPT(pr, Tmin=328.15, psatkwargs=dict(method='newton-b'),
+    env = env2pPT(pr, Tmin=328.15,
+                  psatkwargs=dict(method='newton-b', tol=1e-20),
                   flashkwargs=dict(runstab=False, useprev=True))
     maxpoints = 99
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
@@ -634,6 +635,86 @@ class env2p(unittest.TestCase):
     res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, maxstep=0.1)
     if plotting:
       self.plot(res, -70., 100., 0., 30.)
+    self.assertTrue(res.Pk.shape[0] == maxpoints)
+    pass
+
+  def test_19(self):
+    print('=== test_19 ===')
+    P0 = 18064.3e3
+    T0 = 104.4 + 273.15
+    yi = np.array([0.0091, 0.0016, 0.3647, 0.0967, 0.0695, 0.0144, 0.0393,
+                   0.0144, 0.0141, 0.0433, 0.1320, 0.0757, 0.0510, 0.0315,
+                   0.0427])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 26.94, 18.25, 17.15, 10.118, 7.14]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 598.5, 718.6, 734.5, 872.53, 957.8])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.275, 0.391, 0.651, 0.684, 1.082, 1.330])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                    0.])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86., 121., 206., 222., 394., 539.]) / 1e3
+    dij = np.array([
+      -0.020,
+       0.105, 0.025,
+       0.130, 0.010, 0.003,
+       0.125, 0.090, 0.009, 0.002,
+       0.120, 0.095, 0.016, 0.005, 0.001,
+       0.115, 0.095, 0.015, 0.005, 0.001, 0.000,
+       0.115, 0.100, 0.021, 0.009, 0.003, 0.000, 0.001,
+       0.115, 0.110, 0.021, 0.009, 0.003, 0.000, 0.001, 0.000,
+       0.115, 0.110, 0.025, 0.012, 0.005, 0.001, 0.001, 0.000, 0.000,
+       0.115, 0.110, 0.039, 0.022, 0.012, 0.006, 0.006, 0.003, 0.003, 0.002,
+       0.115, 0.110, 0.067, 0.044, 0.029, 0.019, 0.020, 0.014, 0.015, 0.011,
+       0.004,
+       0.115, 0.110, 0.072, 0.048, 0.032, 0.022, 0.023, 0.017, 0.017, 0.013,
+       0.005, 0.000,
+       0.115, 0.110, 0.107, 0.079, 0.059, 0.045, 0.047, 0.038, 0.038, 0.032,
+       0.020, 0.006, 0.004,
+       0.115, 0.110, 0.133, 0.102, 0.080, 0.064, 0.066, 0.055, 0.055, 0.048,
+       0.033, 0.014, 0.012, 0.002,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=200., Tmax=900., Pmax=25e6,
+                  flashkwargs=dict(runstab=False, useprev=True))
+    maxpoints = 305
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints)
+    if plotting:
+      self.plot(res, -100., 600., 0., 30.)
+    self.assertTrue(res.Pk.shape[0] == maxpoints)
+    pass
+
+  def test_20(self):
+    print('=== test_20 ===')
+    P0 = 40e6
+    T0 = 100. + 273.15
+    yi = np.array([0.90001, 0.04227, 0.01166, 0.01006, 0.00266, 0.01909,
+                   0.01025, 0.004])
+    Pci = np.array([72.8, 45.31, 52.85, 39.81, 33.35, 27.27, 17.63,
+                    10.34]) * 101325.
+    Tci = np.array([304.2, 190.1, 305.1, 391.3, 465.4, 594.5, 739.7, 886.2])
+    wi = np.array([0.225, 0.0082, 0.13, 0.1666, 0.2401, 0.3708, 0.6151,
+                   1.0501])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0.])
+    mwi = np.array([44.01, 16.136, 33.585, 49.87, 72.151, 123.16, 225.88,
+                    515.65]) / 1e3
+    dij = np.array([
+      0.103,
+      0.130, 0.00153,
+      0.135, 0.01114, 0.00446,
+      0.125, 0.02076, 0.01118, 0.00154,
+      0.150, 0.03847, 0.02512, 0.00862, 0.00290,
+      0.150, 0.07040, 0.05245, 0.02728, 0.01610, 0.00542,
+      0.103, 0.10800, 0.08640, 0.05402, 0.03812, 0.02049, 0.00495,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    env = env2pPT(pr, Tmin=350., Tmax=650., Pmax=150e6,
+                  flashkwargs=dict(runstab=False, useprev=True))
+    maxpoints = 94
+    res = env.run(P0, T0, yi, 0., maxpoints=maxpoints, sidx0=8)
+    if plotting:
+      self.plot(res, 50., 350., 0., 150.)
     self.assertTrue(res.Pk.shape[0] == maxpoints)
     pass
 

@@ -410,7 +410,7 @@ def _flash2pPT_ss(
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e'
   for j, kvi0 in enumerate(kvji0):
     k = 0
-    kvi = kvi0.flatten()
+    kvi = kvi0
     lnkvi = np.log(kvi)
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
@@ -424,7 +424,7 @@ def _flash2pPT_ss(
       k += 1
       lnkvi -= gi
       kvi = np.exp(lnkvi)
-      f0 = solve2p_FGH(kvi, yi)
+      f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
       s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
@@ -451,7 +451,7 @@ def _flash2pPT_ss(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * "\n%s",
-    eos.name, P, T, yi, *kvji0,
+    eos.name, P, T, yi.tolist(), *map(lambda a: a.tolist(), kvji0),
   )
   raise SolutionNotFoundError(
     'The flash calculation procedure\nterminates unsuccessfully. Try to '
@@ -468,7 +468,7 @@ def _flash2pPT_qnss(
   eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 15.,
+  lmbdmax: Scalar = 6.,
   negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for two-phase flash calculations using a PT-based
@@ -529,7 +529,7 @@ def _flash2pPT_qnss(
     The maximum number of solver iterations. Default is `50`.
 
   lmbdmax: Scalar
-    The maximum step length. Default is `15.0`.
+    The maximum step length. Default is `6.0`.
 
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
@@ -558,7 +558,7 @@ def _flash2pPT_qnss(
   tmpl = '%3s%5s' + Nc * '%10.4f' + '%9.4f%11.2e'
   for j, kvi0 in enumerate(kvji0):
     k = 0
-    kvi = kvi0.flatten()
+    kvi = kvi0
     lnkvi = np.log(kvi)
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
@@ -580,20 +580,23 @@ def _flash2pPT_qnss(
       tkm1 = dlnkvi.dot(gi)
       lnkvi += dlnkvi
       kvi = np.exp(lnkvi)
-      f0 = solve2p_FGH(kvi, yi)
+      f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
       s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
       s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
       gi = lnkvi + lnphi0i - lnphi1i
+      g2km1 = g2
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnkvi, f0, g2)
       if g2 < tol:
         break
-      if k % Nc == 0:
+      if k % Nc == 0 or g2 > g2km1:
         lmbd = 1.
       else:
-        lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+        lmbd *= tkm1 / (dlnkvi.dot(gi) - tkm1)
+        if lmbd < 0.:
+          lmbd = -lmbd
         if lmbd > lmbdmax:
           lmbd = lmbdmax
     if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
@@ -615,7 +618,7 @@ def _flash2pPT_qnss(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * "\n%s",
-    eos.name, P, T, yi, *kvji0,
+    eos.name, P, T, yi.tolist(), *map(lambda a: a.tolist(), kvji0),
   )
   raise SolutionNotFoundError(
     'The flash calculation procedure\nterminates unsuccessfully. Try to '
@@ -733,7 +736,7 @@ def _flash2pPT_newt(
   U = np.full(shape=(Nc, Nc), fill_value=-1.)
   for j, kvi0 in enumerate(kvji0):
     k = 0
-    kvi = kvi0.flatten()
+    kvi = kvi0
     lnkvi = np.log(kvi)
     f0 = solve2p_FGH(kvi, yi)
     if np.isclose(f0, 0.):
@@ -758,7 +761,7 @@ def _flash2pPT_newt(
       k += 1
       lnkvi += dlnkvi
       kvi = np.exp(lnkvi)
-      f0 = solve2p_FGH(kvi, yi)
+      f0 = solve2p_FGH(kvi, yi, f0)
       f1 = 1. - f0
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
@@ -772,7 +775,7 @@ def _flash2pPT_newt(
       else:
         lnkvi -= gi
         kvi = np.exp(lnkvi)
-        f0 = solve2p_FGH(kvi, yi)
+        f0 = solve2p_FGH(kvi, yi, f0)
         f1 = 1. - f0
         y1i = yi / ((kvi - 1.) * f0 + 1.)
         y0i = y1i * kvi
@@ -800,7 +803,7 @@ def _flash2pPT_newt(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was Newton, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * "\n%s",
-    eos.name, P, T, yi, *kvji0,
+    eos.name, P, T, yi.tolist(), *map(lambda a: a.tolist(), kvji0),
   )
   raise SolutionNotFoundError(
     'The flash calculation procedure\nterminates unsuccessfully. Try to '
@@ -909,7 +912,7 @@ def _flash2pPT_ssnewt(
         0 < F_1^k < 1,
       \end{cases}
 
-    where :math:`\mathbf{g}` is the vector of equilibrium equations,
+    where :math:`\mathbf{g}` is the equilibrium equations vector,
     :math:`k` is the iteration number, :math:`F_1` is the mole fraction
     of the non-reference phase. Analytical expressions of the switching
     conditions were taken from the paper of L.X. Nghiem
@@ -955,7 +958,7 @@ def _flash2pPT_ssnewt(
   epsr, epsf, epsl, epsu = switchers
   for j, kvi0 in enumerate(kvji0):
     k = 0
-    kvi = kvi0.flatten()
+    kvi = kvi0
     lnkvi = np.log(kvi)
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
@@ -971,7 +974,7 @@ def _flash2pPT_ssnewt(
       lnkvi -= gi
       kvi = np.exp(lnkvi)
       f0km1 = f0
-      f0 = solve2p_FGH(kvi, yi)
+      f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
       s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
@@ -980,7 +983,7 @@ def _flash2pPT_ssnewt(
       g2km1 = g2
       g2 = gi.dot(gi)
       switch = (g2 / g2km1 > epsr and
-                (f0 - f0km1 < epsf or f0km1 - f0 < epsf) and
+                (f0 - f0km1 < epsf and f0km1 - f0 < epsf) and
                 g2 > epsl and g2 < epsu and
                 (f0 > 0. and f0 < 1. or negflash))
       logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
@@ -1001,7 +1004,7 @@ def _flash2pPT_ssnewt(
             kvji = np.atleast_2d(1. / kvi)
           logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
           return FlashResult(yji, Fj, Zj, sj, kvji)
-      else:
+      elif k < maxiter:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         f1 = 1. - f0
         s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
@@ -1017,7 +1020,7 @@ def _flash2pPT_ssnewt(
           k += 1
           lnkvi += dlnkvi
           kvi = np.exp(lnkvi)
-          f0 = solve2p_FGH(kvi, yi)
+          f0 = solve2p_FGH(kvi, yi, f0)
           f1 = 1. - f0
           y1i = yi / ((kvi - 1.) * f0 + 1.)
           y0i = y1i * kvi
@@ -1031,7 +1034,7 @@ def _flash2pPT_ssnewt(
           else:
             lnkvi -= gi
             kvi = np.exp(lnkvi)
-            f0 = solve2p_FGH(kvi, yi)
+            f0 = solve2p_FGH(kvi, yi, f0)
             f1 = 1. - f0
             y1i = yi / ((kvi - 1.) * f0 + 1.)
             y0i = y1i * kvi
@@ -1057,9 +1060,9 @@ def _flash2pPT_ssnewt(
           return FlashResult(yji, Fj, Zj, sj, kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
-    "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
+    "The solution method was SS-Newton, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * "\n%s",
-    eos.name, P, T, yi, *kvji0,
+    eos.name, P, T, yi.tolist(), *map(lambda a: a.tolist(), kvji0),
   )
   raise SolutionNotFoundError(
     'The flash calculation procedure\nterminates unsuccessfully. Try to '
@@ -1076,7 +1079,7 @@ def _flash2pPT_qnssnewt(
   eos: EosFlash2pPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
-  lmbdmax: Scalar = 15.,
+  lmbdmax: Scalar = 6.,
   switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.1, 1e-2, 1e-10, 1e-4),
   forcenewton: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
@@ -1156,7 +1159,7 @@ def _flash2pPT_qnssnewt(
     The maximum number of solver iterations. Default is `30`.
 
   lmbdmax: Scalar
-    The maximum step length. Default is `15.0`.
+    The maximum step length. Default is `6.0`.
 
   switchers: tuple[Scalar, Scalar, Scalar, Scalar]
     Allows to modify the conditions of switching from the QNSS to
@@ -1174,7 +1177,7 @@ def _flash2pPT_qnssnewt(
         0 < F_1^k < 1,
       \end{cases}
 
-    where :math:`\mathbf{g}` is the vector of equilibrium equations,
+    where :math:`\mathbf{g}` is the equilibrium equations vector,
     :math:`k` is the iteration number, :math:`F_1` is the mole fraction
     of the non-reference phase. Analytical expressions of the switching
     conditions were taken from the paper of L.X. Nghiem
@@ -1220,7 +1223,7 @@ def _flash2pPT_qnssnewt(
   epsr, epsf, epsl, epsu = switchers
   for j, kvi0 in enumerate(kvji0):
     k = 0
-    kvi = kvi0.flatten()
+    kvi = kvi0
     lnkvi = np.log(kvi)
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
@@ -1244,7 +1247,7 @@ def _flash2pPT_qnssnewt(
       lnkvi += dlnkvi
       kvi = np.exp(lnkvi)
       f0km1 = f0
-      f0 = solve2p_FGH(kvi, yi)
+      f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
       s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
@@ -1253,16 +1256,18 @@ def _flash2pPT_qnssnewt(
       g2km1 = g2
       g2 = gi.dot(gi)
       switch = (g2 / g2km1 > epsr and
-                (f0 - f0km1 < epsf or f0km1 - f0 < epsf) and
+                (f0 - f0km1 < epsf and f0km1 - f0 < epsf) and
                 g2 > epsl and g2 < epsu and
                 (f0 > 0. and f0 < 1. or negflash))
       logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'QNSS')
       if g2 < tol or switch:
         break
-      if k % Nc == 0:
+      if k % Nc == 0 or g2 > g2km1:
         lmbd = 1.
       else:
-        lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
+        lmbd *= tkm1 / (dlnkvi.dot(gi) - tkm1)
+        if lmbd < 0.:
+          lmbd = -lmbd
         if lmbd > lmbdmax:
           lmbd = lmbdmax
     if np.isfinite(g2):
@@ -1282,7 +1287,7 @@ def _flash2pPT_qnssnewt(
             kvji = np.atleast_2d(1. / kvi)
           logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
           return FlashResult(yji, Fj, Zj, sj, kvji)
-      else:
+      elif k < maxiter:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         f1 = 1. - f0
         s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
@@ -1298,7 +1303,7 @@ def _flash2pPT_qnssnewt(
           k += 1
           lnkvi += dlnkvi
           kvi = np.exp(lnkvi)
-          f0 = solve2p_FGH(kvi, yi)
+          f0 = solve2p_FGH(kvi, yi, f0)
           f1 = 1. - f0
           y1i = yi / ((kvi - 1.) * f0 + 1.)
           y0i = y1i * kvi
@@ -1312,7 +1317,7 @@ def _flash2pPT_qnssnewt(
           else:
             lnkvi -= gi
             kvi = np.exp(lnkvi)
-            f0 = solve2p_FGH(kvi, yi)
+            f0 = solve2p_FGH(kvi, yi, f0)
             f1 = 1. - f0
             y1i = yi / ((kvi - 1.) * f0 + 1.)
             y0i = y1i * kvi
@@ -1338,9 +1343,9 @@ def _flash2pPT_qnssnewt(
           return FlashResult(yji, Fj, Zj, sj, kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
-    "The solution method was SS+Newton, EOS: %s.\nParameters:\nP = %s Pa"
+    "The solution method was QNSS-Newton, EOS: %s.\nParameters:\nP = %s Pa"
     "\nT = %s K\nyi = %s\nInitial guesses of k-values:" + (j + 1) * "\n%s",
-    eos.name, P, T, yi, *kvji0,
+    eos.name, P, T, yi.tolist(), *map(lambda a: a.tolist(), kvji0),
   )
   raise SolutionNotFoundError(
     'The flash calculation procedure\nterminates unsuccessfully. Try to '
@@ -1786,6 +1791,7 @@ def _flashnpPT_qnss(
   eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 50,
+  lmbdmax: Scalar = 6.,
   negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for multiphase flash calculations using a PT-based
@@ -1864,6 +1870,9 @@ def _flashnpPT_qnss(
   maxiter: int
     The maximum number of solver iterations. Default is `50`.
 
+  lmbdmax: Scalar
+    The maximum step length. Default is `6.0`.
+
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `True`.
@@ -1923,13 +1932,19 @@ def _flashnpPT_qnss(
       sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gji = lnkvji + lnphiji - lnphixi
       gi = gji.ravel()
+      g2km1 = g2
       g2 = gi.dot(gi)
       logger.debug(tmpl, s, k, *lnkvi, *fj, g2)
       if g2 < tol:
         break
-      lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
-      if lmbd > 30.:
-        lmbd = 30.
+      if k % Nc == 0 or g2 > g2km1:
+        lmbd = 1.
+      else:
+        lmbd *= tkm1 / (dlnkvi.dot(gi) - tkm1)
+        if lmbd < 0.:
+          lmbd = -lmbd
+        if lmbd > lmbdmax:
+          lmbd = lmbdmax
     if (g2 < tol and np.isfinite(g2) and
         ((fj < 1.).all() and (fj > 0.).all() or negflash)):
       yji = np.append(yji, np.atleast_2d(xi), 0)
@@ -2326,7 +2341,7 @@ def _flashnpPT_ssnewt(
         0 < F_1^k < 1,
       \end{cases}
 
-    where :math:`\mathbf{g}` is the vector of equilibrium equations,
+    where :math:`\mathbf{g}` is the equilibrium equations vector,
     :math:`k` is the iteration number, :math:`F_j` is the mole fraction
     of a non-reference phase :math:`j`. Analytical expressions of the
     switching conditions were taken from the paper of L.X. Nghiem
@@ -2403,7 +2418,7 @@ def _flashnpPT_ssnewt(
       g2km1 = g2
       g2 = gi.dot(gi)
       physfj = (fj > 0.).all() and (fj < 1.).all() or negflash
-      switch = (g2 / g2km1 > epsr and (fj - fjkm1).abs().max() < epsf and
+      switch = (g2 / g2km1 > epsr and np.abs(fj - fjkm1).max() < epsf and
                 g2 > epsl and g2 < epsu and physfj)
       logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'SS')
     if np.isfinite(g2):
@@ -2418,7 +2433,7 @@ def _flashnpPT_ssnewt(
           kvji = yji[:-1] / yji[-1]
           logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
           return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
-      else:
+      elif k < maxiter:
         H = np.empty(shape=(Npm1Nc, Npm1Nc))
         H_block = np.lib.stride_tricks.as_strided(
           H, (Npm1, Npm1, Nc, Nc), (8 * Npm1Nc * Nc, 8 * Nc, 8 * Npm1Nc, 8),
@@ -2517,6 +2532,7 @@ def _flashnpPT_qnssnewt(
   eos: EosFlashnpPT,
   tol: Scalar = 1e-16,
   maxiter: int = 30,
+  lmbdmax: Scalar = 6.,
   switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
   negflash: bool = True,
   forcenewton: bool = False,
@@ -2630,6 +2646,9 @@ def _flashnpPT_qnssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
+  lmbdmax: Scalar
+    The maximum step length. Default is `6.0`.
+
   switchers: tuple[Scalar, Scalar, Scalar, Scalar]
     Allows to modify the conditions of switching from the QNSS to
     Newton's method. The parameter must be represented as a tuple
@@ -2646,7 +2665,7 @@ def _flashnpPT_qnssnewt(
         0 < F_1^k < 1,
       \end{cases}
 
-    where :math:`\mathbf{g}` is the vector of equilibrium equations,
+    where :math:`\mathbf{g}` is the equilibrium equations vector,
     :math:`k` is the iteration number, :math:`F_j` is the mole fraction
     of a non-reference phase :math:`j`. Analytical expressions of the
     switching conditions were taken from the paper of L.X. Nghiem
@@ -2731,14 +2750,19 @@ def _flashnpPT_qnssnewt(
       g2km1 = g2
       g2 = gi.dot(gi)
       physfj = (fj > 0.).all() and (fj < 1.).all() or negflash
-      switch = (g2 / g2km1 > epsr and (fj - fjkm1).abs().max() < epsf and
+      switch = (g2 / g2km1 > epsr and np.abs(fj - fjkm1).max() < epsf and
                 g2 > epsl and g2 < epsu and physfj)
       logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'QNSS')
       if g2 < tol or switch:
         break
-      lmbd *= np.abs(tkm1 / (dlnkvi.dot(gi) - tkm1))
-      if lmbd > 30.:
-        lmbd = 30.
+      if k % Nc == 0 or g2 > g2km1:
+        lmbd = 1.
+      else:
+        lmbd *= tkm1 / (dlnkvi.dot(gi) - tkm1)
+        if lmbd < 0.:
+          lmbd = -lmbd
+        if lmbd > lmbdmax:
+          lmbd = lmbdmax
     if np.isfinite(g2):
       if g2 < tol:
         if physfj:
@@ -2751,7 +2775,7 @@ def _flashnpPT_qnssnewt(
           kvji = yji[:-1] / yji[-1]
           logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
           return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
-      else:
+      elif k < maxiter:
         H = np.empty(shape=(Npm1Nc, Npm1Nc))
         H_block = np.lib.stride_tricks.as_strided(
           H, (Npm1, Npm1, Nc, Nc), (8 * Npm1Nc * Nc, 8 * Nc, 8 * Npm1Nc, 8),

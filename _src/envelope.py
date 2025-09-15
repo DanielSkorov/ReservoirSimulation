@@ -1152,6 +1152,7 @@ def _PsatPT_ss(
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation pressure
   calculation using a PT-based equation of state.
@@ -1230,6 +1231,10 @@ def _PsatPT_ss(
     The cricondentherm serves as the dividing point between upper and
     lower phase boundaries. Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -1279,21 +1284,26 @@ def _PsatPT_ss(
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(Pk, T, yji, Zj, sj)
   logger.warning(
     "The SS-method for saturation pressure calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T, yi, Plow, Pupp,
+    "yi = %s\nkvi0 = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The saturation pressure calculation\nterminates unsuccessfully. Try '
@@ -1315,6 +1325,7 @@ def _PsatPT_qnss(
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """QNSS-method for the saturation pressure calculation using a PT-based
   equation of state.
@@ -1401,6 +1412,10 @@ def _PsatPT_qnss(
     The cricondentherm serves as the dividing point between upper and
     lower phase boundaries. Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -1462,25 +1477,32 @@ def _PsatPT_qnss(
     if k % Nc == 0:
       lmbd = 1.
     else:
-      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+      lmbd *= tkm1 / (dlnki.dot(gi) - tkm1)
+      if lmbd < 0.:
+        lmbd = -lmbd
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(Pk, T, yji, Zj, sj)
   logger.warning(
     "The QNSS-method for saturation pressure calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T, yi, Plow, Pupp,
+    "yi = %s\nkvi0 = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The saturation pressure calculation\nterminates unsuccessfully. Try '
@@ -1622,6 +1644,7 @@ def _PsatPT_newtA(
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
   nonlinear equations using Newton's method. The system incorporates
@@ -1730,6 +1753,10 @@ def _PsatPT_newtA(
     the saturation pressure initial guess improvement.
     Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -1803,21 +1830,26 @@ def _PsatPT_newtA(
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Pk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Pk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(Pk, T, yji, Zj, sj)
   logger.warning(
     "Newton's method (A-form) for saturation pressure calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T, yi, Plow, Pupp,
+    "yi = %s\nkvi0 = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The saturation pressure calculation\nterminates unsuccessfully. Try '
@@ -1839,6 +1871,7 @@ def _PsatPT_newtB(
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
   nonlinear equations using Newton's method. The system incorporates
@@ -1947,6 +1980,10 @@ def _PsatPT_newtB(
     the saturation pressure initial guess improvement.
     Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -2023,21 +2060,26 @@ def _PsatPT_newtB(
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Pk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Pk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(Pk, T, yji, Zj, sj)
   logger.warning(
     "Newton's method (B-form) for saturation pressure calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T, yi, Plow, Pupp,
+    "yi = %s\nkvi0 = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The saturation pressure calculation\nterminates unsuccessfully. Try '
@@ -2059,6 +2101,7 @@ def _PsatPT_newtC(
   Pupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
   nonlinear equations using Newton's method. The system incorporates
@@ -2160,6 +2203,10 @@ def _PsatPT_newtC(
     The cricondentherm serves as the dividing point between upper and
     lower phase boundaries. Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation pressure calculation results as an instance of the
@@ -2219,21 +2266,26 @@ def _PsatPT_newtC(
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
     return SatResult(Pk, T, yji, Zj, sj)
   logger.warning(
     "Newton's method (C-form) for saturation pressure calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T, yi, Plow, Pupp,
+    "yi = %s\nkvi0 = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The saturation pressure calculation\nterminates unsuccessfully. Try '
@@ -2870,6 +2922,7 @@ def _TsatPT_ss(
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation temperature
   calculation using a PT-based equation of state.
@@ -2950,6 +3003,10 @@ def _TsatPT_ss(
     The cricondenbar serves as the dividing point between upper and
     lower phase boundaries. Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation temperature calculation results as an instance of the
@@ -2997,21 +3054,26 @@ def _TsatPT_ss(
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation temperature is: %.2f K.', Tk)
     return SatResult(P, Tk, yji, Zj, sj)
   logger.warning(
     "The SS-method for saturation temperature calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The saturation temperature calculation\nterminates unsuccessfully. '
@@ -3033,6 +3095,7 @@ def _TsatPT_qnss(
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (QNSS) method for the
   saturation temperature calculation using a PT-based equation
@@ -3122,6 +3185,10 @@ def _TsatPT_qnss(
     The cricondenbar serves as the dividing point between upper and
     lower phase boundaries. Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation temperature calculation results as an instance of the
@@ -3182,25 +3249,32 @@ def _TsatPT_qnss(
     if k % Nc == 0:
       lmbd = 1.
     else:
-      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+      lmbd *= tkm1 / (dlnki.dot(gi) - tkm1)
+      if lmbd < 0.:
+        lmbd = -lmbd
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation temperature is: %.2f K.', Tk)
     return SatResult(P, Tk, yji, Zj, sj)
   logger.warning(
     "The QNSS-method for saturation temperature calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The saturation temperature calculation\nterminates unsuccessfully. '
@@ -3342,6 +3416,7 @@ def _TsatPT_newtA(
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
   of nonlinear equations using Newton's method. The system incorporates
@@ -3452,6 +3527,10 @@ def _TsatPT_newtA(
     the saturation temperature initial guess improvement.
     Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation temperature calculation results as an instance of the
@@ -3525,21 +3604,26 @@ def _TsatPT_newtA(
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Tk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation temperature is: %.2f K.', Tk)
     return SatResult(P, Tk, yji, Zj, sj)
   logger.warning(
     "Newton's method (A-form) for saturation temperature calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The saturation temperature calculation\nterminates unsuccessfully. '
@@ -3561,6 +3645,7 @@ def _TsatPT_newtB(
   tol_tpd: Scalar = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
   of nonlinear equations using Newton's method. The system incorporates
@@ -3671,6 +3756,10 @@ def _TsatPT_newtB(
     the saturation temperature initial guess improvement.
     Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation temperature calculation results as an instance of the
@@ -3747,21 +3836,26 @@ def _TsatPT_newtB(
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Tk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation temperature is: %.2f K.', Tk)
     return SatResult(P, Tk, yji, Zj, sj)
   logger.warning(
     "Newton's method (B-form) for saturation temperature calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The saturation temperature calculation\nterminates unsuccessfully. '
@@ -3783,6 +3877,7 @@ def _TsatPT_newtC(
   Tupp: Scalar = 973.15,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   upper: bool = True,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
   of nonlinear equations using Newton's method. The system incorporates
@@ -3886,6 +3981,10 @@ def _TsatPT_newtC(
     The cricondenbar serves as the dividing point between upper and
     lower phase boundaries. Default is `True`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   Saturation temperature calculation results as an instance of the
@@ -3944,21 +4043,26 @@ def _TsatPT_newtC(
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('Saturation temperature is: %.2f K.', Tk)
     return SatResult(P, Tk, yji, Zj, sj)
   logger.warning(
     "Newton's method (C-form) for saturation temperature calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The saturation temperature calculation\nterminates unsuccessfully. '
@@ -4340,6 +4444,7 @@ def _PmaxPT_ss(
   maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
+  densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondenbar
   calculation using a PT-based equation of state. To find the
@@ -4441,6 +4546,10 @@ def _PmaxPT_ss(
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1e8` [Pa].
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   The cricondenbar point calculation results as an instance of the
@@ -4502,21 +4611,26 @@ def _PmaxPT_ss(
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
     return SatResult(Pk, Tk, yji, Zj, sj)
   logger.warning(
     "The SS-method for cricondenbar calculation terminates unsuccessfully. "
-    "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nPlow = %s Pa\n"
-    "Pupp = %s Pa",
-    eos.name, P0, T0, yi, Plow, Pupp,
+    "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nkvi0 = %s\n"
+    "Plow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T0, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The cricondenbar calculation\nterminates unsuccessfully. Try to '
@@ -4538,6 +4652,7 @@ def _PmaxPT_qnss(
   maxiter_tpd: int = 10,
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
+  densort: bool = True,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (SS) method for the
   cricondenbar calculation using a PT-based equation of state. To find
@@ -4645,6 +4760,10 @@ def _PmaxPT_qnss(
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1e8` [Pa].
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   The cricondenbar point calculation results as an instance of the
@@ -4718,25 +4837,32 @@ def _PmaxPT_qnss(
     if k % Nc == 0:
       lmbd = 1.
     else:
-      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+      lmbd *= tkm1 / (dlnki.dot(gi) - tkm1)
+      if lmbd < 0.:
+        lmbd = -lmbd
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
     return SatResult(Pk, Tk, yji, Zj, sj)
   logger.warning(
-    "The QNSS-method for cricondenbar calculation terminates "
-    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T0, yi, Plow, Pupp,
+    "The QNSS-method for cricondenbar calculation terminates unsuccessfully. "
+    "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nkvi0 = %s\n"
+    "Plow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T0, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The cricondenbar calculation\nterminates unsuccessfully. Try to '
@@ -4758,6 +4884,7 @@ def _PmaxPT_newtC(
   Plow: Scalar = 1.,
   Pupp: Scalar = 1e8,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates the cricondenbar point by solving a system
   of nonlinear equations using Newton's method. The system incorporates
@@ -4877,6 +5004,10 @@ def _PmaxPT_newtC(
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   The cricondenbar point calculation results as an instance of the
@@ -4946,21 +5077,26 @@ def _PmaxPT_newtC(
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(Pk, Tk, yji, Zj, sj)
   logger.warning(
     "Newton's method (C-form) for cricondenbar calculation terminates "
-    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-    "yi = %s\nPlow = %s Pa\nPupp = %s Pa",
-    eos.name, P0, T0, yi, Plow, Pupp,
+    "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\n"
+    "kvi0 = %s\nPlow = %s Pa\nPupp = %s Pa",
+    eos.name, P0, T0, yi.tolist(), kvi0.tolist(), Plow, Pupp,
   )
   raise SolutionNotFoundError(
     'The cricondenbar calculation\nterminates unsuccessfully. Try to '
@@ -5347,6 +5483,7 @@ def _TmaxPT_ss(
   maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
+  densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondentherm
   calculation using a PT-based equation of state. To find the
@@ -5450,6 +5587,10 @@ def _TmaxPT_ss(
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `973.15` [K].
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   The cricondentherm point calculation results as an instance of the
@@ -5513,21 +5654,26 @@ def _TmaxPT_ss(
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(Pk, Tk, yji, Zj, sj)
   logger.warning(
     "The SS-method for cricondentherm calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P0, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P0, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The cricondentherm calculation\nterminates unsuccessfully. Try to '
@@ -5549,6 +5695,7 @@ def _TmaxPT_qnss(
   maxiter_tpd: int = 10,
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
+  densort = True,
 ) -> SatResult:
   """Quasi-Newton Successive substitution (QNSS) method for the
   cricondentherm calculation using a PT-based equation of state. To find
@@ -5658,6 +5805,10 @@ def _TmaxPT_qnss(
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `973.15` [K].
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   The cricondentherm point calculation results as an instance of the
@@ -5733,25 +5884,32 @@ def _TmaxPT_qnss(
     if k % Nc == 0:
       lmbd = 1.
     else:
-      lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+      lmbd *= tkm1 / (dlnki.dot(gi) - tkm1)
+      if lmbd < 0.:
+        lmbd = -lmbd
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(Pk, Tk, yji, Zj, sj)
   logger.warning(
     "The QNSS-method for cricondentherm calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P0, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P0, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The cricondentherm calculation\nterminates unsuccessfully. Try to '
@@ -5773,6 +5931,7 @@ def _TmaxPT_newtC(
   Tlow: Scalar = 173.15,
   Tupp: Scalar = 973.15,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  densort: bool = True,
 ) -> SatResult:
   """This function calculates the cricondenthern point by solving a
   system of nonlinear equations using Newton's method. The system
@@ -5895,6 +6054,10 @@ def _TmaxPT_newtC(
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
+  densort: bool
+    A boolean flag indicating whether it is necessary to sort the real
+    and trial phases according to their densities. Default is `True`.
+
   Returns
   -------
   The cricondentherm point calculation results as an instance of the
@@ -5966,21 +6129,26 @@ def _TmaxPT_newtC(
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
-    if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+    if densort:
+      if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
+        yji = np.vstack([yi, xi])
+        Zj = np.array([Zy, Zx])
+        sj = np.array([sy, sx])
+      else:
+        yji = np.vstack([xi, yi])
+        Zj = np.array([Zx, Zy])
+        sj = np.array([sx, sy])
+    else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    else:
-      yji = np.vstack([xi, yi])
-      Zj = np.array([Zx, Zy])
-      sj = np.array([sx, sy])
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
     return SatResult(Pk, Tk, yji, Zj, sj)
   logger.warning(
     "Newton's method (C-form) for cricondentherm calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
-    "yi = %s\nTlow = %s K\nTupp = %s K",
-    eos.name, P0, T0, yi, Tlow, Tupp,
+    "yi = %s\nkvi0 = %s\nTlow = %s K\nTupp = %s K",
+    eos.name, P0, T0, yi.tolist(), kvi0.tolist(), Tlow, Tupp,
   )
   raise SolutionNotFoundError(
     'The cricondentherm calculation\nterminates unsuccessfully. Try to '

@@ -39,8 +39,7 @@ class flashnp(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    flash = flashnpPT(pr, method='ss', tol=1e-16, maxiter=12,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, maxiter=7)
     res = flash.run(P, T, yi)
     pass
 
@@ -60,8 +59,7 @@ class flashnp(unittest.TestCase):
       0.039265, 0.021924, 0.011676, 0.006228,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    flash = flashnpPT(pr, method='ss', tol=1e-16, maxiter=147,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, maxiter=5)
     res = flash.run(P, T, yi)
     pass
 
@@ -83,8 +81,7 @@ class flashnp(unittest.TestCase):
       0.02500, 0.06000, 0.09000, 0.09500, 0.11000, 0.11000,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    flash = flashnpPT(pr, method='ss', tol=1e-16, maxiter=17,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, maxiter=9)
     res = flash.run(P, T, yi)
     pass
 
@@ -108,10 +105,7 @@ class flashnp(unittest.TestCase):
       0.09, 0.12546, 0.07402, 0.05002, 0.01794, 0.00316,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    tol = 1e-16
-    maxiter = 191
-    flash = flashnpPT(pr, method='ss', tol=tol, maxiter=maxiter,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, maxiter=10)
     res = flash.run(P, T, yi)
     pass
 
@@ -129,8 +123,7 @@ class flashnp(unittest.TestCase):
       0.4907, 0.48,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
-    flash = flashnpPT(pr, method='ss', tol=1e-16, maxiter=5,
-                      stabkwargs=dict(method='ss'))
+    flash = flashnpPT(pr, method='ss', maxiter=5)
     res = flash.run(P, T, yi, maxNp=3)
     pass
 
@@ -148,8 +141,7 @@ class flashnp(unittest.TestCase):
       0.4907, 0.48,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
-    flash = flashnpPT(pr, method='qnss', tol=1e-16, maxiter=5,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, method='qnss', maxiter=5)
     res = flash.run(P, T, yi, maxNp=3)
     pass
 
@@ -167,8 +159,7 @@ class flashnp(unittest.TestCase):
       0.4907, 0.48,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
-    flash = flashnpPT(pr, method='newton', tol=1e-16, maxiter=3,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, method='newton', maxiter=3)
     res = flash.run(P, T, yi, maxNp=3)
     pass
 
@@ -186,8 +177,7 @@ class flashnp(unittest.TestCase):
       0.4907, 0.48,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
-    flash = flashnpPT(pr, method='ss-newton', tol=1e-16, maxiter=5,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, method='ss-newton', maxiter=5)
     res = flash.run(P, T, yi, maxNp=3)
     pass
 
@@ -205,8 +195,7 @@ class flashnp(unittest.TestCase):
       0.4907, 0.48,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
-    flash = flashnpPT(pr, method='qnss-newton', tol=1e-16, maxiter=5,
-                      stabkwargs=dict(method='qnss'))
+    flash = flashnpPT(pr, method='qnss-newton', maxiter=5)
     res = flash.run(P, T, yi, maxNp=3)
     pass
 

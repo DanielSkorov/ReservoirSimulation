@@ -67,7 +67,7 @@ class cce(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = SimpleSeparator(pr, useprev=True)
     sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, flashkwargs=dict(useprev=True))
+    cce = ccePT(pr, sepg, sepo, useprev=True)
     res = cce.run(PP, T, yi)
     pass
 
@@ -100,7 +100,7 @@ class cce(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = GasSeparator(pr)
     sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, flashkwargs=dict(useprev=True))
+    cce = ccePT(pr, sepg, sepo, useprev=True)
     res = cce.run(PP, T, yi)
     pass
 
@@ -124,7 +124,7 @@ class cce(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = SimpleSeparator(pr, useprev=True)
     sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, flashkwargs=dict(useprev=True))
+    cce = ccePT(pr, sepg, sepo, useprev=True)
     res = cce.run(PP, T, yi)
     pass
 
@@ -148,7 +148,61 @@ class cce(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = GasSeparator(pr)
     sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, flashkwargs=dict(useprev=True))
+    cce = ccePT(pr, sepg, sepo, useprev=True)
+    res = cce.run(PP, T, yi)
+    pass
+
+  def test_05(self):
+    PP = np.array([51812.0, 48364.6, 44917.3, 43538.3, 42848.8, 42159.4,
+                   41538.8, 41125.2, 40780.4, 40090.9, 38712.0, 36643.6,
+                   34575.1, 31127.8, 27680.4, 24233.0, 20785.6, 17338.2,
+                   14580.3, 12925.6, 11705.2, 10167.7, 8995.6, 8099.3,
+                   7340.8]) * 1e3
+    T = 124.44 + 273.15
+    yi = np.array([0.0001, 0.0011, 0.6893, 0.0863, 0.0534, 0.0115, 0.0233,
+                   0.0093, 0.0085, 0.0173, 0.046808865, 0.021179837,
+                   0.013661825, 0.008213373, 0.0100361])
+    Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
+                    32.46, 29.1862, 23.274195, 19.855981, 17.096682,
+                    16.23444]) * 101325.
+    Tci = np.array([304.2, 126.2, 190.6, 305.4, 369.8, 408.1, 425.2, 460.4,
+                    469.6, 507.5, 558.96444, 629.35895, 678.01295, 723.01566,
+                    893.91147])
+    wi = np.array([0.225, 0.040, 0.008, 0.098, 0.152, 0.176, 0.193, 0.227,
+                   0.251, 0.27504, 0.31228, 0.43337435, 0.53091175,
+                   0.63045267, 1.0341])
+    mwi = np.array([44.010, 28.013, 16.043, 30.070, 44.097, 58.124, 58.124,
+                    72.151, 72.151, 86.000, 110.46812, 149.37189, 183.83825,
+                    221.96509, 310.37874]) / 1e3
+    vsi = np.array([-0.09434672, -0.12838834, -0.2038605, -0.10210346,
+                    -0.07330094, -0.05706875, -0.05705589, -0.03446267,
+                    -0.03446267, -0.004992, 0.091683057, 0.12673869,
+                    0.1509548, 0.17233488, 0.089525733])
+    dij = np.array([
+     -0.0200,
+      0.1030, 0.0310,
+      0.1300, 0.0420, 0.0027,
+      0.1350, 0.0910, 0.0085, 0.0017,
+      0.1300, 0.0950, 0.0127, 0.0055, 0.0011,
+      0.1300, 0.0950, 0.0147, 0.0049, 0.0019, 0.0001,
+      0.1250, 0.0950, 0.0179, 0.0067, 0.0028, 0.0002, 0.0003,
+      0.1250, 0.0950, 0.0206, 0.0086, 0.0037, 0.0004, 0.0005, 0.0001,
+      0.1500, 0.1200, 0.0253, 0.0117, 0.0046, 0.0012, 0.0015, 0.0002, 0.0002,
+      0.1500, 0.1200, 0.0321, 0.0166, 0.0078, 0.0031, 0.0035, 0.0012, 0.0013,
+      0.0004,
+      0.1500, 0.1200, 0.0471, 0.0280, 0.0163, 0.0090, 0.0097, 0.0057, 0.0058,
+      0.0036, 0.0016,
+      0.1500, 0.1200, 0.0580, 0.0368, 0.0232, 0.0143, 0.0153, 0.0101, 0.0102,
+      0.0073, 0.0042, 0.0006,
+      0.1500, 0.1200, 0.0667, 0.0440, 0.0291, 0.0191, 0.0202, 0.0142, 0.0144,
+      0.0108, 0.0070, 0.0020, 0.0004,
+      0.1500, 0.1200, 0.0856, 0.0601, 0.0427, 0.0305, 0.0319, 0.0243, 0.0245,
+      0.0199, 0.0146, 0.0067, 0.0032, 0.0014,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    sepg = GasSeparator(pr)
+    sepo = SimpleSeparator(pr, useprev=True)
+    cce = ccePT(pr, sepg, sepo, useprev=True)
     res = cce.run(PP, T, yi)
     pass
 

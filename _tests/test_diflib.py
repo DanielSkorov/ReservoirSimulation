@@ -77,7 +77,7 @@ class cvd(unittest.TestCase):
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = SimpleSeparator(pr, useprev=True)
     sepo = SimpleSeparator(pr, useprev=True)
-    dl = dlPT(pr, sepg, sepo, flashkwargs=dict(useprev=True))
+    dl = dlPT(pr, sepg, sepo, useprev=True)
     res = dl.run(PP, T, yi, 18e6)
     pass
 

@@ -25,26 +25,19 @@ def fG(
   a: Scalar,
   yi: Vector,
   di: Vector,
-  y0: Scalar,
-  yN: Scalar,
 ) -> tuple[Scalar, Scalar]:
   denom = 1. / (di * (a + 1.) + a)
-  return (
-    (a + 1.) * (y0 / a + yi.dot(denom) - yN),
-    -y0 / (a * a) - yi.dot(denom * denom) - yN,
-  )
+  return (a + 1.) * yi.dot(denom), -yi.dot(denom * denom)
 
 
 def fH(
   a: Scalar,
   yi: Vector,
   di: Vector,
-  y0: Scalar,
-  yN: Scalar,
 ) -> tuple[Scalar, Scalar]:
   denom = 1. / (di * (a + 1.) + a)
-  G = (1. + a) * (y0 / a + yi.dot(denom) - yN)
-  dGda = -y0 / (a * a) - yi.dot(denom * denom) - yN
+  G = (a + 1.) * yi.dot(denom)
+  dGda = -yi.dot(denom * denom)
   return -a * G, -G - a * dGda
 
 
@@ -53,22 +46,22 @@ def fD(
   yi: Vector,
   di: Vector,
   yidi: Vector,
-  y0: Scalar,
-  yN: Scalar,
 ) -> tuple[Scalar, Scalar]:
   denom = 1. / (di * (a + 1.) + a)
-  return y0 + a * yi.dot(denom) - yN * a, yidi.dot(denom * denom) - yN
+  return a * yi.dot(denom), yidi.dot(denom * denom)
 
 
 def solve2p_FGH(
   kvi: Vector,
   yi: Vector,
+  f0: Scalar | None = None,
   tol: Scalar = 1e-12,
   maxiter: int = 50,
+  miniter: int = 1,
 ) -> Scalar:
   """FGH-method for solving the Rachford-Rice equation.
 
-  Solves the Rachford-Rice equation for two-phase systems using
+  Solves the Rachford-Rice equation for a two-phase system using
   the FGH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
   Parameters
@@ -79,35 +72,47 @@ def solve2p_FGH(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
+  f0: Scalar | None
+    The initial guess for the mole fraction of the non-reference phase.
+    Default is `None`, which means using an internal formula based on
+    the paper 10.1016/j.fluid.2017.08.020.
+
   tol: Scalar
     Terminate successfully if the absolute value of the D-function
     is less than `tol`. Default is `1e-12`.
 
   maxiter: int
-    Maximum number of iterations. Default is `50`.
+    The maximum number of iterations. Default is `50`.
+
+  miniter: int
+    The minimum number of iterations. Default is `1`.
 
   Returns
   -------
-  A mole fraction of the non-reference phase in a system.
+  The mole fraction of the non-reference phase in the system.
   """
   logger.info('Solving the two-phase Rachford-Rice equation (FGH-method).')
   logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
   tmpl = '%3s%12.3e%11.2e'
-  idx = kvi.argsort()[::-1]
-  ysi = yi[idx]
-  kvsi = kvi[idx]
-  ci = 1. / (1. - kvsi)
-  di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
-  y0 = ysi[0]
-  yN = ysi[-1]
-  ysi = ysi[1:-1]
-  pD = partial(fD, yi=ysi, di=di, yidi=ysi*di, y0=y0, yN=yN)
+  idxmin = kvi.argmin()
+  idxmax = kvi.argmax()
+  ci = 1. / (1. - kvi)
+  cmin = ci[idxmin]
+  cmax = ci[idxmax]
+  di = (cmax - ci) / (cmin - cmax)
+  pD = partial(fD, yi=yi, di=di, yidi=yi*di)
   k = 0
-  ak = y0 / yN
+  ak = yi[idxmax] / yi[idxmin]
+  if f0 is None:
+    ak = yi[idxmax] / yi[idxmin]
+  else:
+    ak = (f0 - cmax) / (cmin - f0)
+    if ak < 0.:
+      ak = yi[idxmax] / yi[idxmin]
   D, dDda = pD(ak)
   repeat = D < -tol or D > tol
   logger.debug(tmpl, k, ak, D)
-  while repeat and k < maxiter:
+  while (repeat or k < miniter) and k < maxiter:
     hk = D / dDda
     akp1 = ak - hk
     if akp1 < 0.:
@@ -121,12 +126,12 @@ def solve2p_FGH(
     repeat = D < -tol or D > tol
     logger.debug(tmpl, k, ak, D)
   if not repeat:
-    F = (ci[0] + ak * ci[-1]) / (1. + ak)
-    logger.info('Solution is: F = %.2f.', F)
-    return F
+    f = (cmax + ak * cmin) / (1. + ak)
+    logger.info('Solution is: f = %.4f.', f)
+    return f
   logger.warning(
     'FGH-method for solving the RR-equation terminates unsuccessfully.\n'
-    'kvi = %s\nyi = %s', kvi, yi,
+    'kvi = %s\nyi = %s', kvi.tolist(), yi.tolist(),
   )
   raise SolutionNotFoundError(
     'FGH-method for solving the RR-equation terminates unsuccessfully.\n'
@@ -137,12 +142,13 @@ def solve2p_FGH(
 def solve2p_GH(
   kvi: Vector,
   yi: Vector,
+  f0: Scalar | None = None,
   tol: Scalar = 1e-12,
   maxiter: int = 50,
 ) -> Scalar:
   """GH-method for solving the Rachford-Rice equation.
 
-  Solves the Rachford-rice equation for two-phase systems using
+  Solves the Rachford-rice equation for a two-phase system using
   the GH-method. For the details see 10.1016/j.fluid.2017.08.020.
 
   Parameters
@@ -153,53 +159,61 @@ def solve2p_GH(
   yi: Vector, shape (Nc,)
     Mole fractions of `Nc` components.
 
+  f0: Scalar | None
+    The initial guess for the mole fraction of the non-reference phase.
+    Default is `None`, which means using an internal formula based on
+    the paper 10.1016/j.fluid.2017.08.020.
+
   tol: Scalar
     Terminate successfully if the absolute value of the D-function
     is less than `tol`. Default is `1e-12`.
 
   maxiter: int
-    Maximum number of iterations. Default is `50`.
+    The maximum number of iterations. Default is `50`.
 
   Returns
   -------
-  A mole fraction of the non-reference phase in a system.
+  The mole fraction of the non-reference phase in the system.
   """
   logger.info('Solving the two-phase Rachford-Rice equation (GH-method).')
   logger.debug('%3s%12s%11s', 'Nit', 'a', 'eq')
   tmpl = '%3s%12.3e%11.2e'
-  idx = kvi.argsort()[::-1]
-  ysi = yi[idx]
-  kvsi = kvi[idx]
-  ci = 1. / (1. - kvsi)
-  di = (ci[0] - ci[1:-1]) / (ci[-1] - ci[0])
-  y0 = ysi[0]
-  yN = ysi[-1]
-  ysi = ysi[1:-1]
+  idxmin = kvi.argmin()
+  idxmax = kvi.argmax()
+  ci = 1. / (1. - kvi)
+  cmin = ci[idxmin]
+  cmax = ci[idxmax]
+  di = (cmax - ci) / (cmin - cmax)
   k = 0
-  ak = y0 / yN
-  denom = 1. / (di * (ak + 1.) + ak)
-  eq = (ak + 1.) * (y0 / ak + ysi.dot(denom) - yN)
-  deqda = -y0 / (ak * ak) - ysi.dot(denom * denom) - yN
-  if eq > 0.:
-    peq = partial(fG, yi=ysi, di=di, y0=y0, yN=yN)
+  if f0 is None:
+    ak = yi[idxmax] / yi[idxmin]
   else:
-    peq = partial(fH, yi=ysi, di=di, y0=y0, yN=yN)
+    ak = (f0 - cmax) / (cmin - f0)
+    if ak < 0.:
+      ak = yi[idxmax] / yi[idxmin]
+  denom = 1. / (di * (ak + 1.) + ak)
+  eq = (ak + 1.) * yi.dot(denom)
+  deqda = -yi.dot(denom * denom)
+  if eq > 0.:
+    peq = partial(fG, yi=yi, di=di)
+  else:
+    peq = partial(fH, yi=yi, di=di)
     deqda = -eq - ak * deqda
     eq *= -ak
   logger.debug(tmpl, k, ak, eq)
-  while eq > tol and k < maxiter:
+  while (eq > tol or eq < -tol) and k < maxiter:
     hk = eq / deqda
     k +=1
     ak -= hk
     eq, deqda = peq(ak)
     logger.debug(tmpl, k, ak, eq)
   if eq < tol:
-    F = (ci[0] + ak * ci[-1]) / (1. + ak)
-    logger.info('Solution is: F = %.2f.', F)
-    return F
+    f = (cmax + ak * cmin) / (1. + ak)
+    logger.info('Solution is: f = %.4f.', f)
+    return f
   logger.warning(
     'GH-method for solving the RR-equation terminates unsuccessfully.\n'
-    'kvi = %s\nyi = %s', kvi, yi,
+    'kvi = %s\nyi = %s', kvi.tolist(), yi.tolist(),
   )
   raise SolutionNotFoundError(
     'GH-method for solving the RR-equation terminates unsuccessfully.\n'
@@ -218,7 +232,7 @@ def solveNp(
   maxiter_ls: int = 10,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> Vector:
-  """Solves the system of Rachford-Rice equations
+  """Solves the system of Rachford-Rice equations.
 
   Implementation of Okuno's method for solving systems of Rachford-Rice
   equations. This method is based on Newton's method for optimization
@@ -241,18 +255,18 @@ def solveNp(
     gradient is less than `tol`. Default is `1e-20`.
 
   maxiter: int
-    Maximum number of iterations. Default is `30`.
+    The maximum number of iterations. Default is `30`.
 
   beta: Scalar
-    Coefficient used to update step size in the backtracking line
+    This parameter is used to update step size in the backtracking line
     search procedure. Default is `0.8`.
 
   c: Scalar
-    Coefficient used to calculate the Goldstein's condition for the
-    backtracking line search procedure. Default is `0.3`.
+    This parameter is used to calculate the Goldstein's condition for
+    the backtracking line search procedure. Default is `0.3`.
 
   maxiter_ls: int
-    Maximum number of linesearch iterations. Default is `10`.
+    The maximum number of linesearch iterations. Default is `10`.
 
   linsolver: Callable[[Matrix, Vector], Vector]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
@@ -262,7 +276,7 @@ def solveNp(
 
   Returns
   -------
-  A vector of mole fractions of non-reference phases in a system.
+  A vector of mole fractions of non-reference phases in the system.
   """
   logger.info("Solving the system of Rachford-Rice equations.")
   Npm1 = Kji.shape[0]

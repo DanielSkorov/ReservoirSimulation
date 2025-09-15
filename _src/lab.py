@@ -319,7 +319,7 @@ class GasSeparator(object):
     Default is `[223.15, 238.15, 258.15, 293.15]` K.
 
   **kwargs: dict
-    Other arguments for a flash solver. It may contain such arguments
+    Other arguments for a flash solver. It can contain such arguments
     as `method`, `tol`, `maxiter` and others, depending on the selected
     solver.
   """
@@ -541,7 +541,7 @@ class cvdPT(object):
     This parameter should be represented as an initialized instance of
     a class that must have the following methods:
 
-        - `run(yi: Vector) -> FlashResult`
+    - `run(yi: Vector) -> FlashResult`
       For a given composition of a mixture this method could perform
       a series of separation steps and return their outputs as an
       instance of `FlashResult`.
@@ -558,31 +558,32 @@ class cvdPT(object):
       temperatures at separation steps or specific temperature for the
       separation process.
 
-  flashkwargs: dict
-    Settings for the flash calculation procedure. Default is an empty
-    dictionary.
+  mwc5: Scalar
+    Molar mass used to filter components to calculate potential oil-gas
+    ratio. Default is `0.07215` [kg/mol].
 
   psatkwargs: dict
     Settings for the saturation pressure calculation procedure. Default
     is an empty dictionary.
 
-  mwc5: Scalar
-    Molar mass used to filter components to calculate potential oil-gas
-    ratio. Default is `0.07215` [kg/mol].
+  **kwargs: dict
+    Other arguments for a flash solver. It can contain such arguments
+    as `method`, `tol`, `maxiter` and others, depending on the selected
+    solver.
   """
   def __init__(
     self,
     eos: EosPsatPT,
     gassep: Separator,
     oilsep: Separator,
-    flashkwargs: dict = {},
-    psatkwargs: dict = {},
     mwc5: Scalar = 0.07215,
+    psatkwargs: dict = {},
+    **kwargs,
   ) -> None:
     self.eos = eos
     self.gassep = gassep
     self.oilsep = oilsep
-    self.solver = flash2pPT(eos, **flashkwargs)
+    self.solver = flash2pPT(eos, **kwargs)
     self.psatsolver = PsatPT(eos, **psatkwargs)
     self.maskc5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.maskc5pi]
@@ -645,9 +646,8 @@ class cvdPT(object):
     `LabResult`.
     """
     logger.info('Constant volume depletion (CVD).')
-    zi = yi.copy()
-    logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *zi)
-    psatres = self.psatsolver.run(Psat0, T, zi, True)
+    logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *yi)
+    psatres = self.psatsolver.run(Psat0, T, yi, True)
     Psat = psatres.P
     logger.info('Saturation pressure: %.1f Pa', Psat)
     vrg, vro = psatres.Zj * R * T / Psat
@@ -669,7 +669,7 @@ class cvdPT(object):
     bo, muo, dendo, gor, densg = self._oilprops(psatres.yji[1], vro)
     props[0] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
     for i, P in enumerate(PP_filtered, 1):
-      mix = self.solver.run(P, T, zi)
+      mix = self.solver.run(P, T, yi)
       ysji[i] = mix.yji
       Zsj[i] = mix.Zj
       Fsj[i] = mix.Fj
@@ -680,8 +680,6 @@ class cvdPT(object):
         Vrg = nrg * vrg
         Vro = nro * vro
         Vrm = Vrg + Vro
-        Srg = Vrg / Vrm
-        Sro = Vro / Vrm
         dVrg = Vrm - V0
         dnrg = dVrg / vrg
         dnrgi = yrgi * dnrg
@@ -696,9 +694,9 @@ class cvdPT(object):
                          'The CVD experiment can not be completed.')
           break
         n = nro + nrg_sp1
-        zi = (nrgi_sp1 + nro * yroi) / n
+        yi = (nrgi_sp1 + nro * yroi) / n
       elif mix.sj[0] == 0:
-        yrgi = zi
+        yrgi = yi
         nrg = n
         vrg = R * T * mix.Zj[0] / P
         Vrm = nrg * vrg
@@ -942,7 +940,7 @@ class ccePT(cvdPT):
     This parameter should be represented as an initialized instance of
     a class that must have the following methods:
 
-        - `run(yi: Vector) -> FlashResult`
+    - `run(yi: Vector) -> FlashResult`
       For a given composition of a mixture this method could perform
       a series of separation steps and return their outputs as an
       instance of `FlashResult`.
@@ -959,13 +957,14 @@ class ccePT(cvdPT):
       temperatures at separation steps or specific temperature for the
       separation process.
 
-  flashkwargs: dict
-    Settings for the flash calculation procedure. Default is an empty
-    dictionary.
-
   mwc5: Scalar
     Molar mass used to filter components to calculate potential oil-gas
     ratio. Default is `0.07215` [kg/mol].
+
+  **kwargs: dict
+    Other arguments for a flash solver. It can contain such arguments
+    as `method`, `tol`, `maxiter` and others, depending on the selected
+    solver.
 
   Methods
   -------
@@ -978,13 +977,13 @@ class ccePT(cvdPT):
     eos: EosPsatPT,
     gassep: Separator,
     oilsep: Separator,
-    flashkwargs: dict = {},
     mwc5: Scalar = 0.07215,
+    **kwargs,
   ) -> None:
     self.eos = eos
     self.gassep = gassep
     self.oilsep = oilsep
-    self.solver = flash2pPT(eos, **flashkwargs)
+    self.solver = flash2pPT(eos, **kwargs)
     self.maskc5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.maskc5pi]
     if isinstance(gassep.Ts, Iterable) and isinstance(gassep.Ps, Iterable):
@@ -1208,7 +1207,7 @@ class dlPT(cvdPT):
     This parameter should be represented as an initialized instance of
     a class that must have the following methods:
 
-        - `run(yi: Vector) -> FlashResult`
+    - `run(yi: Vector) -> FlashResult`
       For a given composition of a mixture this method could perform
       a series of separation steps and return their outputs as an
       instance of `FlashResult`.
@@ -1225,31 +1224,32 @@ class dlPT(cvdPT):
       temperatures at separation steps or specific temperature for the
       separation process.
 
-  flashkwargs: dict
-    Settings for the flash calculation procedure. Default is an empty
-    dictionary.
+  mwc5: Scalar
+    Molar mass used to filter components to calculate potential oil-gas
+    ratio. Default is `0.07215` [kg/mol].
 
   psatkwargs: dict
     Settings for the saturation pressure calculation procedure. Default
     is an empty dictionary.
 
-  mwc5: Scalar
-    Molar mass used to filter components to calculate potential oil-gas
-    ratio. Default is `0.07215` [kg/mol].
+  **kwargs: dict
+    Other arguments for a flash solver. It can contain such arguments
+    as `method`, `tol`, `maxiter` and others, depending on the selected
+    solver.
   """
   def __init__(
     self,
     eos: EosPsatPT,
     gassep: Separator,
     oilsep: Separator,
-    flashkwargs: dict = {},
-    psatkwargs: dict = {},
     mwc5: Scalar = 0.07215,
+    psatkwargs: dict = {},
+    **kwargs,
   ) -> None:
     self.eos = eos
     self.gassep = gassep
     self.oilsep = oilsep
-    self.solver = flash2pPT(eos, **flashkwargs)
+    self.solver = flash2pPT(eos, **kwargs)
     self.psatsolver = PsatPT(eos, **psatkwargs)
     self.maskc5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.maskc5pi]
@@ -1312,9 +1312,8 @@ class dlPT(cvdPT):
     `LabResult`.
     """
     logger.info('Differential liberation (DL).')
-    zi = yi.copy()
-    logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *zi)
-    psatres = self.psatsolver.run(Psat0, T, zi, True)
+    logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *yi)
+    psatres = self.psatsolver.run(Psat0, T, yi, True)
     Psat = psatres.P
     logger.info('Saturation pressure: %.1f Pa', Psat)
     PP_filtered = PP[PP < Psat]
@@ -1335,7 +1334,7 @@ class dlPT(cvdPT):
     bo, muo, dendo, gor, densg = self._oilprops(psatres.yji[1], vro)
     props[0] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
     for i, P in enumerate(PP_filtered, 1):
-      mix = self.solver.run(P, T, zi)
+      mix = self.solver.run(P, T, yi)
       yji = mix.yji
       Zj = mix.Zj
       Fj = mix.Fj
@@ -1345,23 +1344,292 @@ class dlPT(cvdPT):
       ns[i] = n
       if mix.sj.shape[0] == 2:
         vj = Zj * R * T / P
-        Vj = Fj * vj
-        Sj = Vj / Vj.sum()
         bg, mug, deng, cc, c5p, denc = self._gasprops(yji[0], vj[0])
         bo, muo, dendo, gor, densg = self._oilprops(yji[1], vj[1])
         props[i] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
-        zi = yji[1]
+        yi = yji[1]
         n *= Fj[1]
       elif mix.sj[0] == 1:
-        bo, muo, dendo, gor, densg = self._oilprops(zi, Zj[0] * R * T / P)
+        bo, muo, dendo, gor, densg = self._oilprops(yi, Zj[0] * R * T / P)
         props[i] = -1., -1., -1., -1., -1., -1., bo, muo, dendo, gor, densg
       else:
-        bg, mug, deng, cc, c5p, denc = self._gasprops(zi, Zj[0] * R * T / P)
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yi, Zj[0] * R * T / P)
         props[i] = bg, mug, deng, cc, c5p, denc, -1., -1., -1., -1., -1.
         logger.warning('There is no oil in a cell.'
                        'The DL experiment can not be completed.')
         break
     logger.info('Total produced amount of gas: %.3f mol.', n0 - n)
     res = LabResult(PP, ns, Fsj, ysji, Zsj, props)
+    logger.info(res)
+    return res
+
+
+class swellPT(cvdPT):
+  """Two-phase swelling experiment.
+
+  This experiment is usually conducted with oil to determine:
+  1) how much gas can be dissolved in oil at specific pressures,
+  2) the change in the saturation pressure with gas dissolution,
+  3) the swelling factor, which is the relative increase of the volume
+     of the fluid.
+  4) the first-contact miscibility pressure, which is the maximum point
+     of the saturation pressure vs. injection gas mole fraction curve.
+
+  The laboratory procedure can be briefly described as follows.
+  The reservoir oil is loaded in a cell, and the temperature is set at
+  the reservoir temperature. The bubble point of the oil and the
+  corresponding volume are measured. A small amount of gas is
+  transferred into the cell. A new saturation pressure is determined
+  and a new saturation volume recorded. This process is repeated until
+  the upper bound of injection-gas concentration is reached.
+
+  Parameters
+  ----------
+  eos: EosPsatPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
+
+    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
+       -> Iterable[Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must generate initial
+      guesses of k-values as an iterable object of `Vector` of shape
+      `(Nc,)`.
+
+    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`), this method must return a tuple that
+      contains:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`.
+
+    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
+       -> tuple[int, Scalar, Vector, Vector]`
+      For a given pressure [Pa], temperature [K] and mole composition,
+      this method must return a tuple of:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to pressure as a `Vector` of shape `(Nc,)`.
+
+    If solution method for the saturation pressure determination is
+    based on Newton's method, then it also must have:
+
+    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition
+      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
+      method must return a tuple of:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the mixture compressibility factor,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to components mole numbers as a `Matrix` of shape
+        `(Nc, Nc)`.
+
+    - `getPT_Z_lnphii_dP_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
+       -> tuple[int, Scalar, Vector, Vector, Matrix]`
+      For a given pressure [Pa], temperature [K] and mole composition,
+      this method must return a tuple of:
+
+      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a `Vector`
+        of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to pressure as a `Vector` of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to mole numbers of components as a `Matrix` of
+        shape `(Nc, Nc)`.
+
+    Also, this instance must have attributes:
+
+    - `mwi: Vector`
+      An array of components molecular weights [kg/mol] of shape
+      `(Nc,)`.
+
+    - `name: str`
+      The EOS name (for proper logging).
+
+    - `Nc: int`
+      The number of components in the system.
+
+  gassep: Separator
+    Before calculating properties of the gas phase (gas formation
+    volume factor, condensate solubility in gas, etc.) at the current
+    experiment stage, the gas mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the gas mixture collected from the
+    cell during the CVD experiment.
+
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+    - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
+      a series of separation steps and return their outputs as an
+      instance of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar] | Scalar`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps or specific pressure for the
+      separation process.
+
+    - `Ts: Iterable[Scalar] | Scalar`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps or specific temperature for the
+      separation process.
+
+  oilsep: Separator
+    Before calculating properties of the oil phase (oil formation
+    volume factor, gas solubility in oil, etc.) at the current
+    experiment stage, the oil mixture may undergo a series of separation
+    steps, similar to what would be performed in the field. The gas and
+    liquid phase compositions from the final separation step will be
+    used to calculate properties of the oil mixture at the current stage
+    of the CVD experiment.
+
+    This parameter should be represented as an initialized instance of
+    a class that must have the following methods:
+
+    - `run(yi: Vector) -> FlashResult`
+      For a given composition of a mixture this method could perform
+      a series of separation steps and return their outputs as an
+      instance of `FlashResult`.
+
+    Also, this instance must have attributes:
+
+    - `Ps: Iterable[Scalar] | Scalar`
+      An iterable object of pressures [Pa] representing a sequence of
+      pressures at separation steps or specific pressure for the
+      separation process.
+
+    - `Ts: Iterable[Scalar] | Scalar`
+      An iterable object of temperatures [K] representing a sequence of
+      temperatures at separation steps or specific temperature for the
+      separation process.
+
+  mwc5: Scalar
+    Molar mass used to filter components to calculate potential oil-gas
+    ratio. Default is `0.07215` [kg/mol].
+
+  **kwargs: dict
+    Other arguments for the saturation pressure solver. It can contain
+    such arguments as `method`, `tol`, `maxiter` and others, depending
+    on the selected solver.
+  """
+  def __init__(
+    self,
+    eos: EosPsatPT,
+    gassep: Separator,
+    oilsep: Separator,
+    mwc5: Scalar = 0.07215,
+    **kwargs,
+  ) -> None:
+    self.eos = eos
+    self.gassep = gassep
+    self.oilsep = oilsep
+    self.solver = PsatPT(eos, densort=False, **kwargs)
+    self.maskc5pi = eos.mwi >= mwc5
+    self.mwc5pi = eos.mwi[self.maskc5pi]
+    if isinstance(gassep.Ts, Iterable) and isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps[-1]
+    elif isinstance(gassep.Ts, Iterable):
+      self.TPgsc = gassep.Ts[-1] / gassep.Ps
+    elif isinstance(gassep.Ps, Iterable):
+      self.TPgsc = gassep.Ts / gassep.Ps[-1]
+    else:
+      self.TPgsc = gassep.Ts / gassep.Ps
+    if isinstance(oilsep.Ts, Iterable) and isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps[-1]
+    elif isinstance(oilsep.Ts, Iterable):
+      self.TPosc = oilsep.Ts[-1] / oilsep.Ps
+    elif isinstance(oilsep.Ps, Iterable):
+      self.TPosc = oilsep.Ts / oilsep.Ps[-1]
+    else:
+      self.TPosc = oilsep.Ts / oilsep.Ps
+    pass
+
+  def run(
+    self,
+    P0: Scalar,
+    T: Scalar,
+    zi: Vector,
+    yi: Vector,
+    Fj: Vector,
+  ) -> LabResult:
+    """Performs the swelling experiment.
+
+    Parameters
+    ----------
+    P0: Scalar
+      Initial guess of the saturation pressure [Pa] of the reservoir
+      fluid.
+
+    T: Scalar
+      Experiment temperature [K].
+
+    zi: Vector, shape (Nc,)
+      Mole fractions of components of the reservoir fluid as a `Vector`
+      of shape `(Nc,)`, where `Nc` is the number of components.
+
+    yi: Vector, shape (Nc,)
+      Mole fractions of components of the injected fluid as a `Vector`
+      of shape `(Nc,)`.
+
+    Fj: Vector, shape (Ns,)
+      Mole fractions of the injected fluid that need to be dissolved in
+      the reservoir fluid. It should be represented as a `Vector` of
+      shape `(Ns,)`, where `Ns` is the number of stages of the
+      experiment.
+
+    Returns
+    -------
+    Swelling simulation results as an instance of the `LabResult`.
+    """
+    logger.info('Swelling test.')
+    logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *zi)
+    xi = zi.copy()
+    Ns = Fj.shape[0]
+    Ps = np.zeros(shape=(Ns,))
+    ysji = np.zeros(shape=(Ns, 2, self.eos.Nc))
+    Zsj = np.zeros(shape=(Ns, 2))
+    Fsj = np.zeros_like(Zsj)
+    ns = np.zeros_like(Ps)
+    props = np.empty(shape=(Ns, 11))
+    for i, F in enumerate(Fj):
+      xi = (1. - F) * zi + F * yi
+      res = self.solver.run(P0, T, xi, True)
+      P0 = res.P
+      yji = res.yji
+      Zj = res.Zj
+      Ps[i] = P0
+      ysji[i] = yji
+      Zsj[i] = Zj
+      ns[i] = 1. / (1. - F)
+      vj = Zj * R * T / P0
+      denj = yji.dot(self.eos.mwi) / vj
+      if denj[0] < denj[1]:
+        Fsj[i, 0] = 1.
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yji[0], vj[0])
+        bo, muo, dendo, gor, densg = self._oilprops(yji[1], vj[1])
+      else:
+        Fsj[i, 1] = 1.
+        bg, mug, deng, cc, c5p, denc = self._gasprops(yji[1], vj[1])
+        bo, muo, dendo, gor, densg = self._oilprops(yji[0], vj[0])
+      props[i] = bg, mug, deng, cc, c5p, denc, bo, muo, dendo, gor, densg
+    res = LabResult(Ps, ns, Fsj, ysji, Zsj, props)
     logger.info(res)
     return res

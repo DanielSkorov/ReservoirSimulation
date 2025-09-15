@@ -13,6 +13,7 @@ import numpy as np
 from typing import (
   Callable,
   Iterable,
+  Optional,
 )
 
 from custom_types import (
@@ -68,14 +69,16 @@ class StabResult(object):
     The designated phase (state) of the tested mixture (`0` = vapour,
     `1` = liquid, etc.).
 
-  kvji: Iterable[Vector]
-    K-values of `Nc` components. They may be further used as an initial
-    guess for flash calculations.
+  kvji: Optional[Iterable[Vector]]
+    K-values of `Nc` components as an iterable object of `Vector`s of
+    shape `(Nc,)`. They may be further used as an initial guess for
+    flash calculations. This attribute is `None` if the system will be
+    considered stable.
   """
   stable: bool
   Z: Scalar
   s: int
-  kvji: Iterable[Vector]
+  kvji: Optional[Iterable[Vector]] = None
 
   def __repr__(self) -> str:
     return f"The one-phase state is stable: {self.stable}."
@@ -334,9 +337,10 @@ def _stabPT_ss(
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e'
   s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
-  ygas = s == 0
+  sisgas = s == 0
   TPDo = eps
   yti = yi
+  kvji = None
   for j, ki in enumerate(kvji0):
     k = 0
     trivial = False
@@ -345,7 +349,7 @@ def _stabPT_ss(
     n = ni.sum()
     xi = ni / n
     sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
-    if sx == 0 and ygas:
+    if sx == 0 and sisgas:
       continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
@@ -377,11 +381,11 @@ def _stabPT_ss(
         yti = xi
         if breakunstab:
           logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-          kvji = yti / yi, yi / yti
-          return StabResult(False, Z, s, kvji)
+          return StabResult(False, Z, s, (yti / yi,))
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-  kvji = yti / yi, yi / yti
+  if not stable:
+    kvji = (yti / yi,)
   return StabResult(stable, Z, s, kvji)
 
 
@@ -482,9 +486,10 @@ def _stabPT_qnss(
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e'
   s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
-  ygas = s == 0
+  sisgas = s == 0
   TPDo = eps
   yti = yi
+  kvji = None
   for j, ki in enumerate(kvji0):
     k = 0
     lnki = np.log(ki)
@@ -492,7 +497,7 @@ def _stabPT_qnss(
     n = ni.sum()
     xi = ni / n
     sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
-    if sx == 0 and ygas:
+    if sx == 0 and sisgas:
       continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
@@ -521,7 +526,9 @@ def _stabPT_qnss(
       if k % Nc == 0:
         lmbd = 1.
       else:
-        lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+        lmbd *= tkm1 / (dlnki.dot(gi) - tkm1)
+        if lmbd < 0.:
+          lmbd = -lmbd
         if lmbd > lmbdmax:
           lmbd = lmbdmax
     if g2 < tol and np.isfinite(g2):
@@ -531,11 +538,11 @@ def _stabPT_qnss(
         yti = xi
         if breakunstab:
           logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-          kvji = yti / yi, yi / yti
-          return StabResult(False, Z, s, kvji)
+          return StabResult(False, Z, s, (yti / yi,))
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-  kvji = yti / yi, yi / yti
+  if not stable:
+    kvji = (yti / yi,)
   return StabResult(stable, Z, s, kvji)
 
 
@@ -658,10 +665,11 @@ def _stabPT_newt(
   )
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
-  ygas = s == 0
+  sisgas = s == 0
   hi = lnphiyi + np.log(yi)
   TPDo = eps
   yti = yi
+  kvji = None
   for j, ki in enumerate(kvji0):
     k = 0
     ni = ki * yi
@@ -670,7 +678,7 @@ def _stabPT_newt(
     n = ni.sum()
     xi = ni / n
     sx, Zx, lnphixi, dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, T, xi, n)
-    if sx == 0 and ygas:
+    if sx == 0 and sisgas:
       continue
     gi = np.log(ni) + lnphixi - hi
     g2 = gi.dot(gi)
@@ -708,11 +716,11 @@ def _stabPT_newt(
         yti = xi
         if breakunstab:
           logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-          kvji = yti / yi, yi / yti
-          return StabResult(False, Z, s, kvji)
+          return StabResult(False, Z, s, (yti / yi,))
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-  kvji = yti / yi, yi / yti
+  if not stable:
+    kvji = (yti / yi,)
   return StabResult(stable, Z, s, kvji)
 
 
@@ -724,15 +732,14 @@ def _stabPT_ssnewt(
   eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
-  tol_ss: Scalar = 1e-4,
-  maxiter_ss: int = 30,
+  switchers: tuple[Scalar, Scalar, Scalar] = (0.1, 1e-12, 1e-4),
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
   checktrivial: bool = True,
   breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
-  """Performs minimization of the Michelsen's modified tangent-plane
+  r"""Performs minimization of the Michelsen's modified tangent-plane
   distance function using Newton's method and a PT-based equation
   of state. A switch to the successive substitution iteration is
   implemented if Newton's method does not decrease the norm of the
@@ -792,22 +799,32 @@ def _stabPT_ssnewt(
       The EOS name (for proper logging).
 
   tol: Scalar
-    Terminate Newton's method successfully if the sum of squared
-    elements of the gradient of Michelsen's modified tangent-plane
-    distance function is less than `tol`. Default is `1e-20`.
+    Terminate the solver successfully if the sum of squared elements
+    of the gradient of the tangent-plane distance function is less than
+    `tol`. Default is `1e-20`.
 
   maxiter: int
     The maximum number of iterations (total number, for both methods).
     Default is `50`.
 
-  tol_ss: Scalar
-    Switch to Newton's method if the sum of squared elements of the
-    gradient of the TPD-function is less than `tol_ss`. Default is
-    `1e-4`.
+  switchers: tuple[Scalar, Scalar, Scalar]
+    Allows to modify the conditions of switching from the successive
+    substitution method to Newton's method. The parameter must be
+    represented as a tuple containing three values: :math:`\eps_r`,
+    :math:`\eps_l`, :math:`\eps_u`. The switching conditions are:
 
-  maxiter_ss: int
-    The maximum number of successive substitution iterations.
-    Default is `30`.
+    .. math::
+
+      \begin{cases}
+        \frac{\left(\mathbf{g}^\top\mathbf{g}\right)^{k  }}
+             {\left(\mathbf{g}^\top\mathbf{g}\right)^{k-1}} > \eps_r, \\
+        \eps_l < \left(\mathbf{g}^\top\mathbf{g}\right)^k < \eps_u, \\
+      \end{cases}
+
+    where :math:`\mathbf{g}` is a vector of the gradient of the TPD
+    function, :math:`k` is the iteration number. Analytical expressions
+    of the switching conditions were taken from the paper of L.X. Nghiem
+    (doi: 10.2118/8285-PA). Default is `(0.1, 1e-12, 1e-4)`.
 
   eps: Scalar
     System will be considered stable when `TPD >= eps`.
@@ -855,11 +872,12 @@ def _stabPT_ssnewt(
   h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
-  ygas = s == 0
+  sisgas = s == 0
   TPDo = eps
   yti = yi
+  kvji = None
+  epsr, epsl, epsu = switchers
   for j, ki in enumerate(kvji0):
-    logger.debug(h1)
     k = 0
     trivial = False
     lnki = np.log(ki)
@@ -867,12 +885,14 @@ def _stabPT_ssnewt(
     n = ni.sum()
     xi = ni / n
     sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
-    if sx == 0 and ygas:
+    if sx == 0 and sisgas:
       continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
+    switch = g2 < tol
+    logger.debug(h1)
     logger.debug(tmpl, j, k, *lnki, g2, 'ss')
-    while g2 > tol_ss and k < maxiter_ss:
+    while not switch and g2 > tol and k < maxiter:
       k += 1
       lnki -= gi
       ki = np.exp(lnki)
@@ -881,7 +901,9 @@ def _stabPT_ssnewt(
       xi = ni / n
       _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
+      g2km1 = g2
       g2 = gi.dot(gi)
+      switch = g2 / g2km1 > epsr and g2 > epsl and g2 < epsu
       logger.debug(tmpl, j, k, *lnki, g2, 'ss')
       if checktrivial:
         if g2 < tol:
@@ -897,13 +919,11 @@ def _stabPT_ssnewt(
         TPD = -np.log(n)
         if TPD < TPDo:
           TPDo = TPD
-          kti = ki
           yti = xi
           if breakunstab:
             logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-            kvji = yti / yi, yi / yti
-            return StabResult(False, Z, s, kvji)
-      else:
+            return StabResult(False, Z, s, (yti / yi,))
+      elif k < maxiter:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
@@ -944,11 +964,11 @@ def _stabPT_ssnewt(
             yti = xi
             if breakunstab:
               logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-              kvji = yti / yi, yi / yti
-              return StabResult(False, Z, s, kvji)
+              return StabResult(False, Z, s, (yti / yi,))
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-  kvji = yti / yi, yi / yti
+  if not stable:
+    kvji = (yti / yi,)
   return StabResult(stable, Z, s, kvji)
 
 
@@ -960,15 +980,14 @@ def _stabPT_qnssnewt(
   eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
-  tol_qnss: Scalar = 1e-4,
-  maxiter_qnss: int = 30,
+  switchers: tuple[Scalar, Scalar, Scalar] = (0.1, 1e-12, 1e-4),
   lmbdmax: Scalar = 30.,
   eps: Scalar = -1e-8,
   forcenewton: bool = False,
   breakunstab: bool = False,
   linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
 ) -> StabResult:
-  """Performs minimization of the Michelsen's modified tangent-plane
+  r"""Performs minimization of the Michelsen's modified tangent-plane
   distance function using Newton's method and a PT-based equation of
   state. A switch to the successive substitution iteration is
   implemented if Newton's method does not decrease the norm of the
@@ -1030,22 +1049,32 @@ def _stabPT_qnssnewt(
       The EOS name (for proper logging).
 
   tol: Scalar
-    Terminate Newton's method successfully if the sum of squared
-    elements of the gradient of Michelsen's modified tangent-plane
-    distance function is less than `tol`. Default is `1e-20`.
+    Terminate the solver successfully if the sum of squared elements
+    of the gradient of the tangent-plane distance function is less than
+    `tol`. Default is `1e-20`.
 
   maxiter: int
     The maximum number of iterations (total number, for both methods).
     Default is `50`.
 
-  tol_qnss: Scalar
-    Switch to Newton's method if the sum of squared elements of the
-    gradient of the TPD-function is less than `tol_qnss`. Default is
-    `1e-4`.
+  switchers: tuple[Scalar, Scalar, Scalar]
+    Allows to modify the conditions of switching from the successive
+    substitution method to Newton's method. The parameter must be
+    represented as a tuple containing three values: :math:`\eps_r`,
+    :math:`\eps_l`, :math:`\eps_u`. The switching conditions are:
 
-  maxiter_qnss: int
-    The maximum number of quasi-newton successive substitution
-    iterations. Default is `30`.
+    .. math::
+
+      \begin{cases}
+        \frac{\left(\mathbf{g}^\top\mathbf{g}\right)^{k  }}
+             {\left(\mathbf{g}^\top\mathbf{g}\right)^{k-1}} > \eps_r, \\
+        \eps_l < \left(\mathbf{g}^\top\mathbf{g}\right)^k < \eps_u, \\
+      \end{cases}
+
+    where :math:`\mathbf{g}` is a vector of the gradient of the TPD
+    function, :math:`k` is the iteration number. Analytical expressions
+    of the switching conditions were taken from the paper of L.X. Nghiem
+    (doi: 10.2118/8285-PA). Default is `(0.1, 1e-12, 1e-4)`.
 
   lmbdmax: Scalar
     The maximum step length. Default is `30.0`.
@@ -1090,24 +1119,27 @@ def _stabPT_qnssnewt(
   h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
-  ygas = s == 0
+  sisgas = s == 0
   TPDo = eps
   yti = yi
+  kvji = None
+  epsr, epsl, epsu = switchers
   for j, ki in enumerate(kvji0):
-    logger.debug(h1)
     k = 0
     lnki = np.log(ki)
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
     sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
-    if sx == 0 and ygas:
+    if sx == 0 and sisgas:
       continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
+    switch = g2 < tol
     lmbd = 1.
+    logger.debug(h1)
     logger.debug(tmpl, j, k, *lnki, g2, 'qnss')
-    while g2 > tol_qnss and k < maxiter_qnss:
+    while not switch and g2 > tol and k < maxiter:
       dlnki = -lmbd * gi
       max_dlnki = np.abs(dlnki).max()
       if max_dlnki > 6.:
@@ -1123,14 +1155,18 @@ def _stabPT_qnssnewt(
       xi = ni / n
       _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
+      g2km1 = g2
       g2 = gi.dot(gi)
+      switch = g2 / g2km1 > epsr and g2 > epsl and g2 < epsu
       logger.debug(tmpl, j, k, *lnki, g2, 'qnss')
-      if g2 < tol_qnss:
+      if g2 < tol or switch:
         break
       if k % Nc == 0:
         lmbd = 1.
       else:
-        lmbd *= np.abs(tkm1 / (dlnki.dot(gi) - tkm1))
+        lmbd *= tkm1 / (dlnki.dot(gi) - tkm1)
+        if lmbd < 0.:
+          lmbd = -lmbd
         if lmbd > lmbdmax:
           lmbd = lmbdmax
     if np.isfinite(g2):
@@ -1141,9 +1177,8 @@ def _stabPT_qnssnewt(
           yti = xi
           if breakunstab:
             logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-            kvji = yti / yi, yi / yti
-            return StabResult(False, Z, s, kvji)
-      else:
+            return StabResult(False, Z, s, (yti / yi,))
+      elif k < maxiter:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
@@ -1185,11 +1220,11 @@ def _stabPT_qnssnewt(
             if breakunstab:
               stable = TPDo >= eps
               logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-              kvji = yti / yi, yi / yti
-              return StabResult(False, Z, s, kvji)
+              return StabResult(False, Z, s, (yti / yi,))
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-  kvji = yti / yi, yi / yti
+  if not stable:
+    kvji = (yti / yi,)
   return StabResult(stable, Z, s, kvji)
 
 
@@ -1201,13 +1236,12 @@ def _stabPT_ssbfgs(
   eos: EosStabPT,
   tol: Scalar = 1e-20,
   maxiter: int = 50,
-  tol_ss: Scalar = 1e-4,
-  maxiter_ss: int = 30,
+  switchers: tuple[Scalar, Scalar, Scalar] = (0.1, 1e-12, 1e-4),
   eps: Scalar = -1e-8,
   checktrivial: bool = True,
   breakunstab: bool = False,
 ) -> StabResult:
-  """Performs minimization of the Michelsen's modified tangent-plane
+  r"""Performs minimization of the Michelsen's modified tangent-plane
   distance function using BFGS method and a PT-based equation of state.
   Preceding successive substitution iterations are implemented to
   improve the initial guess of k-values. The reference for the
@@ -1254,21 +1288,31 @@ def _stabPT_ssbfgs(
 
   tol: Scalar
     Terminate the solver successfully if the sum of squared elements
-    of the gradient of Michelsen's modified tangent-plane distance
-    function is less than `tol`. Default is `1e-20`.
+    of the gradient of the tangent-plane distance function is less
+    than `tol`. Default is `1e-20`.
 
   maxiter: int
     The maximum number of iterations (total number, for both methods).
     Default is `50`.
 
-  tol_ss: Scalar
-    Switch to BFGS method if the sum of squared elements of the
-    gradient of the TPD-function is less than `tol_ss`. Default is
-    `1e-4`.
+  switchers: tuple[Scalar, Scalar, Scalar]
+    Allows to modify the conditions of switching from the successive
+    substitution method to Newton's method. The parameter must be
+    represented as a tuple containing three values: :math:`\eps_r`,
+    :math:`\eps_l`, :math:`\eps_u`. The switching conditions are:
 
-  maxiter_ss: int
-    The maximum number of successive substitution iterations.
-    Default is `30`.
+    .. math::
+
+      \begin{cases}
+        \frac{\left(\mathbf{g}^\top\mathbf{g}\right)^{k  }}
+             {\left(\mathbf{g}^\top\mathbf{g}\right)^{k-1}} > \eps_r, \\
+        \eps_l < \left(\mathbf{g}^\top\mathbf{g}\right)^k < \eps_u, \\
+      \end{cases}
+
+    where :math:`\mathbf{g}` is a vector of the gradient of the TPD
+    function, :math:`k` is the iteration number. Analytical expressions
+    of the switching conditions were taken from the paper of L.X. Nghiem
+    (doi: 10.2118/8285-PA). Default is `(0.1, 1e-12, 1e-4)`.
 
   eps: Scalar
     System will be considered stable when `TPD >= eps`.
@@ -1305,12 +1349,13 @@ def _stabPT_ssbfgs(
   h2 = tmpl % ('Nkv', 'Nit', *['alph%s' % s for s in rangeNc], 'g2', 'method')
   tmpl = '%3s%5s' + Nc * '%9.4f' + '%11.2e%9s'
   s, Z, lnphiyi = eos.getPT_Z_lnphii(P, T, yi)
-  ygas = s == 0
+  sisgas = s == 0
   hi = lnphiyi + np.log(yi)
   TPDo = eps
   yti = yi
+  kvji = None
+  epsr, epsl, epsu = switchers
   for j, ki in enumerate(kvji0):
-    logger.debug(h1)
     k = 0
     trivial = False
     lnki = np.log(ki)
@@ -1318,12 +1363,14 @@ def _stabPT_ssbfgs(
     n = ni.sum()
     xi = ni / n
     sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
-    if sx == 0 and ygas:
+    if sx == 0 and sisgas:
       continue
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
+    switch = g2 < tol
+    logger.debug(h1)
     logger.debug(tmpl, j, k, *lnki, g2, 'ss')
-    while g2 > tol_ss and k < maxiter_ss:
+    while not switch and g2 > tol and k < maxiter:
       k += 1
       lnki -= gi
       ki = np.exp(lnki)
@@ -1332,7 +1379,9 @@ def _stabPT_ssbfgs(
       xi = ni / n
       _, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gi = lnki + lnphixi - lnphiyi
+      g2km1 = g2
       g2 = gi.dot(gi)
+      switch = g2 / g2km1 > epsr and g2 > epsl and g2 < epsu
       logger.debug(tmpl, j, k, *lnki, g2, 'ss')
       if checktrivial:
         if g2 < tol:
@@ -1351,9 +1400,8 @@ def _stabPT_ssbfgs(
           yti = xi
           if breakunstab:
             logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-            kvji = yti / yi, yi / yti
-            return StabResult(False, Z, s, kvji)
-      else:
+            return StabResult(False, Z, s, (yti / yi,))
+      elif k < maxiter:
         hi = lnphiyi + np.log(yi)
         sqrtni = np.sqrt(ni)
         alphai = 2. * sqrtni
@@ -1373,9 +1421,17 @@ def _stabPT_ssbfgs(
         gik = sqrtni * gi
         g2 = gi.dot(gi)
         logger.debug(tmpl, j, k, *alphai, g2, 'bfgs')
+        if g2 < tol and np.isfinite(g2):
+          TPD = -np.log(n)
+          if TPD < TPDo:
+            TPDo = TPD
+            yti = xi
+            if breakunstab:
+              logger.info('The system is stable: False. TPD = %.3e.', TPDo)
+              return StabResult(False, Z, s, (yti / yi,))
+            else:
+              continue
         if checktrivial:
-          if g2 < tol:
-            continue
           tpds = 1. + ni.dot(gi) - n
           r = 2. * tpds / gik.dot(ni - yi)
           if tpds < 1e-3 and r > 0.8 and r < 1.2:
@@ -1415,9 +1471,9 @@ def _stabPT_ssbfgs(
             yti = xi
             if breakunstab:
               logger.info('The system is stable: False. TPD = %.3e.', TPDo)
-              kvji = yti / yi, yi / yti
-              return StabResult(False, Z, s, kvji)
+              return StabResult(False, Z, s, (yti / yi,))
   stable = TPDo >= eps
   logger.info('The system is stable: %s. TPD = %.3e.', stable, TPDo)
-  kvji = yti / yi, yi / yti
+  if not stable:
+    kvji = (yti / yi,)
   return StabResult(stable, Z, s, kvji)
