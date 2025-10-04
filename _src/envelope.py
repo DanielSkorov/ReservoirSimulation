@@ -10,25 +10,6 @@ from functools import (
 
 import numpy as np
 
-from utils import (
-  pyrqi,
-)
-
-from typing import (
-  Callable,
-  Iterable,
-  Optional,
-)
-
-from custom_types import (
-  Scalar,
-  Vector,
-  Matrix,
-  IVector,
-  Eos,
-  SolutionNotFoundError,
-)
-
 from stability import (
   StabResult,
   stabilityPT,
@@ -39,190 +20,240 @@ from flash import (
   flash2pPT,
 )
 
+from utils import (
+  pyrqi,
+)
+
+from constants import (
+  R,
+)
+
+from typing import (
+  Protocol,
+  Callable,
+  Sequence,
+)
+
+from customtypes import (
+  Integer,
+  Double,
+  Vector,
+  Matrix,
+  Linsolver,
+  SolutionNotFoundError,
+)
+
+from eos import (
+  Eos,
+)
+
 
 logger = logging.getLogger('bound')
 
 
-class EosCritVT(Eos):
-  Tci: Vector
+class EosCritVT(Eos, Protocol):
+  Tci: Vector[Double]
 
   def getVT_lnfi_dnj(
     self,
-    V: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar,
-  ) -> tuple[Vector, Matrix]: ...
+    V: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> tuple[Vector[Double], Matrix[Double]]: ...
 
   def getVT_d3F(
     self,
-    V: Scalar,
-    T: Scalar,
-    yi: Vector,
-    zti: Vector,
-    n: Scalar,
-  ) -> Scalar: ...
+    V: float,
+    T: float,
+    yi: Vector[Double],
+    zti: Vector[Double],
+    n: float = 1.,
+  ) -> float: ...
 
   def getVT_vmin(
     self,
-    T: Scalar,
-    yi: Vector,
-  ) -> Scalar: ...
+    T: float,
+    yi: Vector[Double],
+  ) -> float: ...
+
+  def getVT_P(
+    self,
+    V: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> float: ...
 
 
-class EosPsatPT(Eos):
+class EosPsatPT(Eos, Protocol):
 
   def getPT_kvguess(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> Iterable[Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> Sequence[Vector[Double]]: ...
+
+  def getPT_PID(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> int: ...
 
   def getPT_Z_lnphii(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double]]: ...
 
   def getPT_Z_lnphii_dP(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double]]: ...
 
   def getPT_Z_lnphii_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar,
-  ) -> tuple[int, Scalar, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float,
+  ) -> tuple[float, Vector[Double], Matrix[Double]]: ...
 
   def getPT_Z_lnphii_dP_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar,
-  ) -> tuple[int, Scalar, Vector, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float,
+  ) -> tuple[float, Vector[Double], Vector[Double], Matrix[Double]]: ...
 
 
-class EosTsatPT(Eos):
+class EosTsatPT(Eos, Protocol):
 
   def getPT_kvguess(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> Iterable[Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> Sequence[Vector[Double]]: ...
+
+  def getPT_PID(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> int: ...
 
   def getPT_Z_lnphii(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double]]: ...
 
   def getPT_Z_lnphii_dT(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double]]: ...
 
   def getPT_Z_lnphii_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar,
-  ) -> tuple[int, Scalar, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float,
+  ) -> tuple[float, Vector[Double], Matrix[Double]]: ...
 
   def getPT_Z_lnphii_dT_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar,
-  ) -> tuple[int, Scalar, Vector, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float,
+  ) -> tuple[float, Vector[Double], Vector[Double], Matrix[Double]]: ...
 
 
-class EosPmaxPT(EosPsatPT):
+class EosPmaxPT(EosPsatPT, Protocol):
 
   def getPT_Z_lnphii_dT_d2T(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]: ...
 
 
-class EosTmaxPT(EosTsatPT):
+class EosTmaxPT(EosTsatPT, Protocol):
 
   def getPT_Z_lnphii_dP_d2P(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]: ...
 
 
-class EosEnv2pPT(EosPsatPT):
+class EosEnv2pPT(EosPsatPT, Protocol):
 
   def getPT_Z_lnphii_dP_dT_dyj(
     self,
-    P: Scalar,
-    T:  Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double],
+             Matrix[Double]]: ...
 
   def getPT_Z_lnphii_dP_dT(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]: ...
 
 
 def getVT_Tspinodal(
-  V: Scalar,
-  yi: Vector,
+  V: float,
+  yi: Vector[Double],
   eos: EosCritVT,
-  T0: None | Scalar = None,
-  zeta0i: None | Vector = None,
-  multdT0: Scalar = 1e-5,
-  tol: Scalar = 1e-5,
+  T0: float | None = None,
+  zeta0i: Vector[Double] | None = None,
+  multdT0: float = 1e-5,
+  tol: float = 1e-5,
   maxiter: int = 25,
-) -> tuple[Scalar, Vector]:
+) -> tuple[float, Vector[Double]]:
   """Calculates the spinodal temperature for a given volume
   and composition of the mixture.
 
   Parameters
   ----------
-  V: Scalar
+  V: float
     Volume of the mixture [m3].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
   eos: EosCritVT
     An initialized instance of a VT-based equation of state. Must have
     the following methods:
 
-    - `getVT_lnfi_dnj(V: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Matrix]`
-      For a given volume [m3], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getVT_lnfi_dnj(V: float, T: float, yi: Vector[Double],
+       n: float = 1.) -> tuple[Vector[Double], Matrix[Double]]`
+      For a given volume [m3], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
 
-      - logarithms of the fugacities of components as a `Vector` of
-        shape `(Nc,)`,
+      - logarithms of the fugacities of components as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacities of components
-        with respect to their mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to their mole numbers as a `Matrix[Double]` of
+        shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
@@ -232,23 +263,23 @@ def getVT_Tspinodal(
     - `name: str`
       The EOS name (for proper logging).
 
-  T0: None | Scalar
+  T0: float | None
     An initial guess of the spinodal temperature [K]. If it equals
     `None`, a pseudocritical temperature multiplied by a factor `1.3`
     will be used.
 
-  zeta0i: None | Vector, shape (Nc,)
+  zeta0i: Vector[Double], shape (Nc,) | None
     An initial guess for the eigenvector corresponding to the lowest
-    eigenvalue of the matrix of second partial derivatives of the
+    eigenvalue of the Dmatrix of second partial derivatives of the
     Helmholtz energy function with respect to component mole
     numbers. If it equals `None` then `yi` will be used instead.
 
-  multdT0: Scalar
+  multdT0: float
     A multiplier used to compute the temperature shift to estimate
     the partial derivative of the lowest eigenvalue with respect to
     temperature at the first iteration. Default is `1e-5`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the lowest
     eigenvalue is less then `tol`. Default is `1e-5`.
 
@@ -311,51 +342,51 @@ def getVT_Tspinodal(
 
 
 def getVT_PcTc(
-  yi: Vector,
+  yi: Vector[Double],
   eos: EosCritVT,
-  v0: None | Scalar = None,
-  T0: None | Scalar = None,
-  kappa0: None | Scalar = 3.5,
-  multdV0: Scalar = 1e-5,
-  krange: tuple[Scalar, Scalar] = (1.1, 5.),
-  kstep: Scalar = 0.1,
-  tol: Scalar = 1e-5,
+  v0: float | None = None,
+  T0: float | None = None,
+  kappa0: float | None = 3.5,
+  multdV0: float = 1e-5,
+  krange: tuple[float, float] = (1.1, 5.),
+  kstep: float = 0.1,
+  tol: float = 1e-5,
   maxiter: int = 25,
-) -> tuple[Scalar, Scalar]:
+) -> tuple[float, float]:
   """Calculates the critical pressure and temperature of a mixture.
 
   Parameters
   ----------
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
   eos: EosCritVT
     An initialized instance of a VT-based equation of state. Must have
     the following methods:
 
-    - `getVT_lnfi_dnj(V: Scalar,
-                      T: Scalar, yi: Vector) -> tuple[Vector, Matrix]`
-      For a given volume [m3], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getVT_lnfi_dnj(V: float, T: float, yi: Vector[Double],
+       n: float = 1.) -> tuple[Vector[Double], Matrix[Double]]`
+      For a given volume [m3], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
 
-      - logarithms of the fugacities of components as a `Vector` of
-        shape `(Nc,)`,
+      - logarithms of the fugacities of components as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacities of components
-        with respect to their mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to their mole numbers as a `Matrix[Double]` of
+        shape `(Nc, Nc)`.
 
-    - `getVT_d3F(V: Scalar, T: Scalar, yi: Vector,
-                 zti: Vector, n: Scalar) -> Scalar`
+    - `getVT_d3F(V: float, T: float, yi: Vector[Double],
+       zti: Vector[Double], n: float = 1.) -> float`
       For a given volume [m3], temperature [K], mole composition
-      (`Vector` of shape `(Nc,)`), component mole number changes
-      (`Vector` of shape `(Nc,)`), and mixture mole number, this method
-      must return the cubic form of the Helmholtz energy Taylor series
-      decomposition.
+      (`Vector[Double]` of shape `(Nc,)`), component mole number changes
+      (`Vector[Double]` of shape `(Nc,)`), and mixture mole number, this
+      method must return the cubic form of the Helmholtz energy Taylor
+      series decomposition.
 
-    - `getVT_vmin(T: Scalar, yi: Vector) -> Scalar`
-      For a given temperature [K] and mole composition (`Vector` of
-      shape `(Nc,)`), this method must return the minimum molar
+    - `getVT_vmin(T: float, yi: Vector[Double]) -> float`
+      For a given temperature [K] and mole composition (`Vector[Double]`
+      of shape `(Nc,)`), this method must return the minimum molar
       volume of the mixture in [m3/mol].
 
     Also, this instance must have attributes:
@@ -366,30 +397,35 @@ def getVT_PcTc(
     - `name: str`
       The EOS name (for proper logging).
 
-  v0: Scalar
+  v0: float | None
     An initial guess of the critical molar volume of a mixture [m3/mol].
     Default is `None` which means that the gridding procedure or the
     `kappa0` will be used instead.
 
-  kappa0: Scalar | None
+  T0: float | None
+    An initial guess of the critical temperaure of a mixture [K].
+    Default is `None` which means that it will be calculated internally
+    based on the critical temperatures of components.
+
+  kappa0: float | None
     An initial guess for the relation of the critical molar volume
     to the minimal possible volume provided by an equation of state.
     Default is `None` which means that the gridding procedure or the
     `v0` will be used instead.
 
-  krange: tuple[Scalar, Scalar]
+  krange: tuple[float, float]
     A range of possible values of the relation of the molar volume
     to the minimal possible volume provided by an equation of state
     for the gridding procedure. The gridding procedure will be used
     if both initial guesses `v0` and `kappa0` are equal `None`.
     Default is `(1.1, 5.0)`.
 
-  kstep: Scalar
+  kstep: float
     A step which is used to perform the gridding procedure to find
     an initial guess of the relation of the molar volume to the minimal
     possible volume. Default is `0.1`.
 
-   tol: Scalar
+   tol: float
     Terminate successfully if the absolute value of the primary
     variable change is less than `tol`. Default is `1e-5`.
 
@@ -422,7 +458,7 @@ def getVT_PcTc(
       vmin = eos.getVT_vmin(T, yi)
       vk = kappa0 * vmin
   else:
-    vk = v0
+    vk = np.float64(v0)
   T, zetaik = getVT_Tspinodal(vk, yi, eos, T, yi)
   vmin = eos.getVT_vmin(T, yi)
   kappak = vk / vmin
@@ -473,44 +509,78 @@ def getVT_PcTc(
   )
 
 
-@dataclass
-class SatResult(object):
+class SatResult(FlashResult):
   """Container for saturation point calculation outputs with
   pretty-printing.
 
   Attributes
   ----------
-  P: Scalar
-    Saturation pressure [Pa].
+  Np: int
+    The number of phases.
 
-  T: Scalar
-    Saturation temperature [K].
+  P: float
+    Pressure [Pa] of the equilibrium state.
 
-  yji: Matrix, shape (Np, Nc)
-    Equilibrium composition of two phases for the saturation point.
-    Two-dimensional array of real elements of size `(Np, Nc)`, where
-    `Np` is the number of phases and `Nc` is the number of components.
+  T: float
+    Temperature [K] of the equilibrium state.
+
+  V: float
+    Volume [m3] of a mixture at the equilibrium state.
+
+  n: float
+    Number of moles [mol] of a mixture.
+
+  ni: Vector[Double], shape (Nc,)
+    Number of moles [mol] of `Nc` components.
+
+  nj: Vector[Double]
+    Phase mole numbers as a `Vector[Double]` of shape `(Np,)`, where
+    `Np` is the number of phases.
+
+  fj: Vector, shape (Np,)
+    Phase mole fractions as a `Vector[Double]` of shape `(Np,)`, where
+    `Np` is the number of phases.
+
+  yji: Matrix[Double], shape (Np, Nc)
+    Mole fractions of components in each phase as a `Matrix[Double]`
+    of shape `(Np, Nc)`, where `Np` is the number of phases and `Nc`
+    is the number of components.
 
   Zj: Vector, shape (Np,)
-    Compressibility factors of each phase. Array of real elements of
-    size `(Np,)`, where `Np` is the number of phases.
+    Phase compressibility factors as a `Vector` of shape `(Np,)`,
+    where `Np` is the number of phases.
 
-  sj: IVector, shape (Np,)
-    The designated phases (states) as a 1d-array of integers with the
-    shape `(Np,)` (`0` = vapour, `1` = liquid, etc.).
+  vj: Vector[Double], shape (Np,)
+    Molar volumes [m3/mol] of phases as a `Vector[Double]` of shape
+    `(Np,)`, where `Np` is the number of phases.
+
+  sj: Vector[Integer], shape (Np,)
+    The designated phases (states) as a `Vector[Integer]` of the shape
+    `(Np,)`, where `Np` is the number of phases. (`0` = vapour,
+    `1` = liquid, etc.).
+
+  kvji: Matrix[Double], shape (Np - 1, Nc) | None
+    K-values of components in non-reference phases as a `Matrix[Double]`
+    of shape `(Np - 1, Nc)`, where `Np` is the number of phases and `Nc`
+    is the number of components. For the one phase state, this attribute
+    is `None`.
+
+  Methods
+  -------
+  __str__(self) -> str
+    Returns the string representation of this class.
+
+  __repr__(self) -> str
+    Returns the table representation of this class.
   """
-  P: Scalar
-  T: Scalar
-  yji: Matrix
-  Zj: Vector
-  sj: IVector
-
-  def __repr__(self) -> str:
-    with np.printoptions(linewidth=np.inf):
-      return (f"Saturation pressure: {self.P} Pa\n"
-              f"Saturation temperature: {self.T} K\n"
-              f"Phase compositions:\n{self.yji}\n"
-              f"Phase compressibility factors:\n{self.Zj}\n")
+  def __str__(self) -> str:
+    with np.printoptions(linewidth=1024):
+      return (f"Saturation pressure: {self.P / 1e6:.3f} [MPa]\n"
+              f"Saturation temperature: {self.T - 273.15:.2f} [K]\n"
+              f'Mole number of the system: {self.n:.4f} [mol]\n'
+              f'Phase IDs: {self.sj}\n'
+              f'Phase mole fractions: {self.fj}\n'
+              f'Phase compressibility factors: {self.Zj}')
 
 
 class PsatPT(object):
@@ -525,56 +595,61 @@ class PsatPT(object):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
-
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
-
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
-      - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     If the solution method would be `'newton'`, then it also must have:
 
-    - `getPT_Z_lnphii_dP_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`,
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
+
+    - `getPT_Z_lnphii_dP_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -591,7 +666,10 @@ class PsatPT(object):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'newton'` (Newton's method).
 
-    Default is `'newton'`.
+    There are also two other different formulations of Newton's method:
+    `'newton-b'` and `'newton-c'`. For the details, see the paper of
+    L.X. Nghiem et al, 1985 (doi: 10.1016/0378-3812(85)90059-7).
+    Default is `'newton-b'`.
 
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
@@ -624,7 +702,7 @@ class PsatPT(object):
   def __init__(
     self,
     eos: EosPsatPT,
-    method: str = 'newton',
+    method: str = 'newton-b',
     stabkwargs: dict = {},
     initmethod: str = 'search',
     initkwargs: dict = {},
@@ -654,9 +732,10 @@ class PsatPT(object):
 
   def run(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
     upper: bool = True,
   ) -> SatResult:
     """Performs the saturation pressure calculation for known
@@ -665,14 +744,17 @@ class PsatPT(object):
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Initial guess of the saturation pressure [Pa].
 
-    T: Scalar
+    T: float
       Temperature of a mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    n: float
+      Number of moles of the mixture [mol]. Default is `1.0` [mol].
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
@@ -701,38 +783,38 @@ class PsatPT(object):
       unsuccessfully.
     """
     P0, kvi0, Plow, Pupp = self.initialize(P, T, yi, upper)
-    return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
+    return self.solver(P0, T, yi, n, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
 
   def search(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
+    P: float,
+    T: float,
+    yi: Vector[Double],
     upper: bool = True,
-    Pmin: Scalar = 1.,
-    Pmax: Scalar = 1e8,
-    step: Scalar = 0.1,
-  ) -> tuple[Scalar, Vector, Scalar, Scalar]:
+    Pmin: float = 1.,
+    Pmax: float = 1e8,
+    step: float = 0.1,
+  ) -> tuple[float, Vector[Double], float, float]:
     """Performs the preliminary search to refine the initial guess of
     the saturation pressure.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       The initial guess of the saturation pressure to be improved [Pa].
 
-    T: Scalar
+    T: float
       Temperature of a mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Pmin: Scalar
+    Pmin: float
       During the preliminary search, the pressure can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `1.` [Pa].
 
-    Pmax: Scalar
+    Pmax: float
       During the preliminary search, the pressure can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `1e8` [Pa].
@@ -743,7 +825,7 @@ class PsatPT(object):
       The cricondentherm serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
-    step: Scalar
+    step: float
       To specify the confidence interval for the saturation pressure
       calculation, the preliminary search is performed. This parameter
       regulates the step of this search in fraction units. For example,
@@ -756,7 +838,8 @@ class PsatPT(object):
     -------
     A tuple of:
     - the improved initial guess for the saturation pressure [Pa],
-    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the initial guess for k-values as a `Vector[Double]` of shape
+      `(Nc,)`,
     - the lower bound of the saturation pressure [Pa],
     - the upper bound of the saturation pressure [Pa].
 
@@ -903,19 +986,20 @@ class PsatPT(object):
         )
       else:
         P = Pupp
+    assert stab.kvji is not None
     return P, stab.kvji[0], Plow, Pupp
 
   def gridding(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
+    P: float,
+    T: float,
+    yi: Vector[Double],
     upper: bool = True,
-    Pmin: Scalar = 1.,
-    Pmax: Scalar = 1e8,
+    Pmin: float = 1.,
+    Pmax: float = 1e8,
     Nnodes: int = 10,
     logspace: bool = False,
-  ) -> tuple[Scalar, Vector, Scalar, Scalar]:
+  ) -> tuple[float, Vector[Double], float, float]:
     """Performs the gridding procedure to refine the initial guess of
     the saturation pressure. Instead of evaluating all segments, the
     gridding procedure would terminate as soon as an interval exhibiting
@@ -925,19 +1009,19 @@ class PsatPT(object):
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       The initial guess of the saturation pressure to be improved [Pa].
 
-    T: Scalar
+    T: float
       Temperature of a mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Pmin: Scalar
+    Pmin: float
       Min pressure for the gridding procedure. Default is `1.` [Pa].
 
-    Pmax: Scalar
+    Pmax: float
       Max pressure for the gridding procedure. Default is `1e8` [Pa].
 
     upper: bool
@@ -961,7 +1045,8 @@ class PsatPT(object):
     -------
     A tuple of:
     - the improved initial guess for the saturation pressure [Pa],
-    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the initial guess for k-values as a `Vector[Double]` of shape
+      `(Nc,)`,
     - the lower bound of the saturation pressure [Pa],
     - the upper bound of the saturation pressure [Pa].
 
@@ -1008,6 +1093,7 @@ class PsatPT(object):
         else:
           stabres = prevresult
           P0 = prevP
+        assert stabres.kvji is not None
         return P0, stabres.kvji[0], Plow, Pupp
       prevstable = stable
       prevresult = result
@@ -1021,136 +1107,116 @@ class PsatPT(object):
 
 
 def _PsatPT_solve_TPDeq_P(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  xi: Vector,
+  xi: Vector[Double],
+  T: float,
+  yi: Vector[Double],
+  Plow: float,
+  Pupp: float,
   eos: EosPsatPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-  Plow0: Scalar = 1.,
-  Pupp0: Scalar = 1e8,
   increasing: bool = True,
-) -> tuple[Scalar, int, int, Vector, Vector, Scalar, Scalar, Scalar]:
+) -> tuple[float, float, float, Vector[Double], Vector[Double], float]:
   """Solves the TPD-equation for pressure at a constant temperature
   using the PT-based equations of state. The TPD-equation is the
   equation of equality to zero of the tangent-plane distance, which
-  determines the phase appearance or disappearance. A combination of
-  the bisection method with Newton's method is used to solve the
-  TPD-equation.
+  determines the phase appearance or disappearance. The secant method
+  is used to solve the TPD-equation.
 
   Parameters
   ----------
-  P0: Scalar
-    Initial guess of the saturation pressure [Pa].
+  xi: Vector[Double], shape (Nc,)
+    Mole fractions of `Nc` components in the trial phase.
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
-    Mole fractions of `Nc` components in the trial phase.
+  Plow: float
+    The lower bound of the saturation pressure [Pa].
+
+  Pupp: float
+    The upper bound of the saturation pressure [Pa].
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
   maxiter: int
     The maximum number of iterations. Default is `10`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
 
-  Plow0: Scalar
-    The initial lower bound of the saturation pressure [Pa]. If the
-    saturation pressure at any iteration is less than the current
-    lower bound, then the bisection update would be used. Default is
-    `1.0` [Pa].
-
-  Pupp0: Scalar
-    The initial upper bound of the saturation pressure [Pa]. If the
-    saturation pressure at any iteration is greater than the current
-    upper bound, then the bisection update would be used. Default is
-    `1e8` [Pa].
-
   increasing: bool
     A flag that indicates if the TPD-equation vs pressure is an
-    increasing function. This parameter is used to control the
-    bisection method update. Default is `True`.
+    increasing function. Default is `True`.
 
   Returns
   -------
   A tuple of:
   - the saturation pressure,
-  - the designated phase of the trial composition,
-  - the designated phase of the real composition,
   - compressibility factors for both (trial and real) mixtures,
   - natural logarithms of fugacity coefficients of components in the
-    trial phase as a `Vector` of shape `(Nc,)`,
+    trial phase as a `Vector[Double]` of shape `(Nc,)`,
   - natural logarithms of fugacity coefficients of components in the
-    mixture as a `Vector` of shape `(Nc,)`,
+    mixture as a `Vector[Double]` of shape `(Nc,)`,
   - value of the tangent-plane distance.
   """
-  # print('%3s%10s%10s' % ('Nit', 'P, Pa', 'TPD'))
-  # tmpl = '%3s%10.2e%10.2e'
-  k = 0
-  Pk = P0
-  Plow = Plow0
-  Pupp = Pupp0
   lnkvi = np.log(xi / yi)
-  sy, Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
-  sx, Zx, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
-  TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(tmpl % (k, Pk, TPD))
-  while (TPD < -tol or TPD > tol) and k < maxiter:
-    if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Plow = Pk
-    else:
-      Pupp = Pk
-    dTPDdP = xi.dot(dlnphixidP - dlnphiyidP)
-    dP = - TPD / dTPDdP
-    Pkp1 = Pk + dP
-    if Pkp1 > Pupp or Pkp1 < Plow:
-      Pkp1 = .5 * (Plow + Pupp)
-      dP = Pkp1 - Pk
-    if dP > -1e-8 and dP < 1e-8:
-      break
-    Pk = Pkp1
+  k = 0
+  if increasing:
+    Pkm1 = Pupp
+    Pk = Plow
+  else:
+    Pkm1 = Plow
+    Pk = Pupp
+  Zy, lnphiyi = eos.getPT_Z_lnphii(Pkm1, T, yi)
+  Zx, lnphixi = eos.getPT_Z_lnphii(Pkm1, T, xi)
+  TPDkm1 = xi.dot(lnkvi + lnphixi - lnphiyi)
+  Zy, lnphiyi = eos.getPT_Z_lnphii(Pk, T, yi)
+  Zx, lnphixi = eos.getPT_Z_lnphii(Pk, T, xi)
+  TPDk = xi.dot(lnkvi + lnphixi - lnphiyi)
+  if TPDk * TPDkm1 > 0.:
+    return Pk, Zx, Zy, lnphixi, lnphiyi, TPDk
+  while (TPDk < -tol or TPDk > tol) and k < maxiter:
+    Pkp1 = Pk - TPDk * (Pk - Pkm1) / (TPDk - TPDkm1)
     k += 1
-    sy, Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
-    sx, Zx, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
-    TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(tmpl % (k, Pk, TPD))
-  return Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD
+    Pkm1 = Pk
+    TPDkm1 = TPDk
+    Pk = Pkp1
+    Zy, lnphiyi = eos.getPT_Z_lnphii(Pk, T, yi)
+    Zx, lnphixi = eos.getPT_Z_lnphii(Pk, T, xi)
+    TPDk = xi.dot(lnkvi + lnphixi - lnphiyi)
+  return Pk, Zx, Zy, lnphixi, lnphiyi, TPDk
 
 
 def _PsatPT_ss(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 200,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
   upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
@@ -1159,38 +1225,44 @@ def _PsatPT_ss(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1200,7 +1272,7 @@ def _PsatPT_ss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -1208,7 +1280,7 @@ def _PsatPT_ss(
     The maximum number of equilibrium equation solver iterations.
     Default is `200`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
@@ -1219,10 +1291,10 @@ def _PsatPT_ss(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Plow: Scalar
+  Plow: float
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
 
   upper: bool
@@ -1257,19 +1329,18 @@ def _PsatPT_ss(
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'g2', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
-  solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
-                        increasing=upper)
+  solverTPDeq = partial(_PsatPT_solve_TPDeq_P, T=T, yi=yi,
+                        Plow=Plow, Pupp=Pupp, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, increasing=upper)
   k = 0
   ki = kvi0
   lnki = np.log(ki)
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P0, T, yi, xi)
+  Pk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
-  TPD = xi.dot(gi - np.log(n))
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   while repeat and k < maxiter:
@@ -1278,27 +1349,41 @@ def _PsatPT_ss(
     ki = np.exp(lnki)
     ni = ki * yi
     xi = ni / ni.sum()
-    Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(Pk, T, yi, xi)
+    Pk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
+    sx = eos.getPT_PID(Pk, T, xi)
+    sy = eos.getPT_PID(Pk, T, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * T / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
-    return SatResult(Pk, T, yji, Zj, sj)
+    return SatResult(2, Pk, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The SS-method for saturation pressure calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
@@ -1312,18 +1397,19 @@ def _PsatPT_ss(
 
 
 def _PsatPT_qnss(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 30.,
-  tol_tpd: Scalar = 1e-8,
+  lmbdmax: float = 30.,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
   upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
@@ -1337,38 +1423,44 @@ def _PsatPT_qnss(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1378,7 +1470,7 @@ def _PsatPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -1386,10 +1478,10 @@ def _PsatPT_qnss(
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `30.0`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
@@ -1400,10 +1492,10 @@ def _PsatPT_qnss(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Plow: Scalar
+  Plow: float
     The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
 
   upper: bool
@@ -1438,19 +1530,18 @@ def _PsatPT_qnss(
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'g2', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
-  solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
-                        increasing=upper)
+  solverTPDeq = partial(_PsatPT_solve_TPDeq_P, T=T, yi=yi,
+                        Plow=Plow, Pupp=Pupp, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, increasing=upper)
   k = 0
   ki = kvi0
   lnki = np.log(ki)
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P0, T, yi, xi)
+  Pk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
   gi = np.log(ki) + lnphixi - lnphiyi
   g2 = gi.dot(gi)
-  TPD = xi.dot(gi - np.log(n))
   lmbd = 1.
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
@@ -1467,7 +1558,7 @@ def _PsatPT_qnss(
     ki = np.exp(lnki)
     ni = ki * yi
     xi = ni / ni.sum()
-    Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P0, T, yi, xi)
+    Pk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
@@ -1483,21 +1574,35 @@ def _PsatPT_qnss(
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
+    sx = eos.getPT_PID(Pk, T, xi)
+    sy = eos.getPT_PID(Pk, T, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * T / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
-    return SatResult(Pk, T, yji, Zj, sj)
+    return SatResult(2, Pk, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The QNSS-method for saturation pressure calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
@@ -1511,70 +1616,68 @@ def _PsatPT_qnss(
 
 
 def _PsatPT_newt_improveP0(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  xi: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  xi: Vector[Double],
   eos: EosPsatPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-  Plow0: Scalar = 1.,
-  Pupp0: Scalar = 1e8,
+  Plow0: float = 1.,
+  Pupp0: float = 1e8,
   increasing: bool = True,
-) -> tuple[Scalar, int, Scalar, Vector, Vector]:
+) -> tuple[float, float, Vector[Double], Vector[Double]]:
   """Improves initial guess of the saturation pressure by solving
-  the TPD-equation for pressure at a constant temperature  using the
+  the TPD-equation for pressure at a constant temperature using the
   PT-based equations of state. The TPD-equation is the equation of
   equality to zero of the tangent-plane distance, which determines
   the phase appearance or disappearance. A combination of the bisection
-  method with Newton's method is used to solve the TPD-equation. The
-  algorithm is the same as for the `_PsatPT_solve_TPDeq_P` but it
-  differs in returned result.
+  method with Newton's method is used to solve the TPD-equation.
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the saturation pressure [Pa].
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
+  xi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
   maxiter: int
     The maximum number of iterations. Default is `10`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
 
-  Plow0: Scalar
+  Plow0: float
     The initial lower bound of the saturation pressure [Pa]. If the
     saturation pressure at any iteration is less than the current
     lower bound, then the bisection update would be used. Default is
     `1.0` [Pa].
 
-  Pupp0: Scalar
+  Pupp0: float
     The initial upper bound of the saturation pressure [Pa]. If the
     saturation pressure at any iteration is greater than the current
     upper bound, then the bisection update would be used. Default is
@@ -1589,12 +1692,11 @@ def _PsatPT_newt_improveP0(
   -------
   A tuple of:
   - the saturation pressure,
-  - the designated phase of the real mixture,
   - the compressibility factor of the real mixture,
   - natural logarithms of fugacity coefficients of components in the
-    real mixture as a `Vector` of shape `(Nc,)`,
+    real mixture as a `Vector[Double]` of shape `(Nc,)`,
   - partial derivatives of logarithms of fugacity coefficients of
-    components in the mixture with respect to pressure as a `Vector`
+    components in the mixture with respect to pressure as a `Vector[Double]`
     of shape `(Nc,)`.
   """
   # print('%3s%10s%10s' % ('Nit', 'P, Pa', 'TPD'))
@@ -1604,8 +1706,8 @@ def _PsatPT_newt_improveP0(
   Plow = Plow0
   Pupp = Pupp0
   lnkvi = np.log(xi / yi)
-  sy, Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
-  sx, Zx, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
+  Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
+  Zx, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(tmpl % (k, Pk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
@@ -1623,25 +1725,26 @@ def _PsatPT_newt_improveP0(
       break
     Pk = Pkp1
     k += 1
-    sy, Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
-    sx, Zx, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
+    Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
+    Zx, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
     # print(tmpl % (k, Pk, TPD))
-  return Pk, sy, Zy, lnphiyi, dlnphiyidP
+  return Pk, Zy, lnphiyi, dlnphiyidP
 
 
 def _PsatPT_newtA(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 20,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-8,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
+  linsolver: Linsolver = np.linalg.solve,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
   densort: bool = True,
@@ -1657,53 +1760,62 @@ def _PsatPT_newtA(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`,
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1713,26 +1825,26 @@ def _PsatPT_newtA(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements of
     the vector of equations is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Plow: Scalar
+  Plow: float
     The pressure lower bound. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The pressure upper bound. Default is `1e8` [Pa].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
     an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
     `(Nc+1,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
     the equation of equality to zero of the tangent-plane distance,
@@ -1790,10 +1902,10 @@ def _PsatPT_newtA(
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Pk, sy, Zy, lnphiyi, dlnphiyidP = _PsatPT_newt_improveP0(
+  Pk, Zy, lnphiyi, dlnphiyidP = _PsatPT_newt_improveP0(
     P0, T, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, upper,
   )
-  sx, Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
+  Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
     Pk, T, xi, n,
   )
   gi[:Nc] = lnki + lnphixi - lnphiyi
@@ -1821,30 +1933,44 @@ def _PsatPT_newtA(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    sx, Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
+    Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
       Pk, T, xi, n,
     )
-    sy, Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
+    Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
     gi[:Nc] = lnki + lnphixi - lnphiyi
     gi[-1] = n - 1.
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Pk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Pk):
+    sx = eos.getPT_PID(Pk, T, xi)
+    sy = eos.getPT_PID(Pk, T, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * T / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
-    return SatResult(Pk, T, yji, Zj, sj)
+    return SatResult(2, Pk, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (A-form) for saturation pressure calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
@@ -1858,17 +1984,18 @@ def _PsatPT_newtA(
 
 
 def _PsatPT_newtB(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 20,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-8,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
+  linsolver: Linsolver = np.linalg.solve,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
   densort: bool = True,
@@ -1884,53 +2011,62 @@ def _PsatPT_newtB(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`,
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1940,26 +2076,26 @@ def _PsatPT_newtB(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements of
     the vector of equations is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Plow: Scalar
+  Plow: float
     The pressure lower bound. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The pressure upper bound. Default is `1e8` [Pa].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
     an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
     `(Nc+1,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
     the equation of equality to zero of the tangent-plane distance,
@@ -2017,10 +2153,10 @@ def _PsatPT_newtB(
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Pk, sy, Zy, lnphiyi, dlnphiyidP = _PsatPT_newt_improveP0(
+  Pk, Zy, lnphiyi, dlnphiyidP = _PsatPT_newt_improveP0(
     P0, T, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, upper,
   )
-  sx, Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
+  Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
     Pk, T, xi, n,
   )
   gi[:Nc] = lnki + lnphixi - lnphiyi
@@ -2050,31 +2186,45 @@ def _PsatPT_newtB(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    sx, Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
+    Zx, lnphixi, dlnphixidP, dlnphixidnj = eos.getPT_Z_lnphii_dP_dnj(
       Pk, T, xi, n,
     )
-    sy, Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
+    Zy, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
     gi[:Nc] = lnki + lnphixi - lnphiyi
     hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Pk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Pk):
+    sx = eos.getPT_PID(Pk, T, xi)
+    sy = eos.getPT_PID(Pk, T, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * T / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
-    return SatResult(Pk, T, yji, Zj, sj)
+    return SatResult(2, Pk, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (B-form) for saturation pressure calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
@@ -2088,18 +2238,19 @@ def _PsatPT_newtB(
 
 
 def _PsatPT_newtC(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
+  linsolver: Linsolver = np.linalg.solve,
   upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
@@ -2115,52 +2266,57 @@ def _PsatPT_newtC(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the saturation pressure [Pa]. It should be inside
     the two-phase region.
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
+
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
+
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
       this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
-      - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
-
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
-
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -2170,14 +2326,14 @@ def _PsatPT_newtC(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements of
     the vector of equations is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Default is `1e-8`.
 
@@ -2185,14 +2341,14 @@ def _PsatPT_newtC(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Plow: Scalar
+  Plow: float
     The pressure lower bound. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The pressure upper bound. Default is `1e8` [Pa].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
@@ -2231,9 +2387,9 @@ def _PsatPT_newtC(
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Psat, Pa', 'g2', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%12.1f%10.2e%11.2e'
-  solverTPDeq = partial(_PsatPT_solve_TPDeq_P, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Plow0=Plow, Pupp0=Pupp,
-                        increasing=upper)
+  solverTPDeq = partial(_PsatPT_solve_TPDeq_P, T=T, yi=yi,
+                        Plow=Plow, Pupp=Pupp, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, increasing=upper)
   I = np.eye(eos.Nc)
   k = 0
   ki = kvi0
@@ -2241,14 +2397,13 @@ def _PsatPT_newtC(
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P0, T, yi, xi)
+  Pk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
-  TPD = ni.dot(gi)
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   while repeat and k < maxiter:
-    dlnphixidnj = eos.getPT_Z_lnphii_dnj(Pk, T, xi, n)[3]
+    dlnphixidnj = eos.getPT_Z_lnphii_dnj(Pk, T, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
       dlnki = linsolver(J, -gi)
@@ -2260,27 +2415,41 @@ def _PsatPT_newtC(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P0, T, yi, xi)
+    Pk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Pk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk):
+    sx = eos.getPT_PID(Pk, T, xi)
+    sy = eos.getPT_PID(Pk, T, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * T / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation pressure is: %.1f Pa.', Pk)
-    return SatResult(Pk, T, yji, Zj, sj)
+    return SatResult(2, Pk, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (C-form) for saturation pressure calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT = %s K\n"
@@ -2305,56 +2474,63 @@ class TsatPT(object):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
-
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
-
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
-      - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     If the solution method would be `'newton'`,  then it also must have:
 
-    - `getPT_Z_lnphii_dT_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`,
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
+
+    - `getPT_Z_lnphii_dT_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -2371,7 +2547,10 @@ class TsatPT(object):
     - `'qnss'` (Quasi-Newton Successive Substitution method),
     - `'newton'` (Newton's method).
 
-    Default is `'newton'`.
+    There are also two other different formulations of Newton's method:
+    `'newton-b'` and `'newton-c'`. For the details, see the paper of
+    L.X. Nghiem et al, 1985 (doi: 10.1016/0378-3812(85)90059-7).
+    Default is `'newton-b'`.
 
   stabkwargs: dict
     The stability test procedure is used to locate the confidence
@@ -2381,7 +2560,8 @@ class TsatPT(object):
 
   initmethod: str
     This parameter can be used to choose the procedure to generate an
-    initial guess for saturation temperature calculation. Should be one of:
+    initial guess for saturation temperature calculation. Should be
+    one of:
 
     - `'search'` (the preliminary search procedure),
     - `'gridding'` (the gridding procedure).
@@ -2404,7 +2584,7 @@ class TsatPT(object):
   def __init__(
     self,
     eos: EosTsatPT,
-    method: str = 'newton',
+    method: str = 'newton-b',
     stabkwargs: dict = {},
     initmethod: str = 'search',
     initkwargs: dict = {},
@@ -2434,9 +2614,10 @@ class TsatPT(object):
 
   def run(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
     upper: bool = True,
   ) -> SatResult:
     """Performs the saturation temperature calculation for known
@@ -2445,14 +2626,17 @@ class TsatPT(object):
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of a mixture [Pa].
 
-    T: Scalar
+    T: float
       Initial guess of the saturation temperature [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    n: float
+      Number of moles of the mixture [mol]. Default is `1.0` [mol].
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
@@ -2481,39 +2665,39 @@ class TsatPT(object):
       unsuccessfully.
     """
     T0, kvi0, Tlow, Tupp = self.initialize(P, T, yi, upper)
-    return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
+    return self.solver(P, T0, yi, n, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
 
   def search(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
+    P: float,
+    T: float,
+    yi: Vector[Double],
     upper: bool = True,
-    Tmin: Scalar = 173.15,
-    Tmax: Scalar = 973.15,
-    step: Scalar = 0.1,
-  ) -> tuple[Scalar, Vector, Scalar, Scalar]:
+    Tmin: float = 173.15,
+    Tmax: float = 973.15,
+    step: float = 0.1,
+  ) -> tuple[float, Vector[Double], float, float]:
     """Performs a preliminary search to refine the initial guess of
     the saturation temperature.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of a mixture [Pa].
 
-    T: Scalar
+    T: float
       The initial guess of the saturation temperature to be improved
       [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Tmin: Scalar
+    Tmin: float
       During the preliminary search, the temperature can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `173.15` [K].
 
-    Tmax: Scalar
+    Tmax: float
       During the preliminary search, the temperature can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `973.15` [K].
@@ -2524,7 +2708,7 @@ class TsatPT(object):
       The cricondenbar serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
-    step: Scalar
+    step: float
       To specify the confidence interval for the saturation temperature
       calculation, the preliminary search is performed. This parameter
       regulates the step of this search in fraction units. For example,
@@ -2537,7 +2721,8 @@ class TsatPT(object):
     -------
     A tuple of:
     - the improved initial guess for the saturation temperature [K],
-    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the initial guess for k-values as a `Vector[Double]` of shape
+      `(Nc,)`,
     - the lower bound of the saturation temperature [K],
     - the upper bound of the saturation temperature [K].
 
@@ -2684,18 +2869,19 @@ class TsatPT(object):
         )
       else:
         T = Tupp
+    assert stab.kvji is not None
     return T, stab.kvji[0], Tlow, Tupp
 
   def gridding(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
+    P: float,
+    T: float,
+    yi: Vector[Double],
     upper: bool = True,
-    Tmin: Scalar = 173.15,
-    Tmax: Scalar = 973.15,
+    Tmin: float = 173.15,
+    Tmax: float = 973.15,
     Nnodes: int = 10,
-  ) -> tuple[Scalar, Vector, Scalar, Scalar]:
+  ) -> tuple[float, Vector[Double], float, float]:
     """Performs the gridding procedure to refine the initial guess of
     the saturation temperature. Instead of evaluating all segments,
     the gridding procedure would terminate as soon as an interval
@@ -2705,22 +2891,22 @@ class TsatPT(object):
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of a mixture [Pa].
 
-    T: Scalar
+    T: float
       The initial guess of the saturation temperature to be improved
       [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    Tmin: Scalar
+    Tmin: float
       During the preliminary search, the temperature can not drop below
       the lower limit. Otherwise, the `ValueError` will be rised.
       Default is `173.15` [K].
 
-    Tmax: Scalar
+    Tmax: float
       During the preliminary search, the temperature can not exceed the
       upper limit. Otherwise, the `ValueError` will be rised.
       Default is `973.15` [K].
@@ -2740,7 +2926,7 @@ class TsatPT(object):
     -------
     A tuple of:
     - the improved initial guess for the saturation temperature [K],
-    - the initial guess for k-values as a `Vector` of shape `(Nc,)`,
+    - the initial guess for k-values as a `Vector[Double]` of shape `(Nc,)`,
     - the lower bound of the saturation temperature [K],
     - the upper bound of the saturation temperature [K].
 
@@ -2779,6 +2965,7 @@ class TsatPT(object):
         else:
           stabres = prevresult
           T0 = prevT
+        assert stabres.kvji is not None
         return T0, stabres.kvji[0], Tlow, Tupp
       prevstable = stable
       prevresult = result
@@ -2792,72 +2979,59 @@ class TsatPT(object):
 
 
 def _TsatPT_solve_TPDeq_T(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  xi: Vector,
+  xi: Vector[Double],
+  P: float,
+  yi: Vector[Double],
+  Tlow: float,
+  Tupp: float,
   eos: EosTsatPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-  Tlow0: Scalar = 173.15,
-  Tupp0: Scalar = 973.15,
   increasing: bool = True,
-) -> tuple[Scalar, Vector, Vector, Scalar, Scalar, Scalar]:
+) -> tuple[float, float, float, Vector[Double], Vector[Double], float]:
   """Solves the TPD-equation for temperature at a constant pressure
   using the PT-based equations of state. The TPD-equation is the
   equation of equality to zero of the tangent-plane distance, which
-  determines the phase appearance or disappearance. A combination of
-  the bisection method with Newton's method is used to solve the
-  TPD-equation.
+  determines the phase appearance or disappearance. The secant method
+  is used to solve the TPD-equation.
 
   Parameters
   ----------
-  P: Scalar
+  xi: Vector[Double], shape (Nc,)
+    Mole fractions of `Nc` components in the trial phase.
+
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
-    Initial guess of the saturation temperature [K].
-
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
-    Mole fractions of `Nc` components in the trial phase.
+  Tlow: float
+    The lower bound of the saturation temperature [K].
+
+  Tupp: float
+    The upper bound of the saturation temperature [K].
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
   maxiter: int
     The maximum number of iterations. Default is `10`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
-
-  Tlow0: Scalar
-    The initial lower bound of the saturation temperature [K]. If the
-    saturation temperature at any iteration is less than the current
-    lower bound, then the bisection update would be used. Default is
-    `173.15` [K].
-
-  Tupp0: Scalar
-    The initial upper bound of the saturation temperature [K]. If the
-    saturation temperature at any iteration is greater than the current
-    upper bound, then the bisection update would be used. Default is
-    `973.15` [K].
 
   increasing: bool
     A flag that indicates if the TPD-equation vs temperature is an
@@ -2868,59 +3042,53 @@ def _TsatPT_solve_TPDeq_T(
   -------
   A tuple of:
   - the saturation temperature,
-  - the designated phase of the trial composition,
-  - the designated phase of the real composition,
   - compressibility factors for both (trial and real) mixtures,
   - an array of the natural logarithms of fugacity coefficients of
     components in the trial phase,
   - the same for the real composition of the mixture,
   - value of the tangent-plane distance.
   """
-  # print('%3s%9s%10s' % ('Nit', 'T, K', 'TPD'))
-  # tmpl = '%3s%9.2f%10.2e'
-  k = 0
-  Tlow = Tlow0
-  Tupp = Tupp0
-  Tk = T0
   lnkvi = np.log(xi / yi)
-  sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
-  sx, Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
-  TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-  # print(tmpl % (k, Tk, TPD))
-  while (TPD < -tol or TPD > tol) and k < maxiter:
-    if TPD < 0. and increasing or TPD > 0. and not increasing:
-      Tlow = Tk
-    else:
-      Tupp = Tk
-    dTPDdT = xi.dot(dlnphixidT - dlnphiyidT)
-    dT = - TPD / dTPDdT
-    Tkp1 = Tk + dT
-    if Tkp1 > Tupp or Tkp1 < Tlow:
-      Tkp1 = .5 * (Tlow + Tupp)
-      dT = Tkp1 - Tk
-    if dT > -1e-8 and dT < 1e-8:
-      break
-    Tk = Tkp1
+  k = 0
+  if increasing:
+    Tkm1 = Tupp
+    Tk = Tlow
+  else:
+    Tkm1 = Tlow
+    Tk = Tupp
+  Zy, lnphiyi = eos.getPT_Z_lnphii(P, Tkm1, yi)
+  Zx, lnphixi = eos.getPT_Z_lnphii(P, Tkm1, xi)
+  TPDkm1 = xi.dot(lnkvi + lnphixi - lnphiyi)
+  Zy, lnphiyi = eos.getPT_Z_lnphii(P, Tk, yi)
+  Zx, lnphixi = eos.getPT_Z_lnphii(P, Tk, xi)
+  TPDk = xi.dot(lnkvi + lnphixi - lnphiyi)
+  if TPDk * TPDkm1 > 0.:
+    return Tk, Zx, Zy, lnphixi, lnphiyi, TPDk
+  while (TPDk < -tol or TPDk > tol) and k < maxiter:
+    Tkp1 = Tk - TPDk * (Tk - Tkm1) / (TPDk - TPDkm1)
     k += 1
-    sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
-    sx, Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
-    TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
-    # print(tmpl % (k, Tk, TPD))
-  return Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD
+    Tkm1 = Tk
+    TPDkm1 = TPDk
+    Tk = Tkp1
+    Zy, lnphiyi = eos.getPT_Z_lnphii(P, Tk, yi)
+    Zx, lnphixi = eos.getPT_Z_lnphii(P, Tk, xi)
+    TPDk = xi.dot(lnkvi + lnphixi - lnphiyi)
+  return Tk, Zx, Zy, lnphixi, lnphiyi, TPDk
 
 
 def _TsatPT_ss(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 200,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
   upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
@@ -2929,38 +3097,44 @@ def _TsatPT_ss(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the saturation temperature [K]. It should be
     inside the two-phase region.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -2970,7 +3144,7 @@ def _TsatPT_ss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -2978,7 +3152,7 @@ def _TsatPT_ss(
     The maximum number of equilibrium equation solver iterations.
     Default is `200`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
@@ -2989,11 +3163,11 @@ def _TsatPT_ss(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver.
     Default is `973.15` [K].
 
@@ -3029,15 +3203,15 @@ def _TsatPT_ss(
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'g2', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
-  solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
-                        increasing=upper)
+  solverTPDeq = partial(_TsatPT_solve_TPDeq_T, P=P, yi=yi,
+                        Tlow=Tlow, Tupp=Tupp, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, increasing=upper)
   k = 0
   ki = kvi0
   lnki = np.log(ki)
   ni = ki * yi
   xi = ni / ni.sum()
-  Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P, T0, yi, xi)
+  Tk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
@@ -3048,27 +3222,41 @@ def _TsatPT_ss(
     ki = np.exp(lnki)
     ni = ki * yi
     xi = ni / ni.sum()
-    Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P, T0, yi, xi)
+    Tk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
+    sx = eos.getPT_PID(P, Tk, xi)
+    sy = eos.getPT_PID(P, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / P
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation temperature is: %.2f K.', Tk)
-    return SatResult(P, Tk, yji, Zj, sj)
+    return SatResult(2, P, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The SS-method for saturation temperature calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
@@ -3082,18 +3270,19 @@ def _TsatPT_ss(
 
 
 def _TsatPT_qnss(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 30.,
-  tol_tpd: Scalar = 1e-8,
+  lmbdmax: float = 30.,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
   upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
@@ -3108,38 +3297,44 @@ def _TsatPT_qnss(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the saturation temperature [K]. It should be
     inside the two-phase region.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar,
-                         yi: Vector) -> tuple[Vector, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - the phase compressibility factor,
-      - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`.
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -3149,7 +3344,7 @@ def _TsatPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -3157,10 +3352,10 @@ def _TsatPT_qnss(
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `30.0`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Default is `1e-8`.
     The TPD-equation is the equation of equality to zero of the
@@ -3171,11 +3366,11 @@ def _TsatPT_qnss(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver.
     Default is `973.15` [K].
 
@@ -3211,18 +3406,17 @@ def _TsatPT_qnss(
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'g2', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
-  solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
-                        increasing=upper)
+  solverTPDeq = partial(_TsatPT_solve_TPDeq_T, P=P, yi=yi,
+                        Tlow=Tlow, Tupp=Tupp, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, increasing=upper)
   k = 0
   ki = kvi0
   lnki = np.log(ki)
   ni = ki * yi
   xi = ni / ni.sum()
-  Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P, T0, yi, xi)
+  Tk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
-  TPD = ni.dot(gi)
   lmbd = 1.
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
@@ -3239,7 +3433,7 @@ def _TsatPT_qnss(
     ki = np.exp(lnki)
     ni = ki * yi
     xi = ni / ni.sum()
-    Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P, T0, yi, xi)
+    Tk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
@@ -3255,21 +3449,35 @@ def _TsatPT_qnss(
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
+    sx = eos.getPT_PID(P, Tk, xi)
+    sy = eos.getPT_PID(P, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / P
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation temperature is: %.2f K.', Tk)
-    return SatResult(P, Tk, yji, Zj, sj)
+    return SatResult(2, P, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The QNSS-method for saturation temperature calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
@@ -3283,17 +3491,17 @@ def _TsatPT_qnss(
 
 
 def _TsatPT_newt_improveT0(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  xi: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  xi: Vector[Double],
   eos: EosTsatPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-  Tlow0: Scalar = 173.15,
-  Tupp0: Scalar = 973.15,
+  Tlow0: float = 173.15,
+  Tupp0: float = 973.15,
   increasing: bool = True,
-) -> tuple[Scalar, int, Scalar, Vector, Vector]:
+) -> tuple[float, float, Vector[Double], Vector[Double]]:
   """Improves initial guess of the saturation temperature by solving
   the TPD-equation for temperature at a constant pressure using the
   PT-based equations of state. The TPD-equation is the equation of
@@ -3305,48 +3513,49 @@ def _TsatPT_newt_improveT0(
 
   Parameters
   ----------
-  T0: Scalar
+  T0: float
     Initial guess of the saturation temperature [K].
 
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
+  xi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar,
-                         yi: Vector) -> tuple[Vector, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - the phase compressibility factor,
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
   maxiter: int
     The maximum number of iterations. Default is `10`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
 
-  Tlow0: Scalar
+  Tlow0: float
     The initial lower bound of the saturation temperature [K]. If the
     saturation temperature at any iteration is less than the current
     lower bound, then the bisection update would be used. Default is
     `173.15` [K].
 
-  Tupp0: Scalar
+  Tupp0: float
     The initial upper bound of the saturation temperature [K]. If the
     saturation temperature at any iteration is greater than the current
     upper bound, then the bisection update would be used. Default is
@@ -3361,13 +3570,12 @@ def _TsatPT_newt_improveT0(
   -------
   A tuple of:
   - the saturation temperature,
-  - the designated phase of the real mixture,
   - compressibility factor of the real mixture,
   - natural logarithms of fugacity coefficients of components in the
-    real mixture as a `Vector` of shape `(Nc,)`,
+    real mixture as a `Vector[Double]` of shape `(Nc,)`,
   - partial derivatives of logarithms of fugacity coefficients of
-    components in the mixture with respect to temperature as a `Vector`
-    of shape `(Nc,)`.
+    components in the mixture with respect to temperature as a
+    `Vector[Double]` of shape `(Nc,)`.
   """
   # print('%3s%9s%10s' % ('Nit', 'T, K', 'TPD'))
   # tmpl = '%3s%9.2f%10.2e'
@@ -3376,8 +3584,8 @@ def _TsatPT_newt_improveT0(
   Tupp = Tupp0
   Tk = T0
   lnkvi = np.log(xi / yi)
-  sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
-  sx, Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
+  Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
+  Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(tmpl % (k, Tk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
@@ -3395,25 +3603,26 @@ def _TsatPT_newt_improveT0(
       break
     Tk = Tkp1
     k += 1
-    sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
-    sx, Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
+    Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
+    Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
     # print(tmpl % (k, Tk, TPD))
-  return Tk, sy, Zy, lnphiyi, dlnphiyidT
+  return Tk, Zy, lnphiyi, dlnphiyidT
 
 
 def _TsatPT_newtA(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 20,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-8,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
+  linsolver: Linsolver = np.linalg.solve,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
   densort: bool = True,
@@ -3429,53 +3638,64 @@ def _TsatPT_newtA(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the saturation temperature [K]. It should be
     inside the two-phase region.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`,
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -3485,28 +3705,28 @@ def _TsatPT_newtA(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements of
     the vector of equations is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver.
     Default is `973.15` [K].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
     an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
     `(Nc+1,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
     the equation of equality to zero of the tangent-plane distance,
@@ -3564,10 +3784,10 @@ def _TsatPT_newtA(
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Tk, sy, Zy, lnphiyi, dlnphiyidT = _TsatPT_newt_improveT0(
+  Tk, Zy, lnphiyi, dlnphiyidT = _TsatPT_newt_improveT0(
     P, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, upper,
   )
-  sx, Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
+  Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
     P, Tk, xi, n,
   )
   gi[:Nc] = lnki + lnphixi - lnphiyi
@@ -3595,30 +3815,44 @@ def _TsatPT_newtA(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    sx, Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
+    Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
       P, Tk, xi, n,
     )
-    sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
+    Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
     gi[:Nc] = lnki + lnphixi - lnphiyi
     gi[-1] = n - 1.
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Tk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Tk):
+    sx = eos.getPT_PID(P, Tk, xi)
+    sy = eos.getPT_PID(P, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / P
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation temperature is: %.2f K.', Tk)
-    return SatResult(P, Tk, yji, Zj, sj)
+    return SatResult(2, P, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (A-form) for saturation temperature calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
@@ -3632,17 +3866,18 @@ def _TsatPT_newtA(
 
 
 def _TsatPT_newtB(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 20,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-  tol_tpd: Scalar = 1e-8,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
+  linsolver: Linsolver = np.linalg.solve,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
   upper: bool = True,
   densort: bool = True,
@@ -3658,53 +3893,64 @@ def _TsatPT_newtB(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the saturation temperature [K]. It should be
     inside the two-phase region.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`,
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -3714,28 +3960,28 @@ def _TsatPT_newtB(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements of
     the vector of equations is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver.
     Default is `973.15` [K].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc+1, Nc+1)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
     an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
     `(Nc+1,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
     the equation of equality to zero of the tangent-plane distance,
@@ -3793,10 +4039,10 @@ def _TsatPT_newtB(
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Tk, sy, Zy, lnphiyi, dlnphiyidT = _TsatPT_newt_improveT0(
+  Tk, Zy, lnphiyi, dlnphiyidT = _TsatPT_newt_improveT0(
     P, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, upper,
   )
-  sx, Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
+  Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
     P, Tk, xi, n,
   )
   gi[:Nc] = lnki + lnphixi - lnphiyi
@@ -3826,31 +4072,45 @@ def _TsatPT_newtB(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    sx, Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
+    Zx, lnphixi, dlnphixidT, dlnphixidnj = eos.getPT_Z_lnphii_dT_dnj(
       P, Tk, xi, n,
     )
-    sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
+    Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
     gi[:Nc] = lnki + lnphixi - lnphiyi
     hi = gi[:Nc] - np.log(n)
     gi[-1] = xi.dot(hi)
     g2 = gi.dot(gi)
     logger.debug(tmpl, k, *lnki, Tk, g2)
   if g2 < tol and np.isfinite(g2) and np.isfinite(Tk):
+    sx = eos.getPT_PID(P, Tk, xi)
+    sy = eos.getPT_PID(P, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / P
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation temperature is: %.2f K.', Tk)
-    return SatResult(P, Tk, yji, Zj, sj)
+    return SatResult(2, P, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (B-form) for saturation temperature calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
@@ -3864,18 +4124,19 @@ def _TsatPT_newtB(
 
 
 def _TsatPT_newtC(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTsatPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
+  linsolver: Linsolver = np.linalg.solve,
   upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
@@ -3891,52 +4152,57 @@ def _TsatPT_newtC(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the saturation temperature [K]. It should be
     inside the two-phase region.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
+
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
+
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
       this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
-      - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
-
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
-
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -3946,14 +4212,14 @@ def _TsatPT_newtC(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements of
     the vector of equations is less than `tol`. Default is `1e-16`.
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Default is `1e-8`.
 
@@ -3961,16 +4227,16 @@ def _TsatPT_newtC(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver.
     Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver.
     Default is `973.15` [K].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
@@ -4009,9 +4275,9 @@ def _TsatPT_newtC(
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'Tsat, K', 'g2', 'TPD',
   )
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%10.2e%11.2e'
-  solverTPDeq = partial(_TsatPT_solve_TPDeq_T, eos=eos, tol=tol_tpd,
-                        maxiter=maxiter_tpd, Tlow0=Tlow, Tupp0=Tupp,
-                        increasing=upper)
+  solverTPDeq = partial(_TsatPT_solve_TPDeq_T, P=P, yi=yi,
+                        Tlow=Tlow, Tupp=Tupp, eos=eos, tol=tol_tpd,
+                        maxiter=maxiter_tpd, increasing=upper)
   I = np.eye(Nc)
   k = 0
   ki = kvi0
@@ -4019,13 +4285,13 @@ def _TsatPT_newtC(
   ni = ki * yi
   n = ni.sum()
   xi = ni / n
-  Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P, T0, yi, xi)
+  Tk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
   logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   while repeat and k < maxiter:
-    dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, Tk, xi, n)[3]
+    dlnphixidnj = eos.getPT_Z_lnphii_dnj(P, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
       dlnki = linsolver(J, -gi)
@@ -4037,27 +4303,41 @@ def _TsatPT_newtC(
     ni = ki * yi
     n = ni.sum()
     xi = ni / n
-    Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(P, T0, yi, xi)
+    Tk, Zx, Zy, lnphixi, lnphiyi, TPD = solverTPDeq(xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     repeat = g2 > tol or TPD < -tol_tpd or TPD > tol_tpd
     logger.debug(tmpl, k, *lnki, Tk, g2, TPD)
   if not repeat and np.isfinite(g2) and np.isfinite(Tk):
+    sx = eos.getPT_PID(P, Tk, xi)
+    sy = eos.getPT_PID(P, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / P
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('Saturation temperature is: %.2f K.', Tk)
-    return SatResult(P, Tk, yji, Zj, sj)
+    return SatResult(2, P, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (C-form) for saturation temperature calculation termin"
     "ates unsuccessfully. EOS: %s.\nParameters:\nP = %s Pa\nT0 = %s K\n"
@@ -4082,71 +4362,74 @@ class PmaxPT(PsatPT):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
       For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to temperature as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
     If the solution method would be `'newton'` then it also must have:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -4220,21 +4503,31 @@ class PmaxPT(PsatPT):
       raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
 
-  def run(self, P: Scalar, T: Scalar, yi: Vector) -> SatResult:
+  def run(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+    upper: bool = True,
+  ) -> SatResult:
     """Performs the cricondenbar point calculation for a mixture. To
     improve the initial guess of pressure, the preliminary search is
     performed.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Initial guess of the cricondenbar pressure [Pa].
 
-    T: Scalar
+    T: float
       Initial guess of the cricondenbar temperature [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    n: float
+      Number of moles of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
@@ -4256,18 +4549,18 @@ class PmaxPT(PsatPT):
       cricondenbar calculation procedure terminates unsuccessfully.
     """
     P0, kvi0, Plow, Pupp = self.initialize(P, T, yi, True)
-    return self.solver(P0, T, yi, kvi0, Plow=Plow, Pupp=Pupp)
+    return self.solver(P0, T, yi, n, kvi0, Plow=Plow, Pupp=Pupp)
 
 
 def _PmaxPT_solve_TPDeq_P(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  xi: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  xi: Vector[Double],
   eos: EosPmaxPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-) -> Scalar:
+) -> float:
   """Solves the TPD-equation for pressure at a constant temperature
   using the PT-based equations of state. The TPD-equation is the
   equation of equality to zero of the tangent-plane distance functon.
@@ -4275,35 +4568,35 @@ def _PmaxPT_solve_TPDeq_P(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess for pressure [Pa].
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
+  xi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
 
@@ -4319,8 +4612,8 @@ def _PmaxPT_solve_TPDeq_P(
   k = 0
   Pk = P0
   lnkvi = np.log(xi / yi)
-  _, _, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
-  _, _, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
+  _, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
+  _, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(tmpl % (k, Pk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
@@ -4329,22 +4622,22 @@ def _PmaxPT_solve_TPDeq_P(
     k += 1
     # Pk -= TPD / dTPDdP
     Pk *= np.exp(-TPD / dTPDdlnP)
-    _, _, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
-    _, _, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
+    _, lnphiyi, dlnphiyidP = eos.getPT_Z_lnphii_dP(Pk, T, yi)
+    _, lnphixi, dlnphixidP = eos.getPT_Z_lnphii_dP(Pk, T, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
     # print(tmpl % (k, Pk, TPD))
   return Pk
 
 
 def _PmaxPT_solve_dTPDdTeq_T(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  xi: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  xi: Vector[Double],
   eos: EosPmaxPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-) -> tuple[Scalar, Vector, Vector, Scalar, Scalar]:
+) -> tuple[float, float, float, Vector[Double], Vector[Double], float]:
   """Solves the cricondenbar equation for temperature at a constant
   pressure using the PT-based equations of state. The cricondenbar
   equation is the equation of equality to zero of the partial derivative
@@ -4353,39 +4646,39 @@ def _PmaxPT_solve_dTPDdTeq_T(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess for temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
+  xi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT_d2T(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to temperature as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
 
@@ -4396,54 +4689,49 @@ def _PmaxPT_solve_dTPDdTeq_T(
   -------
   A tuple of:
   - the root (temperature) of the cricondenbar equation,
-  - the designated phase for the trial composition,
-  - the designated phase for the real composition,
   - compressibility factors for both (trial and real) compositions,
   - natural logarithms of fugacity coefficients of components in the
-    trial phase as a `Vector` of shape `(Nc,)`,
+    trial phase as a `Vector[Double]` of shape `(Nc,)`,
   - natural logarithms of fugacity coefficients of components in the
-    mixture as a `Vector` of shape `(Nc,)`,
+    mixture as a `Vector[Double]` of shape `(Nc,)`,
   - value of the cricondenbar equation.
   """
   # print('%3s%9s%10s' % ('Nit', 'T, K', 'eq'))
   # tmpl = '%3s%9.2f%10.2e'
   k = 0
   Tk = T0
-  sy, Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_d2T(
-    P, Tk, yi,
-  )
-  sx, Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_d2T(
-    P, Tk, xi,
-  )
+  Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_d2T(P, Tk, yi)
+  Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_d2T(P, Tk, xi)
   eq = xi.dot(dlnphixidT - dlnphiyidT)
   # print(tmpl % (k, Tk, eq))
   while (eq < -tol or eq > tol) and k < maxiter:
     deqdT = xi.dot(d2lnphixidT2 - d2lnphiyidT2)
     k += 1
     Tk -= eq / deqdT
-    sy, Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_d2T(
+    Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_d2T(
       P, Tk, yi,
     )
-    sx, Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_d2T(
+    Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_d2T(
       P, Tk, xi,
     )
     eq = xi.dot(dlnphixidT - dlnphiyidT)
     # print(tmpl % (k, Tk, eq))
-  return Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, eq
+  return Tk, Zx, Zy, lnphixi, lnphiyi, eq
 
 
 def _PmaxPT_ss(
-  P0: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPmaxPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 200,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
   densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondenbar
@@ -4465,53 +4753,61 @@ def _PmaxPT_ss(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the cricondenbar pressure [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the cricondenbar temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to temperature as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -4521,7 +4817,7 @@ def _PmaxPT_ss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -4529,7 +4825,7 @@ def _PmaxPT_ss(
     The maximum number of equilibrium equation solver iterations.
     Default is `200`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation and the cricondenbar equation solvers
     successfully if the absolute value of the equation is less than
     `tol_tpd`. Default is `1e-8`.
@@ -4538,11 +4834,11 @@ def _PmaxPT_ss(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `10`.
 
-  Plow: Scalar
+  Plow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1e8` [Pa].
 
@@ -4583,9 +4879,9 @@ def _PmaxPT_ss(
   ni = ki * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, True,
+    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, True,
   )
-  Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
+  Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
@@ -4600,9 +4896,7 @@ def _PmaxPT_ss(
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
-    Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(
-      Pk, Tk, yi, xi,
-    )
+    Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
@@ -4611,21 +4905,35 @@ def _PmaxPT_ss(
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
+    sx = eos.getPT_PID(Pk, Tk, xi)
+    sy = eos.getPT_PID(Pk, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
-    return SatResult(Pk, Tk, yji, Zj, sj)
+    return SatResult(2, Pk, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The SS-method for cricondenbar calculation terminates unsuccessfully. "
     "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nkvi0 = %s\n"
@@ -4640,18 +4948,19 @@ def _PmaxPT_ss(
 
 
 def _PmaxPT_qnss(
-  P0: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPmaxPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 30.,
-  tol_tpd: Scalar = 1e-8,
+  lmbdmax: float = 30.,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
   densort: bool = True,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (SS) method for the
@@ -4676,53 +4985,61 @@ def _PmaxPT_qnss(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the cricondenbar pressure [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the cricondenbar temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to temperature as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -4732,7 +5049,7 @@ def _PmaxPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -4740,10 +5057,10 @@ def _PmaxPT_qnss(
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `30.0`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation and the cricondenbar equation solvers
     successfully if the absolute value of the equation is less than
     `tol_tpd`. Default is `1e-8`.
@@ -4752,11 +5069,11 @@ def _PmaxPT_qnss(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `10`.
 
-  Plow: Scalar
+  Plow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1e8` [Pa].
 
@@ -4797,9 +5114,9 @@ def _PmaxPT_qnss(
   ni = ki * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, True,
+    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, True,
   )
-  Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
+  Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   lmbd = 1.
@@ -4822,9 +5139,7 @@ def _PmaxPT_qnss(
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
-    Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(
-      Pk, Tk, yi, xi,
-    )
+    Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
@@ -4843,21 +5158,35 @@ def _PmaxPT_qnss(
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
+    sx = eos.getPT_PID(Pk, Tk, xi)
+    sy = eos.getPT_PID(Pk, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
-    return SatResult(Pk, Tk, yji, Zj, sj)
+    return SatResult(2, Pk, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The QNSS-method for cricondenbar calculation terminates unsuccessfully. "
     "EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\nkvi0 = %s\n"
@@ -4872,18 +5201,19 @@ def _PmaxPT_qnss(
 
 
 def _PmaxPT_newtC(
-  P0: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosPmaxPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: Scalar = 1.,
-  Pupp: Scalar = 1e8,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  Plow: float = 1.,
+  Pupp: float = 1e8,
+  linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates the cricondenbar point by solving a system
@@ -4903,67 +5233,74 @@ def _PmaxPT_newtC(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the cricondenbar pressure [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the cricondenbar temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to temperature as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`,
 
@@ -4973,7 +5310,7 @@ def _PmaxPT_newtC(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -4981,7 +5318,7 @@ def _PmaxPT_newtC(
     The maximum number of equilibrium equation solver iterations.
     Default is `30`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation and the cricondenbar equation solvers
     successfully if the absolute value of the equation is less than
     `tol_tpd`. Default is `1e-8`.
@@ -4990,16 +5327,16 @@ def _PmaxPT_newtC(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `10`.
 
-  Plow: Scalar
+  Plow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1.0` [Pa].
 
-  Pupp: Scalar
+  Pupp: float
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `1e8` [Pa].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
@@ -5043,9 +5380,9 @@ def _PmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Plow, Pupp, True,
+    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, True,
   )
-  Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
+  Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
@@ -5053,7 +5390,7 @@ def _PmaxPT_newtC(
             dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
   logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   while repeat and k < maxiter:
-    dlnphixidnj = eos.getPT_Z_lnphii_dnj(Pk, Tk, xi, n)[3]
+    dlnphixidnj = eos.getPT_Z_lnphii_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
       dlnki = linsolver(J, -gi)
@@ -5066,9 +5403,7 @@ def _PmaxPT_newtC(
     n = ni.sum()
     xi = ni / n
     Pk = solverTPDeq(Pk, Tk, yi, xi)
-    Tk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(
-      Pk, Tk, yi, xi,
-    )
+    Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, Tk, yi, xi)
     gi = lnki + lnphixi - lnphiyi
     TPD = xi.dot(gi - np.log(n))
     g2 = gi.dot(gi)
@@ -5077,21 +5412,35 @@ def _PmaxPT_newtC(
               dTPDdT < -tol_tpd or dTPDdT > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdT)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
+    sx = eos.getPT_PID(Pk, Tk, xi)
+    sy = eos.getPT_PID(Pk, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
-    logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(Pk, Tk, yji, Zj, sj)
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
+    logger.info('The cricondenbar: P = %.1f Pa, T = %.2f K.', Pk, Tk)
+    return SatResult(2, Pk, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (C-form) for cricondenbar calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\nyi = %s\n"
@@ -5117,71 +5466,75 @@ class TmaxPT(TsatPT):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of
+        of components with respect to pressure as a `Vector[Double]` of
         shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to pressure as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
     If the solution method would be `'newton'` then it also must have:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -5255,21 +5608,31 @@ class TmaxPT(TsatPT):
       raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
 
-  def run(self, P: Scalar, T: Scalar, yi: Vector) -> SatResult:
+  def run(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+    upper: bool = True,
+  ) -> SatResult:
     """Performs the cricindentherm point calculation for a mixture. To
     improve an initial guess of temperature, the preliminary search is
     performed.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Initial guess of the cricondentherm pressure [Pa].
 
-    T: Scalar
+    T: float
       Initial guess of the cricondentherm temperature [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    n: float
+      Number of moles of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
@@ -5293,18 +5656,18 @@ class TmaxPT(TsatPT):
       cricondentherm calculation procedure terminates unsuccessfully.
     """
     T0, kvi0, Tlow, Tupp = self.initialize(P, T, yi, True)
-    return self.solver(P, T0, yi, kvi0, Tlow=Tlow, Tupp=Tupp)
+    return self.solver(P, T0, yi, n, kvi0, Tlow=Tlow, Tupp=Tupp)
 
 
 def _TmaxPT_solve_TPDeq_T(
-  P: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  xi: Vector,
+  P: float,
+  T0: float,
+  yi: Vector[Double],
+  xi: Vector[Double],
   eos: EosTmaxPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-) -> Scalar:
+) -> float:
   """Solves the TPD-equation for temperature at a constant pressure
   using the PT-based equations of state. The TPD-equation is the
   equation of equality to zero of the tangent-plane distance functon.
@@ -5312,35 +5675,36 @@ def _TmaxPT_solve_TPDeq_T(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of a mixture [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess for temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
+  xi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the equation is less
     than `tol`. Default is `1e-8`.
 
@@ -5356,8 +5720,8 @@ def _TmaxPT_solve_TPDeq_T(
   k = 0
   Tk = T0
   lnkvi = np.log(xi / yi)
-  sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
-  sx, Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
+  Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
+  Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
   TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
   # print(tmpl % (k, Tk, TPD))
   while (TPD < -tol or TPD > tol) and k < maxiter:
@@ -5366,22 +5730,22 @@ def _TmaxPT_solve_TPDeq_T(
     k += 1
     # Tk -= TPD / dTPDdT
     Tk *= np.exp(-TPD / dTPDdlnT)
-    sy, Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
-    sx, Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
+    Zy, lnphiyi, dlnphiyidT = eos.getPT_Z_lnphii_dT(P, Tk, yi)
+    Zx, lnphixi, dlnphixidT = eos.getPT_Z_lnphii_dT(P, Tk, xi)
     TPD = xi.dot(lnkvi + lnphixi - lnphiyi)
     # print(tmpl % (k, Tk, TPD))
   return Tk
 
 
 def _TmaxPT_solve_dTPDdPeq_P(
-  P0: Scalar,
-  T: Scalar,
-  yi: Vector,
-  xi: Vector,
+  P0: float,
+  T: float,
+  yi: Vector[Double],
+  xi: Vector[Double],
   eos: EosTmaxPT,
-  tol: Scalar = 1e-8,
+  tol: float = 1e-8,
   maxiter: int = 10,
-) -> tuple[Scalar, Vector, Vector, Scalar, Scalar]:
+) -> tuple[float, float, float, Vector[Double], Vector[Double], float]:
   """Solves the cricondentherm equation using the PT-based equations of
   state for pressure at a constant temperature. The cricondentherm
   equation is the equation of equality to zero of the partial derivative
@@ -5390,42 +5754,42 @@ def _TmaxPT_solve_dTPDdPeq_P(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess for pressure [Pa].
 
-  T: Scalar
+  T: float
     Temperature of a mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the mixture.
 
-  xi: Vector, shape (Nc,)
+  xi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components in the trial phase.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP_d2P(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of
+        of components with respect to pressure as a `Vector[Double]` of
         shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to pressure as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
   maxiter: int
     The maximum number of iterations. Default is `10`.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the relative
     pressure change is less than `tol`. Default is `1e-8`.
 
@@ -5433,8 +5797,6 @@ def _TmaxPT_solve_dTPDdPeq_P(
   -------
   A tuple of:
   - the root (pressure) of the cricondentherm equation,
-  - the designated phase for the trial composition,
-  - the designated phase for the real composition,
   - compressibility factors for both (trial and real) mixtures,
   - an array of the natural logarithms of fugacity coefficients of
     components in the trial phase,
@@ -5445,12 +5807,8 @@ def _TmaxPT_solve_dTPDdPeq_P(
   # tmpl = '%3s%10.2e%10.2e'
   k = 0
   Pk = P0
-  sy, Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_d2P(
-    Pk, T, yi,
-  )
-  sx, Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_d2P(
-    Pk, T, xi,
-  )
+  Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_d2P(Pk, T, yi)
+  Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_d2P(Pk, T, xi)
   eq = xi.dot(dlnphixidP - dlnphiyidP)
   deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
   dP = -eq / deqdP
@@ -5458,31 +5816,32 @@ def _TmaxPT_solve_dTPDdPeq_P(
   while np.abs(dP) / Pk > tol and k < maxiter:
     k += 1
     Pk += dP
-    sy, Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_d2P(
+    Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_d2P(
       Pk, T, yi,
     )
-    sx, Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_d2P(
+    Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_d2P(
       Pk, T, xi,
     )
     eq = xi.dot(dlnphixidP - dlnphiyidP)
     deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
     dP = -eq / deqdP
     # print(tmpl % (k, Pk, eq))
-  return Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, eq
+  return Pk, Zx, Zy, lnphixi, lnphiyi, eq
 
 
 def _TmaxPT_ss(
-  P0: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTmaxPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 200,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
   densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondentherm
@@ -5504,53 +5863,62 @@ def _TmaxPT_ss(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the cricondentherm pressure [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the cricondentherm temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of
+        of components with respect to pressure as a `Vector[Double]` of
         shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to pressure as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -5560,7 +5928,7 @@ def _TmaxPT_ss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -5568,7 +5936,7 @@ def _TmaxPT_ss(
     The maximum number of equilibrium equation solver iterations.
     Default is `200`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Terminate the
     cricondentherm equation solver successfully if the absolute value
@@ -5579,11 +5947,11 @@ def _TmaxPT_ss(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `10`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `973.15` [K].
 
@@ -5624,11 +5992,9 @@ def _TmaxPT_ss(
   ni = ki * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
+    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, True,
   )
-  Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(
-    P0, Tk, yi, xi,
-  )
+  Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
@@ -5643,9 +6009,7 @@ def _TmaxPT_ss(
     n = ni.sum()
     xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
-    Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(
-      Pk, Tk, yi, xi,
-    )
+    Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
@@ -5654,21 +6018,35 @@ def _TmaxPT_ss(
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
+    sx = eos.getPT_PID(Pk, Tk, xi)
+    sy = eos.getPT_PID(Pk, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(Pk, Tk, yji, Zj, sj)
+    return SatResult(2, Pk, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The SS-method for cricondentherm calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
@@ -5683,18 +6061,19 @@ def _TmaxPT_ss(
 
 
 def _TmaxPT_qnss(
-  P0: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTmaxPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 30.,
-  tol_tpd: Scalar = 1e-8,
+  lmbdmax: float = 30.,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
   densort = True,
 ) -> SatResult:
   """Quasi-Newton Successive substitution (QNSS) method for the
@@ -5719,53 +6098,62 @@ def _TmaxPT_qnss(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the cricondentherm pressure [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the cricondentherm temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of
+        of components with respect to pressure as a `Vector[Double]` of
         shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to pressure as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -5775,7 +6163,7 @@ def _TmaxPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -5783,10 +6171,10 @@ def _TmaxPT_qnss(
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `30.0`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Terminate the
     cricondentherm equation solver successfully if the absolute value
@@ -5797,11 +6185,11 @@ def _TmaxPT_qnss(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `10`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `973.15` [K].
 
@@ -5842,11 +6230,9 @@ def _TmaxPT_qnss(
   ni = ki * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
+    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, True,
   )
-  Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(
-    P0, Tk, yi, xi,
-  )
+  Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   lmbd = 1.
@@ -5869,9 +6255,7 @@ def _TmaxPT_qnss(
     n = ni.sum()
     xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
-    Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(
-      Pk, Tk, yi, xi,
-    )
+    Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
@@ -5890,21 +6274,35 @@ def _TmaxPT_qnss(
       if lmbd > lmbdmax:
         lmbd = lmbdmax
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
+    sx = eos.getPT_PID(Pk, Tk, xi)
+    sy = eos.getPT_PID(Pk, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(Pk, Tk, yji, Zj, sj)
+    return SatResult(2, Pk, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "The QNSS-method for cricondentherm calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
@@ -5919,18 +6317,19 @@ def _TmaxPT_qnss(
 
 
 def _TmaxPT_newtC(
-  P0: Scalar,
-  T0: Scalar,
-  yi: Vector,
-  kvi0: Vector,
+  P0: float,
+  T0: float,
+  yi: Vector[Double],
+  n: float,
+  kvi0: Vector[Double],
   eos: EosTmaxPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  tol_tpd: Scalar = 1e-8,
+  tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: Scalar = 173.15,
-  Tupp: Scalar = 973.15,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  Tlow: float = 173.15,
+  Tupp: float = 973.15,
+  linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates the cricondenthern point by solving a
@@ -5951,67 +6350,75 @@ def _TmaxPT_newtC(
 
   Parameters
   ----------
-  P0: Scalar
+  P0: float
     Initial guess of the cricondentherm pressure [Pa].
 
-  T0: Scalar
+  T0: float
     Initial guess of the cricondentherm temperature [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvi0: Vector, shape (Nc,)
+  n: float
+    Number of moles of the mixture [mol].
+
+  kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to temperature as a `Vector` of shape `(Nc,)`.
+        with respect to temperature as a `Vector[Double]` of shape
+        `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of
+        of components with respect to pressure as a `Vector[Double]` of
         shape `(Nc,)`,
       - second partial derivatives of logarithms of fugacity
         coefficients of components with respect to pressure as a
-        `Vector` of shape `(Nc,)`.
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       An array of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -6021,7 +6428,7 @@ def _TmaxPT_newtC(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
 
@@ -6029,7 +6436,7 @@ def _TmaxPT_newtC(
     The maximum number of equilibrium equation solver iterations.
     Default is `30`.
 
-  tol_tpd: Scalar
+  tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. Terminate the
     cricondentherm equation solver successfully if the absolute value
@@ -6040,16 +6447,16 @@ def _TmaxPT_newtC(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `10`.
 
-  Tlow: Scalar
+  Tlow: float
     The lower bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `173.15` [K].
 
-  Tupp: Scalar
+  Tupp: float
     The upper bound for the TPD-equation solver. This parameter is used
     only at the zeroth iteration. Default is `973.15` [K].
 
-  linsolver: Callable[[Matrix, Vector], Vector]
-    A function that accepts a matrix `A` of shape `(Nc, Nc)` and
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
@@ -6093,11 +6500,9 @@ def _TmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    P0, T0, yi, xi, eos, tol_tpd, maxiter_tpd, Tlow, Tupp, True,
+    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, True,
   )
-  Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(
-    P0, Tk, yi, xi,
-  )
+  Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnki + lnphixi - lnphiyi
   g2 = gi.dot(gi)
   repeat = (g2 > tol or
@@ -6105,7 +6510,7 @@ def _TmaxPT_newtC(
             dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
   logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   while repeat and k < maxiter:
-    dlnphixidnj = eos.getPT_Z_lnphii_dnj(Pk, Tk, xi, n)[3]
+    dlnphixidnj = eos.getPT_Z_lnphii_dnj(Pk, Tk, xi, n)[2]
     J = I + ni * dlnphixidnj
     try:
       dlnki = linsolver(J, -gi)
@@ -6118,9 +6523,7 @@ def _TmaxPT_newtC(
     n = ni.sum()
     xi = ni / n
     Tk = solverTPDeq(Pk, Tk, yi, xi)
-    Pk, sx, sy, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(
-      Pk, Tk, yi, xi,
-    )
+    Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(Pk, Tk, yi, xi)
     gi = lnki + lnphixi - lnphiyi
     g2 = gi.dot(gi)
     TPD = xi.dot(gi - np.log(n))
@@ -6129,21 +6532,35 @@ def _TmaxPT_newtC(
               dTPDdP < -tol_tpd or dTPDdP > tol_tpd)
     logger.debug(tmpl, k, *lnki, Pk, Tk, g2, TPD, dTPDdP)
   if not repeat and np.isfinite(g2) and np.isfinite(Pk) and np.isfinite(Tk):
+    sx = eos.getPT_PID(Pk, Tk, xi)
+    sy = eos.getPT_PID(Pk, Tk, yi)
     if densort:
       if yi.dot(eos.mwi) / Zy < xi.dot(eos.mwi) / Zx:
         yji = np.vstack([yi, xi])
         Zj = np.array([Zy, Zx])
         sj = np.array([sy, sx])
+        fj = np.array([1., 0.])
+        nj = np.array([n, 0.])
+        kvji = np.atleast_2d(1. / ki)
       else:
         yji = np.vstack([xi, yi])
         Zj = np.array([Zx, Zy])
         sj = np.array([sx, sy])
+        fj = np.array([0., 1.])
+        nj = np.array([0., n])
+        kvji = np.atleast_2d(ki)
     else:
       yji = np.vstack([yi, xi])
       Zj = np.array([Zy, Zx])
       sj = np.array([sy, sx])
+      fj = np.array([1., 0.])
+      nj = np.array([n, 0.])
+      kvji = np.atleast_2d(1. / ki)
+    RTP = R * Tk / Pk
+    vj = Zj * RTP
+    V = n * Zy * RTP
     logger.info('The cricondentherm: P = %.1f Pa, T = %.2f K', Pk, Tk)
-    return SatResult(Pk, Tk, yji, Zj, sj)
+    return SatResult(2, Pk, Tk, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Newton's method (C-form) for cricondentherm calculation terminates "
     "unsuccessfully. EOS: %s.\nParameters:\nP0 = %s Pa\nT0 = %s K\n"
@@ -6157,72 +6574,72 @@ def _TmaxPT_newtC(
   )
 
 
-@dataclass
+@dataclass(eq=False, slots=True)
 class EnvelopeResult(object):
   """Container for phase envelope calculation outputs with
   pretty-printing.
 
   Attributes
   ----------
-  Pk: Vector, shape (Ns,)
+  Pk: Vector[Double], shape (Ns,)
     This array includes pressures [Pa] of the phase envelope that
     consists of `Ns` states (points).
 
-  Tk: Vector, shape (Ns,)
+  Tk: Vector[Double], shape (Ns,)
     This array includes temperatures [K] of the phase envelope that
     consists of `Ns` states (points).
 
-  kvki: Matrix, shape (Ns, Nc)
+  kvki: Matrix[Double], shape (Ns, Nc)
     Equilibrium k-values of components along the phase envelope.
 
-  Zkj: Matrix, shape (Ns, Np)
+  Zkj: Matrix[Double], shape (Ns, Np)
     This two-dimensional array represents compressibility factors of
     phases that are in equilibrium along the `Np`-phase envelope
     consisting of `Ns` states (points).
 
-  Pc: list[Scalar] | None
+  Pc: Vector[Double] | None
     Pressure(s) of critical point(s) [Pa]. If there are no critical
     points, this attribute will be `None`.
 
-  Tc: list[Scalar] | None
+  Tc: Vector[Double] | None
     Temperature(s) of critical point(s) [K]. If there are no critical
     points, this attribute will be `None`.
 
-  Pcb: list[Scalar] | None
+  Pcb: Vector[Double] | None
     Pressure(s) of cricondenbar point(s) [Pa]. If there are no
     cricondenbars, this attribute will be `None`.
 
-  Tcb: list[Scalar] | None
+  Tcb: Vector[Double] | None
     Temperature(s) of cricondenbar point(s) [K]. If there are no
     cricondenbars, this attribute will be `None`.
 
-  Pct: list[Scalar] | None
+  Pct: Vector[Double] | None
     Pressure(s) of cricondentherm point(s) [Pa]. If there are no
     cricondentherms, this attribute will be `None`.
 
-  Tct: list[Scalar] | None
+  Tct: Vector[Double] | None
     Temperature(s) of cricondentherm point(s) [K]. If there are no
     cricondentherms, this attribute will be `None`.
   """
-  Pk: Vector
-  Tk: Vector
-  kvki: Matrix
-  Zkj: Matrix
-  Pc: Optional[list[Scalar]] = None
-  Tc: Optional[list[Scalar]] = None
-  Pcb: Optional[list[Scalar]] = None
-  Tcb: Optional[list[Scalar]] = None
-  Pct: Optional[list[Scalar]] = None
-  Tct: Optional[list[Scalar]] = None
+  Pk: Vector[Double]
+  Tk: Vector[Double]
+  kvki: Matrix[Double]
+  Zkj: Matrix[Double]
+  Pc: Vector[Double] | None = None
+  Tc: Vector[Double] | None = None
+  Pcb: Vector[Double] | None = None
+  Tcb: Vector[Double] | None = None
+  Pct: Vector[Double] | None = None
+  Tct: Vector[Double] | None = None
 
   def __repr__(self) -> str:
-    with np.printoptions(linewidth=np.inf):
+    with np.printoptions(linewidth=1024):
       return (f"Critical point: {self.Pc} Pa, {self.Tc} K\n"
               f"Cricondenbar: {self.Pcb} Pa, {self.Tcb} K\n"
               f"Cricondentherm: {self.Pct} Pa, {self.Tct} K\n")
 
 
-def _env2pPT_step(Niter: int, dx: Vector) -> Scalar:
+def _env2pPT_step(Niter: int, dx: Vector[Double]) -> float:
   """Function for step control in the phase envelope construction
   procedure. The step size miltipliers were taken from the paper of
   L. Xu (doi: 10.1016/j.geoen.2023.212058).
@@ -6232,7 +6649,7 @@ def _env2pPT_step(Niter: int, dx: Vector) -> Scalar:
   Niter: int
     The number of iterations required to achieve the current solution.
 
-  dx: Vector, shape (Nc + 2,)
+  dx: Vector[Double], shape (Nc + 2,)
     Basic variables change between previous and current solutions.
 
   Returns
@@ -6263,8 +6680,8 @@ class env2pPT(object):
   for multicomponent mixtures. Fluid Phase Equilibria. 1980. Volume 4.
   Issues 1 - 2. Pages 1 - 10. DOI: 10.1016/0378-3812(80)80001-X.
 
-  2. M.L. Michelsen. A simple method for calculation of approximate phase
-  boundaries. 1994. Volume 98. Pages 1 - 11. DOI:
+  2. M.L. Michelsen. A simple method for calculation of approximate
+  phase boundaries. 1994. Volume 98. Pages 1 - 11. DOI:
   10.1016/0378-3812(94)80104-5 .
 
   The algorithm starts with the first saturation pressure calculation
@@ -6287,122 +6704,125 @@ class env2pPT(object):
     all, it should contain methods for the first saturation pressure
     calculation:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`.
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
     If the solution method of the first saturation pressure calculation
     would be `'newton'` then it also must have:
 
-    - `getPT_Z_lnphii_dP_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition,
-      this method must return a tuple of:
+    - `getPT_Z_lnphii_dP_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector` of shape `(Nc,)`,
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to mole numbers of components as a `Matrix` of
-        shape `(Nc, Nc)`.
+        with respect to mole numbers of components as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     The `flash2pPT` class is used to perform the preliminary search for
     the specified phase mole fraction. If the solution method for flash
     calculations would be one of `'newton'`, `'ss-newton'` or
     `'qnss-newton'` then the instance of an EOS also must have:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     The solution of the phase envelope equations relies on Newton's
     method, for which the Jacobian is constructed using the partial
     derivatives calculated by the following method.
 
-    - `getPT_Z_lnphii_dP_dT_dyj(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_Z_lnphii_dP_dT_dyj(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the phase compressibility factor of the mixture,
       - logarithms of fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of shape
-        `(Nc,)`,
+        of components with respect to pressure as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole fractions without taking into
-        account the mole fraction constraint as a `Matrix` of shape
-        `(Nc, Nc)`.
+        account the mole fraction constraint as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     For solving equations that describe the approximate phase envelope,
     the following partial derivatives are required from the initialized
     instance of an EOS:
 
-    - `getPT_Z_lnphii_dP_dT(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_Z_lnphii_dP_dT(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the phase compressibility factor of the mixture,
       - logarithms of fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of shape
-        `(Nc,)`,
+        of components with respect to pressure as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`.
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -6437,22 +6857,22 @@ class env2pPT(object):
 
     Default is `'newton'`.
 
-  Pmin: Scalar
+  Pmin: float
     The minimum pressure [Pa] for phase envelope construction.
     This limit is also used by the saturation point solver. Default is
     `1.0` [Pa].
 
-  Pmax: Scalar
+  Pmax: float
     The maximum pressure [Pa] for phase envelope construction.
     This limit is also used by the saturation point solver. Default is
     `1e8` [Pa].
 
-  Tmin: Scalar
+  Tmin: float
     The minimum temperature [K] for phase envelope construction.
     This limit is also used by the saturation point solver. Default is
     `173.15` [K].
 
-  Tmax: Scalar
+  Tmax: float
     The maximum temperature [K] for phase envelope construction.
     This limit is also used by the saturation point solver. Default is
     `937.15` [K].
@@ -6491,10 +6911,10 @@ class env2pPT(object):
     eos: EosEnv2pPT,
     approx: bool = False,
     method: str = 'newton',
-    Pmin: Scalar = 1.,
-    Pmax: Scalar = 1e8,
-    Tmin: Scalar = 173.15,
-    Tmax: Scalar = 973.15,
+    Pmin: float = 1.,
+    Pmax: float = 1e8,
+    Tmin: float = 173.15,
+    Tmax: float = 973.15,
     stopunstab: bool = False,
     stabkwargs: dict = {},
     psatkwargs: dict = {},
@@ -6535,33 +6955,34 @@ class env2pPT(object):
 
   def run(
     self,
-    P0: Scalar,
-    T0: Scalar,
-    yi: Vector,
-    Fv: Scalar,
+    P0: float,
+    T0: float,
+    yi: Vector[Double],
+    f: float,
     sidx0: int | None = None,
-    step0: Scalar = 0.01,
-    fstep: Callable[[int, Vector], Scalar] = _env2pPT_step,
-    maxstep: Scalar = 0.25,
-    switchmult: Scalar = 0.5,
-    unconvmult: Scalar = 0.75,
+    step0: float = 0.01,
+    fstep: Callable[[int, Vector[Double]], float] = _env2pPT_step,
+    maxstep: float = 0.25,
+    switchmult: float = 0.5,
+    unconvmult: float = 0.75,
     maxrepeats: int = 8,
     maxpoints: int = 200,
   ) -> EnvelopeResult:
-    """This method should be used to calculate the entire phase envelope.
+    """This method should be used to calculate the entire phase
+    envelope.
 
     Parameters
     ----------
-    P0: Scalar
+    P0: float
       Initial guess of the saturation pressure [Pa].
 
-    T0: Scalar
+    T0: float
       Initial guess of the saturation temperature [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components in the mixture.
 
-    Fv: Scalar
+    f: float
       Phase mole fraction for which the envelope is needed.
 
     sidx0: int | None
@@ -6587,21 +7008,21 @@ class env2pPT(object):
       component on the bubble point line and the most volatile component
       on the dew point line. Default is `None`.
 
-    step0: Scalar
+    step0: float
       The step size (the difference between two subsequent values of a
       specified variable) for iteration zero. It should be small enough
       to consider the saturation point found at the zeroth iteration as
       a good initial guess for the next saturation point calculation.
       Default is `0.01`.
 
-    fstep: Callable[[int, Vector], Scalar]
+    fstep: Callable[[int, Vector[Double]], float]
       Function for step control in the phase envelope construction
       procedure. It should accept the number of iterations and basic
       variables change between previous and current solutions as a
-      `Vector` of shape `(Nc + 2,)` and return the step size
+      `Vector[Double]` of shape `(Nc + 2,)` and return the step size
       multiplier. Default is `_env2pPT_step`.
 
-    maxstep: Scalar
+    maxstep: float
       The step size in the phase envelope construction procedure cannot
       be greater than the value specified by the `maxstep` parameter.
       Default is `0.25`.
@@ -6614,11 +7035,11 @@ class env2pPT(object):
       too big, then there is a risk that an initial guess generated by
       cubic or linear extrapolation will not be good enough.
 
-    switchmult: Scalar
+    switchmult: float
       The step size multiplier is implemented if the specified variable
       is changed. Default is `0.5`.
 
-    unconvmult: Scalar
+    unconvmult: float
       The step size multiplier is implemented if the solution is not
       found for the specified variable value. Default is `0.75`.
 
@@ -6655,11 +7076,12 @@ class env2pPT(object):
         'numerical settings can also be helpful.'
       )
     kvji0 = psres.yji[0] / psres.yji[1], psres.yji[1] / psres.yji[0]
-    P, flash = self.search(psres.P, T0, yi, Fv, kvji0)
-    F = np.abs(flash.Fj[0])
+    P, flash = self.search(psres.P, T0, yi, f, kvji0)
+    assert flash.kvji is not None
+    f = np.abs(flash.fj[0])
     xi = np.log(np.hstack([flash.kvji[0], P, T0]))
 
-    logger.info('Constructing the phase envelope for F = %.3f.', F)
+    logger.info('Constructing the phase envelope for f = %.3f.', f)
     Nc = self.eos.Nc
     Ncp2 = Nc + 2
     xki = np.zeros(shape=(maxpoints * 2, Ncp2))
@@ -6671,9 +7093,9 @@ class env2pPT(object):
     B = np.empty(shape=(4, Ncp2))
     mdgds = np.zeros(shape=(Ncp2,))
     mdgds[-1] = 1.
-    crits = []
-    crcbars = []
-    crctrms = []
+    crits: list[Vector[Double]] = []
+    crcbars: list[Vector[Double]] = []
+    crctrms: list[Vector[Double]] = []
 
     logger.info(
       '%4s%5s%6s%8s%5s%10s' + Nc * '%9s' + '%9s%8s',
@@ -6685,15 +7107,16 @@ class env2pPT(object):
     c = 0
     cmax = maxpoints - 1
     k = cmax
+    s0_idx: int | Integer
     if sidx0 is None:
-      if F > .5:
+      if f > .5:
         s0_idx = np.argmax(flash.kvji[0])
       else:
         s0_idx = np.argmin(flash.kvji[0])
     else:
       s0_idx = sidx0
     s0_val = xi[s0_idx]
-    x0, Z0j, J0, nit, flg = self.solver(xi, s0_idx, s0_val, yi, F)
+    x0, Z0j, J0, nit, flg = self.solver(xi, s0_idx, s0_val, yi, f)
     if flg:
       logger.info(tmpl, c, 0, nit, 0., s0_idx, s0_val, *x0)
       xki[k] = x0
@@ -6729,7 +7152,7 @@ class env2pPT(object):
             'The maximum number of step repeats has been reached.'
           )
           break
-        xkp1, Zj, Jkp1, nit, flg = self.solver(xi, skp1_idx, skp1_val, yi, F)
+        xkp1, Zj, Jkp1, nit, flg = self.solver(xi, skp1_idx, skp1_val, yi, f)
         if flg:
           r = 0
           xkm1 = xk
@@ -6818,23 +7241,23 @@ class env2pPT(object):
     Tk = np.exp(xki[slc, -1])
     lnkvki = xki[slc, :Nc]
     if crits:
-      crits = np.exp(crits)
-      Pc = crits[:, 0]
-      Tc = crits[:, 1]
+      _crits = np.exp(crits)
+      Pc = _crits[:, 0]
+      Tc = _crits[:, 1]
     else:
       Pc = None
       Tc = None
     if crcbars:
-      crcbars = np.exp(crcbars)
-      Pcb = crcbars[:, 0]
-      Tcb = crcbars[:, 1]
+      _crcbars = np.exp(crcbars)
+      Pcb = _crcbars[:, 0]
+      Tcb = _crcbars[:, 1]
     else:
       Pcb = None
       Tcb = None
     if crctrms:
-      crctrms = np.exp(crctrms)
-      Pct = crctrms[:, 0]
-      Tct = crctrms[:, 1]
+      _crctrms = np.exp(crctrms)
+      Pct = _crctrms[:, 0]
+      Tct = _crctrms[:, 1]
     else:
       Pct = None
       Tct = None
@@ -6843,39 +7266,39 @@ class env2pPT(object):
 
   def search(
     self,
-    Pmax: Scalar,
-    T: Scalar,
-    yi: Vector,
-    Fv: Scalar,
-    kvji0: Iterable[Vector] | None = None,
-    Pmin: Scalar = 101325.,
+    Pmax: float,
+    T: float,
+    yi: Vector[Double],
+    f: float,
+    kvji0: Sequence[Vector[Double]] | None = None,
+    Pmin: float = 101325.,
     Npoints: int = 100,
-  ) -> tuple[Scalar, FlashResult]:
+  ) -> tuple[float, FlashResult]:
     """The preliminary search is conducted to identify an initial guess
     that is close to the specified phase mole fraction by performing
     flash calculations along the pressure axis.
 
     Parameters
     ----------
-    Pmax: Scalar
+    Pmax: float
       The upper bound of the pressure interval. As a general rule, it
       should be equal to the saturation pressure for a given temperature
       and composition.
 
-    T: Scalar
+    T: float
       Temperature of the mixture.
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of components in the mixture.
 
-    Fv: Scalar
+    f: float
       Phase mole fraction close to which the initial guess is needed.
 
-    kvji0: Iterable[Vector] | None
-      An iterable object of initial guesses of k-values for flash
-      calculations. Default is `None`.
+    kvji0: Sequence[Vector[Double]] | None
+      A sequence of initial guesses of k-values for flash calculations.
+      Default is `None`.
 
-    Pmin: Scalar
+    Pmin: float
       The lower bound of the pressure interval. Default is
       `101325.0` [Pa].
 
@@ -6892,15 +7315,14 @@ class env2pPT(object):
     """
     PP = np.linspace(Pmax, Pmin, Npoints, endpoint=True)
     flashs = []
-    Fvs = []
+    fs = []
     for P in PP:
-      flash = self.flashsolver.run(P, T, yi, kvji0)
+      flash = self.flashsolver.run(P, T, yi, kvji0=kvji0)
       flashs.append(flash)
-      Fvs.append(flash.Fj[0])
-      if np.isclose(flash.Fj, Fv).any():
+      fs.append(flash.fj[0])
+      if np.isclose(flash.fj, f).any():
         return P, flash
-    Fvs = np.array(Fvs)
-    idx = np.argmin(np.abs(Fvs - Fv))
+    idx = np.argmin(np.abs(np.array(fs) - f))
     return PP[idx], flashs[idx]
 
   @staticmethod
@@ -6928,40 +7350,40 @@ class env2pPT(object):
 
 
 def _env2pPT(
-  x0: Vector,
-  sidx: int,
-  sval: Scalar,
-  yi: Vector,
-  Fv: Scalar,
+  x0: Vector[Double],
+  sidx: int | Integer,
+  sval: float,
+  yi: Vector[Double],
+  f: float,
   eos: EosEnv2pPT,
-  tolres: Scalar = 1e-12,
-  tolvar: Scalar = 1e-14,
+  tolres: float = 1e-12,
+  tolvar: float = 1e-14,
   maxiter: int = 5,
   miniter: int = 0,
-  lnPmin: Scalar = 0.,
-  lnPmax: Scalar = 18.42,
-  lnTmin: Scalar = 5.154,
-  lnTmax: Scalar = 6.881,
-) -> tuple[Vector, Vector, Matrix, int, bool]:
+  lnPmin: float = 0.,
+  lnPmax: float = 18.42,
+  lnTmin: float = 5.154,
+  lnTmax: float = 6.881,
+) -> tuple[Vector[Double], Vector[Double], Matrix[Double], int, bool]:
   """Sovles phase envelope equations using Newton's method.
 
   Parameters
   ----------
-  x0: Vector, shape (Nc + 2,)
+  x0: Vector[Double], shape (Nc + 2,)
     Initial guess of basic variables. The array of basic variables
     includes:
       - `Nc` natural logarithms of k-values of components,
       - the natural logarithm of pressure,
       - the natural logarithm of temperature.
 
-  sidx: int
+  sidx: int | Integer
     The specified variable index. The specified variable is considered
     known and fixed for the algorithm of saturation point determination.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of components in the mixture.
 
-  Fv: Scalar
+  f: float
     Phase mole fraction for which the phase envelope should be
     constructed.
 
@@ -6971,37 +7393,37 @@ def _env2pPT(
     Jacobian is constructed using the partial derivatives calculated by
     the following method:
 
-    - `getPT_Z_lnphii_dP_dT_dyj(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[Vector, Scalar, Vector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_Z_lnphii_dP_dT_dyj(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double], Vector[Double],
+       Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the phase compressibility factor of the mixture,
       - logarithms of fugacity coefficients of components as a
-        `Vector` of shape `(Nc,)`,
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to pressure as a `Vector` of shape
-        `(Nc,)`,
+        of components with respect to pressure as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        of components with respect to temperature as a `Vector` of
-        shape `(Nc,)`,
+        of components with respect to temperature as a `Vector[Double]`
+        of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole fractions without taking into
-        account the mole fraction constraint as a `Matrix` of shape
-        `(Nc, Nc)`.
+        account the mole fraction constraint as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
     - `Nc: int`
       The number of components in the system.
 
-  tolres: Scalar
+  tolres: float
     Terminate successfully if the norm of the phase envelope equations
     vector is less than `tolres`. Default is `1e-12`.
 
-  tolvar: Scalar
+  tolvar: float
     Terminate successfully if the sum of squared elements of the
     direction vector is less than `tolvar`. Default is `1e-14`.
 
@@ -7011,28 +7433,28 @@ def _env2pPT(
   miniter: int
     The minimum number of iterations. Default is `0`.
 
-  lnPmin: Scalar
+  lnPmin: float
     Minimum natural logarithm of pressure. Default is `0.0`.
 
-  lnPmax: Scalar
+  lnPmax: float
     Maximum natural logarithm of pressure. Default is `18.42`
     (~ 1e8 [Pa]).
 
-  lnTmin: Scalar
+  lnTmin: float
     Minimum natural logarithm of temperature. Default is `5.154`
     (~ 173.12 [K]).
 
-  lnTmax: Scalar
+  lnTmax: float
     Maximum natural logarithm of temperature. Default is `6.881`
     (~ 937.60 [K]).
 
   Returns
   -------
   A tuple that contains:
-  - the solution of the phase envelope equations as a `Vector` of shape
+  - the solution of the phase envelope equations as a `Vector[Double]` of shape
     `(Nc + 2,)`,
-  - compressibility factors of phases as a `Vector` of shape `(2,)`,
-  - jacobian (at the solution) as a `Matrix` of shape
+  - compressibility factors of phases as a `Vector[Double]` of shape `(2,)`,
+  - jacobian (at the solution) as a `Matrix[Double]` of shape
     `(Nc + 2, Nc + 2)`,
   - the number of iterations to converge,
   - a boolean flag indicating whether any of the solution conditions
@@ -7041,7 +7463,7 @@ def _env2pPT(
   Nc = eos.Nc
   logger.debug(
     'Solving the system of phase boundary equations for: '
-    'Fv = %.3f, sidx = %s, sval = %.4f', Fv, sidx, sval,
+    'f = %.3f, sidx = %s, sval = %.4f', f, sidx, sval,
   )
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s',
@@ -7060,18 +7482,18 @@ def _env2pPT(
   T = ex[-1]
   lnkvi = xk[:Nc]
   kvi = ex[:Nc]
-  di = 1. + Fv * (kvi - 1.)
+  di = 1. + f * (kvi - 1.)
   yli = yi / di
   yvi = kvi * yli
-  (_, Zv, lnphivi, dlnphividP,
+  (Zv, lnphivi, dlnphividP,
    dlnphividT, dlnphividyvj) = eos.getPT_Z_lnphii_dP_dT_dyj(P, T, yvi)
-  (_, Zl, lnphili, dlnphilidP,
+  (Zl, lnphili, dlnphilidP,
    dlnphilidT, dlnphilidylj) = eos.getPT_Z_lnphii_dP_dT_dyj(P, T, yli)
   g[:Nc] = lnkvi + lnphivi - lnphili
   g[Nc] = np.sum(yvi - yli)
   g[Nc+1] = xk[sidx] - sval
   gnorm = np.linalg.norm(g)
-  dylidlnkvi = -Fv * yvi / di
+  dylidlnkvi = -f * yvi / di
   dyvidlnkvi = yvi + kvi * dylidlnkvi
   J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
   J[-2,:Nc] = yvi / di
@@ -7099,18 +7521,18 @@ def _env2pPT(
     T = ex[-1]
     lnkvi = xk[:Nc]
     kvi = ex[:Nc]
-    di = 1. + Fv * (kvi - 1.)
+    di = 1. + f * (kvi - 1.)
     yli = yi / di
     yvi = kvi * yli
-    (_, Zv, lnphivi, dlnphividP,
+    (Zv, lnphivi, dlnphividP,
      dlnphividT, dlnphividyvj) = eos.getPT_Z_lnphii_dP_dT_dyj(P, T, yvi)
-    (_, Zl, lnphili, dlnphilidP,
+    (Zl, lnphili, dlnphilidP,
      dlnphilidT, dlnphilidylj) = eos.getPT_Z_lnphii_dP_dT_dyj(P, T, yli)
     g[:Nc] = lnkvi + lnphivi - lnphili
     g[Nc] = np.sum(yvi - yli)
     g[Nc+1] = xk[sidx] - sval
     gnorm = np.linalg.norm(g)
-    dylidlnkvi = -Fv * yvi / di
+    dylidlnkvi = -f * yvi / di
     dyvidlnkvi = yvi + kvi * dylidlnkvi
     J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
     J[-2,:Nc] = yvi / di
@@ -7126,27 +7548,27 @@ def _env2pPT(
 
 
 def _aenv2pPT(
-  x0: Vector,
-  alpha: Vector,
-  lnkpi: Vector,
-  Fv: Scalar,
-  zi: Vector,
+  x0: Vector[Double],
+  alpha: Vector[Double],
+  lnkpi: Vector[Double],
+  f: float,
+  zi: Vector[Double],
   eos: EosEnv2pPT,
-  tolres: Scalar = 1e-12,
-  tolvar: Scalar = 1e-14,
+  tolres: float = 1e-12,
+  tolvar: float = 1e-14,
   maxiter: int = 5,
   miniter: int = 1,
-  lnPmin: Scalar = 0.,
-  lnPmax: Scalar = 18.42,
-  lnTmin: Scalar = 5.154,
-  lnTmax: Scalar = 6.881,
-) -> tuple[Vector, Vector]:
+  lnPmin: float = 0.,
+  lnPmax: float = 18.42,
+  lnTmin: float = 5.154,
+  lnTmax: float = 6.881,
+) -> tuple[Vector[Double], Vector[Double]]:
   """
   """
   k = 0
   logger.debug(
     'Solving the system of equations of the approximate phase boundary for: '
-    'Fv = %.3f, alpha = %.3f', Fv, alpha,
+    'f = %.3f, alpha = %.3f', f, alpha,
   )
   logger.debug('%3s%9s%8s%10s%10s', 'Nit', 'lnP', 'lnT', 'gnorm', 'dx2')
   tmpl = '%3s %8.4f %7.4f %9.2e %9.2e'
@@ -7157,8 +7579,8 @@ def _aenv2pPT(
   xk = x0
   P = np.exp(xk[0])
   T = np.exp(xk[1])
-  lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_Z_lnphii_dP_dT(P, T, yi)
-  lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_Z_lnphii_dP_dT(P, T, zi)
+  Zy, lnphiyi, dlnphiyidP, dlnphiyidT = eos.getPT_Z_lnphii_dP_dT(P, T, yi)
+  Zz, lnphizi, dlnphizidP, dlnphizidT = eos.getPT_Z_lnphii_dP_dT(P, T, zi)
   di = lnkvi + lnphiyi - lnphizi
   g1 = yi.dot(di)
   g2 = zi.dot(di)
@@ -7173,10 +7595,10 @@ def _aenv2pPT(
   dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
   dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
   dx2 = dx.dot(dx)
-  proceed = (np.isfinite(dx2) and
-             (dx2 > tolvar and gnorm > tolres or k < miniter))
+  repeat = (np.isfinite(dx2) and
+            (dx2 > tolvar and gnorm > tolres or k < miniter))
   logger.debug(tmpl, k, *xk, gnorm, dx2)
-  while dx2 > tol and k < maxiter:
+  while repeat and k < maxiter:
     xkp1 = xk + dx
     if xkp1[0] > lnPmax:
       xk[0] = .5 * (xk[0] + lnPmax)
@@ -7193,8 +7615,8 @@ def _aenv2pPT(
     k += 1
     P = np.exp(xk[0])
     T = np.exp(xk[1])
-    lnphiyi, Zy, dlnphiyidP, dlnphiyidT = eos.getPT_Z_lnphii_dP_dT(P, T, yi)
-    lnphizi, Zz, dlnphizidP, dlnphizidT = eos.getPT_Z_lnphii_dP_dT(P, T, zi)
+    Zy, lnphiyi, dlnphiyidP, dlnphiyidT = eos.getPT_Z_lnphii_dP_dT(P, T,yi)
+    Zz, lnphizi, dlnphizidP, dlnphizidT = eos.getPT_Z_lnphii_dP_dT(P, T,zi)
     di = lnkvi + lnphiyi - lnphizi
     g1 = yi.dot(di)
     g2 = zi.dot(di)
@@ -7209,6 +7631,6 @@ def _aenv2pPT(
     dx[0] = D * (dg1dlnT * g2 - dg2dlnT * g1)
     dx[1] = D * (dg2dlnP * g1 - dg1dlnP * g2)
     dx2 = dx.dot(dx)
-    proceed = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
+    repeat = dx2 > tolvar and gnorm > tolres and np.isfinite(dx2)
     logger.debug(tmpl, k, *xk, gnorm, dx2)
   return np.hstack([lnkvi, xk]), np.array([Zy, Zz])

@@ -1,9 +1,5 @@
 import logging
 
-from dataclasses import (
-  dataclass,
-)
-
 import numpy as np
 
 from constants import (
@@ -11,46 +7,55 @@ from constants import (
 )
 
 from typing import (
-  Optional,
+  Protocol,
 )
 
-from custom_types import (
-  Scalar,
+from customtypes import (
+  Integer,
+  Double,
   Vector,
   Matrix,
   Tensor,
-  IVector,
 )
 
 
 logger = logging.getLogger('eos')
 
 
+class Eos(Protocol):
+  name: str
+  Nc: int
+  mwi: Vector[Double]
+
+
 class pr78(object):
   """Peng-Robinson (1978) equation of state.
 
-  Computes fugacities of components, the compressibility factor of the
-  mixture and their partial derivatives using the modified Peng-Robinson
-  equation of state.
+  This class can be used to compute fugacities of components, the
+  compressibility factor of a mixture and their partial derivatives
+  with respect to pressure, temperature and composition using the
+  modified Peng-Robinson equation of state. For the single root case,
+  phase designation (liquid or vapour identification) is based on the
+  paper of R. Gosset et al, 1986 (doi: 10.1016/0378-3812(86)85061-0).
 
   Parameters
   ----------
-  Pci: Vector, shape (Nc,)
+  Pci: Vector[Double], shape (Nc,)
     Critical pressures of `Nc` components [Pa].
 
-  Tci: Vector, shape (Nc,)
+  Tci: Vector[Double], shape (Nc,)
     Critical temperatures of `Nc` components [K].
 
-  wi: Vector, shape (Nc,)
+  wi: Vector[Double], shape (Nc,)
     Acentric factors of `Nc` components.
 
-  mwi: Vector, shape (Nc,)
+  mwi: Vector[Double], shape (Nc,)
     Molar weights of `Nc` components [kg/mol].
 
-  vsi: Vector, shape (Nc,)
+  vsi: Vector[Double], shape (Nc,)
     Volume shift parameters of `Nc` components
 
-  dij: Vector, shape (Nc * (Nc - 1) // 2,)
+  dij: Vector[Double], shape (Nc * (Nc - 1) // 2,)
     The lower triangle matrix of binary interaction coefficients
     of `Nc` components.
 
@@ -72,22 +77,46 @@ class pr78(object):
 
     Default is `0`.
 
-  purefrc: Scalar
+  purefrc: float
     This parameter governs the pure component model for initial
     k-values. It is the summarized mole fraction of other components
     in the trial phase except the specific component. Must be greater
     than zero and lower than one. Default is `1e-8`.
+
+  phaseid: str
+    The phase designation method. Should be one of:
+
+    - `'wilson'` (use Wilson's k-values),
+    - `'vcTc'` (use pseudo-critical volume and temperature),
+    - `'dadT'` (use the derivative with respect to temperature of
+                the thermal expansion coefficient),
+    - `'pip'` (use the complex parameter; for the details, see the
+               paper of G. Venkatarathnam and L.R. Oellrich, 2011
+               (doi: 10.1016/j.fluid.2010.12.001)).
+
+    Default is `'wilson'`. For the details of available phase
+    identification methods, see the paper of J. Bennett and K.A.G.
+    Schmidt, 2016 (doi: 10.1021/acs.energyfuels.6b02316). The above
+    mentioned methods are listed in the order of the complexity
+    increase.
+
+  vci: Vector[Double] | None, shape (Nc,)
+    Critical molar volumes [m3/mol] of `Nc` components. Default is
+    `None` which means that they will be calculated using the
+    critical compressibility factor of the EOS (0.3074...).
   """
   def __init__(
     self,
-    Pci: Vector,
-    Tci: Vector,
-    wi: Vector,
-    mwi: Vector,
-    vsi: Vector,
-    dij: Vector,
+    Pci: Vector[Double],
+    Tci: Vector[Double],
+    wi: Vector[Double],
+    mwi: Vector[Double],
+    vsi: Vector[Double],
+    dij: Vector[Double],
     kvlevel: int = 0,
-    purefrc: Scalar = 1e-8,
+    purefrc: float = 1e-8,
+    phaseid: str = 'wilson',
+    vci: Vector[Double] | None = None,
   ) -> None:
     self.name = 'Peng-Robinson (1978) EOS'
     self.Nc = Pci.shape[0]
@@ -109,7 +138,6 @@ class pr78(object):
     D[np.tril_indices(self.Nc, -1)] = dij
     self.D = 1. - (D + D.T)
     self.vsi_bi = vsi * self.bi
-    self.m = np.array([2, 1, 0])
     self.kvlevel = kvlevel
     idxs = np.argsort(self.mwi)
     h1 = idxs[-1]
@@ -128,27 +156,43 @@ class pr78(object):
     self.l2i[l2] = yp
     self.upji = np.full(shape=(self.Nc, self.Nc), fill_value=upi)
     np.fill_diagonal(self.upji, yp)
+    if phaseid == 'wilson':
+      self._getPT_PID = self._getPT_PID_wilson
+      self._getPT_PIDj = self._getPT_PIDj_wilson
+    elif phaseid == 'vcTc':
+      if vci is None:
+        self.vci = 0.3074013086987038 * R * Tci / Pci
+      else:
+        self.vci = vci
+      self._getPT_PID = self._getPT_PID_vcTc
+      self._getPT_PIDj = self._getPT_PIDj_vcTc
+    elif phaseid == 'dadT':
+      self._getPT_PID = self._getPT_PID_dadT
+      self._getPT_PIDj = self._getPT_PIDj_dadT
+    elif phaseid == 'pip':
+      self._getPT_PID = self._getPT_PID_pip
+      self._getPT_PIDj = self._getPT_PIDj_pip
+    else:
+      raise ValueError(f'Unknown phase identification method: {phaseid}.')
     pass
 
-  def getPT_Z(self, P: Scalar, T: Scalar, yi: Vector) -> tuple[int, Scalar]:
+  def getPT_Z(self, P: float, T: float, yi: Vector[Double]) -> float:
     """Computes the compressibility factor of the mixture.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
-    A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
-    - the compressibility factor of the mixture.
+    The compressibility factor of the mixture.
     """
     RT = R * T
     PRT = P / RT
@@ -159,34 +203,32 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    return s, Z - yi.dot(self.vsi_bi) * PRT
+    Z = self.solve(A, B)
+    return Z - yi.dot(self.vsi_bi) * PRT
 
   def getPT_lnphii(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> Vector[Double]:
     """Computes fugacity coefficients of components.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
-    A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`.
+    Logarithms of fugacity coefficients of components as a
+    `Vector[Double]` of shape `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -197,68 +239,66 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
-    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    Z = self.solve(A, B)
     fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
-    return s, -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    return ((Z - 1.) / bm * self.bi
+            - np.log(Z - B)
+            + fZ * gphii
+            - PRT * self.vsi_bi)
 
   def getPT_lnfi(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> Vector[Double]:
     """Computes fugacities of components.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
-    A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
-    - logarithms of fugacities of components as a `Vector` of shape
-      `(Nc,)`.
+    Logarithms of fugacities of components as a `Vector[Double]` of
+    shape `(Nc,)`.
     """
-    s, lnphii = self.getPT_lnphii(P, T, yi)
-    return s, lnphii + np.log(P * yi)
+    return self.getPT_lnphii(P, T, yi) + np.log(P * yi)
 
   def getPT_Z_lnphii(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double]]:
     """Computes fugacity coefficients of components and
     the compressibility factor of the mixture.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`.
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -269,76 +309,73 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
-    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    Z = self.solve(A, B)
     fZ = np.log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
-    return (
-      s,
-      Z - PRT * yi.dot(self.vsi_bi),
-      -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi,
-    )
+    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + fZ * gphii
+              - PRT * self.vsi_bi)
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii
 
   def getPT_Z_lnfi(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double]]:
     """Computes fugacities of components and the compressibility factor
     of the mixture.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacities of components as a `Vector` of
+    - logarithms of fugacities of components as a `Vector[Double]` of
       shape `(Nc,)`.
     """
-    s, Z, lnphii = self.getPT_Z_lnphii(P, T, yi)
-    return s, Z, lnphii + np.log(P * yi)
+    Z, lnphii = self.getPT_Z_lnphii(P, T, yi)
+    return Z, lnphii + np.log(P * yi)
 
   def getPT_Z_lnphii_dP(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to pressure.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to pressure as a `Vector` of shape `(Nc,)`.
+      with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -349,60 +386,57 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
-    dAdP = alpham / (RT * RT)
-    dBdP = bm / RT
-    ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = np.power(Z, self.m).dot(ddmdP)
-    dZdP = -dqdP / dqdZ
-    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
-    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    lnphii = (-np.log(Z - B)
+              + (Z - 1.) / bm * self.bi
+              + np.log(ZpB / ZmB) * gphii
+              - PRT * self.vsi_bi)
+    dZdP = ((B * (2. * (A - B) - 3. * B * B)
+             + Z * (6. * B * B + 2. * B - A)
+             - B * Z * Z)
+            / (P * (3. * Z * Z
+                    + 2. * (B - 1.) * Z
+                    + A - 2. * B - 3. * B * B)))
+    dlnphiidP = ((B / P - dZdP) / (Z - B)
+                 + dZdP / bm * self.bi
+                 + gphii * (dZdP * (ZmB - ZpB)
+                            - B / P * (0.414213562373095 * ZmB
+                                       + 2.414213562373095 * ZpB))
                  - self.vsi_bi / RT)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP
 
   def getPT_Z_lnphii_dT(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to temperature.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to temperature as a `Vector` of shape `(Nc,)`.
+      with respect to temperature as a `Vector[Double]` of shape
+      `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -415,71 +449,65 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = (0.3535533905932738 * fZ * gphii - gZ + (Z - 1.) / bm * self.bi
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = (0.3535533905932738 * fZ * gphii
+              - np.log(Z - B)
+              + (Z - 1.) / bm * self.bi
               - PRT * self.vsi_bi)
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * self.D.dot(yi * dsqrtalphaidT)
     dalphamdT = yi.dot(dSidT)
-    dAdT = PRT / RT * dalphamdT - 2. * A / T
-    dBdT = -bm * PRT / T
-    ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = np.power(Z, self.m).dot(ddmdT)
-    dZdT = -dqdT / dqdZ
-    dgZdT = dgZdZ * dZdT + dgZdB * dBdT
-    dfZdT = dfZdZ * dZdT + dfZdB * dBdT
+    dBdT = -B / T
+    dZdT = ((dBdT * (A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z)
+             + (PRT / RT * dalphamdT - 2. * A / T) * (B - Z))
+            / (3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B))
+    dfZdT = dZdT * (ZmB - ZpB) - dBdT * (0.414213562373095 * ZmB
+                                         + 2.414213562373095 * ZpB)
     dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
     dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
-                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidT
+                 - (dZdT - dBdT) / (Z - B)
+                 + dZdT / bm * self.bi
+                 + PRT / T * self.vsi_bi)
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidT
 
   def getPT_Z_lnphii_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar = 1.,
-  ) -> tuple[int, Scalar, Vector, Matrix]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> tuple[float, Vector[Double], Matrix[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to mole numbers of components.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to mole numbers of components as a `Vector` of
-      shape `(Nc, Nc)`.
+      with respect to mole numbers of components as a `Vector[Double]`
+      of shape `(Nc, Nc)`.
     """
     RT = R * T
     PRT = P / RT
@@ -488,72 +516,67 @@ class pr78(object):
     Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
     alpham = yi.dot(Si)
     bm = yi.dot(self.bi)
-    A = alpham * PRT / RT
-    B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    A = PRT / RT * alpham
+    B = PRT * bm
+    Z = self.solve(A, B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + fZ * gphii
+              - PRT * self.vsi_bi)
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
     dAdnj = PRT / RT * dalphamdnj
-    dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
-    dqdnj = ddmdnj.dot(np.power(Z, self.m))
-    dZdnj = -dqdnj / dqdZ
-    dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
-    dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
+    dBdnj = PRT * dbmdnj
+    dZdnj = ((dBdnj * (A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z)
+              + dAdnj * (B - Z))
+             / (3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B))
+    dfZdnj = (dZdnj * (ZmB - ZpB) - dBdnj * (0.414213562373095 * ZmB
+                                             + 2.414213562373095 * ZpB))
     dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
                   + (self.bi / (bm * bm))[:,None] * dbmdnj)
                  * (0.3535533905932738 * A / B)
                  + gphii[:,None] * (dAdnj / A - dBdnj / B))
     dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
                   + (fZ * dgphiidnj + gphii[:,None] * dfZdnj)
-                  - dgZdnj)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidnj
+                  - (dZdnj - dBdnj) / (Z - B))
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidnj
 
   def getPT_Z_lnphii_dP_dT(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to pressure and temperature.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to pressure as a `Vector` of shape `(Nc,)`,
+      with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to temperature as a `Vector` of shape `(Nc,)`.
+      with respect to temperature as a `Vector[Double]` of shape
+      `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -566,83 +589,75 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
-    gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    Zpm = np.power(Z, self.m)
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
-    dAdP = alpham / (RT * RT)
-    dBdP = bm / RT
-    ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = Zpm.dot(ddmdP)
-    dZdP = -dqdP / dqdZ
-    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
-    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
+    Z = self.solve(A, B)
+    gphii = A / B * (2. / alpham * Si - self.bi / bm)
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + 0.3535533905932738 * fZ * gphii
+              - PRT * self.vsi_bi)
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    mdqdA = B - Z
+    mdqdB = A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z
+    dfZdZ = ZmB - ZpB
+    dfZdB = -0.414213562373095 * ZmB - 2.414213562373095 * ZpB
+    dZdP = (B * mdqdB + A * mdqdA) / (P * dqdZ)
+    dlnphiidP = ((B / P - dZdP) / (Z - B)
+                 + dZdP / bm * self.bi
+                 + 0.3535533905932738 * (dZdP * dfZdZ + B / P * dfZdB) * gphii
                  - self.vsi_bi / RT)
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * self.D.dot(yi * dsqrtalphaidT)
     dalphamdT = yi.dot(dSidT)
-    dAdT = PRT / RT * dalphamdT - 2. * A / T
-    dBdT = -bm * PRT / T
-    ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = Zpm.dot(ddmdT)
-    dZdT = -dqdT / dqdZ
-    dgZdT = dgZdZ * dZdT + dgZdB * dBdT
-    dfZdT = dfZdZ * dZdT + dfZdB * dBdT
-    dgphiidT = ((2. * dSidT - dalphamdT / bm * self.bi)
-                / (2.82842712474619 * RT * bm) - gphii / T)
-    dlnphiidT = (dfZdT * gphii + fZ * dgphiidT - dgZdT + dZdT / bm * self.bi
+    dBdT = -B / T
+    dZdT = (dBdT * mdqdB + (PRT / RT * dalphamdT - 2. * A / T) * mdqdA) / dqdZ
+    dfZdT = dZdT * dfZdZ + dBdT * dfZdB
+    dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
+    dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
+                 - (dZdT - dBdT) / (Z - B)
+                 + dZdT / bm * self.bi
                  + PRT / T * self.vsi_bi)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, dlnphiidT
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, dlnphiidT
 
   def getPT_Z_lnphii_dP_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar = 1.,
-  ) -> tuple[int, Scalar, Vector, Vector, Matrix]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> tuple[float, Vector[Double], Vector[Double], Matrix[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to mole numbers of components and pressure.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
     A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]`
       of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to pressure as a `Vector` of shape `(Nc,)`,
+      with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to mole numbers of components as a `Matrix` of
-      shape `(Nc, Nc)`.
+      with respect to mole numbers of components as a `Matrix[Double]`
+      of shape `(Nc, Nc)`.
     """
     RT = R * T
     PRT = P / RT
@@ -653,86 +668,78 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + fZ * gphii
+              - PRT * self.vsi_bi)
+    mdqdA = B - Z
+    mdqdB = A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    dfZdZ = ZmB - ZpB
+    dfZdB = -0.414213562373095 * ZmB - 2.414213562373095 * ZpB
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
     dAdnj = PRT / RT * dalphamdnj
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
-    Zpm = np.power(Z, self.m)
-    dqdnj = ddmdnj.dot(Zpm)
-    dZdnj = -dqdnj / dqdZ
-    dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
-    dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
+    dZdnj = (dBdnj * mdqdB + dAdnj * mdqdA) / dqdZ
     dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
                   + (self.bi / (bm * bm))[:,None] * dbmdnj)
                  * (0.3535533905932738 * A / B)
                  + gphii[:,None] * (dAdnj / A - dBdnj / B))
     dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
-                  + (fZ * dgphiidnj + gphii[:,None] * dfZdnj)
-                  - dgZdnj)
-    dAdP = alpham / (RT * RT)
-    dBdP = bm / RT
-    ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = Zpm.dot(ddmdP)
-    dZdP = -dqdP / dqdZ
-    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
-    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
+                  + (fZ * dgphiidnj + gphii[:,None] * (dfZdZ * dZdnj
+                                                       + dfZdB * dBdnj))
+                  - (dZdnj - dBdnj) / (Z - B))
+    dZdP = (B * mdqdB + A * mdqdA) / (P * dqdZ)
+    dlnphiidP = ((B / P - dZdP) / (Z - B)
+                 + dZdP / bm * self.bi
+                 + gphii * (dZdP * dfZdZ + B / P * dfZdB)
                  - self.vsi_bi / RT)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, dlnphiidnj
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, dlnphiidnj
 
   def getPT_Z_lnphii_dT_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar = 1.,
-  ) -> tuple[int, Scalar, Vector, Vector, Matrix]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> tuple[float, Vector[Double], Vector[Double], Matrix[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to mole numbers of components and
     temperature.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to temperature as a `Vector` of shape `(Nc,)`,
+      with respect to temperature as a `Vector[Double]` of shape
+      `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to mole numbers of components as a `Matrix` of
-      shape `(Nc, Nc)`.
+      with respect to mole numbers of components as a `Matrix[Double]`
+      of shape `(Nc, Nc)`.
     """
     RT = R * T
     PRT = P / RT
@@ -745,31 +752,26 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = (0.3535533905932738 * fZ * gphii - gZ + (Z - 1.) / bm * self.bi
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = (0.3535533905932738 * fZ * gphii
+              - np.log(Z - B)
+              + (Z - 1.) / bm * self.bi
               - PRT * self.vsi_bi)
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
+    mdqdA = B - Z
+    mdqdB = A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    dfZdZ = ZmB - ZpB
+    dfZdB = -0.414213562373095 * ZmB - 2.414213562373095 * ZpB
     dSidnj = (sqrtalphai[:,None] * sqrtalphai * self.D - Si[:,None]) / n
     dalphamdnj = 2. / n * (Si - alpham)
     dbmdnj = (self.bi - bm) / n
     dAdnj = PRT / RT * dalphamdnj
     dBdnj = dbmdnj * PRT
-    ddmdnj = ddmdA * dAdnj[:,None] + ddmdB * dBdnj[:,None]
-    Zpm = np.power(Z, self.m)
-    dqdnj = ddmdnj.dot(Zpm)
-    dZdnj = -dqdnj / dqdZ
-    dgZdnj = dgZdZ * dZdnj + dgZdB * dBdnj
+    dZdnj = (dBdnj * mdqdB + dAdnj * mdqdA) / dqdZ
     dfZdnj = dfZdZ * dZdnj + dfZdB * dBdnj
     dgphiidnj = ((2. / alpham * (dSidnj - (Si / alpham)[:,None] * dalphamdnj)
                   + (self.bi / (bm * bm))[:,None] * dbmdnj) * (A / B)
@@ -777,29 +779,28 @@ class pr78(object):
     dlnphiidnj = ((self.bi / bm)[:,None] * (dZdnj - (Z - 1.) / bm * dbmdnj)
                   + (0.3535533905932738 * fZ * dgphiidnj
                      + (0.3535533905932738 * gphii)[:,None] * dfZdnj)
-                  - dgZdnj)
+                  - (dZdnj - dBdnj) / (Z - B))
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * self.D.dot(yi * dsqrtalphaidT)
     dalphamdT = yi.dot(dSidT)
-    dAdT = PRT / RT * dalphamdT - 2. * A / T
     dBdT = -bm * PRT / T
-    ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = Zpm.dot(ddmdT)
-    dZdT = -dqdT / dqdZ
-    dgZdT = dgZdZ * dZdT + dgZdB * dBdT
+    dZdT = (dBdT * mdqdB + (PRT / RT * dalphamdT - 2. * A / T) * mdqdA) / dqdZ
     dfZdT = dfZdZ * dZdT + dfZdB * dBdT
     dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
     dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
-                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidT, dlnphiidnj
+                 - (dZdT - dBdT) / (Z - B)
+                 + dZdT / bm * self.bi
+                 + PRT / T * self.vsi_bi)
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidT, dlnphiidnj
 
   def getPT_Z_lnphii_dP_dT_dyj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector, Matrix]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double],
+             Vector[Double], Matrix[Double]]:
     """Computes fugacity coefficients of components and their partial
     derivatives with respect to pressure, temperature and mole fractions
     of components pressure.
@@ -808,29 +809,29 @@ class pr78(object):
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to pressure as a `Vector` of shape `(Nc,)`,
+      with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to temperature as a `Vector` of shape `(Nc,)`,
+      with respect to temperature as a `Vector[Double]` of shape
+      `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to mole fractions of components as a `Matrix` of
-      shape `(Nc, Nc)`.
+      with respect to mole fractions of components as a `Matrix[Double]`
+      of shape `(Nc, Nc)`.
     """
     RT = R * T
     PRT = P / RT
@@ -843,30 +844,26 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    Zpm = np.power(Z, np.array([2, 1, 0]))
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + fZ * gphii
+              - PRT * self.vsi_bi)
+    mdqdA = B - Z
+    mdqdB = A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    dfZdZ = ZmB - ZpB
+    dfZdB = -0.414213562373095 * ZmB - 2.414213562373095 * ZpB
     dSidyj = sqrtalphai[:,None] * sqrtalphai * self.D
     dalphamdyj = Si + yi.dot(dSidyj)
     dbmdyj = self.bi
     dAdyj = PRT / RT * dalphamdyj
-    dBdyj = dbmdyj * PRT
-    ddmdyj = ddmdA[:,None] * dAdyj + ddmdB[:,None] * dBdyj
-    dqdyj = Zpm.dot(ddmdyj)
-    dZdyj = -dqdyj / dqdZ
-    dgZdyj = dgZdZ * dZdyj + dgZdB * dBdyj
+    dBdyj = PRT * dbmdyj
+    dZdyj = (dBdyj * mdqdB + dAdyj * mdqdA) / dqdZ
     dfZdyj = dfZdZ * dZdyj + dfZdB * dBdyj
     dgphiidyj = ((2. / alpham * (dSidyj - (Si / alpham)[:,None] * dalphamdyj)
                   + (self.bi / (bm * bm))[:,None] * dbmdyj)
@@ -874,65 +871,60 @@ class pr78(object):
                  + gphii[:,None] * (dAdyj / A - dBdyj / B))
     dlnphiidyj = ((self.bi / bm)[:,None] * (dZdyj - (Z - 1.) / bm * dbmdyj)
                   + (fZ * dgphiidyj + gphii[:,None] * dfZdyj)
-                  - dgZdyj)
-    dAdP = alpham / (RT * RT)
-    dBdP = bm / RT
-    ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    dqdP = Zpm.dot(ddmdP)
-    dZdP = -dqdP / dqdZ
-    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
-    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
+                  - (dZdyj - dBdyj) / (Z - B))
+    dZdP = (B * mdqdB + A * mdqdA) / (P * dqdZ)
+    dlnphiidP = ((B / P - dZdP) / (Z - B)
+                 + dZdP / bm * self.bi
+                 + gphii * (dZdP * dfZdZ + B / P * dfZdB)
                  - self.vsi_bi / RT)
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * self.D.dot(yi * dsqrtalphaidT)
     dalphamdT = yi.dot(dSidT)
-    dAdT = PRT / RT * dalphamdT - 2. * A / T
-    dBdT = -bm * PRT / T
-    ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    dqdT = Zpm.dot(ddmdT)
-    dZdT = -dqdT / dqdZ
-    dgZdT = dgZdZ * dZdT + dgZdB * dBdT
-    dfZdT = dfZdZ * dZdT + dfZdB * dBdT
-    dgphiidT = ((2. * dSidT - dalphamdT / bm * self.bi)
-                / (2.82842712474619* RT * bm) - gphii / T)
-    dlnphiidT = (dfZdT * gphii + fZ * dgphiidT - dgZdT + dZdT / bm * self.bi
+    dBdT = -B / T
+    dZdT = (dBdT * mdqdB + (PRT / RT * dalphamdT - 2. * A / T) * mdqdA) / dqdZ
+    dfZdT = dZdT * dfZdZ + dBdT * dfZdB
+    dgphiidT = (((2. * dSidT - dalphamdT / bm * self.bi)
+                 / (2.82842712474619 * RT * bm))
+                - gphii / T)
+    dlnphiidT = (dfZdT * gphii
+                 + fZ * dgphiidT
+                 - (dZdT - dBdT) / (Z - B)
+                 + dZdT / bm * self.bi
                  + PRT / T * self.vsi_bi)
-    return (s, Z - PRT * yi.dot(self.vsi_bi), lnphii,
+    return (Z - PRT * yi.dot(self.vsi_bi), lnphii,
             dlnphiidP, dlnphiidT, dlnphiidyj)
 
   def getPT_Z_lnphii_dP_d2P(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]:
     """Computes fugacity coefficients of components and their first
     and second partial derivatives with respect to pressure.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to pressure as a `Vector` of shape `(Nc,)`,
+      with respect to pressure as a `Vector[Double]` of shape `(Nc,)`,
     - second partial derivatives of logarithms of fugacity coefficients
-      with respect to pressure as a `Vector` of shape `(Nc,)`.
+      with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -943,81 +935,73 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = -gZ + (Z - 1.) / bm * self.bi + fZ * gphii - PRT * self.vsi_bi
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
-    dAdP = alpham / (RT * RT)
-    dBdP = bm / RT
-    ddmdP = ddmdA * dAdP + ddmdB * dBdP
-    Zpm = np.power(Z, self.m)
-    dqdP = Zpm.dot(ddmdP)
-    dZdP = -dqdP / dqdZ
-    dgZdP = dgZdZ * dZdP + dgZdB * dBdP
-    dfZdP = dfZdZ * dZdP + dfZdB * dBdP
-    dlnphiidP = (-dgZdP + dZdP / bm * self.bi + gphii * dfZdP
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + np.log(ZpB / ZmB) * gphii
+              - PRT * self.vsi_bi)
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    dAdP = A / P
+    dBdP = B / P
+    dZdP = ((B * (2. * (A - B) - 3. * B * B)
+             + Z * (6. * B * B + 2. * B - A)
+             - B * Z * Z)
+            / (P * dqdZ))
+    dlnphiidP = ((dBdP - dZdP) / (Z - B)
+                 + dZdP / bm * self.bi
+                 + gphii * (dZdP * (ZmB - ZpB)
+                            - dBdP * (0.414213562373095 * ZmB
+                                      + 2.414213562373095 * ZpB))
                  - self.vsi_bi / RT)
-    d2dmdB2 = np.array([0., -6., 2. + 6. * B])
-    d2dmdAdB = np.array([0., 0., -1.])
-    d2dmdP2 = dBdP * dBdP * d2dmdB2 + 2. * dAdP * dBdP * d2dmdAdB
-    d2qdZ2 = 6. * Z + 2. * (B - 1.)
-    d2qdP2 = Zpm.dot(d2dmdP2)
-    d2qdZdP = 2. * ddmdP[0] * Z + ddmdP[1]
-    d2ZdP2 = - (d2qdP2 + 2. * dZdP * d2qdZdP + dZdP * dZdP * d2qdZ2) / dqdZ
-    d2gZdZ2 = -dgZdZ * dgZdZ
-    d2gZdB2 = d2gZdZ2
-    d2gZdZdB = -d2gZdB2
-    d2gZdP2 = (d2gZdZ2 * dZdP * dZdP + dgZdZ * d2ZdP2 + d2gZdB2 * dBdP * dBdP
-               + 2. * d2gZdZdB * dZdP * dBdP)
-    d2fZdZ2 = -1. / (ZmB * ZmB) + 1. / (ZpB * ZpB)
-    d2fZdB2 = -0.17157287525381 / (ZmB * ZmB) + 5.82842712474619 / (ZpB * ZpB)
-    d2fZdZdB = 0.414213562373095 / (ZmB * ZmB) + 2.414213562373095 / (ZpB*ZpB)
-    d2fZdP2 = (d2fZdZ2 * dZdP * dZdP + dfZdZ * d2ZdP2 + d2fZdB2 * dBdP * dBdP
-               + 2. * d2fZdZdB * dZdP * dBdP)
-    d2lnphiidP2 = -d2gZdP2 + d2ZdP2 / bm * self.bi + d2fZdP2 * gphii
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, d2lnphiidP2
+    d2ZdP2 = -2. * (dBdP * (dBdP * (3. * B - 3. * Z + 1.) - dAdP)
+                    + dZdP * (2. * dBdP * (Z - 3. * B - 1.) + dAdP)
+                    + dZdP * dZdP * (3. * Z + B - 1.)) / dqdZ
+    d2fZdP2 = (dZdP * dZdP * (ZpB * ZpB - ZmB * ZmB)
+               + d2ZdP2 * (ZmB - ZpB)
+               + dBdP * dBdP * (5.82842712474619 * ZpB * ZpB
+                                - 0.17157287525381 * ZmB * ZmB)
+               + 2. * dZdP * dBdP * (0.414213562373095 * ZmB * ZmB
+                                     + 2.414213562373095 * ZpB * ZpB))
+    d2lnphiidP2 = (d2ZdP2 / bm * self.bi
+                   + (((dZdP - dBdP) / (Z - B))**2 - d2ZdP2 / (Z - B))
+                   + d2fZdP2 * gphii)
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, d2lnphiidP2
 
   def getPT_Z_lnphii_dT_d2T(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector, Vector, Vector]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]:
     """Computes fugacity coefficients of components and their first
     and second partial derivatives with respect to temperature.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
     -------
     A tuple that contains:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacity coefficients of components as a `Vector`
-      of shape `(Nc,)`,
+    - logarithms of fugacity coefficients of components as a
+      `Vector[Double]` of shape `(Nc,)`,
     - partial derivatives of logarithms of fugacity coefficients
-      with respect to temperature as a `Vector` of shape `(Nc,)`,
+      with respect to temperature as a `Vector[Double]` of shape
+      `(Nc,)`,
     - second partial derivatives of logarithms of fugacity coefficients
-      with respect to temperature as a `Vector` of shape `(Nc,)`.
+      with respect to temperature as a `Vector[Double]` of shape
+      `(Nc,)`.
     """
     RT = R * T
     PRT = P / RT
@@ -1030,140 +1014,129 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    s, Z = self.solve(A, B)
-    gZ = np.log(Z - B)
+    Z = self.solve(A, B)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
-    ZmB = Z - B * 0.414213562373095
-    ZpB = Z + B * 2.414213562373095
-    fZ = np.log(ZmB / ZpB)
-    lnphii = (-gZ + (Z - 1.) / bm * self.bi + 0.3535533905932738 * fZ * gphii
+    ZmB = 1. / (Z - B * 0.414213562373095)
+    ZpB = 1. / (Z + B * 2.414213562373095)
+    fZ = np.log(ZpB / ZmB)
+    lnphii = ((Z - 1.) / bm * self.bi
+              - np.log(Z - B)
+              + 0.3535533905932738 * fZ * gphii
               - PRT * self.vsi_bi)
-    ddmdA = np.array([0., 1., -B])
-    ddmdB = np.array([1., -2. - 6. * B, B * (2. + 3. * B) - A])
-    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + (A - 2. * B - 3. * B * B)
-    dgZdZ = 1. / (Z - B)
-    dgZdB = -dgZdZ
-    dfZdZ = 1. / ZmB - 1. / ZpB
-    dfZdB = -0.414213562373095 / ZmB - 2.414213562373095 / ZpB
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    dfZdZ = ZmB - ZpB
+    dfZdB = -0.414213562373095 * ZmB - 2.414213562373095 * ZpB
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT_ = self.D.dot(yi * dsqrtalphaidT)
     dSidT = dsqrtalphaidT * Si_ + sqrtalphai * dSidT_
     dalphamdT = yi.dot(dSidT)
     dAdT = PRT / RT * dalphamdT - 2. * A / T
-    dBdT = -bm * PRT / T
-    ddmdT = ddmdA * dAdT + ddmdB * dBdT
-    Zpm = np.power(Z, self.m)
-    dqdT = Zpm.dot(ddmdT)
-    dZdT = -dqdT / dqdZ
-    dgZdT = dgZdZ * dZdT + dgZdB * dBdT
-    dfZdT = dfZdZ * dZdT + dfZdB * dBdT
+    dBdT = -B / T
+    dZdT = (dBdT * (A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z)
+            + dAdT * (B - Z)) / dqdZ
+    dfZdT = dZdT * dfZdZ + dBdT * dfZdB
     dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
     dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
-                 - dgZdT + dZdT / bm * self.bi + PRT / T * self.vsi_bi)
-    d2dmdB2 = np.array([0., -6., 2. + 6. * B])
-    d2dmdAdB = np.array([0., 0., -1.])
+                 - (dZdT - dBdT) / (Z - B)
+                 + dZdT / bm * self.bi
+                 + PRT / T * self.vsi_bi)
     d2sqrtalphaidT2 = dsqrtalphaidT * (-.5 / T)
-    d2SidT2 = (d2sqrtalphaidT2 * Si_ + 2. * dsqrtalphaidT * dSidT_
+    d2SidT2 = (d2sqrtalphaidT2 * Si_
+               + 2. * dsqrtalphaidT * dSidT_
                + sqrtalphai * self.D.dot(yi * d2sqrtalphaidT2))
     d2alphamdT2 = yi.dot(d2SidT2)
     d2AdT2 = PRT / RT * (d2alphamdT2 - dalphamdT / T) - 3. * dAdT / T
-    d2BdT2 = 2. * bm * PRT / (T * T)
-    d2dmdT2 = (ddmdA * d2AdT2 + dBdT * dBdT * d2dmdB2 + ddmdB * d2BdT2
-               + 2. * dAdT * dBdT * d2dmdAdB)
-    d2qdT2 = Zpm.dot(d2dmdT2)
-    d2qdZdT = 2. * ddmdT[0] * Z + ddmdT[1]
-    d2qdZ2 = 6. * Z + 2. * (B - 1.)
-    d2ZdT2 = - (d2qdT2 + 2. * dZdT * d2qdZdT + dZdT * dZdT * d2qdZ2) / dqdZ
-    d2gZdZ2 = -dgZdZ * dgZdZ
-    d2gZdB2 = d2gZdZ2
-    d2gZdZdB = -d2gZdB2
-    d2gZdT2 = (d2gZdZ2 * dZdT * dZdT + dgZdZ * d2ZdT2 + d2gZdB2 * dBdT * dBdT
-               + dgZdB * d2BdT2 + 2. * d2gZdZdB * dZdT * dBdT)
-    d2fZdZ2 = -1. / (ZmB * ZmB) + 1. / (ZpB * ZpB)
-    d2fZdB2 = -0.17157287525381 / (ZmB * ZmB) + 5.82842712474619 / (ZpB * ZpB)
-    d2fZdZdB = 0.414213562373095 / (ZmB * ZmB) + 2.414213562373095 / (ZpB*ZpB)
-    d2fZdT2 = (d2fZdZ2 * dZdT * dZdT + dfZdZ * d2ZdT2 + d2fZdB2 * dBdT * dBdT
-               + dfZdB * d2BdT2 + 2. * d2fZdZdB * dZdT * dBdT)
+    d2BdT2 = -2. * dBdT / T
+    d2ZdT2 = (2. * dAdT * dBdT
+              - d2AdT2 * (Z - B)
+              - d2BdT2 * (Z * (Z - 6. * B - 2.) + 3. * B * B + 2. * B - A)
+              - 2. * dBdT * dBdT * (1. - 3. * (Z - B))
+              - 2. * dZdT * (2. * dBdT * (Z - 3. * B - 1.) + dAdT)
+              - 2. * dZdT * dZdT * (3. * Z + B - 1.)) / dqdZ
+    d2fZdT2 = (dZdT * dZdT * (ZpB * ZpB - ZmB * ZmB)
+               + dBdT * dBdT * (5.82842712474619 * ZpB * ZpB
+                                - 0.17157287525381 * ZmB * ZmB)
+               + 2. * dZdT * dBdT * (0.414213562373095 * ZmB * ZmB
+                                     + 2.414213562373095 * ZpB * ZpB)
+               + d2ZdT2 * dfZdZ + d2BdT2 * dfZdB)
     d2gphiidT2 = ((2. * d2SidT2 - d2alphamdT2 / bm * self.bi) / (RT * bm)
                   - 2. / T * dgphiidT)
     d2lnphiidT2 = (0.3535533905932738 * (fZ * d2gphiidT2 + gphii * d2fZdT2
                                          + 2. * dfZdT * dgphiidT)
-                   + d2ZdT2 / bm * self.bi - d2gZdT2
+                   + d2ZdT2 / bm * self.bi
+                   + (((dZdT - dBdT)/(Z - B))**2 - (d2ZdT2 - d2BdT2)/(Z - B))
                    - 2. * PRT / (T * T) * self.vsi_bi)
-    return s, Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidT, d2lnphiidT2
+    return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidT, d2lnphiidT2
 
   def getPT_Z_lnfi_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar = 1.,
-  ) -> tuple[int, Scalar, Vector, Matrix]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> tuple[float, Vector[Double], Matrix[Double]]:
     """Computes fugacities of components and their partial derivatives
     with respect to component mole numbers.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
     A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
     - the compressibility factor of the mixture,
-    - logarithms of fugacities of components as a `Vector` of shape
-      `(Nc,)`,
+    - logarithms of fugacities of components as a `Vector[Double]` of
+      shape `(Nc,)`,
     - partial derivatives of logarithms of fugacities with respect
-      to mole numbers of components as a `Matrix` of shape `(Nc, Nc)`.
+      to mole numbers of components as a `Matrix[Double]` of shape
+      `(Nc, Nc)`.
     """
-    s, Z, lnphii, dlnphiidnj = self.getPT_Z_lnphii_dnj(P, T, yi, n)
+    Z, lnphii, dlnphiidnj = self.getPT_Z_lnphii_dnj(P, T, yi, n)
     lnfi = lnphii + np.log(yi * P)
     dlnfidnj = dlnphiidnj + np.diagflat(1. / (n * yi)) - 1. / n
-    return s, Z, lnfi, dlnfidnj
+    return Z, lnfi, dlnfidnj
 
   def getPT_Zj(
     self,
-    Pj: Scalar | Vector,
-    Tj: Scalar | Vector,
-    yji: Vector | Matrix,
-  ) -> tuple[IVector, Vector]:
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> Vector[Double]:
     """Computes compressibility factors for each mixture.
 
     Parameters
     ----------
-    Pj: Scalar | Vector, shape (Np,)
+    Pj: float | Vector[Double], shape (Np,)
       Pressure(s) of mixtures [Pa]. It is allowed to specify different
       pressure for each mixture. In that case, `Np` is the number of
       mixtures.
 
-    Tj: Scalar | Vector, shape (Np,)
+    Tj: float | Vector[Double], shape (Np,)
       Temperature(s) of mixtures [K]. It is allowed to specify different
       temperature for each mixture. In that case, `Np` is the number of
       mixtures.
 
-    yji: Vector, shape (Nc,) | Matrix, shape (Np, Nc)
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
 
     Returns
     -------
-    A tuple of:
-    - a 1d-array of integers with the shape `(Np,)`, each of which
-      corresponds to the designated phase (`0` = vapour, `1` = liquid),
-    - compressibility factors of mixtures as a `Vector` of shape
-      `(Np,)`.
+    Compressibility factors of mixtures as a `Vector[Double]` of shape
+    `(Np,)`.
     """
     Pj = np.atleast_1d(Pj)
     Tj = np.atleast_1d(Tj)
@@ -1177,31 +1150,31 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    sj, Zj = np.vectorize(self.solve)(Aj, Bj)
-    return sj, Zj - yji.dot(self.vsi_bi) * PRTj
+    Zj = np.vectorize(self.solve)(Aj, Bj)
+    return Zj - yji.dot(self.vsi_bi) * PRTj
 
   def getPT_Zj_lnphiji(
     self,
-    Pj: Scalar | Vector,
-    Tj: Scalar | Vector,
-    yji: Vector | Matrix,
-  ) -> tuple[IVector, Vector, Matrix]:
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> tuple[Vector[Double], Matrix[Double]]:
     """Computes fugacity coefficients of components and compressibility
     factors for each mixture.
 
     Parameters
     ----------
-    Pj: Scalar | Vector, shape (Np,)
+    Pj: float | Vector[Double], shape (Np,)
       Pressure(s) of mixtures [Pa]. It is allowed to specify different
       pressure for each mixture. In that case, `Np` is the number of
       mixtures.
 
-    Tj: Scalar | Vector, shape (Np,)
+    Tj: float | Vector[Double], shape (Np,)
       Temperature(s) of mixtures [K]. It is allowed to specify different
       temperature for each mixture. In that case, `Np` is the number of
       mixtures.
 
-    yji: Vector, shape (Nc,) | Matrix, shape (Np, Nc)
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
@@ -1209,12 +1182,10 @@ class pr78(object):
     Returns
     -------
     A tuple of:
-    - a 1d-array of integers with the shape `(Np,)`, each of which
-      corresponds to the designated phase (`0` = vapour, `1` = liquid),
-    - compressibility factors of mixtures as a `Vector` of shape
+    - compressibility factors of mixtures as a `Vector[Double]` of shape
       `(Np,)`,
     - logarithms of fugacity coefficients of components in mixtures as
-      a `Matrix` of shape `(Np, Nc)`.
+      a `Matrix[Double]` of shape `(Np, Nc)`.
     """
     Pj = np.atleast_1d(Pj)
     Tj = np.atleast_1d(Tj)
@@ -1228,7 +1199,7 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    sj, Zj = np.vectorize(self.solve)(Aj, Bj)
+    Zj = np.vectorize(self.solve)(Aj, Bj)
     gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
               * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
     fZj = np.log((Zj - Bj * 0.414213562373095)
@@ -1237,37 +1208,37 @@ class pr78(object):
                + gphiji * fZj[:,None]
                - np.log(Zj - Bj)[:,None]
                - PRTj[:,None] * self.vsi_bi)
-    return sj, Zj - yji.dot(self.vsi_bi) * PRTj, lnphiji
+    return Zj - yji.dot(self.vsi_bi) * PRTj, lnphiji
 
   def getPT_Zj_lnphiji_dnk(
     self,
-    Pj: Scalar | Vector,
-    Tj: Scalar | Vector,
-    yji: Vector | Matrix,
-    nj: Scalar | Matrix = 1.,
-  ) -> tuple[IVector, Vector, Matrix, Tensor]:
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+    nj: float | Matrix[Double] = 1.,
+  ) -> tuple[Vector[Double], Matrix[Double], Tensor[Double]]:
     """Computes fugacity coefficients of components, compressibility
     factors and partial derivatives of fugacity coefficients with
     respect to component mole numbers for each mixture.
 
     Parameters
     ----------
-    Pj: Scalar | Vector, shape (Np,)
+    Pj: float | Vector[Double], shape (Np,)
       Pressure(s) of mixtures [Pa]. It is allowed to specify different
       pressure for each mixture. In that case, `Np` is the number of
       mixtures.
 
-    Tj: Scalar | Vector, shape (Np,)
+    Tj: float | Vector[Double], shape (Np,)
       Temperature(s) of mixtures [K]. It is allowed to specify different
       temperature for each mixture. In that case, `Np` is the number of
       mixtures.
 
-    yji: Vector, shape (Nc,) | Matrix, shape (Np, Nc)
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
 
-    nj: Scalar | Vector, shape (Np,)
+    nj: float | Vector[Double], shape (Np,)
       Mole number(s) of mixtures [mol]. It is allowed to specify
       different mole number for each mixture. In that case, `Np` is
       the number of mixtures. Default is `1.0` [mol].
@@ -1275,14 +1246,12 @@ class pr78(object):
     Returns
     -------
     A tuple of:
-    - a 1d-array of integers with the shape `(Np,)`, each of which
-      corresponds to the designated phase (`0` = vapour, `1` = liquid),
-    - compressibility factors of mixtures as a `Vector` of shape
+    - compressibility factors of mixtures as a `Vector[Double]` of shape
       `(Np,)`,
     - logarithms of fugacity coefficients of components in mixtures as
-      a `Matrix` of shape `(Np, Nc)`,
+      a `Matrix[Double]` of shape `(Np, Nc)`,
     - partial derivatives of logarithms of fugacity coefficients with
-      respect to component mole numbers for each mixture as a `Tensor`
+      respect to component mole numbers for each mixture as a `Tensor[Double]`
       of shape `(Np, Nc, Nc)`.
     """
     Pj = np.atleast_1d(Pj)
@@ -1298,39 +1267,30 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    sj, Zj = np.vectorize(self.solve)(Aj, Bj)
+    Zj = np.vectorize(self.solve)(Aj, Bj)
     gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
               * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
-    ZmBj = Zj - Bj * 0.414213562373095
-    ZpBj = Zj + Bj * 2.414213562373095
-    fZj = np.log(ZmBj / ZpBj)
+    ZmBj = 1. / (Zj - Bj * 0.414213562373095)
+    ZpBj = 1. / (Zj + Bj * 2.414213562373095)
+    fZj = np.log(ZpBj / ZmBj)
     lnphiji = (self.bi * ((Zj - 1.) / bmj)[:,None]
                + gphiji * fZj[:,None]
                - np.log(Zj - Bj)[:,None]
                - PRTj[:,None] * self.vsi_bi)
-    ddmdAj = np.zeros(shape=(Bj.shape[0], 3))
-    ddmdAj[:,1] = 1.
-    ddmdAj[:,2] = -Bj
-    ddmdBj = np.ones(shape=(Bj.shape[0], 3))
-    ddmdBj[:,1] = -2. - 6. * Bj
-    ddmdBj[:,2] = Bj * (2. + 3. * Bj) - Aj
-    dqdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + (Aj - 2. * Bj - 3. * Bj * Bj)
-    dgZdZj = 1. / (Zj - Bj)
-    dgZdBj = -dgZdZj
-    dfZdZj = 1. / ZmBj - 1. / ZpBj
-    dfZdBj = -0.414213562373095 / ZmBj - 2.414213562373095 / ZpBj
     dSjidnk = (sqrtalphaji[:,:,None] * sqrtalphaji[:,None,:] * self.D
                - Sji[:,:,None]) / nj[:,None,None]
     dalphamjdnk = 2. / nj[:,None] * (Sji - alphamj[:,None])
     dbmjdnk = (self.bi - bmj[:,None]) / nj[:,None]
     dAjdnk = dalphamjdnk * (PRTj / RTj)[:,None]
     dBjdnk = dbmjdnk * PRTj[:,None]
-    ddmdnk = (ddmdAj[:,None,:] * dAjdnk[:,:,None]
-              + ddmdBj[:,None,:] * dBjdnk[:,:,None])
-    dqjdnk = np.vecdot(ddmdnk, np.power(Zj[:,None], self.m)[:,None,:])
-    dZjdnk = -dqjdnk / dqdZj[:,None]
-    dgZjdnk = dgZdZj[:,None] * dZjdnk + dgZdBj[:,None] * dBjdnk
-    dfZjdnk = dfZdZj[:,None] * dZjdnk + dfZdBj[:,None] * dBjdnk
+    dZjdnk = ((dBjdnk * (Aj - 2. * Bj - 3. * Bj * Bj
+                         + 6. * Zj * Bj + 2. * Zj - Zj * Zj)[:,None]
+               + dAjdnk * (Bj - Zj)[:,None])
+              / (3. * Zj * Zj + 2. * (Bj - 1.) * Zj
+                 + Aj - 2. * Bj - 3. * Bj * Bj)[:,None])
+    dfZjdnk = (dZjdnk * (ZmBj - ZpBj)[:,None]
+               - dBjdnk * (0.414213562373095 * ZmBj
+                           + 2.414213562373095 * ZpBj)[:,None])
     dgphijidnk = (
       ((2. / alphamj)[:,None,None]
        * (dSjidnk - (Sji / alphamj[:,None])[:,:,None] * dalphamjdnk[:,None,:])
@@ -1343,27 +1303,27 @@ class pr78(object):
       ((self.bi / bmj[:,None])[:,:,None]
        * (dZjdnk - ((Zj - 1.) / bmj)[:,None] * dbmjdnk)[:,None,:])
       + (fZj[:,None,None] * dgphijidnk + gphiji[:,:,None] * dfZjdnk[:,None,:])
-      - dgZjdnk[:,None,:])
-    return sj, Zj - yji.dot(self.vsi_bi) * PRTj, lnphiji, dlnphiidnj
+      - ((dZjdnk - dBjdnk) / (Zj - Bj)[:,None])[:,None,:])
+    return Zj - yji.dot(self.vsi_bi) * PRTj, lnphiji, dlnphiidnj
 
   def getPT_kvguess(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[Vector, ...]:
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[Vector[Double], ...]:
     """Computes initial k-values for given pressure, temperature
     and composition.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
@@ -1376,46 +1336,167 @@ class pr78(object):
     elif self.kvlevel == 1:
       return self.h1i, self.l1i, kvi, 1. / kvi
     elif self.kvlevel == 2:
-      uii = np.exp(self.getPT_lnphii(P, T, yi)[1])
+      uii = np.exp(self.getPT_lnphii(P, T, yi))
       return self.h1i, self.l1i, uii, kvi, 1. / kvi
     elif self.kvlevel == 3:
-      uii = np.exp(self.getPT_lnphii(P, T, yi)[1])
+      uii = np.exp(self.getPT_lnphii(P, T, yi))
       return self.h1i, self.l1i, self.h2i, self.l2i, uii, kvi, 1. / kvi
     elif self.kvlevel == 4:
-      uii = np.exp(self.getPT_lnphii(P, T, yi)[1])
+      uii = np.exp(self.getPT_lnphii(P, T, yi))
       cbrtkvi = np.cbrt(kvi)
       return *self.upji, uii, kvi, 1. / kvi, cbrtkvi, 1. / cbrtkvi
     else:
-      raise ValueError(f'Unsupported level number: {level}.')
+      raise ValueError(f'Unsupported level number: {self.kvlevel}.')
+
+  def _getPT_PID_wilson(self, P: float, T: float, yi: Vector[Double]) -> int:
+    kvim1 = (np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / T))
+             * self.Pci / P - 1.)
+    if yi.dot(kvim1 / (1. + .5 * kvim1)) > 0.:
+      return 0
+    else:
+      return 1
+
+  def _getPT_PIDj_wilson(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> Vector[Integer]:
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    kvjim1 = (np.exp(5.3727 * (1. + self.wi) * (1. - self.Tci / Tj[:,None]))
+             * self.Pci / Pj[:,None] - 1.)
+    return np.where(np.vecdot(yji, kvjim1 / (1. + .5 * kvjim1)) > 0., 0, 1)
+
+  def _getPT_PID_vcTc(self, P: float, T: float, yi: Vector[Double]) -> int:
+    Z = self.getPT_Z(P, T, yi)
+    v = Z * R * T / P
+    vpc = yi.dot(self.vci)
+    Tpc = yi.dot(self.Tci)
+    if v * T * T > vpc * Tpc * Tpc:
+      return 0
+    else:
+      return 1
+
+  def _getPT_PIDj_vcTc(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> Vector[Integer]:
+    Zj = self.getPT_Zj(Pj, Tj, yji)
+    vj = Zj * R * Tj / Pj
+    vpcj = yji.dot(self.vci)
+    Tpcj = yji.dot(self.Tci)
+    return np.where(vj * Tj * Tj > vpcj * Tpcj * Tpcj, 0, 1)
+
+  def _getPT_PID_dadT(self, P: float, T: float, yi: Vector[Double]) -> int:
+    return 0
+
+  def _getPT_PIDj_dadT(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> Vector[Integer]:
+    return np.array([0])
+
+  def _getPT_PID_pip(self, P: float, T: float, yi: Vector[Double]) -> int:
+    return 0
+
+  def _getPT_PIDj_pip(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> Vector[Integer]:
+    return np.array([0])
+
+  def getPT_PID(self, P: float, T: float, yi: Vector[Double]) -> int:
+    """Disignate phase composition for a given pressure and temperature.
+    The output of this method depends on the `phaseid` parameter of the
+    `pr78` class.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: Vector[Double], shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    The designated phase (`0` = vapour, `1` = liquid).
+    """
+    return self._getPT_PID(P, T, yi)
+
+  def getPT_PIDj(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> Vector[Integer]:
+    """Disignate phase compositions for a given pressure(s) and
+    temperature(s). The output of this method depends on the `phaseid`
+    parameter of the `pr78` class.
+
+    Parameters
+    ----------
+    Pj: float | Vector[Double], shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: float | Vector[Double], shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    Returns
+    -------
+    The designated phases (`0` = vapour, `1` = liquid) as a
+    `Vector[Integer]` of shape `(Np,)`.
+    """
+    return self._getPT_PIDj(Pj, Tj, yji)
 
   def getVT_P(
     self,
-    V: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar = 1.,
-  ) -> Scalar:
+    V: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> float:
     """Computes pressure for given volume, temperature and composition.
 
     Parameters
     ----------
-    V: Scalar
+    V: float
       Volume of the mixture [m3].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
     Pressure in [Pa].
     """
-    v = V / n
+    v = V / n + yi.dot(self.vsi_bi)
     multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
     sqrtalphai = self.sqrtai * multi
     Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
@@ -1425,11 +1506,11 @@ class pr78(object):
 
   def getVT_lnfi_dnj(
     self,
-    V: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar = 1.,
-  ) -> tuple[Vector, Matrix]:
+    V: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+  ) -> tuple[Vector[Double], Matrix[Double]]:
     """Computes fugacities of components and their partial derivatives
     with respect to component mole numbers.
 
@@ -1438,25 +1519,26 @@ class pr78(object):
 
     Parameters
     ----------
-    V: Scalar
+    V: float
       Volume of the mixture [m3].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
     -------
     A tuple that contains:
-    - logarithms of fugacities of components as a `Vector` of shape
-      `(Nc,)`,
+    - logarithms of fugacities of components as a `Vector[Double]` of
+      shape `(Nc,)`,
     - partial derivatives of logarithms of fugacities with respect
-      to mole numbers of components as a `Matrix` of shape `(Nc, Nc)`.
+      to mole numbers of components as a `Matrix[Double]` of shape
+      `(Nc, Nc)`.
     """
     d1 = 2.414213562373095
     d2 = -0.414213562373095
@@ -1488,12 +1570,12 @@ class pr78(object):
 
   def getVT_d3F(
     self,
-    V: Scalar,
-    T: Scalar,
-    yi: Vector,
-    zti: Vector,
-    n: Scalar = 1.,
-  ) -> Scalar:
+    V: float,
+    T: float,
+    yi: Vector[Double],
+    zti: Vector[Double],
+    n: float = 1.,
+  ) -> float:
     """Computes the cubic form of the Helmholtz energy Taylor series
     decomposition for a given vector of component mole number changes.
     This method is used by the critical point calculation procedure.
@@ -1503,19 +1585,19 @@ class pr78(object):
 
     Parameters
     ----------
-    V: Scalar
+    V: float
       Volume of the mixture [m3].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    zti: Vector, shape (Nc,)
+    zti: Vector[Double], shape (Nc,)
       Component mole number changes [mol].
 
-    n: Scalar
+    n: float
       Mole number of the mixture [mol]. Default is `1.0` [mol].
 
     Returns
@@ -1551,15 +1633,15 @@ class pr78(object):
             - 3. * btm * tm * F6) * alpham / bm)
     return C / (n * n)
 
-  def getVT_vmin(self, T: Scalar, yi: Vector) -> Scalar:
+  def getVT_vmin(self, T: float, yi: Vector[Double]) -> float:
     """Calculates the minimal molar volume.
 
     Parameters
     ----------
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
     Returns
@@ -1569,22 +1651,22 @@ class pr78(object):
     return yi.dot(self.bi)
 
   @staticmethod
-  def fdG(Z1: Scalar, Z2: Scalar, A: Scalar, B: Scalar) -> Scalar:
+  def fdG(Z1: float, Z2: float, A: float, B: float) -> float:
     """Calculates the Gibbs energy difference between two states
     corresponding to the roots of the equation of state.
 
     Parameters
     ----------
-    Z1: Scalar
+    Z1: float
       The first root (compressibility factor) of the equation of state.
 
-    Z2: Scalar
+    Z2: float
       The second root (compressibility factor) of the equation of state.
 
-    A: Scalar
+    A: float
       The coefficient of the cubic form of the equation of state.
 
-    B: Scalar
+    B: float
       The coefficient of the cubic form of the equation of state.
 
     Returns
@@ -1600,38 +1682,30 @@ class pr78(object):
                         * (Z2 - B * 0.414213562373095)))
               * 0.3535533905932738 * A / B)
 
-  def solve(self, A: Scalar, B: Scalar) -> tuple[int, Scalar]:
+  def solve(self, A: float, B: float) -> float:
     """Solves the modified Peng-Robinson equation of state.
 
-    This method implements the Cardano's method to solve the cubic form
-    of the equation of state.
+    This method implements Cardano's method to solve the cubic form of
+    the equation of state.
 
     When the equation of state has two (or more) real roots, the correct
     solution will be chosen based on the comparison of Gibbs energies
-    corresponding to these roots. If that procedure selects the largest
-    real root, then the fluid is said to be vapour. Similarly, if the
-    smallest real root is chosen, the fluid is said to be liquid.
-
-    When the equation of state has only one real root, the fluid is
-    designated as liquid or vapour based on the algorithm presented
-    by R. Gosset et al, 1986 (doi: 10.1016/0378-3812(86)85061-0).
+    corresponding to these roots.
 
     Parameters:
     -----------
-    A: Scalar
+    A: float
       The coefficient in the cubic form of the modified Peng-Robinson
       equation of state.
 
-    B: Scalar
+    B: float
       The coefficient in the cubic form of the modified Peng-Robinson
       equation of state.
 
     Returns
     -------
-    A tuple of:
-    - the designated phase (`0` = vapour, `1` = liquid),
-    - the solution of the modified Peng-Robinson equation of state
-      corresponding to the lowest Gibbs energy.
+    The solution of the modified Peng-Robinson equation of state
+    corresponding to the lowest Gibbs energy.
     """
     b = B - 1.
     c = A - 2. * B - 3. * B * B
@@ -1644,10 +1718,7 @@ class pr78(object):
       u1 = np.cbrt(-q * .5 + s_)
       u2 = np.cbrt(-q * .5 - s_)
       x = u1 + u2 - b / 3.
-      if A > 5.877359948604401 * B and x < 3.9513730355914394 * B:
-        return 1, x
-      else:
-        return 0, x
+      return x
     else:
       t0 = (2. * np.sqrt(-p / 3.)
             * np.cos(np.arccos(1.5 * q * np.sqrt(-3. / p) / p) / 3.))
@@ -1660,14 +1731,14 @@ class pr78(object):
       if x2 > B:
         dG = self.fdG(x0, x2, A, B)
         if dG < 0.:
-          return 0, x0
+          return x0
         else:
-          return 1, x2
+          return x2
       elif x1 > B:
         dG = self.fdG(x0, x1, A, B)
         if dG < 0.:
-          return 0, x0
+          return x0
         else:
-          return 1, x1
+          return x1
       else:
-        return 0, x0
+        return x0

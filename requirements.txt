@@ -1,5 +1,5 @@
 python >= 3.12
-numpy >= 2.0.0
+numpy >= 2.2.0
 scipy >= 1.14.0
 ipython
 matplotlib-base

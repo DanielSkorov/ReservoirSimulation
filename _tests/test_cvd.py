@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('lab')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -25,14 +25,6 @@ from lab import (
   cvdPT,
   SimpleSeparator,
   GasSeparator,
-)
-
-from constants import (
-  R,
-)
-
-from matplotlib import (
-  pyplot as plt,
 )
 
 
@@ -65,9 +57,9 @@ class cvd(unittest.TestCase):
       0.00630, 0.19705, 0.13549, 0.08406, 0.05104, 0.02627, -0.01284,-0.01087,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = SimpleSeparator(pr, useprev=True)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cvd = cvdPT(pr, sepg, sepo, useprev=True)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
+    cvd = cvdPT(pr, sepg, sepo)
     res = cvd.run(PP, T, yi, 20e6)
     pass
 
@@ -99,8 +91,8 @@ class cvd(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = GasSeparator(pr)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cvd = cvdPT(pr, sepg, sepo, useprev=True)
+    sepo = SimpleSeparator(pr)
+    cvd = cvdPT(pr, sepg, sepo)
     res = cvd.run(PP, T, yi, 20e6)
     pass
 
@@ -122,42 +114,18 @@ class cvd(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = SimpleSeparator(pr, useprev=True)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cvd = cvdPT(pr, sepg, sepo, useprev=True)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
+    cvd = cvdPT(pr, sepg, sepo)
     res = cvd.run(PP, T, yi, 17e6)
     pass
 
   def test_04(self):
-    PP = np.array([17120., 16360., 15820., 14940., 13850., 12670., 11490.,
-                   10180., 9220., 7180., 5590., 3210., 1590., 910., 350.,
-                   101.]) * 1e3
-    T = 68. + 273.15
-    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
-    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
-    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
-    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
-    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
-    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
-    dij = np.array([
-      0.0027,
-      0.0085, 0.0017,
-      0.0147, 0.0049, 0.0009,
-      0.0393, 0.0219, 0.0117, 0.0062,
-    ])
-    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = GasSeparator(pr)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cvd = cvdPT(pr, sepg, sepo, useprev=True)
-    res = cvd.run(PP, T, yi, 17e6)
-    pass
-
-  def test_05(self):
     PP = np.array([34575.1, 27680.4, 20785.6, 14580.3, 8375.1, 4927.7]) * 1e3
     T = 124.44 + 273.15
-    yi = np.array([0.0001, 0.0011, 0.6893, 0.0863, 0.0534, 0.0115, 0.0233,
+    yi = np.array([0.0001, 0.0011, 0.6963, 0.0863, 0.0534, 0.0115, 0.0233,
                    0.0093, 0.0085, 0.0173, 0.046808865, 0.021179837,
-                   0.013661825, 0.008213373, 0.0100361])
+                   0.013661825, 0.008213373, 0.0030361])
     Pci = np.array([72.8, 33.5, 45.4, 48.2, 41.9, 36.0, 37.5, 33.4, 33.3,
                     32.46, 29.1862, 23.274195, 19.855981, 17.096682,
                     16.23444]) * 101325.
@@ -196,10 +164,10 @@ class cvd(unittest.TestCase):
       0.0199, 0.0146, 0.0067, 0.0032, 0.0014,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = GasSeparator(pr)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cvd = cvdPT(pr, sepg, sepo, useprev=True)
-    res = cvd.run(PP, T, yi, 17e6)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
+    cvd = cvdPT(pr, sepg, sepo)
+    res = cvd.run(PP, T, yi, 35e6)
     pass
 
 if __name__ == '__main__':

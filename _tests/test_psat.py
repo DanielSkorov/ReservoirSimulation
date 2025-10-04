@@ -124,7 +124,7 @@ class psat(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    Psat = PsatPT(pr, method='qnss', maxiter=16)
+    Psat = PsatPT(pr, method='qnss', maxiter=14)
     res = Psat.run(P0, T, yi, upper=True)
     pass
 

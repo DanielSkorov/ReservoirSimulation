@@ -19,108 +19,196 @@ from rr import (
   solveNp,
 )
 
-from typing import (
-  Callable,
-  Iterable,
-  Optional,
+from constants import (
+  R,
 )
 
-from custom_types import (
-  Scalar,
+from typing import (
+  Protocol,
+  Sequence,
+)
+
+from customtypes import (
+  Integer,
+  Double,
   Vector,
   Matrix,
   Tensor,
-  IVector,
-  Eos,
+  Linsolver,
   SolutionNotFoundError,
+)
+
+from eos import (
+  Eos,
 )
 
 
 logger = logging.getLogger('flash')
 
 
-class EosFlash2pPT(Eos):
+class EosFlash2pPT(Eos, Protocol):
 
   def getPT_kvguess(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> Iterable[Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> Sequence[Vector[Double]]: ...
+
+  def getPT_PID(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> int: ...
 
   def getPT_Z_lnphii(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-  ) -> tuple[int, Scalar, Vector]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, Vector[Double]]: ...
 
   def getPT_Z_lnphii_dnj(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    n: Scalar,
-  ) -> tuple[int, Scalar, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float,
+  ) -> tuple[float, Vector[Double], Matrix[Double]]: ...
 
 
-class EosFlashnpPT(EosFlash2pPT):
+class EosFlashNpPT(EosFlash2pPT, Protocol):
+
+  def getPT_Z(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> float: ...
+
+  def getPT_PIDj(
+    self,
+    P: float,
+    T: float,
+    yji: Matrix[Double],
+  ) -> Vector[Integer]: ...
 
   def getPT_Zj_lnphiji(
     self,
-    P: Scalar,
-    T: Scalar,
-    yji: Matrix,
-  ) -> tuple[IVector, Vector, Matrix]: ...
+    P: float,
+    T: float,
+    yji: Matrix[Double],
+  ) -> tuple[Vector[Double], Matrix[Double]]: ...
 
   def getPT_Zj_lnphiji_dnk(
     self,
-    P: Scalar,
-    T: Scalar,
-    yji: Matrix,
-  ) -> tuple[IVector, Vector, Matrix, Tensor]: ...
+    P: float,
+    T: float,
+    yji: Matrix[Double],
+    nj: Vector[Double],
+  ) -> tuple[Vector[Double], Matrix[Double], Tensor[Double]]: ...
 
 
-@dataclass
+@dataclass(eq=False, slots=True)
 class FlashResult(object):
   """Container for flash calculation outputs with pretty-printing.
 
   Attributes
   ----------
-  yji: Matrix, shape (Np, Nc)
-    Mole fractions of components in each phase as a `Matrix` of shape
-    `(Np, Nc)`, where `Np` is the number of phases and `Nc` is the
-    number of components.
+  Np: int
+    The number of phases.
 
-  Fj: Vector, shape (Np,)
-    Phase mole fractions. `Vector` of real elements of shape `(Np,)`,
-    where `Np` is the number of phases.
+  P: float
+    Pressure [Pa] of the equilibrium state.
+
+  T: float
+    Temperature [K] of the equilibrium state.
+
+  V: float
+    Volume [m3] of a mixture at the equilibrium state.
+
+  n: float
+    Number of moles [mol] of a mixture.
+
+  ni: Vector[Double], shape (Nc,)
+    Number of moles [mol] of `Nc` components.
+
+  nj: Vector[Double]
+    Phase mole numbers as a `Vector[Double]` of shape `(Np,)`, where
+    `Np` is the number of phases.
+
+  fj: Vector, shape (Np,)
+    Phase mole fractions as a `Vector[Double]` of shape `(Np,)`, where
+    `Np` is the number of phases.
+
+  yji: Matrix[Double], shape (Np, Nc)
+    Mole fractions of components in each phase as a `Matrix[Double]`
+    of shape `(Np, Nc)`, where `Np` is the number of phases and `Nc`
+    is the number of components.
 
   Zj: Vector, shape (Np,)
     Phase compressibility factors as a `Vector` of shape `(Np,)`,
     where `Np` is the number of phases.
 
-  sj: IVector, shape (Np,)
-    The designated phases (states) as a 1d-array of integers with the
-    shape `(Np,)` (`0` = vapour, `1` = liquid, etc.).
+  vj: Vector[Double], shape (Np,)
+    Molar volumes [m3/mol] of phases as a `Vector[Double]` of shape
+    `(Np,)`, where `Np` is the number of phases.
 
-  kvji: Matrix, shape (Np - 1, Nc) | None
-    K-values of components in non-reference phases as a `Matrix` of
-    shape `(Np - 1, Nc)`, where `Np` is the number of phases and `Nc`
-    is the number of components. For a one phase state, this attribute
+  sj: Vector[Integer], shape (Np,)
+    The designated phases (states) as a `Vector[Integer]` of the shape
+    `(Np,)`, where `Np` is the number of phases. (`0` = vapour,
+    `1` = liquid, etc.).
+
+  kvji: Matrix[Double], shape (Np - 1, Nc) | None
+    K-values of components in non-reference phases as a `Matrix[Double]`
+    of shape `(Np - 1, Nc)`, where `Np` is the number of phases and `Nc`
+    is the number of components. For the one phase state, this attribute
     is `None`.
+
+  Methods
+  -------
+  __str__(self) -> str
+    Returns the string representation of this class.
+
+  __repr__(self) -> str
+    Returns the table representation of this class.
   """
-  yji: Matrix
-  Fj: Vector
-  Zj: Vector
-  sj: IVector
-  kvji: Optional[Matrix] = None
+  Np: int
+  P: float
+  T: float
+  V: float
+  n: float
+  ni: Vector[Double]
+  nj: Vector[Double]
+  fj: Vector[Double]
+  yji: Matrix[Double]
+  Zj: Vector[Double]
+  vj: Vector[Double]
+  sj: Vector[Integer]
+  kvji: Matrix[Double] | None = None
+
+  def __str__(self) -> str:
+    with np.printoptions(linewidth=1024):
+      return (f'Pressure: {self.P / 1e6:.3f} [MPa]\n'
+              f'Temperature: {self.T - 273.15:.2f} [°C]\n'
+              f'Mole number of the system: {self.n:.4f} [mol]\n'
+              f'Phase IDs: {self.sj}\n'
+              f'Phase mole fractions: {self.fj}\n'
+              f'Phase compressibility factors: {self.Zj}')
 
   def __repr__(self) -> str:
-    with np.printoptions(linewidth=np.inf):
-      return (f"Phase compositions:\n{self.yji}\n"
-              f"Phase mole fractions:\n{self.Fj}\n"
-              f"Phase compressibility factors:\n{self.Zj}")
+    return (f'{self.P/1e6:8.3f}{self.T-273.15:8.2f}{self.n:9.4f}'
+            + ''.join(map(lambda t: '%4s%9.4f%9.4f' % t,
+                          zip(self.sj, self.fj, self.Zj))))
+
+  def __format__(self, fmt: str) -> str:
+    if not fmt or fmt == 's':
+      return self.__str__()
+    elif fmt == 'r':
+      return self.__repr__()
+    else:
+      raise ValueError(f'Unsupported format: "{fmt}".')
 
 
 class flash2pPT(object):
@@ -135,44 +223,47 @@ class flash2pPT(object):
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     If the solution method would be one of `'newton'`, `'ss-newton'` or
     `'qnss-newton'` then it also must have:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -238,8 +329,7 @@ class flash2pPT(object):
     self.runstab = runstab
     self.useprev = useprev
     self.stabsolver = stabilityPT(eos, **stabkwargs)
-    self.preserved = False
-    self.prevkvji: None | Matrix = None
+    self.prevkvji: None | Matrix[Double] = None
     if method == 'ss':
       self.solver = partial(_flash2pPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
@@ -260,73 +350,85 @@ class flash2pPT(object):
 
   def run(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    kvji0: Iterable[Vector] | None = None,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+    kvji0: Sequence[Vector[Double]] | None = None,
   ) -> FlashResult:
     """Performs flash calculations for given pressure, temperature and
     composition.
 
     Parameters
     ----------
-    P: Scalar
-      Pressure of the mixture [Pa].
+    P: float
+      Pressure [Pa] of the mixture.
 
-    T: Scalar
-      Temperature of the mixture [K].
+    T: float
+      Temperature [K] of the mixture.
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    kvji0: Iterable[Vector] | None
-      An iterable object containing arrays of initial k-value guesses.
-      Each array's shape should be `(Nc,)`. Default is `None` which
-      means to use initial guesses from the method `getPT_kvguess` of
-      the initialized instance of an EOS.
+    n: float
+      Number of moles [mol] of the mixture. Default is `1.0` [mol].
+
+    kvji0: Sequence[Vector[Double]] | None
+      A sequence containing 1d-arrays of initial k-value guesses. Each
+      array's shape should be `(Nc,)`. Default is `None` which means
+      to use initial guesses from the method `getPT_kvguess` of the
+      initialized instance of an EOS.
 
     Returns
     -------
     Flash calculation results as an instance of `FlashResult` object.
     Important attributes are:
     - `yji` component mole fractions in each phase,
-    - `Fj` phase mole fractions,
+    - `fj` phase mole fractions,
     - `Zj` the compressibility factor of each phase.
 
     Raises
     ------
-    `SolutionNotFoundError` if the flash calculation procedure terminates
-    unsuccessfully.
+    `SolutionNotFoundError` if the flash calculation procedure
+    terminates unsuccessfully.
     """
     if kvji0 is None:
-      kvji0 = self.eos.getPT_kvguess(P, T, yi)
-    if self.useprev and self.preserved:
-      kvji0 = *self.prevkvji, *kvji0
+      kvji = self.eos.getPT_kvguess(P, T, yi)
+    else:
+      kvji = kvji0
+    if self.useprev and self.prevkvji is not None:
+      kvji = self.prevkvji[0], *kvji
     if self.runstab:
-      stab = self.stabsolver.run(P, T, yi, kvji0)
+      stab = self.stabsolver.run(P, T, yi, kvji)
       if stab.stable:
-        return FlashResult(np.atleast_2d(yi), np.array([1.]),
-                           np.array([stab.Z]), np.array([stab.s]))
+        Z = stab.Z
+        v = Z * R * T / P
+        V = n * v
+        s = self.eos.getPT_PID(P, T, yi)
+        return FlashResult(1, P, T, V, n, n * yi,
+                           np.array([n]), np.array([1.]), np.atleast_2d(yi),
+                           np.array([Z]), np.array([v]), np.array([s]))
       else:
         self.negflash = False
-      if self.useprev and self.preserved:
-        kvji0 = *self.prevkvji, *stab.kvji
+      assert stab.kvji is not None
+      if self.useprev and self.prevkvji is not None:
+        kvji = self.prevkvji[0], *stab.kvji
       else:
-        kvji0 = stab.kvji
-    flash = self.solver(P, T, yi, kvji0, negflash=self.negflash)
+        kvji = stab.kvji
+    flash = self.solver(P, T, yi, n, kvji, negflash=self.negflash)
     if self.useprev:
       self.prevkvji = flash.kvji
-      self.preserved = True
     return flash
 
 
 def _flash2pPT_ss(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvji0: Iterable[Vector],
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvji0: Sequence[Vector[Double]],
   eos: EosFlash2pPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 100,
   negflash: bool = True,
 ) -> FlashResult:
@@ -335,37 +437,44 @@ def _flash2pPT_ss(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: Iterable[Vector]
-    An iterable object containing arrays of initial k-value guesses.
+  n: float
+    Number of moles [mol] of the mixture.
+
+  kvji0: Sequence[Vector[Double]]
+    A sequence containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -375,7 +484,7 @@ def _flash2pPT_ss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -392,7 +501,7 @@ def _flash2pPT_ss(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -415,8 +524,8 @@ def _flash2pPT_ss(
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
     y0i = y1i * kvi
-    s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-    s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+    Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+    Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
     gi = lnkvi + lnphi0i - lnphi1i
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *lnkvi, f0, g2)
@@ -427,26 +536,31 @@ def _flash2pPT_ss(
       f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
-      s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-      s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+      Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+      Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
       gi = lnkvi + lnphi0i - lnphi1i
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnkvi, f0, g2)
     if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+      s0 = eos.getPT_PID(P, T, y0i)
+      s1 = eos.getPT_PID(P, T, y1i)
       if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
         yji = np.vstack([y0i, y1i])
-        Fj = np.array([f0, 1. - f0])
+        fj = np.array([f0, 1. - f0])
         Zj = np.array([Z0, Z1])
         sj = np.array([s0, s1])
         kvji = np.atleast_2d(kvi)
       else:
         yji = np.vstack([y1i, y0i])
-        Fj = np.array([1. - f0, f0])
+        fj = np.array([1. - f0, f0])
         Zj = np.array([Z1, Z0])
         sj = np.array([s1, s0])
         kvji = np.atleast_2d(1. / kvi)
-      logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-      return FlashResult(yji, Fj, Zj, sj, kvji)
+      logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+      vj = Zj * (R * T / P)
+      nj = n * fj
+      V = nj.dot(vj)
+      return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
@@ -461,14 +575,15 @@ def _flash2pPT_ss(
 
 
 def _flash2pPT_qnss(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvji0: Iterable[Vector],
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvji0: Sequence[Vector[Double]],
   eos: EosFlash2pPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 6.,
+  lmbdmax: float = 6.,
   negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for two-phase flash calculations using a PT-based
@@ -480,37 +595,44 @@ def _flash2pPT_qnss(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: Iterable[Vector]
-    An iterable object containing arrays of initial k-value guesses.
+  n: float
+    Number of moles [mol] of the mixture.
+
+  kvji0: Sequence[Vector[Double]]
+    A sequence containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -520,7 +642,7 @@ def _flash2pPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -528,7 +650,7 @@ def _flash2pPT_qnss(
   maxiter: int
     The maximum number of solver iterations. Default is `50`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `6.0`.
 
   negflash: bool
@@ -540,7 +662,7 @@ def _flash2pPT_qnss(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -563,8 +685,8 @@ def _flash2pPT_qnss(
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
     y0i = y1i * kvi
-    s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-    s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+    Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+    Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
     gi = lnkvi + lnphi0i - lnphi1i
     g2 = gi.dot(gi)
     lmbd = 1.
@@ -583,8 +705,8 @@ def _flash2pPT_qnss(
       f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
-      s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-      s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+      Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+      Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
       gi = lnkvi + lnphi0i - lnphi1i
       g2km1 = g2
       g2 = gi.dot(gi)
@@ -600,20 +722,25 @@ def _flash2pPT_qnss(
         if lmbd > lmbdmax:
           lmbd = lmbdmax
     if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+      s0 = eos.getPT_PID(P, T, y0i)
+      s1 = eos.getPT_PID(P, T, y1i)
       if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
         yji = np.vstack([y0i, y1i])
-        Fj = np.array([f0, 1. - f0])
+        fj = np.array([f0, 1. - f0])
         Zj = np.array([Z0, Z1])
         sj = np.array([s0, s1])
         kvji = np.atleast_2d(kvi)
       else:
         yji = np.vstack([y1i, y0i])
-        Fj = np.array([1. - f0, f0])
+        fj = np.array([1. - f0, f0])
         Zj = np.array([Z1, Z0])
         sj = np.array([s1, s0])
         kvji = np.atleast_2d(1. / kvi)
-      logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-      return FlashResult(yji, Fj, Zj, sj, kvji)
+      logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+      vj = Zj * (R * T / P)
+      nj = n * fj
+      V = nj.dot(vj)
+      return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
@@ -628,16 +755,17 @@ def _flash2pPT_qnss(
 
 
 def _flash2pPT_newt(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvji0: Iterable[Vector],
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvji0: Sequence[Vector[Double]],
   eos: EosFlash2pPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  forcenewton: bool = False,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   negflash: bool = True,
+  forcenewton: bool = False,
+  linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
   """Performs minimization of the Gibbs energy function using Newton's
   method and a PT-based equation of state. A switch to the successive
@@ -646,40 +774,47 @@ def _flash2pPT_newt(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: Iterable[Vector]
-    An iterable object containing arrays of initial k-value guesses.
+  n: float
+    Number of moles [mol] of the mixture.
+
+  kvji0: Sequence[Vector[Double]]
+    A sequence containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
+
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -689,7 +824,7 @@ def _flash2pPT_newt(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate Newton's method successfully if the sum of squared
     elements of the gradient of Gibbs energy function is less than
     `tol`. Default is `1e-6`.
@@ -697,27 +832,27 @@ def _flash2pPT_newt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
     switch from Newton's method to successive substitution iterations.
     Default is `False`.
 
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Linsolver
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
 
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -740,14 +875,14 @@ def _flash2pPT_newt(
     lnkvi = np.log(kvi)
     f0 = solve2p_FGH(kvi, yi)
     if np.isclose(f0, 0.):
-      f0 = 1e-8
+      f0 = np.float64(1e-8)
     elif np.isclose(f0, 1.):
-      f0 = 0.99999999
+      f0 = np.float64(0.99999999)
     f1 = 1. - f0
     y1i = yi / ((kvi - 1.) * f0 + 1.)
     y0i = y1i * kvi
-    s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-    s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+    Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+    Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
     gi = lnkvi + lnphi0i - lnphi1i
     g2 = gi.dot(gi)
     logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'Newt')
@@ -765,8 +900,8 @@ def _flash2pPT_newt(
       f1 = 1. - f0
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
-      s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-      s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+      Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+      Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
       gi = lnkvi + lnphi0i - lnphi1i
       g2kp1 = gi.dot(gi)
       if g2kp1 < g2 or forcenewton:
@@ -779,26 +914,31 @@ def _flash2pPT_newt(
         f1 = 1. - f0
         y1i = yi / ((kvi - 1.) * f0 + 1.)
         y0i = y1i * kvi
-        s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-        s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+        Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+        Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
         gi = lnkvi + lnphi0i - lnphi1i
         g2 = gi.dot(gi)
         logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
     if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+      s0 = eos.getPT_PID(P, T, y0i)
+      s1 = eos.getPT_PID(P, T, y1i)
       if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
         yji = np.vstack([y0i, y1i])
-        Fj = np.array([f0, f1])
+        fj = np.array([f0, f1])
         Zj = np.array([Z0, Z1])
         sj = np.array([s0, s1])
         kvji = np.atleast_2d(kvi)
       else:
         yji = np.vstack([y1i, y0i])
-        Fj = np.array([f1, f0])
+        fj = np.array([f1, f0])
         Zj = np.array([Z1, Z0])
         sj = np.array([s1, s0])
         kvji = np.atleast_2d(1. / kvi)
-      logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-      return FlashResult(yji, Fj, Zj, sj, kvji)
+      logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+      vj = Zj * (R * T / P)
+      nj = n * fj
+      V = nj.dot(vj)
+      return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj, kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was Newton, EOS: %s.\nParameters:\nP = %s Pa"
@@ -813,17 +953,18 @@ def _flash2pPT_newt(
 
 
 def _flash2pPT_ssnewt(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvji0: Iterable[Vector],
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvji0: Sequence[Vector[Double]],
   eos: EosFlash2pPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.1, 1e-2, 1e-10, 1e-4),
-  forcenewton: bool = False,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
   negflash: bool = True,
+  forcenewton: bool = False,
+  switchers: tuple[float, float, float, float] = (0.1, 1e-2, 1e-10, 1e-4),
+  linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
   r"""Performs minimization of the Gibbs energy function using Newton's
   method and a PT-based equation of state. A switch to the successive
@@ -833,51 +974,57 @@ def _flash2pPT_ssnewt(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: Iterable[Vector]
-    An iterable object containing arrays of initial k-value guesses.
+  n: float
+    Number of moles [mol] of the mixture.
+
+  kvji0: Sequence[Vector[Double]]
+    A sequence containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -887,7 +1034,7 @@ def _flash2pPT_ssnewt(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -895,7 +1042,17 @@ def _flash2pPT_ssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar]
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the switch from
+    Newton's method to successive substitution iterations if Newton's
+    method doesn't decrese the sum of squared elements of the vector of
+    equilibrium equations. Default is `False`.
+
+  switchers: tuple[float, float, float, float]
     Allows to modify the conditions of switching from the successive
     substitution method to Newton's method. The parameter must be
     represented as a tuple containing four values: :math:`\eps_r`,
@@ -918,28 +1075,18 @@ def _flash2pPT_ssnewt(
     conditions were taken from the paper of L.X. Nghiem
     (doi: 10.2118/8285-PA). Default is `(0.1, 1e-2, 1e-10, 1e-4)`.
 
-  forcenewton: bool
-    A flag indicating whether it is allowed to ignore the switch from
-    Newton's method to successive substitution iterations if Newton's
-    method doesn't decrese the sum of squared elements of the vector of
-    equilibrium equations. Default is `False`.
-
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Linsolver
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
 
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -963,8 +1110,8 @@ def _flash2pPT_ssnewt(
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
     y0i = y1i * kvi
-    s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-    s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+    Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+    Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
     gi = lnkvi + lnphi0i - lnphi1i
     g2 = gi.dot(gi)
     switch = g2 < tol
@@ -977,8 +1124,8 @@ def _flash2pPT_ssnewt(
       f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
-      s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-      s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+      Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+      Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
       gi = lnkvi + lnphi0i - lnphi1i
       g2km1 = g2
       g2 = gi.dot(gi)
@@ -990,25 +1137,31 @@ def _flash2pPT_ssnewt(
     if np.isfinite(g2):
       if g2 < tol:
         if f0 > 0. and f0 < 1. or negflash:
+          s0 = eos.getPT_PID(P, T, y0i)
+          s1 = eos.getPT_PID(P, T, y1i)
           if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
             yji = np.vstack([y0i, y1i])
-            Fj = np.array([f0, 1. - f0])
+            fj = np.array([f0, 1. - f0])
             Zj = np.array([Z0, Z1])
             sj = np.array([s0, s1])
             kvji = np.atleast_2d(kvi)
           else:
             yji = np.vstack([y1i, y0i])
-            Fj = np.array([1. - f0, f0])
+            fj = np.array([1. - f0, f0])
             Zj = np.array([Z1, Z0])
             sj = np.array([s1, s0])
             kvji = np.atleast_2d(1. / kvi)
-          logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-          return FlashResult(yji, Fj, Zj, sj, kvji)
+          logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
+          return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
       elif k < maxiter:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         f1 = 1. - f0
-        s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-        s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+        Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+        Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
         logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'Newt')
         while g2 > tol and k < maxiter:
           ui = yi / (y1i * y0i) - 1.
@@ -1024,8 +1177,8 @@ def _flash2pPT_ssnewt(
           f1 = 1. - f0
           y1i = yi / ((kvi - 1.) * f0 + 1.)
           y0i = y1i * kvi
-          s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-          s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+          Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+          Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
           gi = lnkvi + lnphi0i - lnphi1i
           g2kp1 = gi.dot(gi)
           if g2kp1 < g2 or forcenewton:
@@ -1038,26 +1191,32 @@ def _flash2pPT_ssnewt(
             f1 = 1. - f0
             y1i = yi / ((kvi - 1.) * f0 + 1.)
             y0i = y1i * kvi
-            s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P,T, y1i,f1)
-            s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P,T, y0i,f0)
+            Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P,T, y1i, f1)
+            Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P,T, y0i, f0)
             gi = lnkvi + lnphi0i - lnphi1i
             g2 = gi.dot(gi)
             logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
         if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+          s0 = eos.getPT_PID(P, T, y0i)
+          s1 = eos.getPT_PID(P, T, y1i)
           if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
             yji = np.vstack([y0i, y1i])
-            Fj = np.array([f0, f1])
+            fj = np.array([f0, f1])
             Zj = np.array([Z0, Z1])
             sj = np.array([s0, s1])
             kvji = np.atleast_2d(kvi)
           else:
             yji = np.vstack([y1i, y0i])
-            Fj = np.array([f1, f0])
+            fj = np.array([f1, f0])
             Zj = np.array([Z1, Z0])
             sj = np.array([s1, s0])
             kvji = np.atleast_2d(1. / kvi)
-          logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-          return FlashResult(yji, Fj, Zj, sj, kvji)
+          logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
+          return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was SS-Newton, EOS: %s.\nParameters:\nP = %s Pa"
@@ -1072,18 +1231,19 @@ def _flash2pPT_ssnewt(
 
 
 def _flash2pPT_qnssnewt(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  kvji0: Iterable[Vector],
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  kvji0: Sequence[Vector[Double]],
   eos: EosFlash2pPT,
-  tol: Scalar = 1e-16,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  lmbdmax: Scalar = 6.,
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.1, 1e-2, 1e-10, 1e-4),
-  forcenewton: bool = False,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  lmbdmax: float = 6.,
   negflash: bool = True,
+  forcenewton: bool = False,
+  switchers: tuple[float, float, float, float] = (0.1, 1e-2, 1e-10, 1e-4),
+  linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
   r"""Performs minimization of the Gibbs energy function using Newton's
   method and a PT-based equation of state. A switch to the successive
@@ -1096,51 +1256,57 @@ def _flash2pPT_qnssnewt(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  kvji0: Iterable[Vector]
-    An iterable object containing arrays of initial k-value guesses.
+  n: float
+    Number of moles [mol] of the mixture.
+
+  kvji0: Sequence[Vector[Double]]
+    A sequence containing arrays of initial k-value guesses.
     Each array's shape should be `(Nc,)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1150,7 +1316,7 @@ def _flash2pPT_qnssnewt(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -1158,10 +1324,20 @@ def _flash2pPT_qnssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `6.0`.
 
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar]
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the switch from
+    Newton's method to successive substitution iterations if Newton's
+    method doesn't decrese the sum of squared elements of the vector of
+    equilibrium equations. Default is `False`.
+
+  switchers: tuple[float, float, float, float]
     Allows to modify the conditions of switching from the QNSS to
     Newton's method. The parameter must be represented as a tuple
     containing four values: :math:`\eps_r`, :math:`\eps_f`,
@@ -1183,17 +1359,7 @@ def _flash2pPT_qnssnewt(
     conditions were taken from the paper of L.X. Nghiem
     (doi: 10.2118/8285-PA). Default is `(0.1, 1e-2, 1e-10, 1e-4)`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
-  forcenewton: bool
-    A flag indicating whether it is allowed to ignore the switch from
-    Newton's method to successive substitution iterations if Newton's
-    method doesn't decrese the sum of squared elements of the vector of
-    equilibrium equations. Default is `False`.
-
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Linsolver
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
@@ -1204,7 +1370,7 @@ def _flash2pPT_qnssnewt(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -1228,8 +1394,8 @@ def _flash2pPT_qnssnewt(
     f0 = solve2p_FGH(kvi, yi)
     y1i = yi / ((kvi - 1.) * f0 + 1.)
     y0i = y1i * kvi
-    s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-    s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+    Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+    Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
     gi = lnkvi + lnphi0i - lnphi1i
     g2 = gi.dot(gi)
     lmbd = 1.
@@ -1250,8 +1416,8 @@ def _flash2pPT_qnssnewt(
       f0 = solve2p_FGH(kvi, yi, f0)
       y1i = yi / ((kvi - 1.) * f0 + 1.)
       y0i = y1i * kvi
-      s1, Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
-      s0, Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
+      Z1, lnphi1i = eos.getPT_Z_lnphii(P, T, y1i)
+      Z0, lnphi0i = eos.getPT_Z_lnphii(P, T, y0i)
       gi = lnkvi + lnphi0i - lnphi1i
       g2km1 = g2
       g2 = gi.dot(gi)
@@ -1273,25 +1439,31 @@ def _flash2pPT_qnssnewt(
     if np.isfinite(g2):
       if g2 < tol:
         if f0 > 0. and f0 < 1. or negflash:
+          s0 = eos.getPT_PID(P, T, y0i)
+          s1 = eos.getPT_PID(P, T, y1i)
           if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
             yji = np.vstack([y0i, y1i])
-            Fj = np.array([f0, 1. - f0])
+            fj = np.array([f0, 1. - f0])
             Zj = np.array([Z0, Z1])
             sj = np.array([s0, s1])
             kvji = np.atleast_2d(kvi)
           else:
             yji = np.vstack([y1i, y0i])
-            Fj = np.array([1. - f0, f0])
+            fj = np.array([1. - f0, f0])
             Zj = np.array([Z1, Z0])
             sj = np.array([s1, s0])
             kvji = np.atleast_2d(1. / kvi)
-          logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-          return FlashResult(yji, Fj, Zj, sj, kvji)
+          logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
+          return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
       elif k < maxiter:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         f1 = 1. - f0
-        s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-        s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+        Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+        Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
         logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'Newt')
         while g2 > tol and k < maxiter:
           ui = yi / (y1i * y0i) - 1.
@@ -1307,8 +1479,8 @@ def _flash2pPT_qnssnewt(
           f1 = 1. - f0
           y1i = yi / ((kvi - 1.) * f0 + 1.)
           y0i = y1i * kvi
-          s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
-          s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
+          Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P, T, y1i, f1)
+          Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P, T, y0i, f0)
           gi = lnkvi + lnphi0i - lnphi1i
           g2kp1 = gi.dot(gi)
           if g2kp1 < g2 or forcenewton:
@@ -1321,26 +1493,32 @@ def _flash2pPT_qnssnewt(
             f1 = 1. - f0
             y1i = yi / ((kvi - 1.) * f0 + 1.)
             y0i = y1i * kvi
-            s1, Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P,T, y1i,f1)
-            s0, Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P,T, y0i,f0)
+            Z1, lnphi1i, dlnphi1idnj = eos.getPT_Z_lnphii_dnj(P,T, y1i, f1)
+            Z0, lnphi0i, dlnphi0idnj = eos.getPT_Z_lnphii_dnj(P,T, y0i, f0)
             gi = lnkvi + lnphi0i - lnphi1i
             g2 = gi.dot(gi)
             logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
         if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+          s0 = eos.getPT_PID(P, T, y0i)
+          s1 = eos.getPT_PID(P, T, y1i)
           if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
             yji = np.vstack([y0i, y1i])
-            Fj = np.array([f0, f1])
+            fj = np.array([f0, f1])
             Zj = np.array([Z0, Z1])
             sj = np.array([s0, s1])
             kvji = np.atleast_2d(kvi)
           else:
             yji = np.vstack([y1i, y0i])
-            Fj = np.array([f1, f0])
+            fj = np.array([f1, f0])
             Zj = np.array([Z1, Z0])
             sj = np.array([s1, s0])
             kvji = np.atleast_2d(1. / kvi)
-          logger.info('Phase mole fractions: %.4f, %.4f', *Fj)
-          return FlashResult(yji, Fj, Zj, sj, kvji)
+          logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
+          return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
   logger.warning(
     "Two-phase flash calculation terminates unsuccessfully.\n"
     "The solution method was QNSS-Newton, EOS: %s.\nParameters:\nP = %s Pa"
@@ -1354,7 +1532,7 @@ def _flash2pPT_qnssnewt(
   )
 
 
-class flashnpPT(object):
+class flashNpPT(object):
   """Multiphase flash calculations.
 
   Performs multiphase flash calculations for a given pressure [Pa],
@@ -1362,88 +1540,94 @@ class flashnpPT(object):
 
   Parameters
   ----------
-  eos: EosFlashnpPT
+  eos: EosFlashNpPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_kvguess(P: Scalar, T: Scalar, yi: Vector)
-       -> Iterable[Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must generate initial
-      guesses of k-values as an iterable object of `Vector` of shape
-      `(Nc,)`.
+    - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
+       -> Sequence[Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must generate
+      initial guesses of k-values as a sequence of `Vector[Double]` of
+      shape `(Nc,)`.
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PID(P: float, T: float, yi: Vector[Double]) -> int`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return
+      the phase identification number (`0` = vapour, `1` = liquid, etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
     To perform multiphase flash calculations, this instance of an
     equation of state class must have:
 
-    - `getPT_Z(P: Scalar, T: Scalar, yi: Vector) -> tuple[int, Scalar]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return the
-      designated phase of the fluid and the compressibility factor.
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
 
-    - `getPT_Zj_lnphiji(P: Scalar, T: Scalar, yji: Matrix)
-       -> tuple[IVector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole compositions
-      of `Np` phases (`Matrix` of shape `(Np, Nc)`), this method must
-      return a tuple of:
+    - `getPT_Z(P: float, T: float, yi: Vector[Double]) -> float`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return its
+      compressibility factor.
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
+
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`.
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
     If the solution method would be one of `'newton'`, `'ss-newton'`
     or `'qnss-newton'` then it also must have:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
-    - `getPT_Zj_lnphiji_dnk(P: Scalar, T: Scalar, yji: Matrix, nj: Vector)
-       -> tuple[IVector, Vector, Matrix, Tensor]`
-      For a given pressure `P` in [Pa], temperature `T` in [K], mole
-      fractions of `Nc` components in `Np` phases `yji` of shape
-      `(Np, Nc)` and mole numbers of phases in [mol], returns a tuple
-      that contains:
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`,
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
       - partial derivatives of logarithms of fugacity coefficients with
-        respect to component mole numbers for each phase as a `Tensor`
-        of shape `(Np, Nc, Nc)`.
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1467,6 +1651,9 @@ class flashnpPT(object):
 
     Default is `'qnss-newton'`.
 
+  maxNp: int
+      The maximum number of phases. Default is `3`.
+
   negflash: bool
     A flag indicating if unphysical phase mole fractions can be
     considered as a correct solution. Default is `False`.
@@ -1482,13 +1669,14 @@ class flashnpPT(object):
   **kwargs: dict
     Other arguments for a flash calculation solver. It may contain such
     arguments as `tol`, `maxiter` and others, depending on the selected
-    flash calculation solver. It also will be passed to a two-phase
+    flash calculation solver. They also will be passed to a two-phase
     flash calculation solver.
   """
   def __init__(
     self,
-    eos: EosFlashnpPT,
+    eos: EosFlashNpPT,
     method: str = 'qnss-newton',
+    maxNp: int = 3,
     negflash: bool = False,
     flash2pkwargs: dict = {},
     stabkwargs: dict = {},
@@ -1496,23 +1684,24 @@ class flashnpPT(object):
   ) -> None:
     self.eos = eos
     self.negflash = negflash
+    self.maxNp = maxNp
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     self.solver2p = flash2pPT(eos, method=method, stabkwargs=stabkwargs,
                               negflash=negflash, **flash2pkwargs, **kwargs)
     if method == 'ss':
-      self.solver = partial(_flashnpPT_ss, eos=eos, negflash=negflash,
+      self.solver = partial(_flashNpPT_ss, eos=eos, negflash=negflash,
                             **kwargs)
     elif method == 'qnss':
-      self.solver = partial(_flashnpPT_qnss, eos=eos, negflash=negflash,
+      self.solver = partial(_flashNpPT_qnss, eos=eos, negflash=negflash,
                             **kwargs)
     elif method == 'newton':
-      self.solver = partial(_flashnpPT_newt, eos=eos, negflash=negflash,
+      self.solver = partial(_flashNpPT_newt, eos=eos, negflash=negflash,
                             **kwargs)
     elif method == 'ss-newton':
-      self.solver = partial(_flashnpPT_ssnewt, eos=eos, negflash=negflash,
+      self.solver = partial(_flashNpPT_ssnewt, eos=eos, negflash=negflash,
                             **kwargs)
     elif method == 'qnss-newton':
-      self.solver = partial(_flashnpPT_qnssnewt, eos=eos, negflash=negflash,
+      self.solver = partial(_flashNpPT_qnssnewt, eos=eos, negflash=negflash,
                             **kwargs)
     else:
       raise ValueError(f'The unknown flash-method: {method}.')
@@ -1520,32 +1709,32 @@ class flashnpPT(object):
 
   def run(
     self,
-    P: Scalar,
-    T: Scalar,
-    yi: Vector,
-    maxNp: int = 3,
-    kvji0: Iterable[Vector] | None = None,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+    n: float = 1.,
+    kvji0: Sequence[Vector[Double]] | None = None,
   ) -> FlashResult:
     """Performs multiphase flash calculations for given pressure,
     temperature and composition.
 
     Parameters
     ----------
-    P: Scalar
-      Pressure of the mixture [Pa].
+    P: float
+      Pressure [Pa] of the mixture.
 
-    T: Scalar
-      Temperature of the mixture [K].
+    T: float
+      Temperature [K] of the mixture.
 
-    yi: Vector, shape (Nc,)
+    yi: Vector[Double], shape (Nc,)
       Mole fractions of `Nc` components.
 
-    maxNp: int
-      The maximum number of phases. Default is `3`.
+    n: float
+      Number of moles [mol] of the mixture. Default is `1.0` [mol].
 
-    kvji0: Iterable[Vector] | None
-      An iterable object containing arrays of initial k-value guesses
-      for two-phase flash calculations. Each array's shape should be
+    kvji0: Sequence[Vector[Double]] | None
+      A sequence containing 1d-arrays of initial k-value guesses for
+      two-phase flash calculations. Each array's shape should be
       `(Nc,)`. Default is `None` which means to use initial guesses
       from the method `getPT_kvguess` of the initialized instance of
       an EOS.
@@ -1555,45 +1744,49 @@ class flashnpPT(object):
     Flash calculation results as an instance of `FlashResult` object.
     Important attributes are:
     - `yji` component mole fractions in each phase,
-    - `Fj` phase mole fractions,
+    - `fj` phase mole fractions,
     - `Zj` the compressibility factor of each phase.
 
     Raises
     ------
-    `SolutionNotFoundError` if the flash calculation procedure terminates
-    unsuccessfully.
+    `SolutionNotFoundError` if the flash calculation procedure
+    terminates unsuccessfully.
     """
-    if maxNp < 2:
-      s, Z = self.eos.getPT_Z(P, T, yi)
-      return FlashResult(np.atleast_2d(yi), np.array([1.]), np.array([Z]),
-                         np.array([s]))
-    res = self.solver2p.run(P, T, yi, kvji0)
-    if res.yji.shape[0] == 1:
+    if self.maxNp < 2:
+      Z = self.eos.getPT_Z(P, T, yi)
+      v = Z * R * T / P
+      V = n * v
+      s = self.eos.getPT_PID(P, T, yi)
+      return FlashResult(1, P, T, V, n, n * yi,
+                         np.array([n]), np.array([1.]), np.atleast_2d(yi),
+                         np.array([Z]), np.array([v]), np.array([s]))
+    res = self.solver2p.run(P, T, yi, n, kvji0)
+    if res.Np == 1:
       return res
-    for k in range(3, maxNp + 1):
+    for k in range(3, self.maxNp + 1):
       kvsji, fsj = self.initialize(P, T, res)
       if kvsji:
         logger.debug('Running %sp-flash...', k)
-        res = self.solver(P, T, yi, fsj, kvsji)
+        res = self.solver(P, T, yi, n, fsj, kvsji)
       else:
         return res
     return res
 
   def initialize(
     self,
-    P: Scalar,
-    T: Scalar,
+    P: float,
+    T: float,
     flash: FlashResult,
-  ) -> tuple[list[Matrix], list[Vector]]:
+  ) -> tuple[list[Matrix[Double]], list[Vector[Double]]]:
     """Generates initial guesses of k-values and phase mole fractions
     for `Np`-phase (`Np >= 3`) flash calculation.
 
     Parameters
     ----------
-    P: Scalar
+    P: float
       Pressure of the mixture [Pa].
 
-    T: Scalar
+    T: float
       Temperature of the mixture [K].
 
     flash: FlashResult
@@ -1606,30 +1799,31 @@ class flashnpPT(object):
     mole fractions (list of 1d-arrays).
     """
     yji = flash.yji
-    Fj = flash.Fj
+    fj = flash.fj
     kvsji = []
     fsj = []
-    for r in range(yji.shape[0]):
+    for r in range(flash.Np):
       xi = yji[r]
       stab = self.stabsolver.run(P, T, xi)
-      if not stab.stable:
+      if stab.kvji is not None:
         kvji = yji / xi
         kvji[r] = stab.kvji[0]
         kvsji.append(kvji)
-        fj = Fj.copy()
+        fj = fj.copy()
         fj[r] = 0.
         fsj.append(fj)
     return kvsji, fsj
 
 
-def _flashnpPT_ss(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  fsj0: Iterable[Vector],
-  kvsji0: Iterable[Matrix],
-  eos: EosFlashnpPT,
-  tol: Scalar = 1e-16,
+def _flashNpPT_ss(
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  fsj0: Sequence[Vector[Double]],
+  kvsji0: Sequence[Matrix[Double]],
+  eos: EosFlashNpPT,
+  tol: float = 1e-16,
   maxiter: int = 100,
   negflash: bool = True,
 ) -> FlashResult:
@@ -1638,56 +1832,63 @@ def _flashnpPT_ss(
 
   Parameters
   ----------
-  P: Scalar
+  P: float
     Pressure of the mixture [Pa].
 
-  T: Scalar
+  T: float
     Temperature of the mixture [K].
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fsj0: Iterable[Vector]
-    An iterable object containing 1d-arrays of initial guesses of
-    phase mole fractions. Each array's shape should be `(Np - 1,)`,
-    where `Np` is the number of phases.
+  n: float
+    Number of moles [mol] of the mixture.
 
-  kvji0: Iterable[Matrix]
-    An iterable object containing 2d-arrays of initial guesses of.
-    k-values. Each array's shape should be `(Np - 1, Nc)`.
+  fsj0: Sequence[Vector[Double]]
+    A sequence containing 1d-arrays of initial guesses of phase mole
+    fractions. Each array's shape should be `(Np - 1,)`, where `Np`
+    is the number of phases.
+
+  kvji0: Sequence[Matrix[Double]]
+    A sequence containing 2d-arrays of initial guesses of k-values.
+    Each array's shape should be `(Np - 1, Nc)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Zj_lnphiji(P: Scalar, T: Scalar, yji: Matrix)
-       -> tuple[IVector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole compositions
-      of `Np` phases (`Matrix` of shape `(Np, Nc)`), this method must
-      return a tuple of:
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`.
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1697,7 +1898,7 @@ def _flashnpPT_ss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -1714,7 +1915,7 @@ def _flashnpPT_ss(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -1739,8 +1940,8 @@ def _flashnpPT_ss(
     fj = solveNp(kvji, yi, fj)
     xi = yi / (fj.dot(kvji - 1.) + 1.)
     yji = kvji * xi
-    sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+    Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
     gji = lnkvji + lnphiji - lnphixi
     gi = gji.ravel()
     g2 = gi.dot(gi)
@@ -1752,8 +1953,8 @@ def _flashnpPT_ss(
       fj = solveNp(kvji, yi, fj)
       xi = yi / (fj.dot(kvji - 1.) + 1.)
       yji = kvji * xi
-      sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-      sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+      Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+      Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gji = lnkvji + lnphiji - lnphixi
       gi = gji.ravel()
       g2 = gi.dot(gi)
@@ -1763,12 +1964,19 @@ def _flashnpPT_ss(
       yji = np.append(yji, np.atleast_2d(xi), 0)
       fj = np.append(fj, 1. - fj.sum())
       Zj = np.append(Zj, Zx)
-      sj = np.append(sj, sx)
       idx = np.argsort(yji.dot(eos.mwi) / Zj)
       yji = yji[idx]
+      fj = fj[idx]
+      Zj = Zj[idx]
+      vj = Zj * (R * T / P)
+      nj = n * fj
+      V = nj.dot(vj)
       kvji = yji[:-1] / yji[-1]
-      logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-      return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+      sj = eos.getPT_PIDj(P, T, yji)
+      Np = Npm1 + 1
+      logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+      return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                         kvji)
   logger.warning(
     "Multiphase flash calculation terminates unsuccessfully.\n"
     "The solution method was SS, EOS: %s.\nParameters:\nP = %s Pa"
@@ -1782,16 +1990,17 @@ def _flashnpPT_ss(
   )
 
 
-def _flashnpPT_qnss(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  fsj0: Iterable[Vector],
-  kvsji0: Iterable[Matrix],
-  eos: EosFlashnpPT,
-  tol: Scalar = 1e-16,
+def _flashNpPT_qnss(
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  fsj0: Sequence[Vector[Double]],
+  kvsji0: Sequence[Matrix[Double]],
+  eos: EosFlashNpPT,
+  tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: Scalar = 6.,
+  lmbdmax: float = 6.,
   negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for multiphase flash calculations using a PT-based
@@ -1803,56 +2012,63 @@ def _flashnpPT_qnss(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fsj0: Iterable[Vector]
-    An iterable object containing 1d-arrays of initial guesses of
-    phase mole fractions. Each array's shape should be `(Np - 1,)`,
-    where `Np` is the number of phases.
+  n: float
+    Number of moles [mol] of the mixture.
 
-  kvji0: Iterable[Matrix]
-    An iterable object containing 2d-arrays of initial guesses of.
-    k-values. Each array's shape should be `(Np - 1, Nc)`.
+  fsj0: Sequence[Vector[Double]]
+    A sequence containing 1d-arrays of initial guesses of phase mole
+    fractions. Each array's shape should be `(Np - 1,)`, where `Np`
+    is the number of phases.
+
+  kvji0: Sequence[Matrix[Double]]
+    A sequence containing 2d-arrays of initial guesses of k-values.
+    Each array's shape should be `(Np - 1, Nc)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Zj_lnphiji(P: Scalar, T: Scalar, yji: Matrix)
-       -> tuple[IVector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole compositions
-      of `Np` phases (`Matrix` of shape `(Np, Nc)`), this method must
-      return a tuple of:
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`.
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -1862,7 +2078,7 @@ def _flashnpPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -1870,7 +2086,7 @@ def _flashnpPT_qnss(
   maxiter: int
     The maximum number of solver iterations. Default is `50`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `6.0`.
 
   negflash: bool
@@ -1882,7 +2098,7 @@ def _flashnpPT_qnss(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -1907,8 +2123,8 @@ def _flashnpPT_qnss(
     fj = solveNp(kvji, yi, fj)
     xi = yi / (fj.dot(kvji - 1.) + 1.)
     yji = kvji * xi
-    sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+    Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
     gji = lnkvji + lnphiji - lnphixi
     gi = gji.ravel()
     g2 = gi.dot(gi)
@@ -1928,8 +2144,8 @@ def _flashnpPT_qnss(
       fj = solveNp(kvji, yi, fj)
       xi = yi / (fj.dot(kvji - 1.) + 1.)
       yji = kvji * xi
-      sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-      sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+      Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+      Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gji = lnkvji + lnphiji - lnphixi
       gi = gji.ravel()
       g2km1 = g2
@@ -1950,12 +2166,19 @@ def _flashnpPT_qnss(
       yji = np.append(yji, np.atleast_2d(xi), 0)
       fj = np.append(fj, 1. - fj.sum())
       Zj = np.append(Zj, Zx)
-      sj = np.append(sj, sx)
       idx = np.argsort(yji.dot(eos.mwi) / Zj)
       yji = yji[idx]
+      fj = fj[idx]
+      Zj = Zj[idx]
+      vj = Zj * (R * T / P)
+      nj = n * fj
+      V = nj.dot(vj)
       kvji = yji[:-1] / yji[-1]
-      logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-      return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+      sj = eos.getPT_PIDj(P, T, yji)
+      Np = Npm1 + 1
+      logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+      return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                         kvji)
   logger.warning(
     "Multiphase flash calculation terminates unsuccessfully.\n"
     "The solution method was QNSS, EOS: %s.\nParameters:\nP = %s Pa"
@@ -1969,18 +2192,19 @@ def _flashnpPT_qnss(
   )
 
 
-def _flashnpPT_newt(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  fsj0: Iterable[Vector],
-  kvsji0: Iterable[Matrix],
-  eos: EosFlashnpPT,
-  tol: Scalar = 1e-16,
+def _flashNpPT_newt(
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  fsj0: Sequence[Vector[Double]],
+  kvsji0: Sequence[Matrix[Double]],
+  eos: EosFlashNpPT,
+  tol: float = 1e-16,
   maxiter: int = 30,
   negflash: bool = True,
   forcenewton: bool = False,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
   """Newton's method for multiphase flash calculations using a PT-based
   equation of state. A switch to the successive substitution iteration
@@ -1989,63 +2213,71 @@ def _flashnpPT_newt(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fsj0: Iterable[Vector]
-    An iterable object containing 1d-arrays of initial guesses of
-    phase mole fractions. Each array's shape should be `(Np - 1,)`,
-    where `Np` is the number of phases.
+  n: float
+    Number of moles [mol] of the mixture.
 
-  kvji0: Iterable[Matrix]
-    An iterable object containing 2d-arrays of initial guesses of.
-    k-values. Each array's shape should be `(Np - 1, Nc)`.
+  fsj0: Sequence[Vector[Double]]
+    A sequence containing 1d-arrays of initial guesses of phase mole
+    fractions. Each array's shape should be `(Np - 1,)`, where `Np`
+    is the number of phases.
+
+  kvji0: Sequence[Matrix[Double]]
+    A sequence containing 2d-arrays of initial guesses of k-values.
+    Each array's shape should be `(Np - 1, Nc)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
+
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
-    - `getPT_Zj_lnphiji_dnk(P: Scalar, T: Scalar, yji: Matrix, nj: Vector)
-       -> tuple[IVector, Vector, Matrix, Tensor]`
-      For a given pressure `P` in [Pa], temperature `T` in [K], mole
-      fractions of `Nc` components in `Np` phases `yji` of shape
-      `(Np, Nc)` and mole numbers of phases in [mol], returns a tuple
-      that contains:
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`,
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
       - partial derivatives of logarithms of fugacity coefficients with
-        respect to component mole numbers for each phase as a `Tensor`
-        of shape `(Np, Nc, Nc)`.
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -2055,7 +2287,7 @@ def _flashnpPT_newt(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -2073,7 +2305,7 @@ def _flashnpPT_newt(
     method doesn't decrese the sum of squared elements of the vector of
     equilibrium equations. Default is `False`.
 
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Linsolver
     A function that accepts a matrix `A` of shape
     `((Np - 1) * Nc, (Np - 1) * Nc)` and
     a vector `b` of shape `((Np - 1) * Nc,)` and finds a vector `x` of
@@ -2085,7 +2317,7 @@ def _flashnpPT_newt(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -2135,8 +2367,8 @@ def _flashnpPT_newt(
     fx = 1. - fj.sum()
     xi = yi / (fj.dot(kvji - 1.) + 1.)
     yji = kvji * xi
-    sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
-    sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+    Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+    Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
     gji = lnkvji + lnphiji - lnphixi
     gi = gji.ravel()
     g2 = gi.dot(gi)
@@ -2158,8 +2390,8 @@ def _flashnpPT_newt(
       fx = 1. - fj.sum()
       xi = yi / (fj.dot(kvji - 1.) + 1.)
       yji = kvji * xi
-      sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
-      sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+      Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+      Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
       gji = lnkvji + lnphiji - lnphixi
       gi = gji.ravel()
       g2km1 = g2
@@ -2173,8 +2405,8 @@ def _flashnpPT_newt(
         fx = 1. - fj.sum()
         xi = yi / (fj.dot(kvji - 1.) + 1.)
         yji = kvji * xi
-        sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
-        sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+        Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+        Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
         gji = lnkvji + lnphiji - lnphixi
         gi = gji.ravel()
         g2 = gi.dot(gi)
@@ -2184,12 +2416,19 @@ def _flashnpPT_newt(
       yji = np.append(yji, np.atleast_2d(xi), 0)
       fj = np.append(fj, 1. - fj.sum())
       Zj = np.append(Zj, Zx)
-      sj = np.append(sj, sx)
       idx = np.argsort(yji.dot(eos.mwi) / Zj)
       yji = yji[idx]
+      fj = fj[idx]
+      Zj = Zj[idx]
+      vj = Zj * (R * T / P)
+      nj = n * fj
+      V = nj.dot(vj)
       kvji = yji[:-1] / yji[-1]
-      logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-      return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+      sj = eos.getPT_PIDj(P, T, yji)
+      Np = Npm1 + 1
+      logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+      return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                         kvji)
   logger.warning(
     "Multiphase flash calculation terminates unsuccessfully.\n"
     "The solution method was Newton, EOS: %s.\nParameters:\nP = %s Pa"
@@ -2203,19 +2442,20 @@ def _flashnpPT_newt(
   )
 
 
-def _flashnpPT_ssnewt(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  fsj0: Iterable[Vector],
-  kvsji0: Iterable[Matrix],
-  eos: EosFlashnpPT,
-  tol: Scalar = 1e-16,
+def _flashNpPT_ssnewt(
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  fsj0: Sequence[Vector[Double]],
+  kvsji0: Sequence[Matrix[Double]],
+  eos: EosFlashNpPT,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
   negflash: bool = True,
   forcenewton: bool = False,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  switchers: tuple[float, float, float, float] = (0.6, 1e-2, 1e-10, 1e-4),
+  linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
   r"""Newton's method for multiphase flash calculations using a PT-based
   equation of state. A switch to the successive substitution iteration
@@ -2225,88 +2465,92 @@ def _flashnpPT_ssnewt(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fsj0: Iterable[Vector]
-    An iterable object containing 1d-arrays of initial guesses of
-    phase mole fractions. Each array's shape should be `(Np - 1,)`,
-    where `Np` is the number of phases.
+  n: float
+    Number of moles [mol] of the mixture.
 
-  kvji0: Iterable[Matrix]
-    An iterable object containing 2d-arrays of initial guesses of.
-    k-values. Each array's shape should be `(Np - 1, Nc)`.
+  fsj0: Sequence[Vector[Double]]
+    A sequence containing 1d-arrays of initial guesses of phase mole
+    fractions. Each array's shape should be `(Np - 1,)`, where `Np`
+    is the number of phases.
+
+  kvji0: Sequence[Matrix[Double]]
+    A sequence containing 2d-arrays of initial guesses of k-values.
+    Each array's shape should be `(Np - 1, Nc)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Zj_lnphiji(P: Scalar, T: Scalar, yji: Matrix)
-       -> tuple[IVector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole compositions
-      of `Np` phases (`Matrix` of shape `(Np, Nc)`), this method must
-      return a tuple of:
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`.
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
-    - `getPT_Zj_lnphiji_dnk(P: Scalar, T: Scalar, yji: Matrix, nj: Vector)
-       -> tuple[IVector, Vector, Matrix, Tensor]`
-      For a given pressure `P` in [Pa], temperature `T` in [K], mole
-      fractions of `Nc` components in `Np` phases `yji` of shape
-      `(Np, Nc)` and mole numbers of phases in [mol], returns a tuple
-      that contains:
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`,
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
       - partial derivatives of logarithms of fugacity coefficients with
-        respect to component mole numbers for each phase as a `Tensor`
-        of shape `(Np, Nc, Nc)`.
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -2316,7 +2560,7 @@ def _flashnpPT_ssnewt(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -2324,7 +2568,17 @@ def _flashnpPT_ssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar]
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the switch from
+    Newton's method to successive substitution iterations if Newton's
+    method doesn't decrese the sum of squared elements of the vector of
+    equilibrium equations. Default is `False`.
+
+  switchers: tuple[float, float, float, float]
     Allows to modify the conditions of switching from the successive
     substitution method to Newton's method. The parameter must be
     represented as a tuple containing four values: :math:`\eps_r`,
@@ -2347,17 +2601,7 @@ def _flashnpPT_ssnewt(
     switching conditions were taken from the paper of L.X. Nghiem
     (doi: 10.2118/8285-PA). Default is `(0.6, 1e-2, 1e-10, 1e-4)`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
-  forcenewton: bool
-    A flag indicating whether it is allowed to ignore the switch from
-    Newton's method to successive substitution iterations if Newton's
-    method doesn't decrese the sum of squared elements of the vector of
-    equilibrium equations. Default is `False`.
-
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Linsolver
     A function that accepts a matrix `A` of shape
     `((Np - 1) * Nc, (Np - 1) * Nc)` and
     a vector `b` of shape `((Np - 1) * Nc,)` and finds a vector `x` of
@@ -2369,7 +2613,7 @@ def _flashnpPT_ssnewt(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -2396,8 +2640,8 @@ def _flashnpPT_ssnewt(
     fj = solveNp(kvji, yi, fj)
     xi = yi / (fj.dot(kvji - 1.) + 1.)
     yji = kvji * xi
-    sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+    Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
     gji = lnkvji + lnphiji - lnphixi
     gi = gji.ravel()
     g2 = gi.dot(gi)
@@ -2411,8 +2655,8 @@ def _flashnpPT_ssnewt(
       fj = solveNp(kvji, yi, fj)
       xi = yi / (fj.dot(kvji - 1.) + 1.)
       yji = kvji * xi
-      sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-      sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+      Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+      Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gji = lnkvji + lnphiji - lnphixi
       gi = gji.ravel()
       g2km1 = g2
@@ -2427,12 +2671,19 @@ def _flashnpPT_ssnewt(
           yji = np.append(yji, np.atleast_2d(xi), 0)
           fj = np.append(fj, 1. - fj.sum())
           Zj = np.append(Zj, Zx)
-          sj = np.append(sj, sx)
           idx = np.argsort(yji.dot(eos.mwi) / Zj)
           yji = yji[idx]
+          fj = fj[idx]
+          Zj = Zj[idx]
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
           kvji = yji[:-1] / yji[-1]
-          logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-          return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+          sj = eos.getPT_PIDj(P, T, yji)
+          Np = Npm1 + 1
+          logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+          return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
       elif k < maxiter:
         H = np.empty(shape=(Npm1Nc, Npm1Nc))
         H_block = np.lib.stride_tricks.as_strided(
@@ -2455,8 +2706,8 @@ def _flashnpPT_ssnewt(
           Uy, (Npm1, Nc), (8 * Nc * Nc, 8 * (Nc + 1)),
         )
         fx = 1. - fj.sum()
-        sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
-        sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+        Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+        Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
         logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'Newt')
         while g2 > tol and k < maxiter:
           H_block[:] = dlnphixidnk
@@ -2475,9 +2726,8 @@ def _flashnpPT_ssnewt(
           fx = 1. - fj.sum()
           xi = yi / (fj.dot(kvji - 1.) + 1.)
           yji = kvji * xi
-          sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T,
-                                                                  yji, fj)
-          sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+          Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+          Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
           gji = lnkvji + lnphiji - lnphixi
           gi = gji.ravel()
           g2km1 = g2
@@ -2491,10 +2741,8 @@ def _flashnpPT_ssnewt(
             fx = 1. - fj.sum()
             xi = yi / (fj.dot(kvji - 1.) + 1.)
             yji = kvji * xi
-            sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T,
-                                                                    yji, fj)
-            sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T,
-                                                                  xi, fx)
+            Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+            Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
             gji = lnkvji + lnphiji - lnphixi
             gi = gji.ravel()
             g2 = gi.dot(gi)
@@ -2504,12 +2752,19 @@ def _flashnpPT_ssnewt(
           yji = np.append(yji, np.atleast_2d(xi), 0)
           fj = np.append(fj, 1. - fj.sum())
           Zj = np.append(Zj, Zx)
-          sj = np.append(sj, sx)
           idx = np.argsort(yji.dot(eos.mwi) / Zj)
           yji = yji[idx]
+          fj = fj[idx]
+          Zj = Zj[idx]
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
           kvji = yji[:-1] / yji[-1]
-          logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-          return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+          sj = eos.getPT_PIDj(P, T, yji)
+          Np = Npm1 + 1
+          logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+          return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
   logger.warning(
     "Multiphase flash calculation terminates unsuccessfully.\n"
     "The solution method was SS-Newton, EOS: %s.\nParameters:\nP = %s Pa"
@@ -2523,20 +2778,21 @@ def _flashnpPT_ssnewt(
   )
 
 
-def _flashnpPT_qnssnewt(
-  P: Scalar,
-  T: Scalar,
-  yi: Vector,
-  fsj0: Iterable[Vector],
-  kvsji0: Iterable[Matrix],
-  eos: EosFlashnpPT,
-  tol: Scalar = 1e-16,
+def _flashNpPT_qnssnewt(
+  P: float,
+  T: float,
+  yi: Vector[Double],
+  n: float,
+  fsj0: Sequence[Vector[Double]],
+  kvsji0: Sequence[Matrix[Double]],
+  eos: EosFlashNpPT,
+  tol: float = 1e-16,
   maxiter: int = 30,
-  lmbdmax: Scalar = 6.,
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar] = (0.6, 1e-2, 1e-10, 1e-4),
+  lmbdmax: float = 6.,
   negflash: bool = True,
   forcenewton: bool = False,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
+  switchers: tuple[float, float, float, float] = (0.6, 1e-2, 1e-10, 1e-4),
+  linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
   r"""Newton's method for multiphase flash calculations using a PT-based
   equation of state. A switch to the successive substitution iteration
@@ -2547,88 +2803,92 @@ def _flashnpPT_qnssnewt(
 
   Parameters
   ----------
-  P: Scalar
-    Pressure of the mixture [Pa].
+  P: float
+    Pressure [Pa] of the mixture.
 
-  T: Scalar
-    Temperature of the mixture [K].
+  T: float
+    Temperature [K] of the mixture.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fsj0: Iterable[Vector]
-    An iterable object containing 1d-arrays of initial guesses of
-    phase mole fractions. Each array's shape should be `(Np - 1,)`,
-    where `Np` is the number of phases.
+  n: float
+    Number of moles [mol] of the mixture.
 
-  kvji0: Iterable[Matrix]
-    An iterable object containing 2d-arrays of initial guesses of.
-    k-values. Each array's shape should be `(Np - 1, Nc)`.
+  fsj0: Sequence[Vector[Double]]
+    A sequence containing 1d-arrays of initial guesses of phase mole
+    fractions. Each array's shape should be `(Np - 1,)`, where `Np`
+    is the number of phases.
+
+  kvji0: Sequence[Matrix[Double]]
+    A sequence containing 2d-arrays of initial guesses of k-values.
+    Each array's shape should be `(Np - 1, Nc)`.
 
   eos: EosFlash2pPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii(P: Scalar, T: Scalar, yi: Vector)
-       -> tuple[int, Scalar, Vector]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`), this method must return a tuple that
-      contains:
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
+    - `getPT_Z_lnphii(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple that contains:
+
       - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`.
+      - logarithms of fugacity coefficients of components as a 
+        `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Zj_lnphiji(P: Scalar, T: Scalar, yji: Matrix)
-       -> tuple[IVector, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole compositions
-      of `Np` phases (`Matrix` of shape `(Np, Nc)`), this method must
-      return a tuple of:
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`.
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
-    - `getPT_Z_lnphii_dnj(P: Scalar, T: Scalar, yi: Vector, n: Scalar)
-       -> tuple[int, Scalar, Vector, Matrix]`
-      For a given pressure [Pa], temperature [K] and mole composition
-      (`Vector` of shape `(Nc,)`) and phase mole number [mol], this
-      method must return a tuple of:
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
 
-      - the designated phase (`0` = vapour, `1` = liquid, etc.),
       - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a `Vector`
-        of shape `(Nc,)`,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
       - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix` of shape
-        `(Nc, Nc)`.
+        with respect to components mole numbers as a `Matrix[Double]` of
+        shape `(Nc, Nc)`.
 
-    - `getPT_Zj_lnphiji_dnk(P: Scalar, T: Scalar, yji: Matrix, nj: Vector)
-       -> tuple[IVector, Vector, Matrix, Tensor]`
-      For a given pressure `P` in [Pa], temperature `T` in [K], mole
-      fractions of `Nc` components in `Np` phases `yji` of shape
-      `(Np, Nc)` and mole numbers of phases in [mol], returns a tuple
-      that contains:
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
 
-      - a 1d-array of integers with the shape `(Np,)`, each of which
-        corresponds to the designated phase (`0` = vapour,
-        `1` = liquid, etc.),
-      - a `Vector` of shape `(Np,)` of compressibility factors of
-        phases,
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
       - logarithms of fugacity coefficients of components in each
-        phase as a `Matrix` of shape `(Np, Nc)`,
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
       - partial derivatives of logarithms of fugacity coefficients with
-        respect to component mole numbers for each phase as a `Tensor`
-        of shape `(Np, Nc, Nc)`.
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
 
     Also, this instance must have attributes:
 
-    - `mwi: Vector`
+    - `mwi: Vector[Double]`
       A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
@@ -2638,7 +2898,7 @@ def _flashnpPT_qnssnewt(
     - `Nc: int`
       The number of components in the system.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     vector of equilibrium equations is less than `tol`.
     Default is `1e-16`.
@@ -2646,10 +2906,20 @@ def _flashnpPT_qnssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  lmbdmax: Scalar
+  lmbdmax: float
     The maximum step length. Default is `6.0`.
 
-  switchers: tuple[Scalar, Scalar, Scalar, Scalar]
+  negflash: bool
+    A flag indicating if unphysical phase mole fractions can be
+    considered as a correct solution. Default is `True`.
+
+  forcenewton: bool
+    A flag indicating whether it is allowed to ignore the switch from
+    Newton's method to successive substitution iterations if Newton's
+    method doesn't decrese the sum of squared elements of the vector of
+    equilibrium equations. Default is `False`.
+
+  switchers: tuple[float, float, float, float]
     Allows to modify the conditions of switching from the QNSS to
     Newton's method. The parameter must be represented as a tuple
     containing four values: :math:`\eps_r`, :math:`\eps_f`,
@@ -2671,17 +2941,7 @@ def _flashnpPT_qnssnewt(
     switching conditions were taken from the paper of L.X. Nghiem
     (doi: 10.2118/8285-PA). Default is `(0.6, 1e-2, 1e-10, 1e-4)`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
-  forcenewton: bool
-    A flag indicating whether it is allowed to ignore the switch from
-    Newton's method to successive substitution iterations if Newton's
-    method doesn't decrese the sum of squared elements of the vector of
-    equilibrium equations. Default is `False`.
-
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Linsolver
     A function that accepts a matrix `A` of shape
     `((Np - 1) * Nc, (Np - 1) * Nc)` and
     a vector `b` of shape `((Np - 1) * Nc,)` and finds a vector `x` of
@@ -2693,7 +2953,7 @@ def _flashnpPT_qnssnewt(
   Flash calculation results as an instance of `FlashResult` object.
   Important attributes are:
   - `yji` component mole fractions in each phase,
-  - `Fj` phase mole fractions,
+  - `fj` phase mole fractions,
   - `Zj` the compressibility factor of each phase.
 
   Raises
@@ -2701,7 +2961,7 @@ def _flashnpPT_qnssnewt(
   `SolutionNotFoundError` if the flash calculation procedure terminates
   unsuccessfully.
   """
-  logger.info("Multiphase flash calculation (SS-Newton method).")
+  logger.info("Multiphase flash calculation (QNSS-Newton method).")
   Nc = eos.Nc
   Npm1 = kvsji0[0].shape[0]
   Npm1Nc = Npm1 * Nc
@@ -2720,8 +2980,8 @@ def _flashnpPT_qnssnewt(
     fj = solveNp(kvji, yi, fj)
     xi = yi / (fj.dot(kvji - 1.) + 1.)
     yji = kvji * xi
-    sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-    sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+    Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+    Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
     gji = lnkvji + lnphiji - lnphixi
     gi = gji.ravel()
     g2 = gi.dot(gi)
@@ -2743,8 +3003,8 @@ def _flashnpPT_qnssnewt(
       fj = solveNp(kvji, yi, fj)
       xi = yi / (fj.dot(kvji - 1.) + 1.)
       yji = kvji * xi
-      sj, Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
-      sx, Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
+      Zj, lnphiji = eos.getPT_Zj_lnphiji(P, T, yji)
+      Zx, lnphixi = eos.getPT_Z_lnphii(P, T, xi)
       gji = lnkvji + lnphiji - lnphixi
       gi = gji.ravel()
       g2km1 = g2
@@ -2769,12 +3029,19 @@ def _flashnpPT_qnssnewt(
           yji = np.append(yji, np.atleast_2d(xi), 0)
           fj = np.append(fj, 1. - fj.sum())
           Zj = np.append(Zj, Zx)
-          sj = np.append(sj, sx)
           idx = np.argsort(yji.dot(eos.mwi) / Zj)
           yji = yji[idx]
+          fj = fj[idx]
+          Zj = Zj[idx]
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
           kvji = yji[:-1] / yji[-1]
-          logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-          return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+          sj = eos.getPT_PIDj(P, T, yji)
+          Np = Npm1 + 1
+          logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+          return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
       elif k < maxiter:
         H = np.empty(shape=(Npm1Nc, Npm1Nc))
         H_block = np.lib.stride_tricks.as_strided(
@@ -2797,8 +3064,8 @@ def _flashnpPT_qnssnewt(
           Uy, (Npm1, Nc), (8 * Nc * Nc, 8 * (Nc + 1)),
         )
         fx = 1. - fj.sum()
-        sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
-        sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+        Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+        Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
         logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'Newt')
         while g2 > tol and k < maxiter:
           H_block[:] = dlnphixidnk
@@ -2817,9 +3084,8 @@ def _flashnpPT_qnssnewt(
           fx = 1. - fj.sum()
           xi = yi / (fj.dot(kvji - 1.) + 1.)
           yji = kvji * xi
-          sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T,
-                                                                  yji, fj)
-          sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
+          Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+          Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
           gji = lnkvji + lnphiji - lnphixi
           gi = gji.ravel()
           g2km1 = g2
@@ -2833,10 +3099,8 @@ def _flashnpPT_qnssnewt(
             fx = 1. - fj.sum()
             xi = yi / (fj.dot(kvji - 1.) + 1.)
             yji = kvji * xi
-            sj, Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T,
-                                                                    yji, fj)
-            sx, Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T,
-                                                                  xi, fx)
+            Zj, lnphiji, dlnphijidnk = eos.getPT_Zj_lnphiji_dnk(P, T, yji, fj)
+            Zx, lnphixi, dlnphixidnk = eos.getPT_Z_lnphii_dnj(P, T, xi, fx)
             gji = lnkvji + lnphiji - lnphixi
             gi = gji.ravel()
             g2 = gi.dot(gi)
@@ -2846,12 +3110,19 @@ def _flashnpPT_qnssnewt(
           yji = np.append(yji, np.atleast_2d(xi), 0)
           fj = np.append(fj, 1. - fj.sum())
           Zj = np.append(Zj, Zx)
-          sj = np.append(sj, sx)
           idx = np.argsort(yji.dot(eos.mwi) / Zj)
           yji = yji[idx]
+          fj = fj[idx]
+          Zj = Zj[idx]
+          vj = Zj * (R * T / P)
+          nj = n * fj
+          V = nj.dot(vj)
           kvji = yji[:-1] / yji[-1]
-          logger.info('Phase mole fractions:' + (Npm1 + 1) * '%7.4f' % (*fj,))
-          return FlashResult(yji, fj[idx], Zj[idx], sj[idx], kvji)
+          sj = eos.getPT_PIDj(P, T, yji)
+          Np = Npm1 + 1
+          logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+          return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                             kvji)
   logger.warning(
     "Multiphase flash calculation terminates unsuccessfully.\n"
     "The solution method was QNSS-Newton, EOS: %s.\nParameters:\nP = %s Pa"

@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('lab')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -24,14 +24,6 @@ from eos import (
 from lab import (
   swellPT,
   SimpleSeparator,
-)
-
-from constants import (
-  R,
-)
-
-from matplotlib import (
-  pyplot as plt,
 )
 
 
@@ -62,8 +54,8 @@ class swell(unittest.TestCase):
       0.103, 0.10800, 0.08640, 0.05402, 0.03812, 0.02049, 0.00495,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = SimpleSeparator(pr, useprev=True)
-    sepo = SimpleSeparator(pr, useprev=True)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
     sw = swellPT(pr, sepg, sepo)
     res = sw.run(P0, T, yi, xi, Fj)
     pass

@@ -17,9 +17,98 @@ import numpy as np
 
 np.set_printoptions(linewidth=np.inf)
 
+from jax import (
+  config,
+)
+
+config.update('jax_platforms', 'cpu')
+config.update('jax_enable_x64', True)
+
+from jax import (
+  numpy as jnp,
+  jacfwd,
+)
+
+from jax.lax import (
+  cond,
+  select,
+)
+
 from eos import (
   pr78,
 )
+
+
+def _cardano(b, c, d):
+  p = (3. * c - b * b) / 3.
+  q = (2. * b * b * b - 9. * b * c + 27. * d) / 27.
+  s = .25 * q * q + p * p * p / 27.
+  return cond(s >= 0., _cardano_br1, _cardano_br3, p, q, s, b, d)
+
+def _cardano_br1(p, q, s, b, d):
+  s_ = jnp.sqrt(s)
+  u1 = jnp.cbrt(-q / 2. + s_)
+  u2 = jnp.cbrt(-q / 2. - s_)
+  return (u1 + u2 - b / 3., 0., 0.), True
+
+def _cardano_br3(p, q, s, b, d):
+  t0 = (2. * jnp.sqrt(-p / 3.)
+        * jnp.cos(jnp.arccos(1.5 * q * jnp.sqrt(-3. / p) / p) / 3.))
+  x0 = t0 - b / 3.
+  r = b + x0
+  k = -d / x0
+  D = jnp.sqrt(r * r - 4. * k)
+  x1 = .5 * (-r + D)
+  x2 = .5 * (-r - D)
+  return (x0, x1, x2), False
+
+def _take_Z(Zs, *args):
+  return Zs[0]
+
+def _select_Z(Zs, A, B, d1, d2):
+  Z1 = Zs[0]
+  Z2 = select(Zs[2] > 0., Zs[2], Zs[1])
+  dG = (jnp.log((Z2 - B) / (Z1 - B))
+        - (Z2 - Z1)
+        + A / B / (d2 - d1) * jnp.log((Z2 + d2 * B) * (Z1 + d1 * B)
+                                      / ((Z2 + d1 * B) * (Z1 + d2 * B))))
+  return select(dG > 0., Z2, Z1)
+
+def jlnphii(P, T, ni, Pci, Tci, wi, vsi, dij, asmoles=True):
+  R = 8.3144598
+  if asmoles:
+    yi = ni / ni.sum()
+  else:
+    yi = ni
+  d1 = -0.414213562373095
+  d2 = 2.414213562373095
+  RT = R * T
+  PRT = P / RT
+  wi2 = wi * wi
+  wi3 = wi2 * wi
+  kappai = jnp.where(
+    wi <= 0.491,
+    0.37464 + 1.54226 * wi - 0.26992 * wi2,
+    0.379642 + 1.48503 * wi - 0.164423 * wi2 + 0.016666 * wi3,
+  )
+  sqrtai = 0.6761919320144113 * R * Tci / jnp.sqrt(Pci)
+  bi = 0.07779607390388851 * R * Tci / Pci
+  multi = 1. + kappai * (1. - jnp.sqrt(T / Tci))
+  sqrtalphai = sqrtai * multi
+  Si = sqrtalphai * jnp.dot(dij, yi * sqrtalphai)
+  alpham = yi.dot(Si)
+  bm = yi.dot(bi)
+  A = alpham * PRT / RT
+  B = bm * PRT
+  Zs, unique = _cardano(
+    B - 1., A - 2. * B - 3. * B * B, -A * B + B * B * (1. + B)
+  )
+  Z = cond(unique, _take_Z, _select_Z, Zs, A, B, d1, d2)
+  gphii = A / B * (2. / alpham * Si - bi / bm)
+  return ((Z - 1.) / bm * bi
+          - jnp.log(Z - B)
+          + gphii * (jnp.log((Z + B * d1) / (Z + B * d2)) / (d2 - d1))
+          - (vsi * bi) * PRT)
 
 
 class pr(unittest.TestCase):
@@ -35,10 +124,294 @@ class pr(unittest.TestCase):
     vsi = np.array([0., 0.])
     dij = np.array([0.025])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    s, Z, lnfi = pr.getPT_Z_lnfi(P, T, yi)
-    Z_ = 0.95664027
-    lnfi_ = np.array([12.52680951, 14.30933176])
-    self.assertTrue(np.isclose(Z, Z_) & np.allclose(lnfi, lnfi_))
+    Z, lnfi = pr.getPT_Z_lnfi(P, T, yi)
+    _Z = 0.95664027
+    _lnfi = np.array([12.52680951, 14.30933176])
+    self.assertTrue(np.isclose(Z, _Z) & np.allclose(lnfi, _lnfi))
+    pass
+
+  def test_02(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yji = np.array([
+      [0.71747271, 0.08947668, 0.09156880, 0.04467569, 0.05680612],
+      [0.60172443, 0.09297005, 0.11122143, 0.06329671, 0.13078738],
+    ])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    sj = pr.getPT_PIDj(P, T, yji)
+    self.assertTrue(sj[0] == 0 and sj[1] == 1)
+    pass
+
+  def test_03(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    lnphii = pr.getPT_lnphii(P, T, yi)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii))
+    pass
+
+  def test_04(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Z, lnphii, dlnphiidP = pr.getPT_Z_lnphii_dP(P, T, yi)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidP = jacfwd(jlnphii, argnums=0)
+    _dlnphiidP = jdlnphiidP(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidP, _dlnphiidP))
+    pass
+
+  def test_05(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Z, lnphii, dlnphiidT = pr.getPT_Z_lnphii_dT(P, T, yi)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidT = jacfwd(jlnphii, argnums=1)
+    _dlnphiidT = jdlnphiidT(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidT, _dlnphiidT))
+    pass
+
+  def test_06(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Z, lnphii, dlnphiidnj = pr.getPT_Z_lnphii_dnj(P, T, yi, 0.3)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(0.3 * yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidnj = jacfwd(jlnphii, argnums=2)
+    _dlnphiidnj = jdlnphiidnj(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidnj, _dlnphiidnj))
+    pass
+
+  def test_07(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Z, lnphii, dlnphiidP, dlnphiidT = pr.getPT_Z_lnphii_dP_dT(P, T, yi)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidP = jacfwd(jlnphii, argnums=0)
+    _dlnphiidP = jdlnphiidP(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidT = jacfwd(jlnphii, argnums=1)
+    _dlnphiidT = jdlnphiidT(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidP, _dlnphiidP) &
+                    np.allclose(dlnphiidT, _dlnphiidT))
+    pass
+
+  def test_08(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Z, lnphii, dlnphiidP, dlnphiidnj = pr.getPT_Z_lnphii_dP_dnj(P, T, yi, 0.3)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(0.3 * yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidP = jacfwd(jlnphii, argnums=0)
+    _dlnphiidP = jdlnphiidP(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidnj = jacfwd(jlnphii, argnums=2)
+    _dlnphiidnj = jdlnphiidnj(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidP, _dlnphiidP) &
+                    np.allclose(dlnphiidnj, _dlnphiidnj))
+    pass
+
+  def test_09(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Z, lnphii, dlnphiidT, dlnphiidnj = pr.getPT_Z_lnphii_dT_dnj(P, T, yi, 0.3)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(0.3 * yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidT = jacfwd(jlnphii, argnums=1)
+    _dlnphiidT = jdlnphiidT(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidnj = jacfwd(jlnphii, argnums=2)
+    _dlnphiidnj = jdlnphiidnj(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidT, _dlnphiidT) &
+                    np.allclose(dlnphiidnj, _dlnphiidnj))
+    pass
+
+  def test_10(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    (Z, lnphii,
+     dlnphiidP, dlnphiidT, dlnphiidyj) = pr.getPT_Z_lnphii_dP_dT_dyj(P, T, yi)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(yi)
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidP = jacfwd(jlnphii, argnums=0)
+    _dlnphiidP = jdlnphiidP(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidT = jacfwd(jlnphii, argnums=1)
+    _dlnphiidT = jdlnphiidT(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidyj = jacfwd(jlnphii, argnums=2)
+    _dlnphiidyj = jdlnphiidyj(P, T, ni, Pci, Tci, wi, vsi, pr.D, False)
+    self.assertTrue(np.allclose(lnphii, _lnphii) &
+                    np.allclose(dlnphiidP, _dlnphiidP) &
+                    np.allclose(dlnphiidT, _dlnphiidT) &
+                    np.allclose(dlnphiidyj, _dlnphiidyj))
+    pass
+
+  def test_11(self):
+    P = 17340e3
+    T = 68. + 273.15
+    yji = np.array([
+      [0.7167, 0.0895, 0.0917, 0.0448, 0.0573],
+      [0.7167, 0.0895, 0.0917, 0.0448, 0.0573],
+    ])
+    Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
+    Tci = np.array([190.56, 305.32, 369.83, 425.12, 551.022])
+    mwi = np.array([16.043, 30.07, 44.097, 58.123, 120.0]) / 1e3
+    wi = np.array([0.012, 0.1, 0.152, 0.2, 0.414])
+    vsi = np.array([-0.1017, -0.0766, -0.0499, -0.0219, 0.0909])
+    dij = np.array([
+      0.0027,
+      0.0085, 0.0017,
+      0.0147, 0.0049, 0.0009,
+      0.0393, 0.0219, 0.0117, 0.0062,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
+    Zj, lnphiji, dlnphijidnk = pr.getPT_Zj_lnphiji_dnk(P, T, yji, 0.3)
+    P = jnp.array(P)
+    T = jnp.array(T)
+    ni = jnp.asarray(0.3 * yji[0])
+    _lnphii = jlnphii(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    jdlnphiidnj = jacfwd(jlnphii, argnums=2)
+    _dlnphiidnj = jdlnphiidnj(P, T, ni, Pci, Tci, wi, vsi, pr.D)
+    self.assertTrue(np.allclose(lnphiji[0], _lnphii) &
+                    np.allclose(lnphiji[1], _lnphii) &
+                    np.allclose(dlnphijidnk[0], _dlnphiidnj) &
+                    np.allclose(dlnphijidnk[1], _dlnphiidnj))
     pass
 
 

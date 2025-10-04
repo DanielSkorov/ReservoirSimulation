@@ -6,14 +6,11 @@ from functools import (
 
 import numpy as np
 
-from typing import (
-  Callable,
-)
-
-from custom_types import (
-  Scalar,
+from customtypes import (
+  Double,
   Vector,
   Matrix,
+  Linsolver,
   SolutionNotFoundError,
 )
 
@@ -22,19 +19,19 @@ logger = logging.getLogger('rr')
 
 
 def fG(
-  a: Scalar,
-  yi: Vector,
-  di: Vector,
-) -> tuple[Scalar, Scalar]:
+  a: float,
+  yi: Vector[Double],
+  di: Vector[Double],
+) -> tuple[float, float]:
   denom = 1. / (di * (a + 1.) + a)
   return (a + 1.) * yi.dot(denom), -yi.dot(denom * denom)
 
 
 def fH(
-  a: Scalar,
-  yi: Vector,
-  di: Vector,
-) -> tuple[Scalar, Scalar]:
+  a: float,
+  yi: Vector[Double],
+  di: Vector[Double],
+) -> tuple[float, float]:
   denom = 1. / (di * (a + 1.) + a)
   G = (a + 1.) * yi.dot(denom)
   dGda = -yi.dot(denom * denom)
@@ -42,23 +39,23 @@ def fH(
 
 
 def fD(
-  a: Scalar,
-  yi: Vector,
-  di: Vector,
-  yidi: Vector,
-) -> tuple[Scalar, Scalar]:
+  a: float,
+  yi: Vector[Double],
+  di: Vector[Double],
+  yidi: Vector[Double],
+) -> tuple[float, float]:
   denom = 1. / (di * (a + 1.) + a)
   return a * yi.dot(denom), yidi.dot(denom * denom)
 
 
 def solve2p_FGH(
-  kvi: Vector,
-  yi: Vector,
-  f0: Scalar | None = None,
-  tol: Scalar = 1e-12,
+  kvi: Vector[Double],
+  yi: Vector[Double],
+  f0: float | None = None,
+  tol: float = 1e-12,
   maxiter: int = 50,
   miniter: int = 1,
-) -> Scalar:
+) -> float:
   """FGH-method for solving the Rachford-Rice equation.
 
   Solves the Rachford-Rice equation for a two-phase system using
@@ -66,18 +63,18 @@ def solve2p_FGH(
 
   Parameters
   ----------
-  kvi: Vector, shape (Nc,)
+  kvi: Vector[Double], shape (Nc,)
     K-values of `Nc` components.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  f0: Scalar | None
+  f0: float | None
     The initial guess for the mole fraction of the non-reference phase.
     Default is `None`, which means using an internal formula based on
     the paper 10.1016/j.fluid.2017.08.020.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the D-function
     is less than `tol`. Default is `1e-12`.
 
@@ -140,12 +137,12 @@ def solve2p_FGH(
 
 
 def solve2p_GH(
-  kvi: Vector,
-  yi: Vector,
-  f0: Scalar | None = None,
-  tol: Scalar = 1e-12,
+  kvi: Vector[Double],
+  yi: Vector[Double],
+  f0: float | None = None,
+  tol: float = 1e-12,
   maxiter: int = 50,
-) -> Scalar:
+) -> float:
   """GH-method for solving the Rachford-Rice equation.
 
   Solves the Rachford-rice equation for a two-phase system using
@@ -153,18 +150,18 @@ def solve2p_GH(
 
   Parameters
   ----------
-  kvi: Vector, shape (Nc,)
+  kvi: Vector[Double], shape (Nc,)
     K-values of `Nc` components.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  f0: Scalar | None
+  f0: float | None
     The initial guess for the mole fraction of the non-reference phase.
     Default is `None`, which means using an internal formula based on
     the paper 10.1016/j.fluid.2017.08.020.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the absolute value of the D-function
     is less than `tol`. Default is `1e-12`.
 
@@ -222,16 +219,16 @@ def solve2p_GH(
 
 
 def solveNp(
-  Kji: Matrix,
-  yi: Vector,
-  fj0: Vector,
-  tol: Scalar = 1e-20,
+  Kji: Matrix[Double],
+  yi: Vector[Double],
+  fj0: Vector[Double],
+  tol: float = 1e-20,
   maxiter: int = 30,
-  beta: Scalar = 0.8,
-  c: Scalar = 0.3,
+  beta: float = 0.8,
+  c: float = 0.3,
   maxiter_ls: int = 10,
-  linsolver: Callable[[Matrix, Vector], Vector] = np.linalg.solve,
-) -> Vector:
+  linsolver: Linsolver = np.linalg.solve,
+) -> Vector[Double]:
   """Solves the system of Rachford-Rice equations.
 
   Implementation of Okuno's method for solving systems of Rachford-Rice
@@ -241,34 +238,34 @@ def solveNp(
 
   Parameters
   ----------
-  Kji: Matrix, shape (Np - 1, Nc)
+  Kji: Matrix[Double], shape (Np - 1, Nc)
     K-values of `Nc` components in `Np-1` phases.
 
-  yi: Vector, shape (Nc,)
+  yi: Vector[Double], shape (Nc,)
     Mole fractions of `Nc` components.
 
-  fj0: Vector, shape (Np - 1,)
+  fj0: Vector[Double], shape (Np - 1,)
     Initial guess for phase mole fractions.
 
-  tol: Scalar
+  tol: float
     Terminate successfully if the sum of squared elements of the
     gradient is less than `tol`. Default is `1e-20`.
 
   maxiter: int
     The maximum number of iterations. Default is `30`.
 
-  beta: Scalar
+  beta: float
     This parameter is used to update step size in the backtracking line
     search procedure. Default is `0.8`.
 
-  c: Scalar
+  c: float
     This parameter is used to calculate the Goldstein's condition for
     the backtracking line search procedure. Default is `0.3`.
 
   maxiter_ls: int
     The maximum number of linesearch iterations. Default is `10`.
 
-  linsolver: Callable[[Matrix, Vector], Vector]
+  linsolver: Callable[[Matrix[Double], Vector[Double]], Vector[Double]]
     A function that accepts a matrix `A` of shape `(Nc, Nc)` and
     a vector `b` of shape `(Nc,)` and finds a vector `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
@@ -293,6 +290,9 @@ def solveNp(
   n = 0
   fjk = fj0.flatten()
   ti = 1. - fjk.dot(Aji)
+  if (ti < 0.).any():
+    fjk = np.full_like(fjk, 1 / (Npm1 + 1))
+    ti = 1. - fjk.dot(Aji)
   F = - np.log(np.abs(ti)).dot(yi)
   gj = Aji.dot(yi / ti)
   g2 = gj.dot(gj)
@@ -304,8 +304,9 @@ def solveNp(
     denom = dfj.dot(Aji)
     where = denom > 0.
     lmbdi = ((ti - bi) / denom)[where]
-    idx = np.argmin(lmbdi)
-    lmbdmax = lmbdi[idx]
+    if (lmbdi < 0.).any():
+      lmbdi = (ti / denom)[where]
+    lmbdmax = lmbdi[np.argmin(lmbdi)]
     if lmbdmax < 1.:
       gdf = gj.dot(dfj)
       lmbdn = beta * lmbdmax

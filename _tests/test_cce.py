@@ -5,7 +5,7 @@ sys.path.append('../_src/')
 import logging
 
 logger = logging.getLogger('lab')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
@@ -25,14 +25,6 @@ from lab import (
   ccePT,
   SimpleSeparator,
   GasSeparator,
-)
-
-from constants import (
-  R,
-)
-
-from matplotlib import (
-  pyplot as plt,
 )
 
 
@@ -65,9 +57,9 @@ class cce(unittest.TestCase):
       0.00630, 0.19705, 0.13549, 0.08406, 0.05104, 0.02627, -0.01284,-0.01087,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = SimpleSeparator(pr, useprev=True)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, useprev=True)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
+    cce = ccePT(pr, sepg, sepo)
     res = cce.run(PP, T, yi)
     pass
 
@@ -99,15 +91,15 @@ class cce(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = GasSeparator(pr)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, useprev=True)
+    sepo = SimpleSeparator(pr)
+    cce = ccePT(pr, sepg, sepo)
     res = cce.run(PP, T, yi)
     pass
 
   def test_03(self):
-    PP = np.array([29120., 26360., 23820., 21940., 19850., 17340., 16920.,
-                   16280., 15820., 15180., 14190., 13210., 11590., 10910.,
-                   9350., 7200., 5120., 3750., 2290., 900.]) * 1e3
+    PP = np.array([26360., 23820., 21940., 19850., 17340., 16920., 16280.,
+                   15820., 15180., 14190., 13210., 11590., 10910., 9350.,
+                   7200., 5120., 3750., 2290., 900.]) * 1e3
     T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
@@ -122,16 +114,16 @@ class cce(unittest.TestCase):
       0.0393, 0.0219, 0.0117, 0.0062,
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
-    sepg = SimpleSeparator(pr, useprev=True)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, useprev=True)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
+    cce = ccePT(pr, sepg, sepo)
     res = cce.run(PP, T, yi)
     pass
 
   def test_04(self):
-    PP = np.array([29120., 26360., 23820., 21940., 19850., 17340., 16920.,
-                   16280., 15820., 15180., 14190., 13210., 11590., 10910.,
-                   9350., 7200., 5120., 3750., 2290., 900.]) * 1e3
+    PP = np.array([26360., 23820., 21940., 19850., 17340., 16920., 16280.,
+                   15820., 15180., 14190., 13210., 11590., 10910., 9350.,
+                   7200., 5120., 3750., 2290., 900.]) * 1e3
     T = 68. + 273.15
     yi = np.array([0.7167, 0.0895, 0.0917, 0.0448, 0.0573])
     Pci = np.array([45.99, 48.72, 42.48, 37.96, 23.975]) * 1e5
@@ -147,17 +139,14 @@ class cce(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = GasSeparator(pr)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, useprev=True)
+    sepo = SimpleSeparator(pr)
+    cce = ccePT(pr, sepg, sepo)
     res = cce.run(PP, T, yi)
     pass
 
   def test_05(self):
-    PP = np.array([51812.0, 48364.6, 44917.3, 43538.3, 42848.8, 42159.4,
-                   41538.8, 41125.2, 40780.4, 40090.9, 38712.0, 36643.6,
-                   34575.1, 31127.8, 27680.4, 24233.0, 20785.6, 17338.2,
-                   14580.3, 12925.6, 11705.2, 10167.7, 8995.6, 8099.3,
-                   7340.8]) * 1e3
+    PP = np.array([14580.3, 12925.6, 11705.2, 10167.7, 8995.6, 8099.3,
+                   7340.8, 6870.2, 5020.5, 4130.4, 2870., 1600.9, 900.]) * 1e3
     T = 124.44 + 273.15
     yi = np.array([0.0001, 0.0011, 0.6893, 0.0863, 0.0534, 0.0115, 0.0233,
                    0.0093, 0.0085, 0.0173, 0.046808865, 0.021179837,
@@ -201,8 +190,35 @@ class cce(unittest.TestCase):
     ])
     pr = pr78(Pci, Tci, wi, mwi, vsi, dij)
     sepg = GasSeparator(pr)
-    sepo = SimpleSeparator(pr, useprev=True)
-    cce = ccePT(pr, sepg, sepo, useprev=True)
+    sepo = SimpleSeparator(pr)
+    cce = ccePT(pr, sepg, sepo)
+    res = cce.run(PP, T, yi)
+    pass
+
+  def test_06(self):
+    PP = np.array([3447.4, 10342.1, 17236.9, 24131.6, 31026.4]) * 1e3
+    T = 71.11 + 273.15
+    yi = np.array([0.5, 0.125, 0.0075, 0.0175, 0.05, 0.0375, 0.0125, 0.25])
+    Pci = np.array([72.8, 45.44, 41.94, 29.73, 20.69, 13.61, 11.02,
+                    217.6]) * 101325.
+    Tci = np.array([304.2, 190.6, 369.8, 507.4, 617.7, 705.6, 766.7, 647.3])
+    wi = np.array([0.225, 0.013, 0.1524, 0.3007, 0.4885, 0.65, 0.85, 0.344])
+    vsi = np.array([0., 0., 0., 0., 0., 0., 0., 0.])
+    mwi = np.array([44.01, 16.04, 44.1, 86.18, 142.29, 206., 282.,
+                    18.015]) / 1e3
+    dij = np.array([
+      0.092,
+      0.124, 0.0000,
+      0.100, 0.0000, 0.0000,
+      0.115, 0.0000, 0.0000, 0.00,
+      0.115, 0.0500, 0.0050, 0.00, 0.00,
+      0.115, 0.0500, 0.0050, 0.00, 0.00, 0.00,
+      0.200, 0.4907, 0.5469, 0.48, 0.48, 0.48, 0.48,
+    ])
+    pr = pr78(Pci, Tci, wi, mwi, vsi, dij, kvlevel=3)
+    sepg = SimpleSeparator(pr)
+    sepo = SimpleSeparator(pr)
+    cce = ccePT(pr, sepg, sepo, maxNp=3)
     res = cce.run(PP, T, yi)
     pass
 
