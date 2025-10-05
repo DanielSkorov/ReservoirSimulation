@@ -264,7 +264,7 @@ class SimpleSeparator(object):
 
   Parameters
   ----------
-  eos: EosFlash2pPT
+  eos: EosFlashNpPT
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
@@ -290,8 +290,35 @@ class SimpleSeparator(object):
       - logarithms of fugacity coefficients of components as a
         `Vector[Double]` of shape `(Nc,)`.
 
-    If the solution method would be one of `'newton'`, `'ss-newton'` or
-    `'qnss-newton'` then it also must have:
+    To perform multiphase flash calculations, this instance of an
+    equation of state class must have:
+
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
+
+    - `getPT_Z(P: float, T: float, yi: Vector[Double]) -> float`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return its
+      compressibility factor.
+
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
+
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
+      - logarithms of fugacity coefficients of components in each
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
+
+    If the solution method would be one of `'newton'`, `'ss-newton'`
+    or `'qnss-newton'` then it also must have:
 
     - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
        n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
@@ -305,6 +332,22 @@ class SimpleSeparator(object):
       - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix[Double]`
         of shape `(Nc, Nc)`.
+
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
+
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
+      - logarithms of fugacity coefficients of components in each
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
+      - partial derivatives of logarithms of fugacity coefficients with
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
 
     Also, this instance must have attributes:
 
@@ -326,16 +369,20 @@ class SimpleSeparator(object):
     Temperatures [K] for which flash calculations should be performed.
     Default is `293.15` K.
 
+  maxNp: int
+    The maximum number of phases. Default is `2`.
+
   **kwargs: dict
-    Other arguments for the two-phase flash solver. It may contain such
+    Other arguments for the multiphase flash solver. It may contain such
     arguments as `method`, `tol`, `maxiter` and others, depending on the
     selected solver.
   """
   def __init__(
     self,
-    eos: EosFlash2pPT,
+    eos: EosFlashNpPT,
     Psc: float = 101325.,
     Tsc: float = 293.15,
+    maxNp: int = 2,
     **kwargs,
   ) -> None:
     self.Psc = Psc
@@ -344,7 +391,7 @@ class SimpleSeparator(object):
     self.oilstream = 'main'
     self.gasstage = 0
     self.oilstage = 0
-    self.solver = flash2pPT(eos, **kwargs)
+    self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
     pass
 
   def run(self, yi: Vector[Double], n: float = 1.) -> SeparatorResult:
@@ -380,9 +427,9 @@ class GasSeparator(object):
 
   Parameters
   ----------
-  eos: EosFlash2pPT | EosFlashNpPT
-    An initialized instance of a PT-based equation of state. For
-    two-phase flash calculations, it must have the following methods:
+  eos: EosFlashNpPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
 
     - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
        -> Sequence[Vector[Double]]`
@@ -406,25 +453,8 @@ class GasSeparator(object):
       - logarithms of fugacity coefficients of components as a
         `Vector[Double]` of shape `(Nc,)`.
 
-    If the solution method for two-phase flash calculations would be one
-    of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it also must
-    have:
-
-    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
-       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
-      For a given pressure [Pa], temperature [K], mole composition
-      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
-      this method must return a tuple of:
-
-      - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a
-        `Vector[Double]` of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix[Double]`
-        of shape `(Nc, Nc)`.
-
-    If the maximum number of phases would be greater than two, then
-    this istance also must have:
+    To perform multiphase flash calculations, this instance of an
+    equation of state class must have:
 
     - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
        -> Vector[Integer]`
@@ -436,7 +466,7 @@ class GasSeparator(object):
 
     - `getPT_Z(P: float, T: float, yi: Vector[Double]) -> float`
       For a given pressure [Pa], temperature [K], and mole composition
-      (`Vector[Double]` of shape `(Nc,)`), this method must return the
+      (`Vector[Double]` of shape `(Nc,)`), this method must return its
       compressibility factor.
 
     - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
@@ -450,9 +480,21 @@ class GasSeparator(object):
       - logarithms of fugacity coefficients of components in each
         phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
-    If the solution method for multiphase flash calculations would be
-    one of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it also
-    must have:
+    If the solution method would be one of `'newton'`, `'ss-newton'`
+    or `'qnss-newton'` then it also must have:
+
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
+
+      - the mixture compressibility factor,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
        nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
@@ -494,13 +536,13 @@ class GasSeparator(object):
     The maximum number of phases. Default is `2`.
 
   **kwargs: dict
-    Other arguments for the two-phase flash solver. It can contain such
+    Other arguments for the multiphase flash solver. It can contain such
     arguments as `method`, `tol`, `maxiter` and others, depending on the
     selected solver.
   """
   def __init__(
     self,
-    eos: EosFlash2pPT | EosFlashNpPT,
+    eos: EosFlashNpPT,
     Ps: Sequence[float] = [7e6, 4.5e6, 2e6, 101325.],
     Ts: Sequence[float] = [223.15, 238.15, 258.15, 293.15],
     maxNp: int = 2,
@@ -509,14 +551,7 @@ class GasSeparator(object):
     self.eos = eos
     self.Ps = Ps
     self.Ts = Ts
-    if maxNp == 2:
-      self.solver = flash2pPT(eos, **kwargs)
-    elif maxNp > 2:
-      self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
-    else:
-      raise ValueError(
-        'The maximum number of phases must be greater than or equal to 2.'
-      )
+    self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
     self.gasstream = 'main'
     self.oilstream = 'liquid'
     self.gasstage = len(Ps) - 1
@@ -1416,19 +1451,16 @@ class cvdPT(_labprops):
     ratio. Default is `0.07215` [kg/mol].
 
   maxNp: int
-    The maximum number of phases. Default is `2`. If the maximum number
-    of phases would be greater than `2`, then the `NotImplementedError`
-    will be raised due to the absence of the multiphase saturation
-    pressure solver.
+    The maximum number of phases. Default is `2`.
 
   psatkwargs: dict
     Settings for the saturation pressure calculation procedure. Default
     is an empty dictionary.
 
   **kwargs: dict
-    Other arguments for a flash solver. It can contain such arguments
-    as `method`, `tol`, `maxiter` and others, depending on the selected
-    solver.
+    Other arguments for the multiphase flash solver. It can contain such
+    arguments as `method`, `tol`, `maxiter` and others, depending on the
+    selected solver.
   """
   def __init__(
     self,
@@ -1444,17 +1476,8 @@ class cvdPT(_labprops):
     self.sepg = sepg
     self.sepo = sepo
     self.maxNp = maxNp
-    if maxNp == 2:
-      self.solver = flash2pPT(eos, **kwargs)
-      self.psatsolver = PsatPT(eos, **psatkwargs)
-    elif maxNp > 2:
-      raise NotImplementedError(
-        'The multiphase saturation pressure solver is not implemented yet.'
-      )
-    else:
-      raise ValueError(
-        'The maximum number of phases must be greater than or equal to 2.'
-      )
+    self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
+    self.psatsolver = PsatPT(eos, **psatkwargs)
     self.c5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.c5pi]
     pass
@@ -1614,9 +1637,9 @@ class ccePT(_labprops):
 
   Parameters
   ----------
-  eos: EosFlash2pPT | EosFlashNpPT
-    An initialized instance of a PT-based equation of state. For
-    two-phase flash calculations, it must have the following methods:
+  eos: EosFlashNpPT
+    An initialized instance of a PT-based equation of state. Must have
+    the following methods:
 
     - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
        -> Sequence[Vector[Double]]`
@@ -1640,25 +1663,8 @@ class ccePT(_labprops):
       - logarithms of fugacity coefficients of components as a
         `Vector[Double]` of shape `(Nc,)`.
 
-    If the solution method for two-phase flash calculations would be one
-    of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it also must
-    have:
-
-    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
-       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
-      For a given pressure [Pa], temperature [K], mole composition
-      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
-      this method must return a tuple of:
-
-      - the mixture compressibility factor,
-      - logarithms of fugacity coefficients of components as a
-        `Vector[Double]` of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to components mole numbers as a `Matrix[Double]`
-        of shape `(Nc, Nc)`.
-
-    If the maximum number of phases would be greater than two, then
-    this istance also must have:
+    To perform multiphase flash calculations, this instance of an
+    equation of state class must have:
 
     - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
        -> Vector[Integer]`
@@ -1670,7 +1676,7 @@ class ccePT(_labprops):
 
     - `getPT_Z(P: float, T: float, yi: Vector[Double]) -> float`
       For a given pressure [Pa], temperature [K], and mole composition
-      (`Vector[Double]` of shape `(Nc,)`), this method must return the
+      (`Vector[Double]` of shape `(Nc,)`), this method must return its
       compressibility factor.
 
     - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
@@ -1684,9 +1690,21 @@ class ccePT(_labprops):
       - logarithms of fugacity coefficients of components in each
         phase as a `Matrix[Double]` of shape `(Np, Nc)`.
 
-    If the solution method for multiphase flash calculations would be
-    one of `'newton'`, `'ss-newton'` or `'qnss-newton'` then it also
-    must have:
+    If the solution method would be one of `'newton'`, `'ss-newton'`
+    or `'qnss-newton'` then it also must have:
+
+    - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
+       n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], mole composition
+      (`Vector[Double]` of shape `(Nc,)`), and phase mole number [mol],
+      this method must return a tuple of:
+
+      - the mixture compressibility factor,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to components mole numbers as a `Matrix[Double]`
+        of shape `(Nc, Nc)`.
 
     - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
        nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
@@ -1805,9 +1823,9 @@ class ccePT(_labprops):
     The maximum number of phases. Default is `2`.
 
   **kwargs: dict
-    Other arguments for a flash solver. It can contain such arguments
-    as `method`, `tol`, `maxiter` and others, depending on the selected
-    solver.
+    Other arguments for the multiphase flash solver. It can contain such
+    arguments as `method`, `tol`, `maxiter` and others, depending on the
+    selected solver.
 
   Methods
   -------
@@ -1817,7 +1835,7 @@ class ccePT(_labprops):
   """
   def __init__(
     self,
-    eos: EosFlash2pPT | EosFlashNpPT,
+    eos: EosFlashNpPT,
     sepg: LabSeparator,
     sepo: LabSeparator,
     mwc5: float = 0.07215,
@@ -1829,14 +1847,7 @@ class ccePT(_labprops):
     self.sepo = sepo
     self.Nc = eos.Nc
     self.maxNp = maxNp
-    if maxNp == 2:
-      self.solver = flash2pPT(eos, **kwargs)
-    elif maxNp > 2:
-      self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
-    else:
-      raise ValueError(
-        'The maximum number of phases must be greater than or equal to 2.'
-      )
+    self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
     self.c5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.c5pi]
     pass
@@ -2103,9 +2114,9 @@ class dlPT(_labprops):
     is an empty dictionary.
 
   **kwargs: dict
-    Other arguments for a flash solver. It can contain such arguments
-    as `method`, `tol`, `maxiter` and others, depending on the selected
-    solver.
+    Other arguments for the multiphase flash solver. It can contain such
+    arguments as `method`, `tol`, `maxiter` and others, depending on the
+    selected solver.
   """
   def __init__(
     self,
@@ -2121,17 +2132,8 @@ class dlPT(_labprops):
     self.sepg = sepg
     self.sepo = sepo
     self.maxNp = maxNp
-    if maxNp == 2:
-      self.solver = flash2pPT(eos, **kwargs)
-      self.psatsolver = PsatPT(eos, **psatkwargs)
-    elif maxNp > 2:
-      raise NotImplementedError(
-        'The multiphase saturation pressure solver is not implemented yet.'
-      )
-    else:
-      raise ValueError(
-        'The maximum number of phases must be greater than or equal to 2.'
-      )
+    self.solver = flashNpPT(eos, maxNp=maxNp, **kwargs)
+    self.psatsolver = PsatPT(eos, **psatkwargs)
     self.c5pi = eos.mwi >= mwc5
     self.mwc5pi = eos.mwi[self.c5pi]
     pass
@@ -2433,7 +2435,7 @@ class swellPT(_labprops):
     ratio. Default is `0.07215` [kg/mol].
 
   **kwargs: dict
-    Other arguments for the saturation pressure solver. It can contain
+    Other arguments for the saturation pressure solver. It may contain
     such arguments as `method`, `tol`, `maxiter` and others, depending
     on the selected solver.
   """
