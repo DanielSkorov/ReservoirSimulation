@@ -34,9 +34,9 @@ class pr78(object):
   This class can be used to compute fugacities of components, the
   compressibility factor of a mixture and their partial derivatives
   with respect to pressure, temperature and composition using the
-  modified Peng-Robinson equation of state. For the single root case,
-  phase designation (liquid or vapour identification) is based on the
-  paper of R. Gosset et al, 1986 (doi: 10.1016/0378-3812(86)85061-0).
+  modified Peng-Robinson equation of state. Classical (van der Waals)
+  mixing rules are used to calculate attraction and repulsion parameters
+  for mixtures.
 
   Parameters
   ----------

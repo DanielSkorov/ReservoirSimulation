@@ -1012,6 +1012,10 @@ class MultiSeparator(object):
     return res
 
 
+class EosCvdPT(EosFlashNpPT, EosPsatPT, Protocol):
+  pass
+
+
 @dataclass(eq=False, slots=True)
 class LabResult(object):
   """Container for experiment simulation outputs with pretty-printing.
@@ -1285,9 +1289,9 @@ class cvdPT(_labprops):
 
   Parameters
   ----------
-  eos: EosPsatPT
+  eos: EosCvdPT
     An initialized instance of a PT-based equation of state. Must have
-    the following methods:
+    the following methods to conduct multiphase flash calculations:
 
     - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
        -> Sequence[Vector[Double]]`
@@ -1311,21 +1315,35 @@ class cvdPT(_labprops):
       - logarithms of fugacity coefficients of components as a
         `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
-       -> tuple[float, Vector[Double], Vector[Double]]`
+    To perform multiphase flash calculations, this instance of an
+    equation of state class must have:
+
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
+
+    - `getPT_Z(P: float, T: float, yi: Vector[Double]) -> float`
       For a given pressure [Pa], temperature [K], and mole composition
-      (`Vector[Double]` of shape `(Nc,)`), this method must return a
-      tuple of:
+      (`Vector[Double]` of shape `(Nc,)`), this method must return its
+      compressibility factor.
 
-      - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a
-        `Vector[Double]` of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
 
-    If solution methods for the saturation pressure determination and
-    flash calculations are based on Newton's method, then it also must
-    have:
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
+      - logarithms of fugacity coefficients of components in each
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
+
+    If the solution method would be one of `'newton'`, `'ss-newton'`
+    or `'qnss-newton'` then it also must have:
 
     - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
        n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
@@ -1339,6 +1357,39 @@ class cvdPT(_labprops):
       - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix[Double]`
         of shape `(Nc, Nc)`.
+
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
+
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
+      - logarithms of fugacity coefficients of components in each
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
+      - partial derivatives of logarithms of fugacity coefficients with
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
+
+    This instance of an equation of state should also have methods to
+    perform saturation pressure calculation. If the solution method of
+    saturation pressure calculation would be `'newton'`, then it also
+    must have:
+
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
     - `getPT_Z_lnphii_dP_dnj(P: float, T: float, yi: Vector[Double],
        n: float) -> tuple[float, Vector[Double], Vector[Double],
@@ -1359,7 +1410,7 @@ class cvdPT(_labprops):
     Also, this instance must have attributes:
 
     - `mwi: Vector[Double]`
-      An array of components molecular weights [kg/mol] of shape
+      A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -1464,7 +1515,7 @@ class cvdPT(_labprops):
   """
   def __init__(
     self,
-    eos: EosPsatPT,
+    eos: EosCvdPT,
     sepg: LabSeparator,
     sepo: LabSeparator,
     mwc5: float = 0.07215,
@@ -1524,7 +1575,7 @@ class cvdPT(_labprops):
     """
     logger.info('Constant volume depletion (CVD).')
     logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *yi)
-    res = self.psatsolver.run(Psat0, T, yi, n0, True)
+    res: FlashResult = self.psatsolver.run(Psat0, T, yi, n0, True)
     Psat = res.P
     logger.info('Saturation pressure: %.1f Pa', Psat)
     PP_filtered = PP[PP < Psat]
@@ -1938,9 +1989,9 @@ class dlPT(_labprops):
 
   Parameters
   ----------
-  eos: EosPsatPT
+  eos: EosCvdPT
     An initialized instance of a PT-based equation of state. Must have
-    the following methods:
+    the following methods to conduct multiphase flash calculations:
 
     - `getPT_kvguess(P: float, T: float, yi: Vector[Double])
        -> Sequence[Vector[Double]]`
@@ -1964,21 +2015,35 @@ class dlPT(_labprops):
       - logarithms of fugacity coefficients of components as a
         `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
-       -> tuple[float, Vector[Double], Vector[Double]]`
+    To perform multiphase flash calculations, this instance of an
+    equation of state class must have:
+
+    - `getPT_PIDj(P: float, T: float, yji: Matrix[Double])
+       -> Vector[Integer]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return the phase identification number for each phase as a
+      `Vector[Integer]` of shape `(Np,)` (`0` = vapour, `1` = liquid,
+      etc).
+
+    - `getPT_Z(P: float, T: float, yi: Vector[Double]) -> float`
       For a given pressure [Pa], temperature [K], and mole composition
-      (`Vector[Double]` of shape `(Nc,)`), this method must return a
-      tuple of:
+      (`Vector[Double]` of shape `(Nc,)`), this method must return its
+      compressibility factor.
 
-      - the compressibility factor of the mixture,
-      - logarithms of fugacity coefficients of components as a
-        `Vector[Double]` of shape `(Nc,)`,
-      - partial derivatives of logarithms of fugacity coefficients
-        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
+    - `getPT_Zj_lnphiji(P: float, T: float, yji: Matrix[Double])
+       -> tuple[Vector[Double], Matrix[Double]]`
+      For a given pressure [Pa], temperature [K], and mole compositions
+      of `Np` phases (`Matrix[Double]` of shape `(Np, Nc)`), this method
+      must return a tuple of:
 
-    If solution methods for the saturation pressure determination and
-    flash calculations are based on Newton's method, then it also must
-    have:
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
+      - logarithms of fugacity coefficients of components in each
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`.
+
+    If the solution method would be one of `'newton'`, `'ss-newton'`
+    or `'qnss-newton'` then it also must have:
 
     - `getPT_Z_lnphii_dnj(P: float, T: float, yi: Vector[Double],
        n: float) -> tuple[float, Vector[Double], Matrix[Double]]`
@@ -1992,6 +2057,39 @@ class dlPT(_labprops):
       - partial derivatives of logarithms of fugacity coefficients
         with respect to components mole numbers as a `Matrix[Double]`
         of shape `(Nc, Nc)`.
+
+    - `getPT_Zj_lnphiji_dnk(P: float, T: float, yji: Matrix[Double],
+       nj: Vector[Double]) -> tuple[Vector[Double], Matrix[Double],
+       Tensor[Double]]`
+      For a given pressure [Pa], temperature [K], mole fractions of `Nc`
+      components in `Np` phases as a `Matrix[Double]` of shape
+      `(Np, Nc)`, and mole numbers of phases as a `Vector[Double]`,
+      this method must return a tuple that contains:
+
+      - a `Vector[Double]` of shape `(Np,)` of compressibility factors
+        of phases,
+      - logarithms of fugacity coefficients of components in each
+        phase as a `Matrix[Double]` of shape `(Np, Nc)`,
+      - partial derivatives of logarithms of fugacity coefficients with
+        respect to component mole numbers for each phase as a
+        `Tensor[Double]` of shape `(Np, Nc, Nc)`.
+
+    This instance of an equation of state should also have methods to
+    perform saturation pressure calculation. If the solution method of
+    saturation pressure calculation would be `'newton'`, then it also
+    must have:
+
+    - `getPT_Z_lnphii_dP(P: float, T: float, yi: Vector[Double])
+       -> tuple[float, Vector[Double], Vector[Double]]`
+      For a given pressure [Pa], temperature [K], and mole composition
+      (`Vector[Double]` of shape `(Nc,)`), this method must return a
+      tuple of:
+
+      - the compressibility factor of the mixture,
+      - logarithms of fugacity coefficients of components as a
+        `Vector[Double]` of shape `(Nc,)`,
+      - partial derivatives of logarithms of fugacity coefficients
+        with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
     - `getPT_Z_lnphii_dP_dnj(P: float, T: float, yi: Vector[Double],
        n: float) -> tuple[float, Vector[Double], Vector[Double],
@@ -2012,7 +2110,7 @@ class dlPT(_labprops):
     Also, this instance must have attributes:
 
     - `mwi: Vector[Double]`
-      An array of components molecular weights [kg/mol] of shape
+      A vector of components molecular weights [kg/mol] of shape
       `(Nc,)`.
 
     - `name: str`
@@ -2120,7 +2218,7 @@ class dlPT(_labprops):
   """
   def __init__(
     self,
-    eos: EosPsatPT,
+    eos: EosCvdPT,
     sepg: LabSeparator,
     sepo: LabSeparator,
     mwc5: float = 0.07215,
@@ -2180,7 +2278,7 @@ class dlPT(_labprops):
     """
     logger.info('Differential liberation (DL).')
     logger.info('T = %.2f K, zi =' + self.eos.Nc * '%7.4f', T, *yi)
-    res = self.psatsolver.run(Psat0, T, yi, True)
+    res: FlashResult = self.psatsolver.run(Psat0, T, yi, True)
     Psat = res.P
     logger.info('Saturation pressure: %.1f Pa', Psat)
     PP_filtered = PP[PP < Psat]
@@ -2503,8 +2601,8 @@ class swellPT(_labprops):
     fsj = np.zeros_like(Zsj)
     ns = np.zeros_like(Ps)
     props = np.empty(shape=(Ns, 11))
-    for i, F in enumerate(fj):
-      xi = (1. - F) * zi + F * yi
+    for i, f in enumerate(fj):
+      xi = (1. - f) * zi + f * yi
       res = self.solver.run(P0, T, xi, True)
       P0 = res.P
       yji = res.yji
@@ -2512,7 +2610,7 @@ class swellPT(_labprops):
       Ps[i] = P0
       ysji[i] = yji
       Zsj[i] = Zj
-      ns[i] = 1. / (1. - F)
+      ns[i] = 1. / (1. - f)
       vj = Zj * R * T / P0
       denj = yji.dot(self.eos.mwi) / vj
       if denj[0] < denj[1]:

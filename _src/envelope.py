@@ -30,8 +30,8 @@ from constants import (
 
 from typing import (
   Protocol,
-  Callable,
   Sequence,
+  Callable,
 )
 
 from customtypes import (
@@ -710,6 +710,10 @@ class PsatPT(object):
   ) -> None:
     self.eos = eos
     self.stabsolver = stabilityPT(eos, **stabkwargs)
+    self.solver: Callable[[float, float, Vector[Double], float,
+                           Vector[Double], float, float, bool], SatResult]
+    self.initialize: Callable[[float, float, Vector[Double], bool],
+                              tuple[float, Vector[Double], float, float]]
     if method == 'ss':
       self.solver = partial(_PsatPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
@@ -739,8 +743,8 @@ class PsatPT(object):
     upper: bool = True,
   ) -> SatResult:
     """Performs the saturation pressure calculation for known
-    temperature and composition. To improve an initial guess, the
-    preliminary search is performed.
+    temperature and composition. To improve an initial guess of
+    pressure, the preliminary search is performed.
 
     Parameters
     ----------
@@ -758,7 +762,7 @@ class PsatPT(object):
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
-      at the upper saturation bound or the lower saturation bound.
+      at the upper saturation curve or the lower saturation curve.
       The cricondentherm serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
@@ -783,7 +787,7 @@ class PsatPT(object):
       unsuccessfully.
     """
     P0, kvi0, Plow, Pupp = self.initialize(P, T, yi, upper)
-    return self.solver(P0, T, yi, n, kvi0, Plow=Plow, Pupp=Pupp, upper=upper)
+    return self.solver(P0, T, yi, n, kvi0, Plow, Pupp, upper)
 
   def search(
     self,
@@ -821,7 +825,7 @@ class PsatPT(object):
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
-      at the upper saturation bound or the lower saturation bound.
+      at the upper saturation curve or the lower saturation curve.
       The cricondentherm serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
@@ -1026,7 +1030,7 @@ class PsatPT(object):
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
-      at the upper saturation bound or the lower saturation bound.
+      at the upper saturation curve or the lower saturation curve.
       The cricondentherm serves as the dividing point between upper and
       lower phase boundaries. This flag controls the start point: if it
       is set to `True`, then the start point would be `Pmax`; otherwise
@@ -1210,14 +1214,14 @@ def _PsatPT_ss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPsatPT,
   tol: float = 1e-16,
   maxiter: int = 200,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
-  upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation pressure
@@ -1240,6 +1244,18 @@ def _PsatPT_ss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The saturation pressure lower bound [Pa].
+
+  Pupp: float
+    The saturation pressure upper bound [Pa].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -1290,18 +1306,6 @@ def _PsatPT_ss(
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
-
-  Plow: float
-    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
-
-  Pupp: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondentherm serves as the dividing point between upper and
-    lower phase boundaries. Default is `True`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -1402,15 +1406,15 @@ def _PsatPT_qnss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPsatPT,
+  lmbdmax: float = 30.,
   tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: float = 30.,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
-  upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
   """QNSS-method for the saturation pressure calculation using a PT-based
@@ -1438,6 +1442,18 @@ def _PsatPT_qnss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The saturation pressure lower bound [Pa].
+
+  Pupp: float
+    The saturation pressure upper bound [Pa].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -1470,6 +1486,9 @@ def _PsatPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
+  lmbdmax: float
+    The maximum step length. Default is `30.0`.
+
   tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
@@ -1477,9 +1496,6 @@ def _PsatPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
-
-  lmbdmax: float
-    The maximum step length. Default is `30.0`.
 
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
@@ -1491,18 +1507,6 @@ def _PsatPT_qnss(
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
-
-  Plow: float
-    The lower bound for the TPD-equation solver. Default is `1.0` [Pa].
-
-  Pupp: float
-    The upper bound for the TPD-equation solver. Default is `1e8` [Pa].
-
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondentherm serves as the dividing point between upper and
-    lower phase boundaries. Default is `True`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -1738,15 +1742,15 @@ def _PsatPT_newtA(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPsatPT,
   tol: float = 1e-16,
   maxiter: int = 20,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
-  linsolver: Linsolver = np.linalg.solve,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  upper: bool = True,
+  linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
@@ -1775,6 +1779,19 @@ def _PsatPT_newtA(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The saturation pressure lower bound [Pa].
+
+  Pupp: float
+    The saturation pressure upper bound [Pa].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries. This parameter is used by the algorithm of
+    the saturation pressure initial guess improvement.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -1832,18 +1849,6 @@ def _PsatPT_newtA(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Plow: float
-    The pressure lower bound. Default is `1.0` [Pa].
-
-  Pupp: float
-    The pressure upper bound. Default is `1e8` [Pa].
-
-  linsolver: Linsolver
-    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
-    `Ax = b`. Default is `numpy.linalg.solve`.
-
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
@@ -1857,13 +1862,11 @@ def _PsatPT_newtA(
     is used by the algorithm of the saturation pressure initial guess
     improvement. Default is `10`.
 
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondentherm serves as the dividing point between upper and
-    lower phase boundaries. This parameter is used by the algorithm of
-    the saturation pressure initial guess improvement.
-    Default is `True`.
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
+    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
+    `(Nc+1,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -1989,15 +1992,15 @@ def _PsatPT_newtB(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPsatPT,
   tol: float = 1e-16,
   maxiter: int = 20,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
-  linsolver: Linsolver = np.linalg.solve,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  upper: bool = True,
+  linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
@@ -2026,6 +2029,19 @@ def _PsatPT_newtB(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The saturation pressure lower bound [Pa].
+
+  Pupp: float
+    The saturation pressure upper bound [Pa].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries. This parameter is used by the algorithm of
+    the saturation pressure initial guess improvement.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -2083,18 +2099,6 @@ def _PsatPT_newtB(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Plow: float
-    The pressure lower bound. Default is `1.0` [Pa].
-
-  Pupp: float
-    The pressure upper bound. Default is `1e8` [Pa].
-
-  linsolver: Linsolver
-    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
-    `Ax = b`. Default is `numpy.linalg.solve`.
-
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
@@ -2108,13 +2112,11 @@ def _PsatPT_newtB(
     is used by the algorithm of the saturation pressure initial guess
     improvement. Default is `10`.
 
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondentherm serves as the dividing point between upper and
-    lower phase boundaries. This parameter is used by the algorithm of
-    the saturation pressure initial guess improvement.
-    Default is `True`.
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
+    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
+    `(Nc+1,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -2243,15 +2245,15 @@ def _PsatPT_newtC(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPsatPT,
   tol: float = 1e-16,
   maxiter: int = 30,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
   linsolver: Linsolver = np.linalg.solve,
-  upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation pressure by solving a system of
@@ -2281,6 +2283,18 @@ def _PsatPT_newtC(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The saturation pressure lower bound [Pa].
+
+  Pupp: float
+    The saturation pressure upper bound [Pa].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondentherm serves as the dividing point between upper and
+    lower phase boundaries.
 
   eos: EosPsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -2341,23 +2355,11 @@ def _PsatPT_newtC(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Plow: float
-    The pressure lower bound. Default is `1.0` [Pa].
-
-  Pupp: float
-    The pressure upper bound. Default is `1e8` [Pa].
-
   linsolver: Linsolver
     A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
-
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondentherm serves as the dividing point between upper and
-    lower phase boundaries. Default is `True`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -2592,6 +2594,10 @@ class TsatPT(object):
   ) -> None:
     self.eos = eos
     self.stabsolver = stabilityPT(eos, **stabkwargs)
+    self.solver: Callable[[float, float, Vector[Double], float,
+                           Vector[Double], float, float, bool], SatResult]
+    self.initialize: Callable[[float, float, Vector[Double], bool],
+                              tuple[float, Vector[Double], float, float]]
     if method == 'ss':
       self.solver = partial(_TsatPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
@@ -2621,8 +2627,8 @@ class TsatPT(object):
     upper: bool = True,
   ) -> SatResult:
     """Performs the saturation temperature calculation for known
-    pressure and composition. To improve an initial guess, the
-    preliminary search is performed.
+    pressure and composition. To improve an initial guess of
+    temperature, the preliminary search is performed.
 
     Parameters
     ----------
@@ -2640,7 +2646,7 @@ class TsatPT(object):
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
-      at the upper saturation bound or the lower saturation bound.
+      at the upper saturation curve or the lower saturation curve.
       The cricondenbar serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
@@ -2665,7 +2671,7 @@ class TsatPT(object):
       unsuccessfully.
     """
     T0, kvi0, Tlow, Tupp = self.initialize(P, T, yi, upper)
-    return self.solver(P, T0, yi, n, kvi0, Tlow=Tlow, Tupp=Tupp, upper=upper)
+    return self.solver(P, T0, yi, n, kvi0, Tlow, Tupp, upper)
 
   def search(
     self,
@@ -2704,7 +2710,7 @@ class TsatPT(object):
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
-      at the upper saturation bound or the lower saturation bound.
+      at the upper saturation curve or the lower saturation curve.
       The cricondenbar serves as the dividing point between upper and
       lower phase boundaries. Default is `True`.
 
@@ -2913,7 +2919,7 @@ class TsatPT(object):
 
     upper: bool
       A boolean flag that indicates whether the desired value is located
-      at the upper saturation bound or the lower saturation bound.
+      at the upper saturation curve or the lower saturation curve.
       The cricondenbar serves as the dividing point between upper and
       lower phase boundaries. This flag controls the start point: if it
       is set to `True`, then the start point would be `Tmax`; otherwise
@@ -3082,14 +3088,14 @@ def _TsatPT_ss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTsatPT,
   tol: float = 1e-16,
   maxiter: int = 200,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
-  upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the saturation temperature
@@ -3112,6 +3118,18 @@ def _TsatPT_ss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The saturation temperature lower bound [K].
+
+  Tupp: float
+    The saturation temperature upper bound [K].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -3162,20 +3180,6 @@ def _TsatPT_ss(
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
-
-  Tlow: float
-    The lower bound for the TPD-equation solver.
-    Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondenbar serves as the dividing point between upper and
-    lower phase boundaries. Default is `True`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -3275,15 +3279,15 @@ def _TsatPT_qnss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTsatPT,
+  lmbdmax: float = 30.,
   tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: float = 30.,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
-  upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (QNSS) method for the
@@ -3312,6 +3316,18 @@ def _TsatPT_qnss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The saturation temperature lower bound [K].
+
+  Tupp: float
+    The saturation temperature upper bound [K].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -3344,6 +3360,9 @@ def _TsatPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
+  lmbdmax: float
+    The maximum step length. Default is `30.0`.
+
   tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
@@ -3351,9 +3370,6 @@ def _TsatPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
-
-  lmbdmax: float
-    The maximum step length. Default is `30.0`.
 
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
@@ -3365,20 +3381,6 @@ def _TsatPT_qnss(
   maxiter_tpd: int
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
-
-  Tlow: float
-    The lower bound for the TPD-equation solver.
-    Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondenbar serves as the dividing point between upper and
-    lower phase boundaries. Default is `True`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -3616,15 +3618,15 @@ def _TsatPT_newtA(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTsatPT,
   tol: float = 1e-16,
   maxiter: int = 20,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
-  linsolver: Linsolver = np.linalg.solve,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  upper: bool = True,
+  linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
@@ -3653,6 +3655,19 @@ def _TsatPT_newtA(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The saturation temperature lower bound [K].
+
+  Tupp: float
+    The saturation temperature upper bound [K].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries. This parameter is used by the algorithm of
+    the saturation temperature initial guess improvement.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -3712,20 +3727,6 @@ def _TsatPT_newtA(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Tlow: float
-    The lower bound for the TPD-equation solver.
-    Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  linsolver: Linsolver
-    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
-    `Ax = b`. Default is `numpy.linalg.solve`.
-
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
@@ -3739,13 +3740,11 @@ def _TsatPT_newtA(
     is used by the algorithm of the saturation temperature initial guess
     improvement. Default is `10`.
 
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondenbar serves as the dividing point between upper and
-    lower phase boundaries. This parameter is used by the algorithm of
-    the saturation temperature initial guess improvement.
-    Default is `True`.
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
+    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
+    `(Nc+1,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -3871,15 +3870,15 @@ def _TsatPT_newtB(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTsatPT,
   tol: float = 1e-16,
   maxiter: int = 20,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
-  linsolver: Linsolver = np.linalg.solve,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  upper: bool = True,
+  linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
@@ -3908,6 +3907,19 @@ def _TsatPT_newtB(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The saturation temperature lower bound [K].
+
+  Tupp: float
+    The saturation temperature upper bound [K].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries. This parameter is used by the algorithm of
+    the saturation temperature initial guess improvement.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -3967,20 +3979,6 @@ def _TsatPT_newtB(
   maxiter: int
     The maximum number of solver iterations. Default is `20`.
 
-  Tlow: float
-    The lower bound for the TPD-equation solver.
-    Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
-  linsolver: Linsolver
-    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
-    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
-    `(Nc+1,)`, which is the solution of the system of linear equations
-    `Ax = b`. Default is `numpy.linalg.solve`.
-
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
     value of the equation is less than `tol_tpd`. The TPD-equation is
@@ -3994,13 +3992,11 @@ def _TsatPT_newtB(
     is used by the algorithm of the saturation temperature initial guess
     improvement. Default is `10`.
 
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondenbar serves as the dividing point between upper and
-    lower phase boundaries. This parameter is used by the algorithm of
-    the saturation temperature initial guess improvement.
-    Default is `True`.
+  linsolver: Linsolver
+    A function that accepts a Dmatrix `A` of shape `(Nc+1, Nc+1)` and
+    an array `b` of shape `(Nc+1,)` and finds an array `x` of shape
+    `(Nc+1,)`, which is the solution of the system of linear equations
+    `Ax = b`. Default is `numpy.linalg.solve`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -4129,15 +4125,15 @@ def _TsatPT_newtC(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTsatPT,
   tol: float = 1e-16,
   maxiter: int = 30,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
   linsolver: Linsolver = np.linalg.solve,
-  upper: bool = True,
   densort: bool = True,
 ) -> SatResult:
   """This function calculates saturation temperature by solving a system
@@ -4167,6 +4163,18 @@ def _TsatPT_newtC(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The saturation temperature lower bound [K].
+
+  Tupp: float
+    The saturation temperature upper bound [K].
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve.
+    The cricondenbar serves as the dividing point between upper and
+    lower phase boundaries.
 
   eos: EosTsatPT
     An initialized instance of a PT-based equation of state. Must have
@@ -4227,25 +4235,11 @@ def _TsatPT_newtC(
     The maximum number of TPD-equation solver iterations.
     Default is `10`.
 
-  Tlow: float
-    The lower bound for the TPD-equation solver.
-    Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver.
-    Default is `973.15` [K].
-
   linsolver: Linsolver
     A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
     `(Nc,)`, which is the solution of the system of linear equations
     `Ax = b`. Default is `numpy.linalg.solve`.
-
-  upper: bool
-    A boolean flag that indicates whether the desired value is located
-    at the upper saturation bound or the lower saturation bound.
-    The cricondenbar serves as the dividing point between upper and
-    lower phase boundaries. Default is `True`.
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -4487,6 +4481,8 @@ class PmaxPT(PsatPT):
   ) -> None:
     self.eos = eos
     self.stabsolver = stabilityPT(eos, **stabkwargs)
+    self.solver: Callable[[float, float, Vector[Double], float,
+                           Vector[Double], float, float, bool], SatResult]
     if method == 'ss':
       self.solver = partial(_PmaxPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
@@ -4502,54 +4498,6 @@ class PmaxPT(PsatPT):
     else:
       raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
-
-  def run(
-    self,
-    P: float,
-    T: float,
-    yi: Vector[Double],
-    n: float = 1.,
-    upper: bool = True,
-  ) -> SatResult:
-    """Performs the cricondenbar point calculation for a mixture. To
-    improve the initial guess of pressure, the preliminary search is
-    performed.
-
-    Parameters
-    ----------
-    P: float
-      Initial guess of the cricondenbar pressure [Pa].
-
-    T: float
-      Initial guess of the cricondenbar temperature [K].
-
-    yi: Vector[Double], shape (Nc,)
-      Mole fractions of `Nc` components.
-
-    n: float
-      Number of moles of the mixture [mol]. Default is `1.0` [mol].
-
-    Returns
-    -------
-    Cricondenbar point calculation results as an instance of the
-    `SatResult`. Important attributes are:
-    - `P` the cricondenbar pressure in [Pa],
-    - `T` the cricondenbar temperature in [K],
-    - `yji` the component mole fractions in each phase,
-    - `Zj` the compressibility factors of each phase.
-
-    Raises
-    ------
-    ValueError
-      The `ValueError` exception may be raised if the one-phase or
-      two-phase region was not found during initialization.
-
-    SolutionNotFoundError
-      The `SolutionNotFoundError` exception will be raised if the
-      cricondenbar calculation procedure terminates unsuccessfully.
-    """
-    P0, kvi0, Plow, Pupp = self.initialize(P, T, yi, True)
-    return self.solver(P0, T, yi, n, kvi0, Plow=Plow, Pupp=Pupp)
 
 
 def _PmaxPT_solve_TPDeq_P(
@@ -4725,13 +4673,14 @@ def _PmaxPT_ss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPmaxPT,
   tol: float = 1e-16,
   maxiter: int = 200,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
   densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondenbar
@@ -4767,6 +4716,24 @@ def _PmaxPT_ss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The lower bound for the TPD-equation solver [Pa]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  Pupp: float
+    The upper bound for the TPD-equation solver [Pa]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve. The
+    cricondentherm serves as the dividing point between upper and lower
+    phase boundaries. The cricondenbar is located at the upper phase
+    boundary; therefore, in such a case, this parameter should be
+    `True`. However, if it is necessary to find a state where the
+    cricondenbar constraint is met on the lower saturation curve, then
+    this parameter should be set to `False`.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
@@ -4834,14 +4801,6 @@ def _PmaxPT_ss(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `10`.
 
-  Plow: float
-    The lower bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1.0` [Pa].
-
-  Pupp: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1e8` [Pa].
-
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
     and trial phases according to their densities. Default is `True`.
@@ -4879,7 +4838,7 @@ def _PmaxPT_ss(
   ni = ki * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, True,
+    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, upper,
   )
   Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnki + lnphixi - lnphiyi
@@ -4953,14 +4912,15 @@ def _PmaxPT_qnss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPmaxPT,
+  lmbdmax: float = 30.,
   tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: float = 30.,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
   densort: bool = True,
 ) -> SatResult:
   """Quasi-Newton Successive Substitution (SS) method for the
@@ -4999,6 +4959,24 @@ def _PmaxPT_qnss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The lower bound for the TPD-equation solver [Pa]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  Pupp: float
+    The upper bound for the TPD-equation solver [Pa]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve. The
+    cricondentherm serves as the dividing point between upper and lower
+    phase boundaries. The cricondenbar is located at the upper phase
+    boundary; therefore, in such a case, this parameter should be
+    `True`. However, if it is necessary to find a state where the
+    cricondenbar constraint is met on the lower saturation curve, then
+    this parameter should be set to `False`.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
@@ -5049,6 +5027,9 @@ def _PmaxPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
+  lmbdmax: float
+    The maximum step length. Default is `30.0`.
+
   tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
@@ -5056,9 +5037,6 @@ def _PmaxPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
-
-  lmbdmax: float
-    The maximum step length. Default is `30.0`.
 
   tol_tpd: float
     Terminate the TPD-equation and the cricondenbar equation solvers
@@ -5068,14 +5046,6 @@ def _PmaxPT_qnss(
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `10`.
-
-  Plow: float
-    The lower bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1.0` [Pa].
-
-  Pupp: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1e8` [Pa].
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -5114,7 +5084,7 @@ def _PmaxPT_qnss(
   ni = ki * yi
   xi = ni / ni.sum()
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, True,
+    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, upper,
   )
   Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnki + lnphixi - lnphiyi
@@ -5206,13 +5176,14 @@ def _PmaxPT_newtC(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Plow: float,
+  Pupp: float,
+  upper: bool,
   eos: EosPmaxPT,
   tol: float = 1e-16,
   maxiter: int = 30,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Plow: float = 1.,
-  Pupp: float = 1e8,
   linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
@@ -5247,6 +5218,24 @@ def _PmaxPT_newtC(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Plow: float
+    The lower bound for the TPD-equation solver [Pa]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  Pupp: float
+    The upper bound for the TPD-equation solver [Pa]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve. The
+    cricondentherm serves as the dividing point between upper and lower
+    phase boundaries. The cricondenbar is located at the upper phase
+    boundary; therefore, in such a case, this parameter should be
+    `True`. However, if it is necessary to find a state where the
+    cricondenbar constraint is met on the lower saturation curve, then
+    this parameter should be set to `False`.
 
   eos: EosPmaxPT
     An initialized instance of a PT-based equation of state. Must have
@@ -5327,14 +5316,6 @@ def _PmaxPT_newtC(
     The maximum number of iterations for the TPD-equation and
     cricondenbar equation solvers. Default is `10`.
 
-  Plow: float
-    The lower bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1.0` [Pa].
-
-  Pupp: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `1e8` [Pa].
-
   linsolver: Linsolver
     A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
@@ -5380,7 +5361,7 @@ def _PmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Pk, *_, TPD = _PsatPT_solve_TPDeq_P(
-    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, True,
+    xi, T0, yi, Plow, Pupp, eos, tol_tpd, maxiter_tpd, upper,
   )
   Tk, Zx, Zy, lnphixi, lnphiyi, dTPDdT = solverCBAReq(Pk, T0, yi, xi)
   gi = lnki + lnphixi - lnphiyi
@@ -5592,6 +5573,8 @@ class TmaxPT(TsatPT):
   ) -> None:
     self.eos = eos
     self.stabsolver = stabilityPT(eos, **stabkwargs)
+    self.solver: Callable[[float, float, Vector[Double], float,
+                           Vector[Double], float, float, bool], SatResult]
     if method == 'ss':
       self.solver = partial(_TmaxPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
@@ -5607,56 +5590,6 @@ class TmaxPT(TsatPT):
     else:
       raise ValueError(f'The unknown initialization method: {initmethod}.')
     pass
-
-  def run(
-    self,
-    P: float,
-    T: float,
-    yi: Vector[Double],
-    n: float = 1.,
-    upper: bool = True,
-  ) -> SatResult:
-    """Performs the cricindentherm point calculation for a mixture. To
-    improve an initial guess of temperature, the preliminary search is
-    performed.
-
-    Parameters
-    ----------
-    P: float
-      Initial guess of the cricondentherm pressure [Pa].
-
-    T: float
-      Initial guess of the cricondentherm temperature [K].
-
-    yi: Vector[Double], shape (Nc,)
-      Mole fractions of `Nc` components.
-
-    n: float
-      Number of moles of the mixture [mol]. Default is `1.0` [mol].
-
-    Returns
-    -------
-    Cricondentherm point calculation results as an instance of the
-    `SatResult`. Important attributes are:
-    - `P` the cricondentherm pressure in [Pa],
-    - `T` the cricondentherm temperature in [K],
-    - `yji` the component mole fractions in each phase,
-    - `Zj` the compressibility factors of each phase,
-    - `success` a boolean flag indicating if the calculation completed
-      successfully.
-
-    Raises
-    ------
-    ValueError
-      The `ValueError` exception may be raised if the one-phase or
-      two-phase region was not found during initialization.
-
-    SolutionNotFoundError
-      The `SolutionNotFoundError` exception will be raised if the
-      cricondentherm calculation procedure terminates unsuccessfully.
-    """
-    T0, kvi0, Tlow, Tupp = self.initialize(P, T, yi, True)
-    return self.solver(P, T0, yi, n, kvi0, Tlow=Tlow, Tupp=Tupp)
 
 
 def _TmaxPT_solve_TPDeq_T(
@@ -5835,13 +5768,14 @@ def _TmaxPT_ss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTmaxPT,
   tol: float = 1e-16,
   maxiter: int = 200,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
   densort: bool = True,
 ) -> SatResult:
   """Successive substitution (SS) method for the cricondentherm
@@ -5877,6 +5811,24 @@ def _TmaxPT_ss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The lower bound for the TPD-equation solver [K]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  Tupp: float
+    The upper bound for the TPD-equation solver [K]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve. The
+    cricondenbar serves as the dividing point between upper and lower
+    phase boundaries. The cricondentherm is located at the upper phase
+    boundary; therefore, in such a case, this parameter should be
+    `True`. However, if it is necessary to find a state where the
+    cricondentherm constraint is met on the lower saturation curve, then
+    this parameter should be set to `False`.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
@@ -5947,14 +5899,6 @@ def _TmaxPT_ss(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `10`.
 
-  Tlow: float
-    The lower bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `973.15` [K].
-
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
     and trial phases according to their densities. Default is `True`.
@@ -5992,7 +5936,7 @@ def _TmaxPT_ss(
   ni = ki * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, True,
+    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, upper,
   )
   Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnki + lnphixi - lnphiyi
@@ -6066,14 +6010,15 @@ def _TmaxPT_qnss(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTmaxPT,
+  lmbdmax: float = 30.,
   tol: float = 1e-16,
   maxiter: int = 50,
-  lmbdmax: float = 30.,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
   densort = True,
 ) -> SatResult:
   """Quasi-Newton Successive substitution (QNSS) method for the
@@ -6112,6 +6057,24 @@ def _TmaxPT_qnss(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The lower bound for the TPD-equation solver [K]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  Tupp: float
+    The upper bound for the TPD-equation solver [K]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve. The
+    cricondenbar serves as the dividing point between upper and lower
+    phase boundaries. The cricondentherm is located at the upper phase
+    boundary; therefore, in such a case, this parameter should be
+    `True`. However, if it is necessary to find a state where the
+    cricondentherm constraint is met on the lower saturation curve, then
+    this parameter should be set to `False`.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
@@ -6163,6 +6126,9 @@ def _TmaxPT_qnss(
     - `Nc: int`
       The number of components in the system.
 
+  lmbdmax: float
+    The maximum step length. Default is `30.0`.
+
   tol: float
     Terminate the solver successfully if the sum of squared elements
     of the vector of equations is less than `tol`. Default is `1e-16`.
@@ -6170,9 +6136,6 @@ def _TmaxPT_qnss(
   maxiter: int
     The maximum number of equilibrium equation solver iterations.
     Default is `50`.
-
-  lmbdmax: float
-    The maximum step length. Default is `30.0`.
 
   tol_tpd: float
     Terminate the TPD-equation solver successfully if the absolute
@@ -6184,14 +6147,6 @@ def _TmaxPT_qnss(
   maxiter_tpd: int
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `10`.
-
-  Tlow: float
-    The lower bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `973.15` [K].
 
   densort: bool
     A boolean flag indicating whether it is necessary to sort the real
@@ -6230,7 +6185,7 @@ def _TmaxPT_qnss(
   ni = ki * yi
   xi = ni / ni.sum()
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, True,
+    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, upper,
   )
   Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnki + lnphixi - lnphiyi
@@ -6322,13 +6277,14 @@ def _TmaxPT_newtC(
   yi: Vector[Double],
   n: float,
   kvi0: Vector[Double],
+  Tlow: float,
+  Tupp: float,
+  upper: bool,
   eos: EosTmaxPT,
   tol: float = 1e-16,
   maxiter: int = 30,
   tol_tpd: float = 1e-8,
   maxiter_tpd: int = 10,
-  Tlow: float = 173.15,
-  Tupp: float = 973.15,
   linsolver: Linsolver = np.linalg.solve,
   densort: bool = True,
 ) -> SatResult:
@@ -6364,6 +6320,24 @@ def _TmaxPT_newtC(
 
   kvi0: Vector[Double], shape (Nc,)
     Initial guess of k-values of `Nc` components.
+
+  Tlow: float
+    The lower bound for the TPD-equation solver [K]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  Tupp: float
+    The upper bound for the TPD-equation solver [K]. This parameter is
+    used only at the zeroth iteration to improve the initial guess.
+
+  upper: bool
+    A boolean flag that indicates whether the desired value is located
+    at the upper saturation curve or the lower saturation curve. The
+    cricondenbar serves as the dividing point between upper and lower
+    phase boundaries. The cricondentherm is located at the upper phase
+    boundary; therefore, in such a case, this parameter should be
+    `True`. However, if it is necessary to find a state where the
+    cricondentherm constraint is met on the lower saturation curve, then
+    this parameter should be set to `False`.
 
   eos: EosTmaxPT
     An initialized instance of a PT-based equation of state. Must have
@@ -6447,14 +6421,6 @@ def _TmaxPT_newtC(
     The maximum number of iterations for the TPD-equation and
     cricondentherm equation solvers. Default is `10`.
 
-  Tlow: float
-    The lower bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `173.15` [K].
-
-  Tupp: float
-    The upper bound for the TPD-equation solver. This parameter is used
-    only at the zeroth iteration. Default is `973.15` [K].
-
   linsolver: Linsolver
     A function that accepts a Dmatrix `A` of shape `(Nc, Nc)` and
     an array `b` of shape `(Nc,)` and finds an array `x` of shape
@@ -6500,7 +6466,7 @@ def _TmaxPT_newtC(
   n = ni.sum()
   xi = ni / n
   Tk, *_, TPD = _TsatPT_solve_TPDeq_T(
-    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, True,
+    xi, P0, yi, Tlow, Tupp, eos, tol_tpd, maxiter_tpd, upper,
   )
   Pk, Zx, Zy, lnphixi, lnphiyi, dTPDdP = solverCTHERMeq(P0, Tk, yi, xi)
   gi = lnki + lnphixi - lnphiyi
@@ -6940,6 +6906,10 @@ class env2pPT(object):
         'implemented yet.'
       )
     else:
+      self.solver: Callable[
+        [Vector[Double], int | Integer, float, Vector[Double], float],
+        tuple[Vector[Double], Vector[Double], Matrix[Double], int, bool],
+      ]
       if method == 'newton':
         self.solver = partial(_env2pPT, eos=eos, lnPmax=lnPmax+0.05,
                               lnTmax=lnTmax+0.05, lnPmin=lnPmin-0.05,
@@ -6967,6 +6937,7 @@ class env2pPT(object):
     unconvmult: float = 0.75,
     maxrepeats: int = 8,
     maxpoints: int = 200,
+    Nnodes: int = 100,
   ) -> EnvelopeResult:
     """This method should be used to calculate the entire phase
     envelope.
@@ -7055,6 +7026,13 @@ class env2pPT(object):
       The maximum number of points of the phase envelope. Default is
       `200`.
 
+    Nnodes: int
+      To clarify the initial guess of pressure and k-values that
+      correspond to the specified phase mole fraction, the preliminary
+      search based on the gridding procedure is performed. This
+      parameter controls the number of nodes in the grid. Default is
+      `100`.
+
     Returns
     -------
     The phase envelope construction results as an instance of the
@@ -7076,7 +7054,7 @@ class env2pPT(object):
         'numerical settings can also be helpful.'
       )
     kvji0 = psres.yji[0] / psres.yji[1], psres.yji[1] / psres.yji[0]
-    P, flash = self.search(psres.P, T0, yi, f, kvji0)
+    P, flash = self.search(psres.P, T0, yi, f, kvji0, Nnodes)
     assert flash.kvji is not None
     f = np.abs(flash.fj[0])
     xi = np.log(np.hstack([flash.kvji[0], P, T0]))
@@ -7124,7 +7102,9 @@ class env2pPT(object):
       dx0ds = np.linalg.solve(J0, mdgds)
     else:
       raise SolutionNotFoundError(
-        '...'
+        'The phase envelope solver completed unsuccessfully for the first '
+        'point. Try to change `sidx0` or increase the grid nodes number '
+        'by changing `Nnodes`.'
       )
 
     bounds = []
@@ -7271,8 +7251,8 @@ class env2pPT(object):
     yi: Vector[Double],
     f: float,
     kvji0: Sequence[Vector[Double]] | None = None,
+    Nnodes: int = 100,
     Pmin: float = 101325.,
-    Npoints: int = 100,
   ) -> tuple[float, FlashResult]:
     """The preliminary search is conducted to identify an initial guess
     that is close to the specified phase mole fraction by performing
@@ -7281,12 +7261,12 @@ class env2pPT(object):
     Parameters
     ----------
     Pmax: float
-      The upper bound of the pressure interval. As a general rule, it
-      should be equal to the saturation pressure for a given temperature
-      and composition.
+      The upper bound of the pressure interval [Pa]. As a general rule,
+      it should be equal to the saturation pressure for a given
+      temperature and composition.
 
     T: float
-      Temperature of the mixture.
+      Temperature of the mixture [K].
 
     yi: Vector[Double], shape (Nc,)
       Mole fractions of components in the mixture.
@@ -7298,13 +7278,13 @@ class env2pPT(object):
       A sequence of initial guesses of k-values for flash calculations.
       Default is `None`.
 
+    Nnodes: int
+      The number of grid nodes for the preliminary search. Default is
+      `100`.
+
     Pmin: float
       The lower bound of the pressure interval. Default is
       `101325.0` [Pa].
-
-    Npoint: int
-      The number of points into which the pressure interval is divided.
-      Default is `100`.
 
     Returns
     -------
@@ -7313,7 +7293,7 @@ class env2pPT(object):
       mole fraction that closely resembles the specified value,
     - flash calculation results as an instance of `FlashResult`.
     """
-    PP = np.linspace(Pmax, Pmin, Npoints, endpoint=True)
+    PP = np.linspace(Pmax, Pmin, Nnodes, endpoint=True)
     flashs = []
     fs = []
     for P in PP:

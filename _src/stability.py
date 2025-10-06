@@ -13,6 +13,7 @@ import numpy as np
 from typing import (
   Protocol,
   Sequence,
+  Callable,
 )
 
 from customtypes import (
@@ -171,6 +172,8 @@ class stabilityPT(object):
     self.eos = eos
     self.useprev = useprev
     self.prevkvji: tuple[Vector[Double], ...] | None
+    self.solver: Callable[[float, float, Vector[Double],
+                           Sequence[Vector[Double]]], StabResult]
     if method == 'ss':
       self.solver = partial(_stabPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':

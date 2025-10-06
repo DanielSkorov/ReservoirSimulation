@@ -26,6 +26,7 @@ from constants import (
 from typing import (
   Protocol,
   Sequence,
+  Callable,
 )
 
 from customtypes import (
@@ -287,12 +288,6 @@ class flash2pPT(object):
 
     Default is `'qnss-newton'`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`. The value of
-    this flag can be changed to `False` if the one-phase state will
-    be unstable.
-
   runstab: bool
     If `True` then the algorithm will perform the stability test, for
     which initial guesses of k-values will be calculated by the method
@@ -318,18 +313,18 @@ class flash2pPT(object):
     self,
     eos: EosFlash2pPT,
     method: str = 'qnss-newton',
-    negflash: bool = True,
     runstab: bool = True,
     useprev: bool = False,
     stabkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.negflash = negflash
     self.runstab = runstab
     self.useprev = useprev
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     self.prevkvji: None | Matrix[Double] = None
+    self.solver: Callable[[float, float, Vector[Double], float,
+                           Sequence[Vector[Double]]], FlashResult]
     if method == 'ss':
       self.solver = partial(_flash2pPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
@@ -408,14 +403,12 @@ class flash2pPT(object):
         return FlashResult(1, P, T, V, n, n * yi,
                            np.array([n]), np.array([1.]), np.atleast_2d(yi),
                            np.array([Z]), np.array([v]), np.array([s]))
-      else:
-        self.negflash = False
       assert stab.kvji is not None
       if self.useprev and self.prevkvji is not None:
         kvji = self.prevkvji[0], *stab.kvji
       else:
         kvji = stab.kvji
-    flash = self.solver(P, T, yi, n, kvji, negflash=self.negflash)
+    flash = self.solver(P, T, yi, n, kvji)
     if self.useprev:
       self.prevkvji = flash.kvji
     return flash
@@ -430,7 +423,6 @@ def _flash2pPT_ss(
   eos: EosFlash2pPT,
   tol: float = 1e-16,
   maxiter: int = 100,
-  negflash: bool = True,
 ) -> FlashResult:
   """Successive substitution method for two-phase flash calculations
   using a PT-based equation of state.
@@ -492,10 +484,6 @@ def _flash2pPT_ss(
   maxiter: int
     The maximum number of solver iterations. Default is `100`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
@@ -541,7 +529,7 @@ def _flash2pPT_ss(
       gi = lnkvi + lnphi0i - lnphi1i
       g2 = gi.dot(gi)
       logger.debug(tmpl, j, k, *lnkvi, f0, g2)
-    if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+    if g2 < tol and np.isfinite(g2):
       s0 = eos.getPT_PID(P, T, y0i)
       s1 = eos.getPT_PID(P, T, y1i)
       if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
@@ -584,7 +572,6 @@ def _flash2pPT_qnss(
   tol: float = 1e-16,
   maxiter: int = 50,
   lmbdmax: float = 6.,
-  negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for two-phase flash calculations using a PT-based
   equation of state.
@@ -653,10 +640,6 @@ def _flash2pPT_qnss(
   lmbdmax: float
     The maximum step length. Default is `6.0`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
@@ -721,7 +704,7 @@ def _flash2pPT_qnss(
           lmbd = -lmbd
         if lmbd > lmbdmax:
           lmbd = lmbdmax
-    if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+    if g2 < tol and np.isfinite(g2):
       s0 = eos.getPT_PID(P, T, y0i)
       s1 = eos.getPT_PID(P, T, y1i)
       if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
@@ -763,7 +746,6 @@ def _flash2pPT_newt(
   eos: EosFlash2pPT,
   tol: float = 1e-16,
   maxiter: int = 30,
-  negflash: bool = True,
   forcenewton: bool = False,
   linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
@@ -831,10 +813,6 @@ def _flash2pPT_newt(
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the condition to
@@ -919,7 +897,7 @@ def _flash2pPT_newt(
         gi = lnkvi + lnphi0i - lnphi1i
         g2 = gi.dot(gi)
         logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
-    if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+    if g2 < tol and np.isfinite(g2):
       s0 = eos.getPT_PID(P, T, y0i)
       s1 = eos.getPT_PID(P, T, y1i)
       if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
@@ -961,7 +939,6 @@ def _flash2pPT_ssnewt(
   eos: EosFlash2pPT,
   tol: float = 1e-16,
   maxiter: int = 30,
-  negflash: bool = True,
   forcenewton: bool = False,
   switchers: tuple[float, float, float, float] = (0.1, 1e-2, 1e-10, 1e-4),
   linsolver: Linsolver = np.linalg.solve,
@@ -1041,10 +1018,6 @@ def _flash2pPT_ssnewt(
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the switch from
@@ -1132,31 +1105,30 @@ def _flash2pPT_ssnewt(
       switch = (g2 / g2km1 > epsr and
                 (f0 - f0km1 < epsf and f0km1 - f0 < epsf) and
                 g2 > epsl and g2 < epsu and
-                (f0 > 0. and f0 < 1. or negflash))
+                (f0 > 0. and f0 < 1.))
       logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
     if np.isfinite(g2):
       if g2 < tol:
-        if f0 > 0. and f0 < 1. or negflash:
-          s0 = eos.getPT_PID(P, T, y0i)
-          s1 = eos.getPT_PID(P, T, y1i)
-          if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
-            yji = np.vstack([y0i, y1i])
-            fj = np.array([f0, 1. - f0])
-            Zj = np.array([Z0, Z1])
-            sj = np.array([s0, s1])
-            kvji = np.atleast_2d(kvi)
-          else:
-            yji = np.vstack([y1i, y0i])
-            fj = np.array([1. - f0, f0])
-            Zj = np.array([Z1, Z0])
-            sj = np.array([s1, s0])
-            kvji = np.atleast_2d(1. / kvi)
-          logger.info('Phase mole fractions: %.4f, %.4f', *fj)
-          vj = Zj * (R * T / P)
-          nj = n * fj
-          V = nj.dot(vj)
-          return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
-                             kvji)
+        s0 = eos.getPT_PID(P, T, y0i)
+        s1 = eos.getPT_PID(P, T, y1i)
+        if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
+          yji = np.vstack([y0i, y1i])
+          fj = np.array([f0, 1. - f0])
+          Zj = np.array([Z0, Z1])
+          sj = np.array([s0, s1])
+          kvji = np.atleast_2d(kvi)
+        else:
+          yji = np.vstack([y1i, y0i])
+          fj = np.array([1. - f0, f0])
+          Zj = np.array([Z1, Z0])
+          sj = np.array([s1, s0])
+          kvji = np.atleast_2d(1. / kvi)
+        logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+        vj = Zj * (R * T / P)
+        nj = n * fj
+        V = nj.dot(vj)
+        return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                           kvji)
       elif k < maxiter:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         f1 = 1. - f0
@@ -1196,7 +1168,7 @@ def _flash2pPT_ssnewt(
             gi = lnkvi + lnphi0i - lnphi1i
             g2 = gi.dot(gi)
             logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
-        if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+        if g2 < tol and np.isfinite(g2):
           s0 = eos.getPT_PID(P, T, y0i)
           s1 = eos.getPT_PID(P, T, y1i)
           if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
@@ -1240,7 +1212,6 @@ def _flash2pPT_qnssnewt(
   tol: float = 1e-16,
   maxiter: int = 30,
   lmbdmax: float = 6.,
-  negflash: bool = True,
   forcenewton: bool = False,
   switchers: tuple[float, float, float, float] = (0.1, 1e-2, 1e-10, 1e-4),
   linsolver: Linsolver = np.linalg.solve,
@@ -1326,10 +1297,6 @@ def _flash2pPT_qnssnewt(
 
   lmbdmax: float
     The maximum step length. Default is `6.0`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the switch from
@@ -1424,7 +1391,7 @@ def _flash2pPT_qnssnewt(
       switch = (g2 / g2km1 > epsr and
                 (f0 - f0km1 < epsf and f0km1 - f0 < epsf) and
                 g2 > epsl and g2 < epsu and
-                (f0 > 0. and f0 < 1. or negflash))
+                (f0 > 0. and f0 < 1.))
       logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'QNSS')
       if g2 < tol or switch:
         break
@@ -1438,27 +1405,26 @@ def _flash2pPT_qnssnewt(
           lmbd = lmbdmax
     if np.isfinite(g2):
       if g2 < tol:
-        if f0 > 0. and f0 < 1. or negflash:
-          s0 = eos.getPT_PID(P, T, y0i)
-          s1 = eos.getPT_PID(P, T, y1i)
-          if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
-            yji = np.vstack([y0i, y1i])
-            fj = np.array([f0, 1. - f0])
-            Zj = np.array([Z0, Z1])
-            sj = np.array([s0, s1])
-            kvji = np.atleast_2d(kvi)
-          else:
-            yji = np.vstack([y1i, y0i])
-            fj = np.array([1. - f0, f0])
-            Zj = np.array([Z1, Z0])
-            sj = np.array([s1, s0])
-            kvji = np.atleast_2d(1. / kvi)
-          logger.info('Phase mole fractions: %.4f, %.4f', *fj)
-          vj = Zj * (R * T / P)
-          nj = n * fj
-          V = nj.dot(vj)
-          return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
-                             kvji)
+        s0 = eos.getPT_PID(P, T, y0i)
+        s1 = eos.getPT_PID(P, T, y1i)
+        if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
+          yji = np.vstack([y0i, y1i])
+          fj = np.array([f0, 1. - f0])
+          Zj = np.array([Z0, Z1])
+          sj = np.array([s0, s1])
+          kvji = np.atleast_2d(kvi)
+        else:
+          yji = np.vstack([y1i, y0i])
+          fj = np.array([1. - f0, f0])
+          Zj = np.array([Z1, Z0])
+          sj = np.array([s1, s0])
+          kvji = np.atleast_2d(1. / kvi)
+        logger.info('Phase mole fractions: %.4f, %.4f', *fj)
+        vj = Zj * (R * T / P)
+        nj = n * fj
+        V = nj.dot(vj)
+        return FlashResult(2, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                           kvji)
       elif k < maxiter:
         U = np.full(shape=(Nc, Nc), fill_value=-1.)
         f1 = 1. - f0
@@ -1498,7 +1464,7 @@ def _flash2pPT_qnssnewt(
             gi = lnkvi + lnphi0i - lnphi1i
             g2 = gi.dot(gi)
             logger.debug(tmpl, j, k, *lnkvi, f0, g2, 'SS')
-        if g2 < tol and np.isfinite(g2) and (f0 > 0. and f0 < 1. or negflash):
+        if g2 < tol and np.isfinite(g2):
           s0 = eos.getPT_PID(P, T, y0i)
           s1 = eos.getPT_PID(P, T, y1i)
           if y0i.dot(eos.mwi) / Z0 < y1i.dot(eos.mwi) / Z1:
@@ -1654,10 +1620,6 @@ class flashNpPT(object):
   maxNp: int
       The maximum number of phases. Default is `3`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `False`.
-
   stabkwargs: dict
     Dictionary that used to regulate the stability test procedure.
     Default is an empty dictionary.
@@ -1677,32 +1639,28 @@ class flashNpPT(object):
     eos: EosFlashNpPT,
     method: str = 'qnss-newton',
     maxNp: int = 3,
-    negflash: bool = False,
     flash2pkwargs: dict = {},
     stabkwargs: dict = {},
     **kwargs,
   ) -> None:
     self.eos = eos
-    self.negflash = negflash
     self.maxNp = maxNp
     self.stabsolver = stabilityPT(eos, **stabkwargs)
     self.solver2p = flash2pPT(eos, method=method, stabkwargs=stabkwargs,
-                              negflash=negflash, **flash2pkwargs, **kwargs)
+                              **flash2pkwargs, **kwargs)
+    self.solver: Callable[[float, float, Vector[Double], float,
+                           Sequence[Vector[Double]],
+                           Sequence[Matrix[Double]]], FlashResult]
     if method == 'ss':
-      self.solver = partial(_flashNpPT_ss, eos=eos, negflash=negflash,
-                            **kwargs)
+      self.solver = partial(_flashNpPT_ss, eos=eos, **kwargs)
     elif method == 'qnss':
-      self.solver = partial(_flashNpPT_qnss, eos=eos, negflash=negflash,
-                            **kwargs)
+      self.solver = partial(_flashNpPT_qnss, eos=eos, **kwargs)
     elif method == 'newton':
-      self.solver = partial(_flashNpPT_newt, eos=eos, negflash=negflash,
-                            **kwargs)
+      self.solver = partial(_flashNpPT_newt, eos=eos, **kwargs)
     elif method == 'ss-newton':
-      self.solver = partial(_flashNpPT_ssnewt, eos=eos, negflash=negflash,
-                            **kwargs)
+      self.solver = partial(_flashNpPT_ssnewt, eos=eos, **kwargs)
     elif method == 'qnss-newton':
-      self.solver = partial(_flashNpPT_qnssnewt, eos=eos, negflash=negflash,
-                            **kwargs)
+      self.solver = partial(_flashNpPT_qnssnewt, eos=eos, **kwargs)
     else:
       raise ValueError(f'The unknown flash-method: {method}.')
     pass
@@ -1825,7 +1783,6 @@ def _flashNpPT_ss(
   eos: EosFlashNpPT,
   tol: float = 1e-16,
   maxiter: int = 100,
-  negflash: bool = True,
 ) -> FlashResult:
   """Successive substitution method for multiphase flash calculations
   using a PT-based equation of state.
@@ -1906,10 +1863,6 @@ def _flashNpPT_ss(
   maxiter: int
     The maximum number of solver iterations. Default is `100`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
@@ -1959,8 +1912,7 @@ def _flashNpPT_ss(
       gi = gji.ravel()
       g2 = gi.dot(gi)
       logger.debug(tmpl, s, k, *lnkvi, *fj, g2)
-    if (g2 < tol and np.isfinite(g2) and
-        ((fj < 1.).all() and (fj > 0.).all() or negflash)):
+    if g2 < tol and np.isfinite(g2):
       yji = np.append(yji, np.atleast_2d(xi), 0)
       fj = np.append(fj, 1. - fj.sum())
       Zj = np.append(Zj, Zx)
@@ -2001,7 +1953,6 @@ def _flashNpPT_qnss(
   tol: float = 1e-16,
   maxiter: int = 50,
   lmbdmax: float = 6.,
-  negflash: bool = True,
 ) -> FlashResult:
   """QNSS-method for multiphase flash calculations using a PT-based
   equation of state.
@@ -2089,10 +2040,6 @@ def _flashNpPT_qnss(
   lmbdmax: float
     The maximum step length. Default is `6.0`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   Returns
   -------
   Flash calculation results as an instance of `FlashResult` object.
@@ -2161,8 +2108,7 @@ def _flashNpPT_qnss(
           lmbd = -lmbd
         if lmbd > lmbdmax:
           lmbd = lmbdmax
-    if (g2 < tol and np.isfinite(g2) and
-        ((fj < 1.).all() and (fj > 0.).all() or negflash)):
+    if g2 < tol and np.isfinite(g2):
       yji = np.append(yji, np.atleast_2d(xi), 0)
       fj = np.append(fj, 1. - fj.sum())
       Zj = np.append(Zj, Zx)
@@ -2202,7 +2148,6 @@ def _flashNpPT_newt(
   eos: EosFlashNpPT,
   tol: float = 1e-16,
   maxiter: int = 30,
-  negflash: bool = True,
   forcenewton: bool = False,
   linsolver: Linsolver = np.linalg.solve,
 ) -> FlashResult:
@@ -2294,10 +2239,6 @@ def _flashNpPT_newt(
 
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
-
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
 
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the switch from
@@ -2411,8 +2352,7 @@ def _flashNpPT_newt(
         gi = gji.ravel()
         g2 = gi.dot(gi)
         logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'SS')
-    if (g2 < tol and np.isfinite(g2) and
-        ((fj < 1.).all() and (fj > 0.).all() or negflash)):
+    if g2 < tol and np.isfinite(g2):
       yji = np.append(yji, np.atleast_2d(xi), 0)
       fj = np.append(fj, 1. - fj.sum())
       Zj = np.append(Zj, Zx)
@@ -2452,7 +2392,6 @@ def _flashNpPT_ssnewt(
   eos: EosFlashNpPT,
   tol: float = 1e-16,
   maxiter: int = 30,
-  negflash: bool = True,
   forcenewton: bool = False,
   switchers: tuple[float, float, float, float] = (0.6, 1e-2, 1e-10, 1e-4),
   linsolver: Linsolver = np.linalg.solve,
@@ -2568,10 +2507,6 @@ def _flashNpPT_ssnewt(
   maxiter: int
     The maximum number of solver iterations. Default is `30`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the switch from
     Newton's method to successive substitution iterations if Newton's
@@ -2661,29 +2596,28 @@ def _flashNpPT_ssnewt(
       gi = gji.ravel()
       g2km1 = g2
       g2 = gi.dot(gi)
-      physfj = (fj > 0.).all() and (fj < 1.).all() or negflash
       switch = (g2 / g2km1 > epsr and np.abs(fj - fjkm1).max() < epsf and
-                g2 > epsl and g2 < epsu and physfj)
+                g2 > epsl and g2 < epsu and
+                (fj > 0.).all() and (fj < 1.).all())
       logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'SS')
     if np.isfinite(g2):
       if g2 < tol:
-        if physfj:
-          yji = np.append(yji, np.atleast_2d(xi), 0)
-          fj = np.append(fj, 1. - fj.sum())
-          Zj = np.append(Zj, Zx)
-          idx = np.argsort(yji.dot(eos.mwi) / Zj)
-          yji = yji[idx]
-          fj = fj[idx]
-          Zj = Zj[idx]
-          vj = Zj * (R * T / P)
-          nj = n * fj
-          V = nj.dot(vj)
-          kvji = yji[:-1] / yji[-1]
-          sj = eos.getPT_PIDj(P, T, yji)
-          Np = Npm1 + 1
-          logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
-          return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
-                             kvji)
+        yji = np.append(yji, np.atleast_2d(xi), 0)
+        fj = np.append(fj, 1. - fj.sum())
+        Zj = np.append(Zj, Zx)
+        idx = np.argsort(yji.dot(eos.mwi) / Zj)
+        yji = yji[idx]
+        fj = fj[idx]
+        Zj = Zj[idx]
+        vj = Zj * (R * T / P)
+        nj = n * fj
+        V = nj.dot(vj)
+        kvji = yji[:-1] / yji[-1]
+        sj = eos.getPT_PIDj(P, T, yji)
+        Np = Npm1 + 1
+        logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+        return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                           kvji)
       elif k < maxiter:
         H = np.empty(shape=(Npm1Nc, Npm1Nc))
         H_block = np.lib.stride_tricks.as_strided(
@@ -2747,8 +2681,7 @@ def _flashNpPT_ssnewt(
             gi = gji.ravel()
             g2 = gi.dot(gi)
             logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'SS')
-        if (g2 < tol and np.isfinite(g2) and
-            ((fj < 1.).all() and (fj > 0.).all() or negflash)):
+        if g2 < tol and np.isfinite(g2):
           yji = np.append(yji, np.atleast_2d(xi), 0)
           fj = np.append(fj, 1. - fj.sum())
           Zj = np.append(Zj, Zx)
@@ -2789,7 +2722,6 @@ def _flashNpPT_qnssnewt(
   tol: float = 1e-16,
   maxiter: int = 30,
   lmbdmax: float = 6.,
-  negflash: bool = True,
   forcenewton: bool = False,
   switchers: tuple[float, float, float, float] = (0.6, 1e-2, 1e-10, 1e-4),
   linsolver: Linsolver = np.linalg.solve,
@@ -2909,10 +2841,6 @@ def _flashNpPT_qnssnewt(
   lmbdmax: float
     The maximum step length. Default is `6.0`.
 
-  negflash: bool
-    A flag indicating if unphysical phase mole fractions can be
-    considered as a correct solution. Default is `True`.
-
   forcenewton: bool
     A flag indicating whether it is allowed to ignore the switch from
     Newton's method to successive substitution iterations if Newton's
@@ -3009,9 +2937,9 @@ def _flashNpPT_qnssnewt(
       gi = gji.ravel()
       g2km1 = g2
       g2 = gi.dot(gi)
-      physfj = (fj > 0.).all() and (fj < 1.).all() or negflash
       switch = (g2 / g2km1 > epsr and np.abs(fj - fjkm1).max() < epsf and
-                g2 > epsl and g2 < epsu and physfj)
+                g2 > epsl and g2 < epsu and
+                (fj > 0.).all() and (fj < 1.).all())
       logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'QNSS')
       if g2 < tol or switch:
         break
@@ -3025,23 +2953,22 @@ def _flashNpPT_qnssnewt(
           lmbd = lmbdmax
     if np.isfinite(g2):
       if g2 < tol:
-        if physfj:
-          yji = np.append(yji, np.atleast_2d(xi), 0)
-          fj = np.append(fj, 1. - fj.sum())
-          Zj = np.append(Zj, Zx)
-          idx = np.argsort(yji.dot(eos.mwi) / Zj)
-          yji = yji[idx]
-          fj = fj[idx]
-          Zj = Zj[idx]
-          vj = Zj * (R * T / P)
-          nj = n * fj
-          V = nj.dot(vj)
-          kvji = yji[:-1] / yji[-1]
-          sj = eos.getPT_PIDj(P, T, yji)
-          Np = Npm1 + 1
-          logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
-          return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
-                             kvji)
+        yji = np.append(yji, np.atleast_2d(xi), 0)
+        fj = np.append(fj, 1. - fj.sum())
+        Zj = np.append(Zj, Zx)
+        idx = np.argsort(yji.dot(eos.mwi) / Zj)
+        yji = yji[idx]
+        fj = fj[idx]
+        Zj = Zj[idx]
+        vj = Zj * (R * T / P)
+        nj = n * fj
+        V = nj.dot(vj)
+        kvji = yji[:-1] / yji[-1]
+        sj = eos.getPT_PIDj(P, T, yji)
+        Np = Npm1 + 1
+        logger.info('Phase mole fractions:' + Np * '%7.4f' % (*fj,))
+        return FlashResult(Np, P, T, V, n, n * yi, nj, fj, yji, Zj, vj, sj,
+                           kvji)
       elif k < maxiter:
         H = np.empty(shape=(Npm1Nc, Npm1Nc))
         H_block = np.lib.stride_tricks.as_strided(
@@ -3105,8 +3032,7 @@ def _flashNpPT_qnssnewt(
             gi = gji.ravel()
             g2 = gi.dot(gi)
             logger.debug(tmpl, s, k, *lnkvi, *fj, g2, 'SS')
-        if (g2 < tol and np.isfinite(g2) and
-            ((fj < 1.).all() and (fj > 0.).all() or negflash)):
+        if g2 < tol and np.isfinite(g2):
           yji = np.append(yji, np.atleast_2d(xi), 0)
           fj = np.append(fj, 1. - fj.sum())
           Zj = np.append(Zj, Zx)
