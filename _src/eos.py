@@ -348,6 +348,224 @@ class pr78(object):
     Z, lnphii = self.getPT_Z_lnphii(P, T, yi)
     return Z, lnphii + np.log(P * yi)
 
+  def getPT_Z_dP(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, float]:
+    """Computes the compressibility factor of the mixture and its
+    partial derivative with respect to pressure.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: Vector[Double], shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple that contains:
+    - the compressibility factor of the mixture,
+    - partial derivative of the compressibility factor with respect to
+      pressure.
+    """
+    RT = R * T
+    PRT = P / RT
+    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve(A, B)
+    dZdP = ((B * (2. * (A - B) - 3. * B * B)
+             + Z * (6. * B * B + 2. * B - A)
+             - B * Z * Z)
+            / (P * (3. * Z * Z
+                    + 2. * (B - 1.) * Z
+                    + A - 2. * B - 3. * B * B)))
+    Zsm = PRT * yi.dot(self.vsi_bi)
+    return Z - Zsm, dZdP - Zsm / P
+
+  def getPT_Z_dT(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, float]:
+    """Computes the compressibility factor of the mixture and its
+    partial derivative with respect to temperature.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: Vector[Double], shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple that contains:
+    - the compressibility factor of the mixture,
+    - partial derivative of the compressibility factor with respect to
+      temperature.
+    """
+    RT = R * T
+    PRT = P / RT
+    sqrtT = np.sqrt(T)
+    multi = 1. + self.kappai * (1. - sqrtT * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si_ = self.D.dot(yi * sqrtalphai)
+    Si = sqrtalphai * Si_
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve(A, B)
+    dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
+    dsqrtalphaidT = self.sqrtai * dmultidT
+    dSidT_ = self.D.dot(yi * dsqrtalphaidT)
+    dSidT = dsqrtalphaidT * Si_ + sqrtalphai * dSidT_
+    dalphamdT = yi.dot(dSidT)
+    dAdT = PRT / RT * dalphamdT - 2. * A / T
+    dBdT = -B / T
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    dZdT = (dBdT * (A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z)
+            + dAdT * (B - Z)) / dqdZ
+    Zsm = PRT * yi.dot(self.vsi_bi)
+    return Z - Zsm, dZdT + Zsm / T
+
+  def getPT_Z_dP_dP2(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, float, float]:
+    """Computes the compressibility factor of the mixture and its
+    first and second partial derivatives with respect to pressure.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: Vector[Double], shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple that contains:
+    - the compressibility factor of the mixture,
+    - partial derivative of the compressibility factor with respect to
+      pressure.
+    - second partial derivative of the compressibility factor with
+      respect to pressure.
+    """
+    RT = R * T
+    PRT = P / RT
+    multi = 1. + self.kappai * (1. - np.sqrt(T) * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si = sqrtalphai * self.D.dot(yi * sqrtalphai)
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve(A, B)
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    dAdP = A / P
+    dBdP = B / P
+    dZdP = ((B * (2. * (A - B) - 3. * B * B)
+             + Z * (6. * B * B + 2. * B - A)
+             - B * Z * Z)
+            / (P * dqdZ))
+    d2ZdP2 = -2. * (dBdP * (dBdP * (3. * B - 3. * Z + 1.) - dAdP)
+                    + dZdP * (2. * dBdP * (Z - 3. * B - 1.) + dAdP)
+                    + dZdP * dZdP * (3. * Z + B - 1.)) / dqdZ
+    Zsm = PRT * yi.dot(self.vsi_bi)
+    return Z - Zsm, dZdP - Zsm / P, d2ZdP2
+
+  def getPT_Z_dT_dT2(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Double],
+  ) -> tuple[float, float, float]:
+    """Computes the compressibility factor of the mixture and its
+    first and second partial derivatives with respect to temperature.
+
+    Parameters
+    ----------
+    P: float
+      Pressure of the mixture [Pa].
+
+    T: float
+      Temperature of the mixture [K].
+
+    yi: Vector[Double], shape (Nc,)
+      Mole fractions of `Nc` components.
+
+    Returns
+    -------
+    A tuple that contains:
+    - the compressibility factor of the mixture,
+    - partial derivative of the compressibility factor with respect to
+      temperature.
+    - second partial derivative of the compressibility factor with
+      respect to temperature.
+    """
+    RT = R * T
+    PRT = P / RT
+    sqrtT = np.sqrt(T)
+    multi = 1. + self.kappai * (1. - sqrtT * self._Tci)
+    sqrtalphai = self.sqrtai * multi
+    Si_ = self.D.dot(yi * sqrtalphai)
+    Si = sqrtalphai * Si_
+    alpham = yi.dot(Si)
+    bm = yi.dot(self.bi)
+    A = alpham * PRT / RT
+    B = bm * PRT
+    Z = self.solve(A, B)
+    dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
+    dsqrtalphaidT = self.sqrtai * dmultidT
+    dSidT_ = self.D.dot(yi * dsqrtalphaidT)
+    dSidT = dsqrtalphaidT * Si_ + sqrtalphai * dSidT_
+    dalphamdT = yi.dot(dSidT)
+    dAdT = PRT / RT * dalphamdT - 2. * A / T
+    dBdT = -B / T
+    dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    mdqdA = B - Z
+    mdqdB = A - B * (2. + 3. * B - 6. * Z) - Z * (Z - 2.)
+    dZdT = (mdqdA * dAdT + mdqdB * dBdT) / dqdZ
+    d2sqrtalphaidT2 = dsqrtalphaidT * (-.5 / T)
+    d2SidT2 = (d2sqrtalphaidT2 * Si_
+               + 2. * dsqrtalphaidT * dSidT_
+               + sqrtalphai * self.D.dot(yi * d2sqrtalphaidT2))
+    d2alphamdT2 = yi.dot(d2SidT2)
+    d2AdT2 = PRT / RT * (d2alphamdT2 - dalphamdT / T) - 3. * dAdT / T
+    d2BdT2 = -2. * dBdT / T
+    d2ZdT2 = (2. * dAdT * dBdT
+              + d2AdT2 * mdqdA
+              + d2BdT2 * mdqdB
+              - 2. * dBdT * dBdT * (1. - 3. * (Z - B))
+              - 2. * dZdT * (2. * dBdT * (Z - 3. * B - 1.) + dAdT)
+              - 2. * dZdT * dZdT * (3. * Z + B - 1.)) / dqdZ
+    Zsm = PRT * yi.dot(self.vsi_bi)
+    return Z - Zsm, dZdT + Zsm / T, d2ZdT2 - 2. * Zsm / (T * T)
+
   def getPT_Z_lnphii_dP(
     self,
     P: float,
@@ -895,7 +1113,7 @@ class pr78(object):
     return (Z - PRT * yi.dot(self.vsi_bi), lnphii,
             dlnphiidP, dlnphiidT, dlnphiidyj)
 
-  def getPT_Z_lnphii_dP_d2P(
+  def getPT_Z_lnphii_dP_dP2(
     self,
     P: float,
     T: float,
@@ -970,7 +1188,7 @@ class pr78(object):
                    + d2fZdP2 * gphii)
     return Z - PRT * yi.dot(self.vsi_bi), lnphii, dlnphiidP, d2lnphiidP2
 
-  def getPT_Z_lnphii_dT_d2T(
+  def getPT_Z_lnphii_dT_dT2(
     self,
     P: float,
     T: float,
@@ -1024,6 +1242,8 @@ class pr78(object):
               + 0.3535533905932738 * fZ * gphii
               - PRT * self.vsi_bi)
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
+    mdqdA = B - Z
+    mdqdB = A - B * (2. + 3. * B - 6. * Z) - Z * (Z - 2.)
     dfZdZ = ZmB - ZpB
     dfZdB = -0.414213562373095 * ZmB - 2.414213562373095 * ZpB
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
@@ -1033,8 +1253,7 @@ class pr78(object):
     dalphamdT = yi.dot(dSidT)
     dAdT = PRT / RT * dalphamdT - 2. * A / T
     dBdT = -B / T
-    dZdT = (dBdT * (A - 2. * B - 3. * B * B + 6. * Z * B + 2. * Z - Z * Z)
-            + dAdT * (B - Z)) / dqdZ
+    dZdT = (mdqdA * dAdT + mdqdB * dBdT) / dqdZ
     dfZdT = dZdT * dfZdZ + dBdT * dfZdB
     dgphiidT = (2. * dSidT - dalphamdT / bm * self.bi) / (RT * bm) - gphii / T
     dlnphiidT = (0.3535533905932738 * (dfZdT * gphii + fZ * dgphiidT)
@@ -1049,8 +1268,8 @@ class pr78(object):
     d2AdT2 = PRT / RT * (d2alphamdT2 - dalphamdT / T) - 3. * dAdT / T
     d2BdT2 = -2. * dBdT / T
     d2ZdT2 = (2. * dAdT * dBdT
-              - d2AdT2 * (Z - B)
-              - d2BdT2 * (Z * (Z - 6. * B - 2.) + 3. * B * B + 2. * B - A)
+              + d2AdT2 * mdqdA
+              + d2BdT2 * mdqdB
               - 2. * dBdT * dBdT * (1. - 3. * (Z - B))
               - 2. * dZdT * (2. * dBdT * (Z - 3. * B - 1.) + dAdT)
               - 2. * dZdT * dZdT * (3. * Z + B - 1.)) / dqdZ
@@ -1152,6 +1371,265 @@ class pr78(object):
     Bj = bmj * PRTj
     Zj = np.vectorize(self.solve)(Aj, Bj)
     return Zj - yji.dot(self.vsi_bi) * PRTj
+
+  def getPT_Zj_dP(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> tuple[Vector[Double], Vector[Double]]:
+    """Computes compressibility factors for each mixture and their
+    partial derivatives with respect to pressure.
+
+    Parameters
+    ----------
+    Pj: float | Vector[Double], shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: float | Vector[Double], shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    Returns
+    -------
+    A tuple that contains:
+    - compressibility factors of mixtures as a `Vector[Double]` of
+      shape `(Np,)`,
+    - partial derivatives of compressibility factors with respect to
+      pressure as a `Vector[Double]` of shape `(Np,)`.
+    """
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    multji = 1. + self.kappai * (1. - np.sqrt(Tj)[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji = sqrtalphaji * (yji * sqrtalphaji).dot(self.D)
+    alphamj = np.vecdot(yji, Sji)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    Zj = np.vectorize(self.solve)(Aj, Bj)
+    dZjdPj = ((Bj * (2. * (Aj - Bj) - 3. * Bj * Bj)
+               + Zj * (6. * Bj * Bj + 2. * Bj - Aj)
+               - Bj * Zj * Zj)
+              / (Pj * (3. * Zj * Zj
+                      + 2. * (Bj - 1.) * Zj
+                      + Aj - 2. * Bj - 3. * Bj * Bj)))
+    Zsmj = PRTj * yji.dot(self.vsi_bi)
+    return Zj - Zsmj, dZjdPj - Zsmj / Pj
+
+  def getPT_Zj_dT(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> tuple[Vector[Double], Vector[Double]]:
+    """Computes compressibility factors for each mixture and their
+    partial derivatives with respect to temperature.
+
+    Parameters
+    ----------
+    Pj: float | Vector[Double], shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: float | Vector[Double], shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    Returns
+    -------
+    A tuple that contains:
+    - compressibility factors of mixtures as a `Vector[Double]` of
+      shape `(Np,)`,
+    - partial derivatives of compressibility factors with respect to
+      temperature as a `Vector[Double]` of shape `(Np,)`.
+    """
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    sqrtTj = np.sqrt(Tj)
+    multji = 1. + self.kappai * (1. - sqrtTj[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji_ = (yji * sqrtalphaji).dot(self.D)
+    Sji = sqrtalphaji * Sji_
+    alphamj = np.vecdot(yji, Sji)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    Zj = np.vectorize(self.solve)(Aj, Bj)
+    dmultjidTj = (-.5 / sqrtTj)[:,None] * self.kappai * self._Tci
+    dsqrtalphajidTj = self.sqrtai * dmultjidTj
+    dSjidTj_ = (yji * dsqrtalphajidTj).dot(self.D)
+    dSjidTj = dsqrtalphajidTj * Sji_ + sqrtalphaji * dSjidTj_
+    dalphamjdTj = np.vecdot(yji, dSjidTj)
+    dAjdTj = PRTj / RTj * dalphamjdTj - 2. * Aj / Tj
+    dBjdTj = -Bj / Tj
+    dqjdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + Aj - 2. * Bj - 3. * Bj * Bj
+    dZjdTj = (dBjdTj * (Aj - Bj * (2. + 3. * Bj - 6. * Zj) - Zj * (Zj - 2.))
+              + dAjdTj * (Bj - Zj)) / dqjdZj
+    Zsmj = PRTj * yji.dot(self.vsi_bi)
+    return Zj - Zsmj, dZjdTj + Zsmj / Tj
+
+  def getPT_Zj_dP_dP2(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> tuple[Vector[Double], Vector[Double], Vector[Double]]:
+    """Computes compressibility factors for each mixture and their
+    first and second partial derivatives with respect to pressure.
+
+    Parameters
+    ----------
+    Pj: float | Vector[Double], shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: float | Vector[Double], shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    Returns
+    -------
+    A tuple that contains:
+    - compressibility factors of mixtures as a `Vector[Double]` of
+      shape `(Np,)`,
+    - partial derivatives of compressibility factors with respect to
+      pressure as a `Vector[Double]` of shape `(Np,)`,
+    - second partial derivatives of compressibility factors with respect
+      to pressure as a `Vector[Double]` of shape `(Np,)`.
+    """
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    multji = 1. + self.kappai * (1. - np.sqrt(Tj)[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji = sqrtalphaji * (yji * sqrtalphaji).dot(self.D)
+    alphamj = np.vecdot(yji, Sji)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    Zj = np.vectorize(self.solve)(Aj, Bj)
+    dqjdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + Aj - 2. * Bj - 3. * Bj * Bj
+    dAjdPj = Aj / Pj
+    dBjdPj = Bj / Pj
+    dZjdPj = ((Bj * (2. * (Aj - Bj) - 3. * Bj * Bj)
+               + Zj * (6. * Bj * Bj + 2. * Bj - Aj)
+               - Bj * Zj * Zj)
+              / (Pj * dqjdZj))
+    d2ZjdP2j = -2. * (dBjdPj * (dBjdPj * (3. * Bj - 3. * Zj + 1.) - dAjdPj)
+                      + dZjdPj * (2. * dBjdPj * (Zj - 3. * Bj - 1.) + dAjdPj)
+                      + dZjdPj * dZjdPj * (3. * Zj + Bj - 1.)) / dqjdZj
+    Zsmj = PRTj * yji.dot(self.vsi_bi)
+    return Zj - Zsmj, dZjdPj - Zsmj / Pj, d2ZjdP2j
+
+  def getPT_Zj_dT_dT2(
+    self,
+    Pj: float | Vector[Double],
+    Tj: float | Vector[Double],
+    yji: Vector[Double] | Matrix[Double],
+  ) -> tuple[Vector[Double], Vector[Double], Vector[Double]]:
+    """Computes compressibility factors for each mixture and their
+    first and second partial derivatives with respect to temperature.
+
+    Parameters
+    ----------
+    Pj: float | Vector[Double], shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: float | Vector[Double], shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector[Double], shape (Nc,) | Matrix[Double], shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    Returns
+    -------
+    A tuple that contains:
+    - compressibility factors of mixtures as a `Vector[Double]` of
+      shape `(Np,)`,
+    - partial derivatives of compressibility factors with respect to
+      temperature as a `Vector[Double]` of shape `(Np,)`,
+    - second partial derivatives of compressibility factors with respect
+      to temperature as a `Vector[Double]` of shape `(Np,)`.
+    """
+    Pj = np.atleast_1d(Pj)
+    Tj = np.atleast_1d(Tj)
+    yji = np.atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    sqrtTj = np.sqrt(Tj)
+    multji = 1. + self.kappai * (1. - sqrtTj[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji_ = (yji * sqrtalphaji).dot(self.D)
+    Sji = sqrtalphaji * Sji_
+    alphamj = np.vecdot(yji, Sji)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    Zj = np.vectorize(self.solve)(Aj, Bj)
+    dmultjidTj = (-.5 / sqrtTj)[:,None] * self.kappai * self._Tci
+    dsqrtalphajidTj = self.sqrtai * dmultjidTj
+    dSjidTj_ = (yji * dsqrtalphajidTj).dot(self.D)
+    dSjidTj = dsqrtalphajidTj * Sji_ + sqrtalphaji * dSjidTj_
+    dalphamjdTj = np.vecdot(yji, dSjidTj)
+    dAjdTj = PRTj / RTj * dalphamjdTj - 2. * Aj / Tj
+    dBjdTj = -Bj / Tj
+    dqjdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + Aj - 2. * Bj - 3. * Bj * Bj
+    mdqjdAj = Bj - Zj
+    mdqjdBj = Aj - Bj * (2. + 3. * Bj - 6. * Zj) - Zj * (Zj - 2.)
+    dZjdTj = (mdqjdAj * dAjdTj + mdqjdBj * dBjdTj) / dqjdZj
+    d2sqrtalphajidT2j = dsqrtalphajidTj * (-.5 / Tj)[:,None]
+    d2SjidT2 = (d2sqrtalphajidT2j * Sji_
+                + 2. * dsqrtalphajidTj * dSjidTj_
+                + sqrtalphaji * (yji * d2sqrtalphajidT2j).dot(self.D))
+    d2alphamjdT2j = np.vecdot(yji, d2SjidT2)
+    d2AjdT2j = (PRTj / RTj * (d2alphamjdT2j - dalphamjdTj / Tj)
+                - 3. * dAjdTj / Tj)
+    d2BjdT2j = -2. * dBjdTj / Tj
+    d2ZjdT2j = (2. * dAjdTj * dBjdTj
+                + d2AjdT2j * mdqjdAj
+                + d2BjdT2j * mdqjdBj
+                - 2. * dBjdTj * dBjdTj * (1. - 3. * (Zj - Bj))
+                - 2. * dZjdTj * (2. * dBjdTj * (Zj - 3. * Bj - 1.) + dAjdTj)
+                - 2. * dZjdTj * dZjdTj * (3. * Zj + Bj - 1.)) / dqjdZj
+    Zsmj = PRTj * yji.dot(self.vsi_bi)
+    return Zj - Zsmj, dZjdTj + Zsmj / Tj, d2ZjdT2j - 2. * Zsmj / (Tj * Tj)
 
   def getPT_Zj_lnphiji(
     self,
@@ -1392,7 +1870,15 @@ class pr78(object):
     return np.where(vj * Tj * Tj > vpcj * Tpcj * Tpcj, 0, 1)
 
   def _getPT_PID_dadT(self, P: float, T: float, yi: Vector[Double]) -> int:
-    return 0
+    Z, dZdT, d2ZdT2 = self.getPT_Z_dT_dT2(P, T, yi)
+    RP = R / P
+    dvdT = RP * (T * dZdT + Z)
+    d2vdT2 = RP * (T * d2ZdT2 + 2. * dZdT)
+    v = RP * Z * T
+    if v * d2vdT2 - dvdT * dvdT > 0.:
+      return 1
+    else:
+      return 0
 
   def _getPT_PIDj_dadT(
     self,
@@ -1400,9 +1886,17 @@ class pr78(object):
     Tj: float | Vector[Double],
     yji: Vector[Double] | Matrix[Double],
   ) -> Vector[Integer]:
-    return np.array([0])
+    Zj, dZjdTj, d2ZjdT2j = self.getPT_Zj_dT_dT2(Pj, Tj, yji)
+    RPj = R / Pj
+    dvjdTj = RPj * (Tj * dZjdTj + Zj)
+    d2vjdT2j = RPj * (Tj * d2ZjdT2j + 2. * dZjdTj)
+    vj = RPj * Zj * Tj
+    return np.where(vj * d2vjdT2j - dvjdTj * dvjdTj > 0., 1, 0)
 
   def _getPT_PID_pip(self, P: float, T: float, yi: Vector[Double]) -> int:
+    raise NotImplementedError(
+      'Phase designation using the complex parameter is not implemented yet.'
+    )
     return 0
 
   def _getPT_PIDj_pip(
@@ -1411,6 +1905,9 @@ class pr78(object):
     Tj: float | Vector[Double],
     yji: Vector[Double] | Matrix[Double],
   ) -> Vector[Integer]:
+    raise NotImplementedError(
+      'Phase designation using the complex parameter is not implemented yet.'
+    )
     return np.array([0])
 
   def getPT_PID(self, P: float, T: float, yi: Vector[Double]) -> int:

@@ -182,7 +182,7 @@ class EosTsatPT(Eos, Protocol):
 
 class EosPmaxPT(EosPsatPT, Protocol):
 
-  def getPT_Z_lnphii_dT_d2T(
+  def getPT_Z_lnphii_dT_dT2(
     self,
     P: float,
     T: float,
@@ -192,7 +192,7 @@ class EosPmaxPT(EosPsatPT, Protocol):
 
 class EosTmaxPT(EosTsatPT, Protocol):
 
-  def getPT_Z_lnphii_dP_d2P(
+  def getPT_Z_lnphii_dP_dP2(
     self,
     P: float,
     T: float,
@@ -4390,7 +4390,7 @@ class PmaxPT(PsatPT):
       - partial derivatives of logarithms of fugacity coefficients
         with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dT_dT2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -4610,7 +4610,7 @@ def _PmaxPT_solve_dTPDdTeq_T(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dT_dT2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -4648,18 +4648,18 @@ def _PmaxPT_solve_dTPDdTeq_T(
   # tmpl = '%3s%9.2f%10.2e'
   k = 0
   Tk = T0
-  Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_d2T(P, Tk, yi)
-  Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_d2T(P, Tk, xi)
+  Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_dT2(P, Tk, yi)
+  Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_dT2(P, Tk, xi)
   eq = xi.dot(dlnphixidT - dlnphiyidT)
   # print(tmpl % (k, Tk, eq))
   while (eq < -tol or eq > tol) and k < maxiter:
     deqdT = xi.dot(d2lnphixidT2 - d2lnphiyidT2)
     k += 1
     Tk -= eq / deqdT
-    Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_d2T(
+    Zy, lnphiyi, dlnphiyidT, d2lnphiyidT2 = eos.getPT_Z_lnphii_dT_dT2(
       P, Tk, yi,
     )
-    Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_d2T(
+    Zx, lnphixi, dlnphixidT, d2lnphixidT2 = eos.getPT_Z_lnphii_dT_dT2(
       P, Tk, xi,
     )
     eq = xi.dot(dlnphixidT - dlnphiyidT)
@@ -4756,7 +4756,7 @@ def _PmaxPT_ss(
       - partial derivatives of logarithms of fugacity coefficients
         with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dT_dT2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -4999,7 +4999,7 @@ def _PmaxPT_qnss(
       - partial derivatives of logarithms of fugacity coefficients
         with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dT_dT2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -5258,7 +5258,7 @@ def _PmaxPT_newtC(
       - partial derivatives of logarithms of fugacity coefficients
         with respect to pressure as a `Vector[Double]` of shape `(Nc,)`.
 
-    - `getPT_Z_lnphii_dT_d2T(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dT_dT2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -5482,7 +5482,7 @@ class TmaxPT(TsatPT):
         with respect to temperature as a `Vector[Double]` of shape
         `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dP_dP2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -5703,7 +5703,7 @@ def _TmaxPT_solve_dTPDdPeq_P(
     An initialized instance of a PT-based equation of state. Must have
     the following methods:
 
-    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dP_dP2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -5740,8 +5740,8 @@ def _TmaxPT_solve_dTPDdPeq_P(
   # tmpl = '%3s%10.2e%10.2e'
   k = 0
   Pk = P0
-  Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_d2P(Pk, T, yi)
-  Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_d2P(Pk, T, xi)
+  Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_dP2(Pk, T, yi)
+  Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_dP2(Pk, T, xi)
   eq = xi.dot(dlnphixidP - dlnphiyidP)
   deqdP = xi.dot(d2lnphixidP2 - d2lnphiyidP2)
   dP = -eq / deqdP
@@ -5749,10 +5749,10 @@ def _TmaxPT_solve_dTPDdPeq_P(
   while np.abs(dP) / Pk > tol and k < maxiter:
     k += 1
     Pk += dP
-    Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_d2P(
+    Zy, lnphiyi, dlnphiyidP, d2lnphiyidP2 = eos.getPT_Z_lnphii_dP_dP2(
       Pk, T, yi,
     )
-    Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_d2P(
+    Zx, lnphixi, dlnphixidP, d2lnphixidP2 = eos.getPT_Z_lnphii_dP_dP2(
       Pk, T, xi,
     )
     eq = xi.dot(dlnphixidP - dlnphiyidP)
@@ -5852,7 +5852,7 @@ def _TmaxPT_ss(
         with respect to temperature as a `Vector[Double]` of shape
         `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dP_dP2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -6098,7 +6098,7 @@ def _TmaxPT_qnss(
         with respect to temperature as a `Vector[Double]` of shape
         `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dP_dP2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
@@ -6361,7 +6361,7 @@ def _TmaxPT_newtC(
         with respect to temperature as a `Vector[Double]` of shape
         `(Nc,)`.
 
-    - `getPT_Z_lnphii_dP_d2P(P: float, T: float, yi: Vector[Double])
+    - `getPT_Z_lnphii_dP_dP2(P: float, T: float, yi: Vector[Double])
        -> tuple[float, Vector[Double], Vector[Double], Vector[Double]]`
       For a given pressure [Pa], temperature [K], and mole composition
       (`Vector[Double]` of shape `(Nc,)`), this method must return a
