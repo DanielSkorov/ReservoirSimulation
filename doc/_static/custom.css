@@ -1,0 +1,250 @@
+:root {
+    --pst-page-max-width: 88rem;
+    --pst-page-min-width: none;
+    --pst-sidebar-toggle-display: none;
+    --pst-div-full-width: 136%;
+}
+
+
+
+/* Prevents scrolling of an empty page when the sidebar is expanded */
+body {
+    margin-top: -1px;
+}
+
+.bd-sidebar-primary {
+    overflow-y: hidden;
+    overflow-x: hidden;
+    max-width: 275px;
+    min-width: 275px;
+}
+
+.bd-sidebar-primary:hover {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.bd-sidebar-primary .sidebar-primary-items__start {
+    max-width: 230px;
+    min-width: 230px;
+}
+
+.bd-sidebar-primary .sidebar-primary-items__end {
+    display: none;
+}
+
+.bd-page-width {
+    width: 100%;
+    max-width: var(--pst-page-max-width);
+    min-width: var(--pst-page-min-width);
+}
+
+
+.table thead tr {
+    border-bottom-width: 0;
+    border-bottom-color: var(--pst-table-border-custom-color);
+    text-align: center;
+    font-size: 12px;
+}
+.table td {
+    text-align: center;
+    font-size: 12px;
+}
+.table th {
+    text-align: center;
+    font-size: 12px;
+}
+.table .rotate {
+    -ms-writing-mode: tb-rl;
+    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+}
+
+
+aside.sidebar.margin {
+    width: 16rem;
+    margin-right: -18rem;
+    @media (max-width: 1199px) {
+        margin-right: 0;
+    }
+}
+
+aside.sidebar {
+    border: 0px;
+}
+
+/* Hides the sidebar toggle button when the full mode is activating */
+/* Bug: unexpected behaviour of sidebar hiding in the full mode */
+button.sidebar-toggle.primary-toggle {
+    display: var(--pst-sidebar-toggle-display);
+    @media (max-width: 959px) {
+        display: inline-block;
+    }
+}
+
+div.full-width {
+    max-width: var(--pst-div-full-width);
+    width: var(--pst-div-full-width);
+}
+
+
+
+html[data-theme="dark"] {
+    --pst-proof-border-left-color: #ffffff;
+    --pst-exercise-border-left-color: #d1aee8;
+    --pst-exercise-title-background-color: #4b1b6b;
+    --pst-solution-border-left-color: #11f58e;
+    --pst-algorithm-border-color: #ced6dd;
+    --pst-algorithm-background-color: #222832;
+    --pst-comment-color: #a6acab;
+    --pst-table-border-custom-color: #364150;
+    --pst-definition-border-left-color: #5fb488;
+    --pst-definition-title-background-color: #002f17;
+    --pst-property-border-left-color: #79a3f2;
+    --pst-property-title-background-color: #06245d;
+    --pst-corollary-border-left-color: #f2e179;
+    --pst-corollary-title-background-color: #574b03;
+    --pst-theorem-border-left-color: #e78894;
+    --pst-theorem-title-background-color: #4e111b;
+}
+
+html[data-theme="light"] {
+    --pst-proof-border-left-color: #000000;
+    --pst-exercise-border-left-color: #4b1b6b;
+    --pst-exercise-title-background-color: #e1c4f5;
+    --pst-solution-border-left-color: #039151;
+    --pst-algorithm-border-color: #ced6dd;
+    --pst-algorithm-background-color: #ffffff;
+    --pst-comment-color: #474747;
+    --pst-table-border-custom-color: #e5e7ea;
+    --pst-definition-border-left-color: #00843f;
+    --pst-definition-title-background-color: #d6ece1;
+    --pst-property-border-left-color: #276be9;
+    --pst-property-title-background-color: #dce7fc;
+    --pst-corollary-border-left-color: #e8cd27;
+    --pst-corollary-title-background-color: #fcf8dc;
+    --pst-theorem-border-left-color: #d72d47;
+    --pst-theorem-title-background-color: #f9e1e4;
+}
+
+
+
+div.highlight-python.notranslate {
+    border: var(--mystnb-source-border-width) var(--mystnb-source-border-color) solid;
+    border-left-color: var(--mystnb-source-margin-color);
+    border-left-width: medium;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+pre {
+    border: none;
+}
+
+
+
+div.proof {
+    border-left-color: var(--pst-proof-border-left-color);
+}
+div.proof .admonition-title {
+    display: none;
+}
+
+
+
+div.exercise {
+    border-left-color: var(--pst-exercise-border-left-color);
+}
+div.exercise .admonition-title {
+    background-color: var(--pst-exercise-title-background-color);
+}
+div.exercise .admonition-title:after {
+    display: none;
+}
+
+
+
+div.definition {
+    border-left-color: var(--pst-definition-border-left-color);
+}
+div.definition .admonition-title {
+    background-color: var(--pst-definition-title-background-color);
+}
+div.definition .admonition-title:after {
+    display: none;
+}
+
+
+
+div.property {
+    border-left-color: var(--pst-property-border-left-color);
+}
+div.property .admonition-title {
+    background-color: var(--pst-property-title-background-color);
+}
+div.property .admonition-title:after {
+    display: none;
+}
+
+
+div.corollary {
+    border-left-color: var(--pst-corollary-border-left-color);
+}
+div.corollary .admonition-title {
+    background-color: var(--pst-corollary-title-background-color);
+}
+div.corollary .admonition-title:after {
+    display: none;
+}
+
+
+
+div.theorem {
+    border-left-color: var(--pst-theorem-border-left-color);
+}
+div.theorem .admonition-title {
+    background-color: var(--pst-theorem-title-background-color);
+}
+div.theorem .admonition-title:after {
+    display: none;
+}
+
+
+
+div.algorithm {
+    border: none;
+    background-color: var(--pst-algorithm-background-color);
+    border-bottom: .15rem solid var(--pst-algorithm-border-color);
+}
+div.algorithm .admonition-title {
+    border-top: .15rem solid var(--pst-algorithm-border-color);
+    border-bottom: .15rem solid var(--pst-algorithm-border-color);
+    background-color: var(--pst-algorithm-background-color);
+}
+div.algorithm .admonition-title:after {
+    display: none;
+}
+
+
+
+.comment {
+    color: var(--pst-comment-color);
+    float: right;
+    font-size: 0.8em;
+    margin-top: 0.2em;
+    font-style: italic;
+    text-align: right;
+}
+
+.multilinecomment {
+    color: var(--pst-comment-color);
+    float: right;
+    font-size: 0.8em;
+    margin-top: 0.2em;
+    font-style: italic;
+    overflow-wrap: break-word;
+    inline-size: 50%;
+    text-align: right;
+}
+

@@ -1,0 +1,61 @@
+format: jb-book
+root: Introduction
+parts:
+  - caption: "Основы вычислительной математики"
+    chapters:
+      - file: theory/0-Math/Math-Introduction
+        title: Введение
+      - file: theory/0-Math/0-LAB/LAB-0-Introduction
+        sections:
+          - file: theory/0-Math/0-LAB/LAB-1-Vectors
+          - file: theory/0-Math/0-LAB/LAB-2-Matrices
+          - file: theory/0-Math/0-LAB/LAB-3-LinearSystems
+          - file: theory/0-Math/0-LAB/LAB-4-LinearTransformations
+          - file: theory/0-Math/0-LAB/LAB-5-Eigenvalues-Eigenvectors
+          - file: theory/0-Math/0-LAB/LAB-6-Definiteness
+          - file: theory/0-Math/0-LAB/LAB-7-ConditionNumber
+          - file: theory/0-Math/0-LAB/LAB-8-Preconditioner
+      - file: theory/0-Math/1-OM/OM-0-Introduction
+        sections:
+          - file: theory/0-Math/1-OM/OM-X-SuccessiveSubstitution
+  - caption: "PVT-моделирование"
+    chapters:
+      - file: theory/1-PVT/PVT-Introduction
+        title: Введение
+      - file: theory/1-PVT/0-TD/TD-0-Introduction
+        sections:
+          - file: theory/1-PVT/0-TD/TD-1-Basics
+          - file: theory/1-PVT/0-TD/TD-2-ThermalEquilibrium
+          - file: theory/1-PVT/0-TD/TD-3-Heat-Work
+          - file: theory/1-PVT/0-TD/TD-4-HeatCapacity
+          - file: theory/1-PVT/0-TD/TD-5-Enthalpy
+          - file: theory/1-PVT/0-TD/TD-6-Entropy
+          - file: theory/1-PVT/0-TD/TD-7-ChemicalPotential
+          - file: theory/1-PVT/0-TD/TD-8-Helmholtz-Gibbs
+          - file: theory/1-PVT/0-TD/TD-9-Observables
+          - file: theory/1-PVT/0-TD/TD-10-MixtureGibbsEnergy
+          - file: theory/1-PVT/0-TD/TD-11-GibbsPhaseRule
+          - file: theory/1-PVT/0-TD/TD-12-GibbsDuhemEquation
+          - file: theory/1-PVT/0-TD/TD-13-MaxwellRelations
+          - file: theory/1-PVT/0-TD/TD-14-PhaseEquilibrium
+          - file: theory/1-PVT/0-TD/TD-15-Fugacity
+      - file: theory/1-PVT/1-EOS/EOS-0-Introduction
+        sections:
+          - file: theory/1-PVT/1-EOS/EOS-1-VanDerWaals
+          - file: theory/1-PVT/1-EOS/EOS-2-SRK-PR
+          - file: theory/1-PVT/1-EOS/EOS-3-CPA
+          - file: theory/1-PVT/1-EOS/EOS-Appendix-A-PD
+          - file: theory/1-PVT/1-EOS/EOS-Appendix-B-BIP
+          - file: theory/1-PVT/1-EOS/EOS-Appendix-C-HV
+          - file: theory/1-PVT/1-EOS/EOS-Appendix-D-Solve
+      - file: theory/1-PVT/2-SEC/SEC-0-Introduction
+        sections:
+          - file: theory/1-PVT/2-SEC/SEC-1-Stability
+          - file: theory/1-PVT/2-SEC/SEC-2-RR
+          - file: theory/1-PVT/2-SEC/SEC-3-RR-2P
+          - file: theory/1-PVT/2-SEC/SEC-4-RR-NP
+          - file: theory/1-PVT/2-SEC/SEC-5-Equilibrium
+          - file: theory/1-PVT/2-SEC/SEC-6-Saturation
+          - file: theory/1-PVT/2-SEC/SEC-7-Criticality
+      - file: theory/1-PVT/3-LAB/LAB-0-Introduction
+      - file: theory/1-PVT/4-ETC/ETC-0-Introduction
