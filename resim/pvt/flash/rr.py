@@ -127,7 +127,7 @@ def rr2p_fgh(
   cmin = ci[idxmin]
   cmax = ci[idxmax]
   di = (cmax - ci) / (cmin - cmax)
-  pD = partial(fD, yi=yi, di=di, yidi=yi*di)
+  yidi = yi * di
   k = 0
   if f0 is None:
     ak = yi[idxmax] / yi[idxmin]
@@ -135,7 +135,7 @@ def rr2p_fgh(
     ak = (f0 - cmax) / (cmin - f0)
     if ak < 0.:
       ak = yi[idxmax] / yi[idxmin]
-  D, dDda = pD(ak)
+  D, dDda = fD(ak, yi, di, yidi)
   repeat = D < -tol or D > tol
   logger.debug(tmpl, k, ak, D)
   while (repeat or k < miniter) and k < maxiter:
@@ -148,7 +148,7 @@ def rr2p_fgh(
         akp1 += hk * hk / (hk + ak + 1.)
     k += 1
     ak = akp1
-    D, dDda = pD(ak)
+    D, dDda = fD(ak, yi, di, yidi)
     repeat = D < -tol or D > tol
     logger.debug(tmpl, k, ak, D)
   if not repeat:

@@ -21,14 +21,14 @@ from numpy import (
   dtype as np_dtype,
   float64 as np_float64,
   generic as np_generic,
-  int_ as np_int_,
+  integer as np_integer,
   ndarray as np_ndarray,
 )
 
 
 Logical = np_bool
 
-Integer = np_int_
+Integer = np_integer
 
 Float = np_float64
 

@@ -3,9 +3,9 @@ from logging import (
 )
 
 from typing import (
+  Iterable,
   Literal,
   Self,
-  Sequence,
 )
 
 from math import (
@@ -271,7 +271,13 @@ class pr78(object):
     self.mwc5pi = mwi[self.c5pi]
     pass
 
-  def getPT_Z(self, P: float, T: float, yi: Vector[Float]) -> float:
+  def getPT_Z(
+    self,
+    P: float,
+    T: float,
+    yi: Vector[Float],
+    pid: int = -1,
+  ) -> float:
     """Compute the compressibility factor of a mixture.
 
     Parameters
@@ -284,6 +290,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -298,7 +310,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     return Z - PRT * yi.dot(self.vsibi + self.vstibi * (T - self.Trsi))
 
   def getPT_Z_dP(
@@ -306,6 +318,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[float, float]:
     """Compute the compressibility factor of a mixture and its partial
     derivative with respect to pressure.
@@ -320,6 +333,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -337,7 +356,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     dZdP = ((B * (2. * (A - B) - 3. * B * B)
              + Z * (6. * B * B + 2. * B - A)
              - B * Z * Z)
@@ -352,6 +371,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[float, float]:
     """Compute the compressibility factor of a mixture and its partial
     derivative with respect to temperature.
@@ -366,6 +386,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -385,7 +411,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT_ = self.D.dot(yi * dsqrtalphaidT)
@@ -405,6 +431,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[float, float, float]:
     """Compute the compressibility factor of a mixture and its first
     and second partial derivatives with respect to pressure.
@@ -419,6 +446,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -438,7 +471,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
     dAdP = A / P
     dBdP = B / P
@@ -457,6 +490,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[float, float, float]:
     """Compute the compressibility factor of a mixture and its first
     and second partial derivatives with respect to temperature.
@@ -471,6 +505,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -492,7 +532,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     dmultidT = (-.5 / sqrtT) * self.kappai * self._Tci
     dsqrtalphaidT = self.sqrtai * dmultidT
     dSidT_ = self.D.dot(yi * dsqrtalphaidT)
@@ -526,6 +566,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[float, float, float, float]:
     """Compute the compressibility factor of a mixture and its partial
     derivatives with respect to pressure and temperature; and the second
@@ -541,6 +582,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -564,7 +611,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     dqdZ = 3. * Z * Z + 2. * (B - 1.) * Z + A - 2. * B - 3. * B * B
     mdqdA = B - Z
     mdqdB = A - 2. * B - 3. * B * B + (6. * B + 2.) * Z - Z * Z
@@ -591,6 +638,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> Vector[Float]:
     """Compute natural logarithms of fugacity coefficients of
     components.
@@ -606,6 +654,12 @@ class pr78(object):
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
 
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A `Vector[Float]` of shape `(Nc,)` of logarithms of fugacity
@@ -620,7 +674,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     fZ = log((Z - B * 0.414213562373095) / (Z + B * 2.414213562373095))
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     return ((Z - 1.) / bm * self.bi
@@ -633,6 +687,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to pressure.
@@ -647,6 +702,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -666,7 +727,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -694,6 +755,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to
@@ -709,6 +771,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -730,7 +798,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -764,6 +832,7 @@ class pr78(object):
     T: float,
     yi: Vector[Float],
     n: float = 1.,
+    pid: int = -1,
   ) -> tuple[Vector[Float], Matrix[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to mole
@@ -783,6 +852,12 @@ class pr78(object):
     n: float
       Mole number of a mixture [mol]. Default is `1.0` [mol].
 
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A tuple containing:
@@ -801,7 +876,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = PRT / RT * alpham
     B = PRT * bm
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -834,6 +909,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Matrix[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to mole
@@ -849,6 +925,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -868,7 +950,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -901,6 +983,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to pressure
@@ -916,6 +999,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -940,7 +1029,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -981,6 +1070,7 @@ class pr78(object):
     T: float,
     yi: Vector[Float],
     n: float = 1.,
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float], Matrix[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to pressure
@@ -999,6 +1089,12 @@ class pr78(object):
 
     n: float
       Mole number of a mixture [mol]. Default is `1.0` [mol].
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1021,7 +1117,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -1060,6 +1156,7 @@ class pr78(object):
     T: float,
     yi: Vector[Float],
     n: float = 1.,
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float], Matrix[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to temperature
@@ -1078,6 +1175,12 @@ class pr78(object):
 
     n: float
       Mole number of a mixture [mol]. Default is `1.0` [mol].
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1102,7 +1205,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -1151,6 +1254,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float], Matrix[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their partial derivatives with respect to pressure,
@@ -1166,6 +1270,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1197,7 +1307,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -1251,6 +1361,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their first and second partial derivatives with
@@ -1266,6 +1377,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1288,7 +1405,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = 0.3535533905932738 * A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -1329,6 +1446,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float]]:
     """Compute natural logarithms of fugacity coefficients of
     components and their first and second partial derivatives with
@@ -1344,6 +1462,12 @@ class pr78(object):
 
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
+
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1368,7 +1492,7 @@ class pr78(object):
     bm = yi.dot(self.bi)
     A = alpham * PRT / RT
     B = bm * PRT
-    Z = self.solve(A, B)
+    Z = self.solve(A, B, pid)
     gphii = A / B * (2. / alpham * Si - self.bi / bm)
     ZmB = 1. / (Z - B * 0.414213562373095)
     ZpB = 1. / (Z + B * 2.414213562373095)
@@ -1431,6 +1555,7 @@ class pr78(object):
     P: float,
     T: float,
     yi: Vector[Float],
+    pid: int = -1,
   ) -> Vector[Float]:
     """Compute fugacities of components.
 
@@ -1445,12 +1570,18 @@ class pr78(object):
     yi: Vector[Float], shape (Nc,)
       Mole fractions of `Nc` components.
 
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A `Vector[Float]` of shape `(Nc,)` of natural logarithms of
     fugacities of components.
     """
-    return self.getPT_lnphii(P, T, yi) + np_log(P * yi)
+    return self.getPT_lnphii(P, T, yi, pid) + np_log(P * yi)
 
   def getPT_lnfi_dnj(
     self,
@@ -1458,6 +1589,7 @@ class pr78(object):
     T: float,
     yi: Vector[Float],
     n: float = 1.,
+    pid: int = -1,
   ) -> tuple[Vector[Float], Matrix[Float]]:
     """Compute fugacities of components and their partial derivatives
     with respect to mole numbers of components.
@@ -1476,6 +1608,12 @@ class pr78(object):
     n: float
       Mole number of a mixture [mol]. Default is `1.0` [mol].
 
+    pid: int
+      The phase designation index. Defines the cubic root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A tuple containing:
@@ -1485,7 +1623,7 @@ class pr78(object):
       natural logarithms of fugacities of components with respect to
       mole numbers of components [1/mol].
     """
-    lnphii, dlnphiidnj = self.getPT_lnphii_dnj(P, T, yi, n)
+    lnphii, dlnphiidnj = self.getPT_lnphii_dnj(P, T, yi, n, pid)
     lnfi = lnphii + np_log(P * yi)
     np_fill_diagonal(dlnphiidnj, dlnphiidnj.diagonal() + 1. / (n * yi))
     return lnfi, dlnphiidnj - 1. / n
@@ -1495,6 +1633,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> Vector[Float]:
     """Compute the compressibility factor for each mixture.
 
@@ -1515,6 +1654,13 @@ class pr78(object):
       different mole compositions for each mixture. In that case,
       `Np` is the number of mixtures.
 
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A `Vector[Float]` of shape `(Np,)` of compressibility factors.
@@ -1531,7 +1677,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     return Zj - PRTj * np_vecdot(yji, (self.vsibi
                                        + self.vstibi
                                          * (Tj[:,None] - self.Trsi)))
@@ -1541,6 +1690,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> tuple[Vector[Float], Vector[Float]]:
     """Compute the compressibility factor and its partial derivative
     with respect to pressure for each mixture.
@@ -1561,6 +1711,13 @@ class pr78(object):
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
+
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1583,7 +1740,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     dZjdPj = ((Bj * (2. * (Aj - Bj) - 3. * Bj * Bj)
                + Zj * (6. * Bj * Bj + 2. * Bj - Aj)
                - Bj * Zj * Zj)
@@ -1599,6 +1759,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> tuple[Vector[Float], Vector[Float]]:
     """Compute the compressibility factor and its partial derivatives
     with respect to temperature for each mixture.
@@ -1619,6 +1780,13 @@ class pr78(object):
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
+
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1643,7 +1811,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     dmultjidTj = (-.5 / sqrtTj)[:,None] * self.kappai * self._Tci
     dsqrtalphajidTj = self.sqrtai * dmultjidTj
     dSjidTj_ = (yji * dsqrtalphajidTj).dot(self.D)
@@ -1664,6 +1835,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float]]:
     """Compute the compressibility factor and its first and second
     partial derivatives with respect to pressure for each mixture.
@@ -1684,6 +1856,13 @@ class pr78(object):
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
+
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1709,7 +1888,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     dqjdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + Aj - 2. * Bj - 3. * Bj * Bj
     dAjdPj = Aj / Pj
     dBjdPj = Bj / Pj
@@ -1729,6 +1911,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float]]:
     """Compute the compressibility factor and its first and second
     partial derivatives with respect to temperature for each mixture.
@@ -1749,6 +1932,13 @@ class pr78(object):
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
+
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1776,7 +1966,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     dmultjidTj = (-.5 / sqrtTj)[:,None] * self.kappai * self._Tci
     dsqrtalphajidTj = self.sqrtai * dmultjidTj
     dSjidTj_ = (yji * dsqrtalphajidTj).dot(self.D)
@@ -1812,6 +2005,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float], Vector[Float]]:
     """Compute the compressibility factor and its partial derivatives
     with respect to pressure and temperature for each mixture.
@@ -1832,6 +2026,13 @@ class pr78(object):
       Mole fractions of `Nc` components. It is allowed to specify
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
+
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
 
     Returns
     -------
@@ -1862,7 +2063,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     mdqjdAj = Bj - Zj
     mdqjdBj = Aj - Bj * (2. + 3. * Bj - 6. * Zj) - Zj * (Zj - 2.)
     dqjdZj = 3. * Zj * Zj + 2. * (Bj - 1.) * Zj + Aj - 2. * Bj - 3. * Bj * Bj
@@ -1896,6 +2100,7 @@ class pr78(object):
     Pj: float | Vector[Float],
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> Matrix[Float]:
     """Compute natural logarithms of fugacity coefficients of
     components for each mixture.
@@ -1917,6 +2122,13 @@ class pr78(object):
       different mole fraction arrays for each mixture. In that case,
       `Np` is the number of mixtures.
 
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A `Matrix[Float]` of shape `(Np, Nc)` of natural logarithms of
@@ -1934,7 +2146,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
               * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
     fZj = np_log((Zj - Bj * 0.414213562373095)
@@ -1953,6 +2168,7 @@ class pr78(object):
     Tj: float | Vector[Float],
     yji: Vector[Float] | Matrix[Float],
     nj: float | Vector[Float] = 1.,
+    pidj: int | Integer | Iterable[int | Integer] = -1,
   ) -> tuple[Matrix[Float], Tensor[Float]]:
     """Compute natural logarithms of fugacity coefficients of components
     and their partial derivatives with respect to component mole numbers
@@ -1980,6 +2196,13 @@ class pr78(object):
       different mole number for each mixture. In that case, `Np` is
       the number of mixtures. Default is `1.0` [mol].
 
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
     Returns
     -------
     A tuple containing:
@@ -2002,7 +2225,10 @@ class pr78(object):
     bmj = yji.dot(self.bi)
     Aj = alphamj * PRTj / RTj
     Bj = bmj * PRTj
-    Zj = np_vectorize(self.solve)(Aj, Bj)
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
     gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
               * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
     ZmBj = 1. / (Zj - Bj * 0.414213562373095)
@@ -2734,7 +2960,7 @@ class pr78(object):
                      * (Z2 - B * 0.414213562373095)))
               * 0.3535533905932738 * A / B)
 
-  def solve(self, A: float, B: float) -> float:
+  def solve(self, A: float, B: float, pid: int | Integer = -1) -> float:
     """Solve the modified Peng-Robinson equation of state.
 
     Parameters
@@ -2798,22 +3024,32 @@ class pr78(object):
       D = sqrt(r * r + 4. * d / x0)
       x1 = (-r + D) * .5
       x2 = (-r - D) * .5
-      if x2 > B:
-        dG = self.fdG(x0, x2, A, B)
-        if dG < 0.:
-          return x0
+      if pid < 0:
+        if x2 > B:
+          dG = self.fdG(x0, x2, A, B)
+          if dG < 0.:
+            return x0
+          else:
+            return x2
+        elif x1 > B:
+          dG = self.fdG(x0, x1, A, B)
+          if dG < 0.:
+            return x0
+          else:
+            return x1
         else:
+          return x0
+      elif pid:
+        if x2 > B:
           return x2
-      elif x1 > B:
-        dG = self.fdG(x0, x1, A, B)
-        if dG < 0.:
-          return x0
-        else:
+        elif x1 > B:
           return x1
+        else:
+          return x0
       else:
         return x0
 
-  def solve_iter(self, A: float, B: float) -> float:
+  def solve_iter(self, A: float, B: float, pid: int | Integer = -1) -> float:
     """Solve the modified Peng-Robinson equation of state.
 
     Parameters
@@ -2951,18 +3187,28 @@ class pr78(object):
       D = sqrt(r * r + 4. * d / x0)
       x1 = (-r + D) * .5
       x2 = (-r - D) * .5
-      if x2 > B:
-        dG = self.fdG(x0, x2, A, B)
-        if dG < 0.:
-          return x0
+      if pid < 0:
+        if x2 > B:
+          dG = self.fdG(x0, x2, A, B)
+          if dG < 0.:
+            return x0
+          else:
+            return x2
+        elif x1 > B:
+          dG = self.fdG(x0, x1, A, B)
+          if dG < 0.:
+            return x0
+          else:
+            return x1
         else:
+          return x0
+      elif pid:
+        if x2 > B:
           return x2
-      elif x1 > B:
-        dG = self.fdG(x0, x1, A, B)
-        if dG < 0.:
-          return x0
-        else:
+        elif x1 > B:
           return x1
+        else:
+          return x0
       else:
         return x0
 
@@ -3163,18 +3409,18 @@ class pr78(object):
     self.form = newform
     pass
 
-  def replace_components(self, names: Sequence[str]) -> None:
+  def replace_components(self, names: Iterable[str]) -> None:
     raise NotImplementedError(
       'Replacement of components by their names is not implemented yet.'
     )
 
-  def append_components(self, names: Sequence[str]) -> None:
+  def append_components(self, names: Iterable[str]) -> None:
     raise NotImplementedError(
       'Addition of components by their names is not implemented yet.'
     )
 
   @classmethod
-  def init_by_names(cls, names: Sequence[str]) -> Self:
+  def init_by_names(cls, names: Iterable[str]) -> Self:
     raise NotImplementedError(
       'Class initialization using names of components is not implemented yet.'
     )
