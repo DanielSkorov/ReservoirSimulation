@@ -8,5 +8,6 @@ from resim.pvt.env.protocols import (
 from resim.pvt.env.env import (
   EnvConvergenceError as EnvConvergenceError,
   _env2pPT_newt as _env2pPT_newt,
+  _envNpPT_newt as _envNpPT_newt,
   env2p as env2p,
 )

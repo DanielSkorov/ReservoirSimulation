@@ -2262,12 +2262,146 @@ class pr78(object):
       + ((dAjdnk / Aj[:,None] - dBjdnk / Bj[:,None])[:,None,:]
          * gphiji[:,:,None])
     )
-    dlnphiidnj = (
+    dlnphijidnk = (
       ((self.bi / bmj[:,None])[:,:,None]
        * (dZjdnk - ((Zj - 1.) / bmj)[:,None] * dbmjdnk)[:,None,:])
       + (fZj[:,None,None] * dgphijidnk + gphiji[:,:,None] * dfZjdnk[:,None,:])
       - ((dZjdnk - dBjdnk) / (Zj - Bj)[:,None])[:,None,:])
-    return lnphiji, dlnphiidnj
+    return lnphiji, dlnphijidnk
+
+  def getPT_lnphiji_dP_dT_dyk(
+    self,
+    Pj: float | Vector[Float],
+    Tj: float | Vector[Float],
+    yji: Vector[Float] | Matrix[Float],
+    pidj: int | Integer | Iterable[int | Integer] = -1,
+  ) -> tuple[Matrix[Float], Matrix[Float], Matrix[Float], Tensor[Float]]:
+    """Compute natural logarithms of fugacity coefficients of components
+    and their partial derivatives with respect to pressure, tenperature,
+    and component mole fractions for each mixture.
+
+    Parameters
+    ----------
+    Pj: float | Vector[Float], shape (Np,)
+      Pressure(s) of mixtures [Pa]. It is allowed to specify different
+      pressure for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    Tj: float | Vector[Float], shape (Np,)
+      Temperature(s) of mixtures [K]. It is allowed to specify different
+      temperature for each mixture. In that case, `Np` is the number of
+      mixtures.
+
+    yji: Vector[Float], shape (Nc,) | Matrix[Float], shape (Np, Nc)
+      Mole fractions of `Nc` components. It is allowed to specify
+      different mole fraction arrays for each mixture. In that case,
+      `Np` is the number of mixtures.
+
+    pidj: int | Integer | Iterable[int | Integer], shape (Np,)
+      The phase designation index for each mixture. Defines the cubic
+      root selection:
+      - `-1`: root with the lower Gibbs energy (default);
+      - `0`: vapor phase (largest) root;
+      - other: liquid phase (lowest) root.
+
+    Returns
+    -------
+    A tuple containing:
+    - a `Matrix[Float]` of shape `(Np, Nc)` of natural logarithms of
+      fugacity coefficients of components in mixtures,
+    - a `Matrix[Float]` of shape `(Np, Nc)` of partial derivatives of
+      natural logarithms of fugacity coefficients of components with
+      respect to pressure in mixtures [1/Pa],
+    - a `Matrix[Float]` of shape `(Np, Nc)` of partial derivatives of
+      natural logarithms of fugacity coefficients of components with
+      respect to temperature in mixtures [1/K],
+    - a `Tensor[Float]` of shape `(Np, Nc, Nc)` of partial derivatives
+      of natural logarithms of fugacity coefficients of components with
+      respect to mole fractions of components in mixtures [1/mol].
+
+    Notes
+    -----
+    The mole fraction constraint isn't taken into account.
+    """
+    Pj = np_atleast_1d(Pj)
+    Tj = np_atleast_1d(Tj)
+    yji = np_atleast_2d(yji)
+    RTj = R * Tj
+    PRTj = Pj / RTj
+    sqrtTj = np_sqrt(Tj)
+    multji = 1. + self.kappai * (1. - sqrtTj[:,None] * self._Tci)
+    sqrtalphaji = self.sqrtai * multji
+    Sji_ = (yji * sqrtalphaji).dot(self.D)
+    Sji = sqrtalphaji * Sji_
+    alphamj = np_vecdot(yji, Sji)
+    bmj = yji.dot(self.bi)
+    Aj = alphamj * PRTj / RTj
+    Bj = bmj * PRTj
+    if isinstance(pidj, (int, Integer)):
+      Zj = np_vectorize(self.solve, excluded={2})(Aj, Bj, pidj)
+    else:
+      Zj = np_vectorize(self.solve)(Aj, Bj, pidj)
+    gphiji = ((0.3535533905932738 * Aj / Bj)[:,None]
+              * (2. / alphamj[:,None] * Sji - self.bi / bmj[:,None]))
+    ZmBj = 1. / (Zj - Bj * 0.414213562373095)
+    ZpBj = 1. / (Zj + Bj * 2.414213562373095)
+    fZj = np_log(ZpBj / ZmBj)
+    lnphisji = PRTj[:,None] * (self.vsibi
+                               + self.vstibi * (Tj[:,None] - self.Trsi))
+    lnphiji = (self.bi * ((Zj - 1.) / bmj)[:,None]
+               + gphiji * fZj[:,None]
+               - np_log(Zj - Bj)[:,None]
+               - lnphisji)
+    mdqjdAj = Bj - Zj
+    mdqjdBj = Aj - Bj * (3. * Bj + 2.) + Zj * (6. * Bj + 2. - Zj)
+    dfZjdZj = ZmBj - ZpBj
+    dfZjdBj = -0.414213562373095 * ZmBj - 2.414213562373095 * ZpBj
+    dqjdZj = Zj * (3. * Zj + 2. * Bj - 2.) - Bj * (3. * Bj + 2.) + Aj
+    dZjdPj = (Bj * mdqjdBj + Aj * mdqjdAj) / (Pj * dqjdZj)
+    dlnphijidPj = (((Bj / Pj - dZjdPj) / (Zj - Bj))[:,None]
+                   + (dZjdPj / bmj)[:,None] * self.bi
+                   + (dZjdPj * dfZjdZj + Bj / Pj * dfZjdBj)[:,None] * gphiji
+                   - lnphisji / Pj[:,None])
+    dmultjidTj = (-.5 / sqrtTj)[:,None] * (self.kappai * self._Tci)
+    dsqrtalphajidTj = self.sqrtai * dmultjidTj
+    dSjidTj = (dsqrtalphajidTj * Sji_
+               + sqrtalphaji * (yji * dsqrtalphajidTj).dot(self.D))
+    dalphamjdTj = np_vecdot(yji, dSjidTj)
+    dAjdTj = PRTj / RTj * dalphamjdTj - 2. * Aj / Tj
+    dBjdTj = -Bj / Tj
+    dZjdTj = (dBjdTj * mdqjdBj + dAjdTj * mdqjdAj) / dqjdZj
+    dfZjdTj = dZjdTj * dfZjdZj + dBjdTj * dfZjdBj
+    dgphijidTj = (((2. * dSjidTj - (dalphamjdTj / bmj)[:,None] * self.bi)
+                   / (2.82842712474619 * (RTj * bmj))[:,None])
+                  - gphiji / Tj[:,None])
+    dlnphijidTj = (dfZjdTj[:,None] * gphiji
+                   + fZj[:,None] * dgphijidTj
+                   - ((dZjdTj - dBjdTj) / (Zj - Bj))[:,None]
+                   + (dZjdTj / bmj)[:,None] * self.bi
+                   + lnphisji / Tj[:,None]
+                   - PRTj[:,None] * self.vstibi)
+    dSjidyk = sqrtalphaji[:,:,None] * sqrtalphaji[:,None,:] * self.D[None,:,:]
+    dalphamjdyk = Sji + np_vecdot(dSjidyk, yji[:,:,None], axes=[(1,), (1,)])
+    dbmjdyk = self.bi[None,:]
+    dAjdyk = (PRTj / RTj)[:,None] * dalphamjdyk
+    dBjdyk = PRTj[:,None] * dbmjdyk
+    dZjdyk = (
+      dBjdyk * mdqjdBj[:,None] + dAjdyk * mdqjdAj[:,None]
+    ) / dqjdZj[:,None]
+    dfZjdyk = dfZjdZj[:,None] * dZjdyk + dfZjdBj[:,None] * dBjdyk
+    dgphijidyk = (0.3535533905932738 * (Aj / Bj))[:,None,None] * (
+      (2. / alphamj)[:,None,None] * (
+        dSjidyk - (Sji / alphamj[:,None])[:,:,None] * dalphamjdyk[:,None,:]
+      )
+      + (self.bi / (bmj * bmj)[:,None])[:,:,None] * dbmjdyk[:,None,:]
+    ) + gphiji[:,:,None] * (dAjdyk/Aj[:,None] - dBjdyk/Bj[:,None])[:,None,:]
+    dlnphijidyk = (
+      (self.bi / bmj[:,None])[:,:,None]
+      * (dZjdyk - ((Zj - 1.) / bmj)[:,None] * dbmjdyk)[:,None,:]
+      + (fZj[:,None,None] * dgphijidyk + gphiji[:,:,None] * dfZjdyk[:,None,:])
+      - ((dZjdyk - dBjdyk) / (Zj - Bj)[:,None])[:,None,:]
+    )
+    return lnphiji, dlnphijidPj, dlnphijidTj, dlnphijidyk
 
   def getPT_kvguess(
     self,

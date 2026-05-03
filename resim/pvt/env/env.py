@@ -9,6 +9,7 @@ from typing import (
 
 from math import (
   copysign,
+  exp,
   isfinite,
   log,
 )
@@ -23,6 +24,7 @@ from numpy import (
   empty as np_empty,
   exp as np_exp,
   eye as np_eye,
+  diff as np_diff,
   full as np_full,
   full_like as np_full_like,
   linspace as np_linspace,
@@ -74,6 +76,7 @@ from resim.pvt.env.protocols import (
   Env2pPTEos,
   Env2pSolver,
   Env2pSolverPTEos,
+  EnvNpSolverPTEos,
 )
 
 
@@ -214,11 +217,11 @@ def _env2pPT_newt(
   - the natural logarithm of pressure,
   - the natural logarithm of temperature.
   """
-  Nc = eos.Nc
   logger.debug(
-    'Solving the system of phase boundary equations for: '
+    'Solving the system of two-phase boundary equations for: '
     'phf = %.3f, sidx = %s, sval = %.4f', phf, sidx, sval,
   )
+  Nc = eos.Nc
   logger.debug(
     '%3s' + Nc * '%9s' + '%9s%8s%10s%10s',
     'Nit', *['lnkv%s' % s for s in range(Nc)], 'lnP', 'lnT', 'g2', 'dx2',
@@ -293,6 +296,170 @@ def _env2pPT_newt(
     logger.debug(tmpl, k, *xk, g2, dx2)
   if (g2 < tolres or dx2 < tolvar) and isfinite(dx2):
     return xk, yvi, yli, J, k
+  raise EnvConvergenceError()
+
+
+def _envNpPT_newt(
+  eos: EnvNpSolverPTEos,
+  x0: Vector[Float],
+  sidx: int | Integer,
+  sval: float,
+  fidx: int | Integer,
+  fval: float,
+  yi: Vector[Float],
+  tolres: float = 1e-24,
+  tolvar: float = 1e-14,
+  maxiter: int = 20,
+  miniter: int = 0,
+  dxmax: float = 0.1,
+  linsolver: LinearSolver = lusolver,
+) -> tuple[Vector[Float], Matrix[Float], Vector[Float], Matrix[Float], int]:
+  logger.debug(
+    'Solving the system of multiphase boundary equations for: '
+    'fidx = %s, fval = %.3f, sidx = %s, sval = %.4f', fidx, fval, sidx, sval,
+  )
+  Nc = eos.Nc
+  Neq = x0.shape[0]
+  Npm1 = (Neq - 2) // (Nc + 1)
+  Npm1Nc = Npm1 * Nc
+  Npm2 = Npm1 - 1
+  logger.debug(
+    '%3s' + Npm1 * '%9s' + Npm1Nc * '%10s' + '%10s%10s%11s%11s',
+    'Nit',
+    *['f%s' % j for j in range(Npm1)],
+    *['lnkv%s%s' % (j, i) for j in range(Npm1) for i in range(Nc)],
+    'lnP',
+    'lnT',
+    'g2',
+    'x2',
+  )
+  tmpl = '%3s' + Npm1*'%9.4f' + Npm1Nc*'%10.4f' + '%10.4f%10.4f%11.2e%11.2e'
+  g = np_empty(shape=(Neq,))
+  q = g[:Npm2]
+  r = g[Npm1:-2].reshape((Npm1, Nc))
+  J = np_zeros(shape=(Neq, Neq))
+  if sidx > 0:
+    sidx = Npm1 + sidx
+  J[-2, sidx] = 1.
+  J[-1, fidx] = 1.
+  dqdf = J[:Npm2, :Npm1]
+  dhdf = J[Npm2, :Npm1]
+  drdf = J[Npm1:-2, :Npm1].reshape(Npm1, Nc, Npm1)
+  dqdk = J[:Npm2, Npm1:-2].reshape(Npm2, Npm1, Nc)
+  dhdk = J[Npm2, Npm1:-2].reshape(Npm1, Nc)
+  drdk = J[Npm1:-2, Npm1:-2].reshape(Npm1, Nc, Npm1, Nc)
+  drdp = J[Npm1:-2, -2]
+  drdt = J[Npm1:-2, -1]
+  Ijk = np_eye(Npm1, Npm1)
+  dIjk = np_eye(Npm2, Npm1, 1) - np_eye(Npm2, Npm1)
+  Ijikl = np_eye(Npm1 * Nc).reshape(Npm1, Nc, Npm1, Nc)
+  k = 0
+  xk = x0.flatten()
+  xk[sidx] = sval
+  fj = xk[:Npm1]
+  fj[fidx] = fval
+  lnkvi = xk[Npm1:-2]
+  lnkvji = lnkvi.reshape(Npm1, Nc)
+  P = exp(xk[-2])
+  T = exp(xk[-1])
+  kvji = np_exp(lnkvji)
+  Aji = 1. - kvji
+  ti = 1. - fj.dot(Aji)
+  xi = yi / ti
+  yji = kvji * xi
+  lnphiji, dlnphijidP, dlnphijidT, dlnphijidyjk = eos.getPT_lnphiji_dP_dT_dyk(
+    P, T, yji,
+  )
+  lnphixi, dlnphixidP, dlnphixidT, dlnphixidxk = eos.getPT_lnphii_dP_dT_dyj(
+    P, T, xi,
+  )
+  dkvji = np_diff(kvji, axis=0)
+  q[:] = dkvji.dot(xi)
+  g[Npm2] = xi.sum() - 1.
+  r[:] = lnkvji + lnphiji - lnphixi
+  g[-2] = xk[sidx] - sval
+  g[-1] = fj[fidx] - fval
+  g2 = g.dot(g)
+  ui = xi / ti
+  dqdf[:] = (dkvji * ui).dot(Aji.T)
+  dhdf[:] = Aji.dot(ui)
+  drdf[:] = (dlnphijidyjk * kvji[:,None,:] - dlnphixidxk).dot((ui * Aji).T)
+  dqdk[:] = (
+    kvji * ui * (ti * dIjk[:,:,None] - fj[None,:,None] * dkvji[:,None,:])
+  )
+  dhdk[:] = -fj[:,None] * kvji * ui
+  drdk[:] = Ijikl + (
+    yji
+    * (
+        dlnphijidyjk[:,:,None,:]
+        * (
+            Ijk[:,None,:,None]
+            - kvji[:,None,None,:] * fj[None,None,:,None] / ti
+        )
+        + dlnphixidxk[None,:,None,:] * fj[None,None,:,None] / ti
+    )
+  )
+  drdp[:] = P * (dlnphijidP - dlnphixidP).ravel()
+  drdt[:] = T * (dlnphijidT - dlnphixidT).ravel()
+  dx = linsolver(J, -g)
+  dx2 = dx.dot(dx)
+  logger.debug(tmpl, k, *xk, g2, dx2)
+  repeat = isfinite(dx2) and (dx2 > tolvar and g2 > tolres or k < miniter)
+  while repeat and k < maxiter:
+    k += 1
+    dx = np_where(np_abs(dx) > dxmax, np_sign(dx) * dxmax, dx)
+    xk += dx
+    kvji = np_exp(lnkvji)
+    P = exp(xk[-2])
+    T = exp(xk[-1])
+    Aji = 1. - kvji
+    ti = 1. - fj.dot(Aji)
+    xi = yi / ti
+    yji = kvji * xi
+    lnphiji, dlnphijidP, dlnphijidT, dlnphijidyjk = (
+      eos.getPT_lnphiji_dP_dT_dyk(
+        P, T, yji,
+      )
+    )
+    lnphixi, dlnphixidP, dlnphixidT, dlnphixidxk = (
+      eos.getPT_lnphii_dP_dT_dyj(
+        P, T, xi,
+      )
+    )
+    dkvji = np_diff(kvji, axis=0)
+    q[:] = dkvji.dot(xi)
+    g[Npm2] = xi.sum() - 1.
+    r[:] = lnkvji + lnphiji - lnphixi
+    g[-2] = xk[sidx] - sval
+    g[-1] = fj[fidx] - fval
+    g2 = g.dot(g)
+    ui = xi / ti
+    dqdf[:] = (dkvji * ui).dot(Aji.T)
+    dhdf[:] = Aji.dot(ui)
+    drdf[:] = (dlnphijidyjk * kvji[:,None,:] - dlnphixidxk).dot((ui * Aji).T)
+    dqdk[:] = (
+      kvji * ui * (ti * dIjk[:,:,None] - fj[None,:,None] * dkvji[:,None,:])
+    )
+    dhdk[:] = -fj[:,None] * kvji * ui
+    drdk[:] = Ijikl + (
+      yji
+      * (
+          dlnphijidyjk[:,:,None,:]
+          * (
+              Ijk[:,None,:,None]
+              - kvji[:,None,None,:] * fj[None,None,:,None] / ti
+          )
+          + dlnphixidxk[None,:,None,:] * fj[None,None,:,None] / ti
+      )
+    )
+    drdp[:] = P * (dlnphijidP - dlnphixidP).ravel()
+    drdt[:] = T * (dlnphijidT - dlnphixidT).ravel()
+    dx = linsolver(J, -g)
+    dx2 = dx.dot(dx)
+    repeat = isfinite(dx2) and (dx2 > tolvar and g2 > tolres or k < miniter)
+    logger.debug(tmpl, k, *xk, g2, dx2)
+  if (g2 < tolres or dx2 < tolvar) and isfinite(dx2):
+    return xk, yji, xi, J, k
   raise EnvConvergenceError()
 
 

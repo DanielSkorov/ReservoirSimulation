@@ -10,6 +10,7 @@ from resim.pvt.datatypes import (
   Integer,
   Matrix,
   State,
+  Tensor,
   Vector,
 )
 
@@ -89,6 +90,88 @@ class Env2pSolverPTEos(Eos, Protocol):
     - a `Matrix[Float]` of shape `(Nc, Nc)` partial derivatives of
       natural logarithms of fugacity coefficients of components with
       respect to mole fractions of components.
+    """
+    pass
+
+
+class EnvNpSolverPTEos(Env2pSolverPTEos, Protocol):
+  """A protocol for an initialized instance of a PT-based equation
+  of state (PTEos) that can be used to solve the multiphase envelope
+  problem for a mixture. It must have the following attributes:
+  +-----------+------+-------------------------------------------------+
+  | Attribute | Type | Description                                     |
+  +===========+======+=================================================+
+  | name      | str  | The name of an EOS (for logging).               |
+  +-----------+------+-------------------------------------------------+
+  | Nc        | int  | The number of components in a system.           |
+  +-----------+------+-------------------------------------------------+
+
+  Any class that implements this protocol must also have methods:
+  +-------------------------+------------------------------------------+
+  | Method                  | Result                                   |
+  +=========================+==========================================+
+  | getPT_lnphii_dP_dT_dyj  | - A vector of shape `(Nc,)` of natural   |
+  |                         |   logarithms of fugacity coefficients of |
+  |                         |   components.                            |
+  |                         | - A vector of the same shape of their    |
+  |                         |   partial derivatives with respect to    |
+  |                         |   pressure.                              |
+  |                         | - A vector of the same shape of their    |
+  |                         |   partial derivatives with respect to    |
+  |                         |   temperature.                           |
+  |                         | - A matrix of shape `(Nc, Nc)` of their  |
+  |                         |   partial derivatives with respect to    |
+  |                         |   mole fractions of components.          |
+  +-------------------------+------------------------------------------+
+  | getPT_lnphiji_dP_dT_dyk | - A matrix of shape `(Np, Nc)` of        |
+  |                         |   logarithms of fugacity coefficients of |
+  |                         |   componentsfor each mixture.            |
+  |                         | - A matrix of the same shape of their    |
+  |                         |   partial derivatives with respect to    |
+  |                         |   pressure.                              |
+  |                         | - A matrix of the same shape of their    |
+  |                         |   partial derivatives with respect to    |
+  |                         |   temperature.                           |
+  |                         | - A tensor of shape `(Np, Nc, Nc)` of    |
+  |                         |   their partial derivatives with respect |
+  |                         |   to mole fractions of components.       |
+  +-------------------------+------------------------------------------+
+  """
+  def getPT_lnphiji_dP_dT_dyk(
+    self,
+    P: float,
+    T: float,
+    yji: Matrix[Float],
+  ) -> tuple[Matrix[Float], Matrix[Float], Matrix[Float], Tensor[Float]]:
+    """Compute natural logarithms of fugacity coefficients of components
+    and their partial derivatives with respect to pressure, tenperature,
+    and component mole fractions for each mixture.
+
+    Parameters
+    ----------
+    P: float
+      Pressure [Pa].
+
+    T: float
+      Temperature [K].
+
+    yji: Matrix[Float], shape (Np, Nc)
+      Mole fractions of `Nc` components for each of `Np` mixtures.
+
+    Returns
+    -------
+    A tuple containing:
+    - a `Matrix[Float]` of shape `(Np, Nc)` of natural logarithms of
+      fugacity coefficients of components in mixtures,
+    - a `Matrix[Float]` of shape `(Np, Nc)` of partial derivatives of
+      natural logarithms of fugacity coefficients of components with
+      respect to pressure in mixtures,
+    - a `Matrix[Float]` of shape `(Np, Nc)` of partial derivatives of
+      natural logarithms of fugacity coefficients of components with
+      respect to temperature in mixtures,
+    - a `Tensor[Float]` of shape `(Np, Nc, Nc)` of partial derivatives
+      of natural logarithms of fugacity coefficients of components with
+      respect to mole fractions of components in mixtures.
     """
     pass
 

@@ -65,7 +65,7 @@ print(eos.getPT_Z(P, T, yi))
 0.6986113469413198
 ```
 
-There are other methods in this class that compute not only the compressibility factor and natural logarithms of fugacity coefficients, but also their derivatives with respect to pressure, temperature, and mole numbers. Methods for phase identification and K-value generation are also available. For more details, see the documentation for this class.
+There are other methods in this class that compute not only the compressibility factor and natural logarithms of fugacity coefficients, but also their derivatives with respect to pressure, temperature, and mole numbers. Methods for phase identification and K-value generation are also available. For more details, see the documentation of this class.
 
 To determine the single-phase parameters of a mixture, use the stability test procedure:
 
@@ -244,7 +244,7 @@ If you encounter errors regarding missing `.dll` files when importing compiled F
 
 The following features and improvements are planned for the near future:
 
-*   **Advanced Mixing Rules:** Refactoring the Peng-Robinson class to support E-PPR78 \[[J.-N. Jaubert et al, 2022](https://doi.org/10.1016/j.fluid.2022.113456)\], Huron-Vidal \[[M.-J. Huron and J. Vidal, 1979](https://doi.org/10.1016/0378-3812(79)80001-1)\], Wong-Sandler Wong-Sandler \[[D.S.H. Wong and S.I. Sandler, 1992](https://doi.org/10.1002/aic.690380505)\]), and custom mixing rules.
+*   **Advanced Mixing Rules:** Refactoring the Peng-Robinson class to support E-PPR78 \[[J.-N. Jaubert et al, 2022](https://doi.org/10.1016/j.fluid.2022.113456)\], Huron-Vidal \[[M.-J. Huron and J. Vidal, 1979](https://doi.org/10.1016/0378-3812(79)80001-1)\], Wong-Sandler \[[D.S.H. Wong and S.I. Sandler, 1992](https://doi.org/10.1002/aic.690380505)\]), and custom mixing rules.
 *   **Performance Optimization:** Migrating EOS classes, stability tests, flash routines, and other solvers to Fortran.
 *   **New Equations of State:** Implementation of eCPA \[[B. Maribo-Mogensen et al, 2015](https://doi.org/10.1002/aic.14829)\] and ePC-SAFT \[[M. Bulow et al, 2021](https://doi.org/10.1016/j.fluid.2021.112967); [M. Bulow et al, 2021](https://doi.org/10.1016/j.fluid.2021.112989)\].
 *   **VT-based Thermodynamics:** Implementation of VT-based stability tests and flash calculations \[[D.V. Nichita, 2017](http://doi.org/10.1016/j.fluid.2017.05.022); [D.V. Nichita, 2017](https://doi.org/10.1016/j.fluid.2017.10.030); [D.V. Nichita, 2017](https://doi.org/10.1016/j.fluid.2017.12.021); [D.V. Nichita, 2018](https://doi.org/10.1016/j.fluid.2018.03.012)\].
@@ -255,7 +255,7 @@ The following features and improvements are planned for the near future:
 We also plan to implement specialized modeling capabilities, including:
 *   Asphaltene and wax precipitation \[[L.X. Nghiem et al, 1993](https://doi.org/10.2118/26642-MS); [B.F. Kohse et al, 2000](https://doi.org/10.2118/64465-MS); [Zh. Chen et al, 2021](https://doi.org/10.1016/j.fluid.2021.113004)\].
 *   Hydrates formation \[[M.A. Mahabadian et al, 2016](http://doi.org/10.1016/j.fluid.2016.01.009); [W. Jia et al, 2021](https://doi.org/10.1016/j.energy.2021.120735); [X. Chen and H. Li, 2023](https://doi.org/10.1016/j.ces.2022.118284)\].
-*   Compositional gradients \[[C.H. Whitson and P. Belery](https://doi.org/10.2118/28000-MS)\].
+*   Compositional gradients \[[C.H. Whitson and P. Belery, 1994](https://doi.org/10.2118/28000-MS)\].
 *   Isenthalpic flash \[[M.L. Michelsen, 1987](https://doi.org/10.1016/0378-3812(87)87002-4); [D. Paterson et al, 2016](https://doi.org/10.2118/179652-MS)\].
 *   Minimum Miscibility Pressure (MMP) prediction \[[R. Li and H. Li, 2019](http://doi.org/10.1021/acs.iecr.9b02928)\].
 
