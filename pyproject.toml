@@ -43,3 +43,6 @@ license-files = [
   "LICENSE.txt",      # BSD-3-Clause
   "doc/LICENSE.txt",  # CC-BY-4.0
 ]
+
+[tool.ruff]
+extend-exclude = ["test_*.py"]

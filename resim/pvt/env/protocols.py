@@ -285,12 +285,12 @@ class Env2pSolver[Eos](Protocol):
   sval: float
     A value of the fixed (known) variable.
 
-  yi: Vector[Float], shape (Nc,)
-    Mole fractions of `Nc` components.
-
   phf: float
     Mole fraction of the non-reference phase for which the phase
     envelope should be constructed.
+
+  yi: Vector[Float], shape (Nc,)
+    Mole fractions of `Nc` components.
 
   Returns
   -------
@@ -307,8 +307,8 @@ class Env2pSolver[Eos](Protocol):
     x0: Vector[Float],
     sidx: int | Integer,
     sval: float,
-    yi: Vector[Float],
     phfr: float,
+    yi: Vector[Float],
     /,
   ) -> tuple[Vector[Float], Vector[Float], Vector[Float], Matrix[Float], int]:
     pass

@@ -103,8 +103,8 @@ def _env2pPT_newt(
   x0: Vector[Float],
   sidx: int | Integer,
   sval: float,
-  yi: Vector[Float],
   phf: float,
+  yi: Vector[Float],
   tolres: float = 1e-24,
   tolvar: float = 1e-14,
   maxiter: int = 5,
@@ -126,12 +126,12 @@ def _env2pPT_newt(
     The specified variable index. The specified variable is considered
     known and fixed for the algorithm.
 
-  yi: Vector[Float], shape (Nc,)
-    Mole fractions of components in the mixture.
-
   phf: float
     Phase mole fraction for which the phase envelope point should be
     calculated.
+
+  yi: Vector[Float], shape (Nc,)
+    Mole fractions of components in the mixture.
 
   tolres: float
     Terminate successfully if the sum of squared elements of the vector
@@ -230,7 +230,7 @@ def _env2pPT_newt(
   J = np_zeros(shape=(Nc + 2, Nc + 2))
   J[-1, sidx] = 1.
   g = np_empty(shape=(Nc + 2,))
-  I = np_eye(Nc)
+  Iij = np_eye(Nc)
   k = 0
   xk = x0.flatten()
   xk[sidx] = sval
@@ -254,7 +254,7 @@ def _env2pPT_newt(
   g2 = g.dot(g)
   dylidlnkvi = -phf * yvi / di
   dyvidlnkvi = yvi + kvi * dylidlnkvi
-  J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+  J[:Nc,:Nc] = Iij + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
   J[-2,:Nc] = yvi / di
   J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
   J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
@@ -286,7 +286,7 @@ def _env2pPT_newt(
     g2 = g.dot(g)
     dylidlnkvi = -phf * yvi / di
     dyvidlnkvi = yvi + kvi * dylidlnkvi
-    J[:Nc,:Nc] = I + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
+    J[:Nc,:Nc] = Iij + dlnphividyvj * dyvidlnkvi - dlnphilidylj * dylidlnkvi
     J[-2,:Nc] = yvi / di
     J[:Nc,-2] = P * (dlnphividP - dlnphilidP)
     J[:Nc,-1] = T * (dlnphividT - dlnphilidT)
@@ -352,7 +352,7 @@ def _envNpPT_newt(
   drdt = J[Npm1:-2, -1]
   Ijk = np_eye(Npm1, Npm1)
   dIjk = np_eye(Npm2, Npm1, 1) - np_eye(Npm2, Npm1)
-  Ijikl = np_eye(Npm1 * Nc).reshape(Npm1, Nc, Npm1, Nc)
+  Ijikl = np_eye(Npm1Nc).reshape(Npm1, Nc, Npm1, Nc)
   k = 0
   xk = x0.flatten()
   xk[sidx] = sval
@@ -907,10 +907,6 @@ class env2p(object):
       For all types of initialization, it is not recommended to specify
       an initial guess close to the critical point of a mixture.
 
-    solver: Env2pSolver[Env2pSolverPTEos]
-      A callable object that can solve the phase envelope problem
-      formulated for the PT-thermodynamics. Default is `_env2pPT_newt`.
-
     sidx0: int | None
       For the first point, this parameter allows to specify the index
       of the fixed item of a vector of the primary variables:
@@ -998,6 +994,10 @@ class env2p(object):
     Tmax: float
       The maximum temperature [K] for the phase envelope calculation
       routine. Default is `937.15` [K].
+
+    solver: Env2pSolver[Env2pSolverPTEos]
+      A callable object that can solve the phase envelope problem
+      formulated for the PT-thermodynamics. Default is `_env2pPT_newt`.
 
     **kwargs
       Other parameters for the internal initialization procedure.
@@ -1159,7 +1159,7 @@ class env2p(object):
     else:
       s0_idx = sidx0
     s0 = xi[s0_idx]
-    x0, yvi, yli, J0, nit = solver(eos, xi, s0_idx, s0, yi, phf)
+    x0, yvi, yli, J0, nit = solver(eos, xi, s0_idx, s0, phf, yi)
     logger.info(tmpl, c, 0, nit, 0., s0_idx, s0, *x0)
     xki[k] = x0
     yvki[k] = yvi
@@ -1191,7 +1191,7 @@ class env2p(object):
           logger.warning('The maximum number of step cuts has been reached.')
           break
         try:
-          xkp1, yvi, yli, Jkp1, nit = solver(eos, xi, skp1_idx, skp1, yi, phf)
+          xkp1, yvi, yli, Jkp1, nit = solver(eos, xi, skp1_idx, skp1, phf, yi)
           xkm1 = xk
           Jkm1 = Jk
           dxkm1ds = dxkds
@@ -1256,6 +1256,8 @@ class env2p(object):
           cls._update_B(xk, dxkds, B)
           skp1 = sk + step * copysign(1., sk - skm1)
           if s_cnt > 1:
+            # TODO: Extend the LU-solver to handle Ax = B where B is a
+            #       matrix.
             C = lusolver(M, B)
             skp12 = skp1 * skp1
             skp13 = skp12 * skp1

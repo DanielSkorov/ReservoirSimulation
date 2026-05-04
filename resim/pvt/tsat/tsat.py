@@ -558,7 +558,7 @@ def _tsatPT_newtA(
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%11.2e'
   J = np_zeros(shape=(Nc + 1, Nc + 1))
   gi = np_empty(shape=(Nc + 1,))
-  I = np_eye(Nc)
+  Iij = np_eye(Nc)
   k = 0
   ki = kvi0
   lnki = np_log(ki)
@@ -597,7 +597,7 @@ def _tsatPT_newtA(
   g2 = gi.dot(gi)
   logger.debug(tmpl, k, *lnki, Tk, g2)
   while g2 > tol and k < maxiter:
-    J[:Nc,:Nc] = I + ni * dlnphixidnj
+    J[:Nc,:Nc] = Iij + ni * dlnphixidnj
     J[-1,:Nc] = ni
     J[:Nc,-1] = Tk * (dlnphixidT - dlnphiyidT)
     dlnkilnT = linsolver(J, -gi)
@@ -741,7 +741,7 @@ def _tsatPT_newtB(
   tmpl = '%3s' + Nc * '%9.4f' + '%9.2f%11.2e'
   J = np_empty(shape=(Nc + 1, Nc + 1))
   gi = np_empty(shape=(Nc + 1,))
-  I = np_eye(Nc)
+  Iij = np_eye(Nc)
   k = 0
   ki = kvi0
   lnki = np_log(ki)
@@ -781,7 +781,7 @@ def _tsatPT_newtB(
   g2 = gi.dot(gi)
   logger.debug(tmpl, k, *lnki, Tk, g2)
   while g2 > tol and k < maxiter:
-    J[:Nc,:Nc] = I + ni * dlnphixidnj
+    J[:Nc,:Nc] = Iij + ni * dlnphixidnj
     J[-1,:Nc] = xi * (hi - gi[-1])
     J[:Nc,-1] = Tk * (dlnphixidT - dlnphiyidT)
     J[-1,-1] = xi.dot(J[:Nc,-1])
