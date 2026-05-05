@@ -67,7 +67,7 @@ print(eos.getPT_Z(P, T, yi))
 
 There are other methods in this class that compute not only the compressibility factor and natural logarithms of fugacity coefficients, but also their derivatives with respect to pressure, temperature, and mole numbers. Methods for phase identification and K-value generation are also available. For more details, see the documentation of this class.
 
-To determine the single-phase parameters of a mixture, use the stability test procedure:
+To calculate the properties of a mixture and evaluate its stability as a single phase, use the stability test procedure:
 
 ```python
 from resim.pvt.stab import stabtest
@@ -175,22 +175,25 @@ plt.show()
 
 ![](./doc/_img/readme_env.svg)
 
+The following example demonstrates the calculation of the CVD experiment. We define a custom reporting class to calculate the black-oil properties of the phases at each stage of the CVD experiment. The gas phase from a cell is sent to the low-temperature separation, after which its properties are calculated in the form of the black-oil model. The liquid phase separated during the CVD experiment is sent to single-stage separation under standard conditions, after which its properties are calculated in the form of the black-oil model.
+
 ```python
 from functools import partial
 from resim.pvt.lab import cvd, BoState
 from resim.pvt.sep import ltsep, stsep
 
-# Reporting class for a fluid state at each stage of the CVD-experiment.
-# Uses the low-temperature separator to obtain properties of the gas
-# phase and the standard separator for the liquid phase.
+# Custom reporting class to capture the fluid state at each CVD stage.
+# It simulates the low-temperature separator for gas phase properties
+# and the standard separator for the liquid phase.
 class RepState(BoState):
   gassep: partial(ltsep, flashroutine=flash.run2pPT)
   liqsep: partial(stsep, flashroutine=flash.run2pPT)
   pass
 
-# Pressure [Pa] at each stage of the CVD-experiment.
+# Depletion pressure stages [Pa] for the CVD experiment.
 PP = np.array([17120., 12670., 7180., 3210., 1590., 101.]) * 1e3
 
+# Execute CVD simulation using the two-phase PT-flash procedure.
 res = cvd(eos, PP, T, yi, flashroutine=flash.run2pPT, repstate=RepState)
 
 # Print calculated results as a table.
@@ -206,6 +209,8 @@ Stage  P [MPa]  T [°C]   V [m³]  n [mol]  PID  s [fr.]  ρ [kg/rm³]  b [rm³/
     4    1.590   70.00  2.8e-04   0.1975    1   0.0194      657.33      1.16092    2.598e+01  -1.0000    0   0.9806      14.714      0.07114    0.000e+00  -1.0000
     5    0.101   70.00  2.9e-03   0.1082    1   0.0002      696.54      1.05793    0.000e+00  -1.0000    0   0.9998      1.6811      1.50610    1.899e-03  -1.0000
 ```
+
+In the Phase ID (PID) columns of the table above, the gas and liquid phases are labeled `0` and `1`, respectively.
 
 Other examples can be found in the `tests` folder of each procedure's directory.
 
@@ -228,9 +233,9 @@ Course materials are available at this [link](https://danielskorov.github.io/Res
 Contributions are welcome via **Pull Requests**. You are also encouraged to open an **Issue** if you find a typo or mistake. Additionally, feel free to ask questions or start a conversation in **GitHub Discussions**.
 
 ### Editing Course Content
-To suggest changes to the course, please create a separate branch and edit the `.md` files. To render your changes as `.html` pages, you will need to install extra dependencies: [Jupyter Book](https://jupyterbook.org/), [NumPy](https://numpy.org/), [SciPy](https://scipy.org/), [Matplotlib](https://matplotlib.org/) (or matplotlib-base), and [iapws](https://iapws.readthedocs.io/).
+The course content is authored in Markdown (`.md` files) and is located in the `/doc/theory/` folder. To render these source files into `.html` pages locally, you will need to install the following dependencies: [Jupyter Book](https://jupyterbook.org/), [NumPy](https://numpy.org/), [SciPy](https://scipy.org/), [Matplotlib](https://matplotlib.org/) (or matplotlib-base), and [iapws](https://iapws.readthedocs.io/).
 
-The course materials are built using Jupyter Book with custom modifications (located in the `doc/_static/` folder). The `gh-pages` branch contains the final rendered HTML.
+The course materials are built using Jupyter Book with custom modifications (located in the `/doc/_static/` folder). The `gh-pages` branch contains the final rendered HTML.
 
 ### Working with Fortran
 This project uses [`numpy.f2py`](https://numpy.org/doc/stable/f2py/) to call Fortran subroutines from Python. This extension automatically builds and compiles modules that can be imported directly into Python code. To run `f2py`, you will need [`meson`](https://github.com/mesonbuild/meson) and [`ninja`](https://github.com/ninja-build/ninja).
@@ -269,9 +274,9 @@ The source code in this repository is licensed under the [BSD 3-Clause License](
 
 ## References and Acknowledgements
 
-This project was developed using numerous scientific papers, which are listed below in alphabetical order.
+We would like to acknowledge the researchers whose work has most significantly influenced the development of ReSim:
+*   **Michael L. Michelsen**: Many of the algorithms in this library are based on his pioneering work. We highly recommend reading the [tribute paper by C.H. Whitson (2024)](https://doi.org/10.1016/j.fluid.2023.113907).
+*   **Long X. Nghiem**: Whose publications and software have long served as the industry standard and a primary inspiration for our development.
+*   **Dan V. Nichita**: We express our gratitude for his extensive research on various phase behavior formulations and his rigorous convergence analysis of the Rachford-Rice equation.
 
-We would like to separately acknowledge the researchers whose work has most significantly influenced this library:
-*   **Michael L. Michelsen**: Many of the algorithms in ReSim are based on his pioneering work. We highly recommend reading the [tribute paper by C.H. Whitson (2024)](https://doi.org/10.1016/j.fluid.2023.113907).
-*   **Long X. Nghiem**: Whose publications and software have long been the standard for the world and our development.
-*   **Dan V. Nichita**: We express our gratitude for his extensive work on various phase behavior formulations and his convergence analysis of the Rachford-Rice equation.
+<!-- This project was developed using numerous scientific papers, which are listed below in alphabetical order. -->
