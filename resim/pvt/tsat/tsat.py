@@ -1337,17 +1337,17 @@ class tsat(object):
       TT = np_linspace(Tmax, Tmin, Nnodes, endpoint=True)
     else:
       TT = np_linspace(Tmin, Tmax, Nnodes, endpoint=True)
-    prevT = TT[0]
-    prevstate = stabroutine(eos, P, prevT, yi, 1., None)
-    for nextT in TT[1:]:
-      state = stabroutine(eos, P, nextT, yi, 1., None)
-      if state.kvji is not None and prevstate.kvji is None:
+    T_prv = TT[0]
+    state_prv = stabroutine(eos, P, T_prv, yi, 1., None)
+    for T_nxt in TT[1:]:
+      state_nxt = stabroutine(eos, P, T_nxt, yi, 1., None)
+      if state_nxt.kvji is not None and state_prv.kvji is None:
         if upper:
-          return state.kvji.ravel(), nextT, prevT
+          return state_nxt.kvji.ravel(), T_nxt, T_prv
         else:
-          return state.kvji.ravel(), prevT, nextT
-      prevstate = state
-      prevT = nextT
+          return state_nxt.kvji.ravel(), T_prv, T_nxt
+      T_prv = T_nxt
+      state_prv = state_nxt
     raise ValueError(
       'A boundary of the two-phase region was not found. It could be '
       'because of its narrowness or absence in the given range of '
@@ -1432,13 +1432,11 @@ class tsat(object):
     """
     T = state.T
     state = stabroutine(eos, P, T, yi, 1., state)
-    logger.debug('T = %.2f [K]: %s', T, state)
     # TODO: Implement an extrapolation procedure to improve the initial
     #       guess of k-values and temperature. For the details, see the
     #       paper L.X. Nghiem and Y.K. Li, 1990 (doi: 10.2118/13517-PA).
     if isinstance(state, MultiPhaseState):
       if upper:
-        logger.debug('Finding one-phase region for the upper-bound curve.')
         Tlow = T
         statemp = state
         c = 1. + step
@@ -1446,7 +1444,6 @@ class tsat(object):
         while Tupp < Tmax:
           Tupp *= c
           state = stabroutine(eos, P, Tupp, yi, 1., None)
-          logger.debug('T = %.2f [K]: %s', Tupp, state)
           if isinstance(state, MultiPhaseState):
             Tlow = Tupp
             statemp = state
@@ -1457,7 +1454,6 @@ class tsat(object):
           'initial guess for temperature and/or `Tmax` parameter.'
         )
       else:
-        logger.debug('Finding one-phase region for the lower-bound curve.')
         Tupp = T
         statemp = state
         c = 1. - step
@@ -1465,7 +1461,6 @@ class tsat(object):
         while Tlow > Tmin:
           Tlow *= c
           state = stabroutine(eos, P, Tlow, yi, 1., None)
-          logger.debug('T = %.2f [K]: %s', Tlow, state)
           if isinstance(state, MultiPhaseState):
             statemp = state
             Tupp = Tlow
@@ -1477,14 +1472,12 @@ class tsat(object):
         )
     else:
       if upper:
-        logger.debug('Finding two-phase region for the upper-bound curve.')
         Tupp = T
         c = 1. - step
         Tlow = T
         while Tlow > Tmin:
           Tlow *= c
           state = stabroutine(eos, P, Tlow, yi, 1., None)
-          logger.debug('T = %.2f [K]: %s', Tlow, state)
           if state.kvji is not None:
             return state.kvji.ravel(), Tlow, Tupp
           else:
@@ -1496,14 +1489,12 @@ class tsat(object):
           'be helpful to reduce the value of the `step`.'
         )
       else:
-        logger.debug('Finding two-phase region for the lower-bound curve.')
         Tlow = T
         c = 1. + step
         Tupp = T
         while Tupp < Tmax:
           Tupp *= c
           state = stabroutine(eos, P, Tupp, yi, 1., None)
-          logger.debug('T = %.2f [K]: %s', Tupp, state)
           if state.kvji is not None:
             return state.kvji.ravel(), Tlow, Tupp
           else:

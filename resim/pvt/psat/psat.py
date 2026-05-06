@@ -1356,17 +1356,17 @@ class psat(object):
         PP = np_logspace(log10(Pmin), log10(Pmax), Nnodes, endpoint=True)
       else:
         PP = np_linspace(Pmin, Pmax, Nnodes, endpoint=True)
-    prevP = PP[0]
-    prevstate = stabroutine(eos, prevP, T, yi, 1., None)
-    for nextP in PP[1:]:
-      state = stabroutine(eos, nextP, T, yi, 1., None)
-      if state.kvji is not None and prevstate.kvji is None:
+    P_prv = PP[0]
+    state_prv = stabroutine(eos, P_prv, T, yi, 1., None)
+    for P_nxt in PP[1:]:
+      state_nxt = stabroutine(eos, P_nxt, T, yi, 1., None)
+      if state_nxt.kvji is not None and state_prv.kvji is None:
         if upper:
-          return state.kvji.ravel(), nextP, prevP
+          return state_nxt.kvji.ravel(), P_nxt, P_prv
         else:
-          return state.kvji.ravel(), prevP, nextP
-      prevstate = state
-      prevP = nextP
+          return state_nxt.kvji.ravel(), P_prv, P_nxt
+      P_prv = P_nxt
+      state_prv = state_nxt
     raise ValueError(
       'A boundary of the two-phase region was not found. It could be '
       'because of its narrowness or absence in the given range of '
@@ -1456,7 +1456,6 @@ class psat(object):
     #       paper L.X. Nghiem and Y.K. Li, 1990 (doi: 10.2118/13517-PA).
     if isinstance(state, MultiPhaseState):
       if upper:
-        logger.debug('Finding one-phase region for the upper-bound curve.')
         Plow = P
         statemp = state
         c = 1. + step
@@ -1474,7 +1473,6 @@ class psat(object):
           'initial guess for pressure and/or `Pmax` parameter.'
         )
       else:
-        logger.debug('Finding one-phase region for the lower-bound curve.')
         Pupp = P
         statemp = state
         c = 1. - step
@@ -1493,7 +1491,6 @@ class psat(object):
         )
     else:
       if upper:
-        logger.debug('Finding two-phase region for the upper-bound curve.')
         Pupp = P
         c = 1. - step
         Plow = P
@@ -1511,7 +1508,6 @@ class psat(object):
           'helpful to reduce the value of the `step`.'
         )
       else:
-        logger.debug('Finding two-phase region for the lower-bound curve.')
         Plow = P
         c = 1. + step
         Pupp = P
