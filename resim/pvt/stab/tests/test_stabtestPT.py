@@ -1307,6 +1307,64 @@ class stabtestPT(unittest.TestCase):
     self.assertTrue(state.kvji is None)
     pass
 
+  def test_46(self):
+    logger.info('\nTest #46.\nComponents: S8 H2S')
+    P = 14612e3
+    T = 413.15
+    yi = np_array([0.000667, 0.999333])
+    Pci = np_array([6236557.479, 89.63e5])
+    Tci = np_array([1158.166, 380.53])
+    wi = np_array([0.227275132, 0.0942])
+    mwi = np_array([0.256472, 34.082e-3])
+    dij = np_array([0.083])
+    s0i = np_array([-0.106623033, -0.145373])
+    s1i = np_array([9.31586430e-6, 0.0])
+    Trsi = np_array([20., 20.]) + 273.15
+    pr = pr78(Pci, Tci, wi, mwi, dij, s0i, s1i, Trsi)
+    solver = partial(_stabPT_ssnewt, switchers=(0.1, 1e-12, 1e-6), maxiter=50)
+    state = stabtest.runPT(pr, P, T, yi, solver=solver)
+    self.assertTrue(state.kvji is None)
+    pass
+
+  def test_47(self):
+    logger.info('\nTest #47.\nComponents: S8 H2S')
+    P = 14612e3
+    T = 413.15
+    yi = np_array([0.000667, 0.999333])
+    Pci = np_array([6236557.479, 89.63e5])
+    Tci = np_array([1158.166, 380.53])
+    wi = np_array([0.227275132, 0.0942])
+    mwi = np_array([0.256472, 34.082e-3])
+    dij = np_array([0.083])
+    s0i = np_array([-0.106623033, -0.145373])
+    s1i = np_array([9.31586430e-6, 0.0])
+    Trsi = np_array([20., 20.]) + 273.15
+    pr = pr78(Pci, Tci, wi, mwi, dij, s0i, s1i, Trsi)
+    solver = partial(_stabPT_qnssnewt, switchers=(0.1, 1e-12, 1e-6),
+                     maxiter=19)
+    state = stabtest.runPT(pr, P, T, yi, solver=solver)
+    self.assertTrue(state.kvji is None)
+    pass
+
+  def test_48(self):
+    logger.info('\nTest #48.\nComponents: S8 H2S')
+    P = 14612e3
+    T = 413.15
+    yi = np_array([0.000667, 0.999333])
+    Pci = np_array([6236557.479, 89.63e5])
+    Tci = np_array([1158.166, 380.53])
+    wi = np_array([0.227275132, 0.0942])
+    mwi = np_array([0.256472, 34.082e-3])
+    dij = np_array([0.083])
+    s0i = np_array([-0.106623033, -0.145373])
+    s1i = np_array([9.31586430e-6, 0.0])
+    Trsi = np_array([20., 20.]) + 273.15
+    pr = pr78(Pci, Tci, wi, mwi, dij, s0i, s1i, Trsi)
+    solver = partial(_stabPT_ssbfgs, switchers=(0.1, 1e-12, 1e-6), maxiter=50)
+    state = stabtest.runPT(pr, P, T, yi, solver=solver)
+    self.assertTrue(state.kvji is None)
+    pass
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=0)
