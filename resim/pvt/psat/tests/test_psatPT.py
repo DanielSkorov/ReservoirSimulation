@@ -517,18 +517,18 @@ class psatPT(unittest.TestCase):
     logger.info('\nTest #20.\nComponents: S8 H2S')
     T = 366.
     yi = np_array([1.33e-4, 0.999867])
-    Pci = np_array([6236557.479, 89.63e5])
-    Tci = np_array([1158.166, 373.53])
-    wi = np_array([0.227275132, 0.0942])
-    mwi = np_array([0.256472, 34.082e-3])
+    Pci = np_array([5.2e6, 8963000.])
+    Tci = np_array([1065., 373.53])
+    wi = np_array([0.3805, 0.0942])
+    mwi = np_array([0.256472, 0.034082])
     dij = np_array([0.083])
-    s0i = np_array([-0.106623033, -0.145373])
-    s1i = np_array([9.31586430e-6, 0.0])
-    Trsi = np_array([293.15, 293.15])
+    s0i = np_array([-0.021059, -0.070088])
+    s1i = np_array([0.000166, 0.000484])
+    Trsi = np_array([20., 20.]) + 273.15
     pr = pr78(Pci, Tci, wi, mwi, dij, s0i, s1i, Trsi)
     solver = partial(_psatPT_newtB, maxiter=3, maxiter_tpd=0)
     state = psat.runPT(pr, T, yi, upper=True, solver=solver,
-                       Pmax=8e6, Pmin=7e6, Nnodes=50)
+                       Pmin=7e6, Pmax=8e6, Nnodes=50)
     pass
 
 
